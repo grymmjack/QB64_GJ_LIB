@@ -1,0 +1,20 @@
+''
+' GRYMMJACK'S LIB FOR QB64
+'
+' This is the master BM file, which includes the other BM files for the library.
+'
+' Enable and disable debugging by setting this variable to TRUE or FALSE:
+' GJ_LIB_DEBUGGING = FALSE
+' This is not a CONST and can be set as needed as often as you like.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses DICT/DICT.BM
+' @uses DUMP/DUMP.BM
+' @uses ANSI/ANSI.BM
+' @uses STRINGS/STRINGS.BM
+'
+
+'$INCLUDE:'DICT/DICT.BM'
+'$INCLUDE:'DUMP/DUMP.BM'
+'$INCLUDE:'ANSI/ANSI.BM'
+'$INCLUDE:'STRINGS/STRINGS.BM'

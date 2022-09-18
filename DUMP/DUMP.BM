@@ -1,0 +1,203 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S DUMP LIB
+'
+' Dumps variables in a human friendly way to assist in debugging.
+' Inspired by PHP print_r() [1] which I missed when writing in QB64.
+'
+' So, why "dump"?
+'
+' [0] dump: 
+'       to copy (data in a computer's internal storage) to an external storage 
+'       or output device
+'          ^^^^^^^^^^^^^ 
+'               this
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/DUMP/DUMP.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/DUMP/DUMP.BM' at the bottom of file
+'
+' TL;DR: 
+'
+' Every function returns a string called a dump block. The idea is that
+' You can then PRINT the string in your code where you need to see what vars
+' have inside them quickly.
+'
+' A dump block consists of:
+' - A blank line
+' - The type of variable being dumped
+' - The number of elements in an array (if applicable)
+' - A label for reference
+'
+' Here is an example of a dump of a string array:
+'
+' DIM words$(2)
+' words$(0) = "foo" : words$(1) = "bar" : words$(2) = "baz"
+' PRINT dump_string_array(words$(), "words")
+' 
+' OUTPUT:
+' 
+' STRING ARRAY: words$(2) {
+'   (0): "foo" [3]
+'   (1): "bar" [3]
+'   (2): "baz" [3]
+' }
+' 
+' Because QB64 lacks any reflection support, has no way to pass an optional
+' argument, has no ability to identify a variable type, or even eval() it's
+' own dialect, there are separate functions for each common type. If you don't
+' see the one you need, it's easy enough to copy an existing one and make what
+' you want while staying in the spirit of DUMP LIB.
+' 
+' FUNCTION              NOTES
+' dump_string$          Includes handy output of the strings length.
+' dump_string_array$    Works on 1 dimensional arrays only (right now).
+' dump_integer_array$   Works on 1 dimensional arrays only (right now).
+' dump_single_array$    Works on 1 dimensional arrays only (right now).
+' dump_long_array$      Works on 1 dimensional arrays only (right now).
+' dump_double_array$    Works on 1 dimensional arrays only (right now).
+' dump_dict$            Dump a dictionary object and it's contents.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @depends DUMP.BI
+' @see [0] https://www.merriam-webster.com/dictionary/dump
+' @see [1] https://www.php.net/manual/en/function.print-r.php
+'
+
+
+
+''
+' Returns a string containing a dump of a string
+' 
+' @param s$ String to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_string$ (s$, label$)
+    l$ = _TRIM$(STR$(LEN(s$)))
+    r$ = GJ_LIB_NL$ + "STRING: " + label$ + "$ {" + GJ_LIB_NL$
+    r$ = r$ + "  " + CHR$(34) + s$ + CHR$(34) + " [" + l$ + "]" + GJ_LIB_NL$
+    r$ = r$ + "} "
+    dump_string$ = r$
+END FUNCTION
+
+
+''
+' Returns a string containing a dump of an array of strings
+'
+' @param arr$() Array of strings to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_string_array$ (arr$(), label$)
+    lb = LBOUND(arr$) : ub = UBOUND(arr$) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        l$ = _TRIM$(STR$(LEN(arr$(i))))
+        r$ = r$ + "  (" + i$ + "): " + CHR$(34) + arr$(i) + CHR$(34)
+        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_string_array$ = r$
+END FUNCTION
+
+
+''
+' Returns a string containing a dump of an array of integers
+'
+' @param arr%() Array of integers to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_integer_array$ (arr%(), label$)
+    lb = LBOUND(arr%) : ub = UBOUND(arr%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr%(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_integer_array$ = r$
+END FUNCTION
+
+
+''
+' Returns asstring containing a dump of an array of singles
+'
+' @param arr!() Array of singles to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_single_array$ (arr!(), label$)
+    lb = LBOUND(arr!) : ub = UBOUND(arr!) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "SINGLE ARRAY: " + label$ + "!(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr!(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_single_array$ = r$
+END FUNCTION
+
+
+''
+' Dumps an array of longs
+'
+' @param arr&() Array of longs to dump
+' @param label$ Label to give the dump block
+'
+FUNCTION dump_long_array$ (arr&(), label$)
+    lb = LBOUND(arr&) : ub = UBOUND(arr&) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "LONG ARRAY: " + label$ + "&(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr&(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_long_array$ = r$
+END FUNCTION
+
+
+''
+' Dumps an array of doubles
+'
+' @param arr#() Array of doubles to dump
+' @param label$ Label to give the dump block
+'
+FUNCTION dump_double_array$ (arr#(), label$)
+    lb = LBOUND(arr#) : ub = UBOUND(arr#) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "DOUBLE ARRAY: " + label$ + "#(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr#(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_double_array$ = r$
+END FUNCTION
+
+
+''
+' Dumps a dictionary object and its contents
+'
+' @param dict$() Dictionary object to dump
+' @param label$ Label to give the dump block
+'
+FUNCTION dump_dict$ (dict() AS Dict, label$)
+    lb = LBOUND(dict) : ub = UBOUND(dict) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
+    q$ = CHR$(34)
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        key$ = dict(i).key
+        val$ = dict(i).val
+        r$ = r$ + "  (" + i$ + ") " + q$ + key$ + q$
+        r$ = r$ + ": " + q$ + val$ + q$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_dict$ = r$
+END FUNCTION
