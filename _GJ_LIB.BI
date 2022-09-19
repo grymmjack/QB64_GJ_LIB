@@ -9,7 +9,8 @@
 ' @uses ANSI/ANSI.BI
 ' @uses STRINGS/STRINGS.BI
 '
-$LET GJ_LIB_INC = 1
+$LET GJ_LIB_INC = 1             ' Unified usage
+$LET GJ_LIB_UNIFIED_TESTING = 1 ' Unified testing 
 
 $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
     CONST FALSE = 0 : CONST TRUE = NOT FALSE
@@ -25,6 +26,7 @@ $END IF
 ' Enable and disable debugging by setting this variable to TRUE or FALSE:
 GJ_LIB_DEBUGGING = TRUE
 
+' Unified includes to use everything in the library from single BI include
 '$INCLUDE:'DICT/DICT.BI'
 '$INCLUDE:'DUMP/DUMP.BI'
 '$INCLUDE:'ANSI/ANSI.BI'

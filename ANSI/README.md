@@ -143,6 +143,19 @@ More information here: https://github.com/QB64Official/qb64/issues/33
 
 
 
+### USAGE for ANSI LIB (separately)
+```basic
+'Insert at top of file:
+'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BI' at the top of file
+
+' ...your code here...
+
+'Insert at bottom of file: 
+'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BM' at the bottom of file
+```
+
+
+
 ### EXAMPLE 
 > Screenshot of output from [ANSI.BAS](ANSI.BAS)
 

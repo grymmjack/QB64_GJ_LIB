@@ -6,12 +6,12 @@ Simulates a dictionary object as found in other languages.
 ### USAGE for Dict Object (separately)
 ```basic
 'Insert at top of file:
-'$INCLUDE:'path_to/DICT.BI' at the top of file
+'$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BI' at the top of file
 
 ' ...your code here...
 
 'Insert at bottom of file: 
-'$INCLUDE:'path_to/DICT.BM' at the bottom of file
+'$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BM' at the bottom of file
 ```
 
 

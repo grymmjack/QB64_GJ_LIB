@@ -5,8 +5,8 @@
 ' Simulates a dictionary object as found in other languages.
 '
 ' USAGE:
-'   Insert '$INCLUDE:'path_to/DICT.BI' at the top of file
-'   Insert '$INCLUDE:'path_to/DICT.BM' at the bottom of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BM' at the bottom of file
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BM

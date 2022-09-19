@@ -6,7 +6,11 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
+$ELSE
+'$INCLUDE:'DUMP.BI'
+$END IF
 '$DYNAMIC
 
 
@@ -74,4 +78,10 @@ PRINT dump_long_array$(longArray&(), "longArray")
 PRINT dump_double_array$(dblArray#(), "dblArray")
 PRINT dump_dict$(myDict(), "myDict");
 
+
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
+$ELSE
+'$INCLUDE:'DUMP.BM'
+$END IF

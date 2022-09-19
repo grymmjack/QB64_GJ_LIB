@@ -6,7 +6,11 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
+$ELSE
+'$INCLUDE:'DICT.BI'
+$END IF
 '$DYNAMIC
 
 
@@ -59,4 +63,10 @@ PRINT dump_string_array(vals2$(), "vals from dict_get_vals")
 dict_swap_keys_for_vals myDict()
 PRINT dump_dict(myDict(), "myDict swapped")
 
+
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
+$ELSE
+'$INCLUDE:'DICT.BM'
+$END IF

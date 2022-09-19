@@ -6,7 +6,11 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
+$ELSE
+'$INCLUDE:'ANSI.BI'
+$END IF
 
 
 
@@ -18,7 +22,10 @@ GJ_LIB_ANSI_EMU = TRUE
 CONST TEST_ANSI_OUTPUT = TRUE
 
 ' Setup the console
+' @bug MacOS/Linux only see: https://github.com/QB64Official/qb64/issues/33
+$IF WINDOWS THEN 
 $CONSOLE:ONLY
+$ENDIF
 _CONTROLCHR OFF
 LOCATE 1,1,1 ' Initialize the cursor and turn it on
 
@@ -137,4 +144,10 @@ SUB fill_screen_with_text()
     NEXT y
 END SUB
 
+
+
+$IF GJ_LIB_UNIFIED_TESTS = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
+$ELSE
+'$INCLUDE:'ANSI.BM'
+$END IF

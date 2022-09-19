@@ -12,6 +12,19 @@
 
 
 
+### USAGE for STRINGS LIB (separately)
+```basic
+'Insert at top of code:
+'$INCLUDE:'path_to_GJ_LIB/STRINGS/STRINGS.BI'
+
+'...your code here...
+
+'Insert at bottom of code:
+'$INCLUDE:'path_to_GJ_LIB/STRINGS/STRINGS.BM'
+```
+
+
+
 ### EXAMPLE 
 > Screenshot of output from [STRINGS.BAS](STRINGS.BAS)
 

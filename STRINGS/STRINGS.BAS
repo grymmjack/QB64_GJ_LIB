@@ -6,7 +6,11 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
+$ELSE
+'$INCLUDE:'STRINGS.BI'
+$END IF
 '$DYNAMIC
 
 
@@ -34,4 +38,10 @@ PRINT dump_string_array$(words$(), "words")
 phrase2$ = str_implode$(words$(), "::")
 PRINT dump_string$(phrase2$, "phrase2")
 
+
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
+$ELSE
+'$INCLUDE:'STRINGS.BM'
+$END IF

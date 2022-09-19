@@ -14,6 +14,7 @@ $IF GJ_LIB_DICT_INC = UNDEFINED THEN
 $END IF
 
 
+
 DECLARE FUNCTION dump_string$ (s$, label$)
 DECLARE FUNCTION dump_string_array$ (arr$(), label$)
 DECLARE FUNCTION dump_integer_array$ (arr%(), label$)

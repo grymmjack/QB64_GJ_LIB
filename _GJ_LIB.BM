@@ -14,6 +14,7 @@
 ' @uses STRINGS/STRINGS.BM
 '
 
+' Unified includes to use everything in the library from single BM include
 '$INCLUDE:'DICT/DICT.BM'
 '$INCLUDE:'DUMP/DUMP.BM'
 '$INCLUDE:'ANSI/ANSI.BM'

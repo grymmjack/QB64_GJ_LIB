@@ -26,6 +26,7 @@ in it's current state.
 - Directory scaffolding that makes sense. 
     - Each library in its own directory.
     - Tests and examples included for each library in same dir as `.BAS` ext.
+        - Tests can be tested in unified mode or in isolated mode by setting `$LET GJ_LIB_UNIFIED_TESTING = 1` within [_GJ_LIB.BI](_GJ_LIB.BI)
 - Use of individual parts should work OK without including `_GJ_LIB.[BI|BM]`
     - Each library should be as atomic as possible.
     - Where needed, `$IF` pre-compiler guards should provide safe isolation as well as unified inclusion.
