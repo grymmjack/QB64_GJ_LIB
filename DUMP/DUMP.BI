@@ -9,7 +9,9 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DUMP.BM
 '
-
+$IF GJ_LIB_DICT_INC = UNDEFINED THEN
+'$INCLUDE:'../DICT/DICT.BI'
+$END IF
 
 
 DECLARE FUNCTION dump_string$ (s$, label$)
