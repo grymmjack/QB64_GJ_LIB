@@ -25,7 +25,7 @@ in it's current state.
     - e.g. `'$INCLUDE:'QB64_GJ_LIB/_GJ_LIB.[BI|BM]'` ...
 - Directory scaffolding that makes sense. 
     - Each library in its own directory.
-    - Tests and examples included for each library in same dir using `.BAS` extension to compliment `.BI|BM`
+    - Tests and examples included for each library in same dir using `.BAS` extension to complement `.BI|BM`
         - Tests can be tested in unified mode or in isolated mode by setting  
         `$LET GJ_LIB_UNIFIED_TESTING = 1` within [_GJ_LIB.BI](_GJ_LIB.BI)
 - Use of individual parts should work OK without including `_GJ_LIB.[BI|BM]`
