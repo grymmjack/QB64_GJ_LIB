@@ -103,7 +103,7 @@
 ' ansi_bg_rgb$  Sets text color background using RGB 8-bit mode
 '
 ' @author Rick Christy <grymmjack@gmail.com>
-' @depends ANSI.BI
+' @uses ANSI.BI
 ' @see https://gist.github.com/grymmjack/9dae29a60ea65f086d0b35df96fe2291
 '
 
