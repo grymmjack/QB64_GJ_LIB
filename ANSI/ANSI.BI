@@ -9,13 +9,17 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses ANSI.BM
 '
-CONST ANSI_ESC=27
+$LET GJ_LIB_ANSI_INC_BI = 1
 
 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
 ' Default = FALSE
 $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
     CONST FALSE = 0 : CONST TRUE = NOT FALSE
 $END IF
+CONST TEST_ANSI_OUTPUT = TRUE
+
+CONST ANSI_ESC=27
+
 DIM SHARED GJ_LIB_ANSI_EMU AS INTEGER
 GJ_LIB_ANSI_EMU = FALSE
 

@@ -106,7 +106,7 @@
 ' @uses ANSI.BI
 ' @see https://gist.github.com/grymmjack/9dae29a60ea65f086d0b35df96fe2291
 '
-
+$LET GJ_LIB_ANSI_INC_BM = 1
 
 
 ''

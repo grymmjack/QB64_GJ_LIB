@@ -10,6 +10,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BM
 '
+$LET GJ_LIB_STRINGS_INC_BI = 1
 
 
 

@@ -11,7 +11,8 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BI
 '
-
+$LET GJ_LIB_STRINGS_INC_BM = 1
+$LET DEBUGGING = 1
 
 
 ''
@@ -58,7 +59,6 @@ SUB str_explode (target$, delim$, dest$(), numParts%)
         numParts% = 0
         EXIT SUB
     END IF
-    IF DEBUGGING THEN PRINT dump_integer_array$(delimsPos%(), "delimsPos")
     IF numFound% > 0 THEN
         IF numFound% = 1 THEN
             dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen)

@@ -11,7 +11,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BM
 '
-$LET GJ_LIB_DICT_INC = 1
+$LET GJ_LIB_DICT_INC_BI = 1
 
 
 
