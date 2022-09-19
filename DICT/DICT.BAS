@@ -10,6 +10,7 @@ $IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
 $ELSE
 '$INCLUDE:'DICT.BI'
+'$INCLUDE:'../DUMP/DUMP.BI'
 $END IF
 '$DYNAMIC
 
@@ -42,7 +43,7 @@ vals$(5) = "zobbins"
 ' dict_fill myDict()
 dict_populate myDict(), keys$(), vals$()
 
-PRINT dump_dict(myDict(), "myDict")
+PRINT dump_dict$(myDict(), "myDict")
 
 index% = dict_get_index_by_key(myDict(), "barbo")
 index$ = _TRIM$(STR$(index%))
@@ -51,7 +52,7 @@ key$ = dict_get_key_by_index(myDict(), index%)
 PRINT "key = " + key$
 val$ = dict_get_val_by_index(myDict(), index%) 
 PRINT "val (from index) = " + val$
-PRINT "val (from key) = " + dict_get_val_by_key(myDict(), key$)
+PRINT "val (from key) = " + key$
 
 
 dict_get_keys myDict(), keys2$()
@@ -69,4 +70,5 @@ $IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
 $ELSE
 '$INCLUDE:'DICT.BM'
+'$INCLUDE:'../DUMP/DUMP.BM'
 $END IF

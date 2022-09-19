@@ -9,9 +9,6 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses ANSI.BM
 '
-
-
-
 CONST ANSI_ESC=27
 
 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
@@ -24,6 +21,8 @@ GJ_LIB_ANSI_EMU = FALSE
 
 DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
+
+
 
 DECLARE FUNCTION ansi_home$ ()
 DECLARE FUNCTION ansi_locate$ (row%, col%)
