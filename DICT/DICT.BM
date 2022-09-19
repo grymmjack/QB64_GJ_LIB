@@ -22,7 +22,8 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BI
 '
-$IF GJ_LIB_DICT_INC = UNDEFINED THEN
+$LET GJ_LIB_DICT_INC_BM = 1
+$IF GJ_LIB_DICT_INC_BI = UNDEFINED THEN
 '$INCLUDE:'DICT.BI'
 $END IF
 

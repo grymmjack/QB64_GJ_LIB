@@ -6,9 +6,10 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$IF GJ_LIB_UNIFIED_TESTING = DEFINED THEN
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
-$ELSE
+$END IF
+$IF GJ_LIB_ANSI_INC_BI = UNDEFINED THEN
 '$INCLUDE:'ANSI.BI'
 $END IF
 
@@ -18,8 +19,7 @@ _TITLE "QB64_GJ_LIB ANSI LIB TESTS"
 
 ' Emulate ANSI support with native QB64 functionality
 GJ_LIB_ANSI_EMU = TRUE
-' Complimentary local testing flag
-CONST TEST_ANSI_OUTPUT = TRUE
+
 
 ' Setup the console
 ' @bug MacOS/Linux only see: https://github.com/QB64Official/qb64/issues/33
@@ -146,8 +146,9 @@ END SUB
 
 
 
-$IF GJ_LIB_UNIFIED_TESTS = DEFINED THEN
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
-$ELSE
+$END IF
+$IF GJ_LIB_ANSI_INC_BM = UNDEFINED THEN
 '$INCLUDE:'ANSI.BM'
 $END IF

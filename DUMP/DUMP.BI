@@ -9,7 +9,8 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DUMP.BM
 '
-$IF GJ_LIB_DICT_INC = UNDEFINED THEN
+$LET GJ_LIB_DUMP_INC_BI = 1
+$IF GJ_LIB_DICT_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../DICT/DICT.BI'
 $END IF
 
