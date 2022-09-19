@@ -75,21 +75,21 @@ More information here: https://github.com/QB64Official/qb64/issues/33
 |----------|-------|
 | ansi_mode_reset_all$              | Reset all modes
 | ansi_mode_bold$                   | Set bold mode
-| ansi_mode_bold_reset$             | Set bold mode
+| ansi_mode_bold_reset$             | Reset bold mode
 | ansi_mode_dim$                    | Set dim mode
-| ansi_mode_dim_reset$              | Set dim mode
+| ansi_mode_dim_reset$              | Reset dim mode
 | ansi_mode_italic$                 | Set italic mode
-| ansi_mode_italic_reset$           | Set italic mode
+| ansi_mode_italic_reset$           | Reset italic mode
 | ansi_mode_underline$              | Set underline mode
-| ansi_mode_underline_reset$        | Set underline mode
+| ansi_mode_underline_reset$        | Reset underline mode
 | ansi_mode_blinking$               | Set blinking mode
-| ansi_mode_blinking_reset$         | Set blinking mode
+| ansi_mode_blinking_reset$         | Reset blinking mode
 | ansi_mode_inverse$                | Set inverse mode
-| ansi_mode_inverse_reset$          | Set inverse mode
+| ansi_mode_inverse_reset$          | Reset inverse mode
 | ansi_mode_invisible$              | Set invisible mode
-| ansi_mode_invisible_reset$        | Set invisible mode
+| ansi_mode_invisible_reset$        | Reset invisible mode
 | ansi_mode_strikethrough$          | Set strikethrough mode
-| ansi_mode_strikethrough_reset$    | Set strikethrough mode
+| ansi_mode_strikethrough_reset$    | Reset strikethrough mode
 
 ### STANDARD COLORS
 | FUNCTION | NOTES |
