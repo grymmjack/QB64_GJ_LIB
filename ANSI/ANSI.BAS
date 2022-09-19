@@ -114,9 +114,9 @@ SUB test_ansi_locate()
     w$ = _TRIM$(STR$(w-1))
     h$ = _TRIM$(STR$(h))
     nil$ = ansi_locate(ch,     cw)   : PRINT "A = 1,1"
-    nil$ = ansi_locate(ch + 1, cw)   : PRINT "B = 1," + w$
-    nil$ = ansi_locate(ch + 2, cw)   : PRINT "C = " + h$ + ",1"
-    nil$ = ansi_locate(ch + 3, cw)   : PRINT "D = " + w$ + "," + h$
+    nil$ = nli$ + ansi_locate(ch + 1, cw)   : PRINT "B = 1," + w$
+    nil$ = nli$ + ansi_locate(ch + 2, cw)   : PRINT "C = " + h$ + ",1"
+    nil$ = nli$ + ansi_locate(ch + 3, cw)   : PRINT "D = " + w$ + "," + h$
     nil$ = nil$ + ansi_locate(1,1)   : PRINT "A"
     nil$ = nil$ + ansi_locate(1,w-1) : PRINT "B"
     nil$ = nil$ + ansi_locate(h,1)   : PRINT "C"
