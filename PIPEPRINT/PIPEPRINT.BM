@@ -45,6 +45,10 @@ FUNCTION PIPEPRINT$ (s$, label$)
                     args$ = MID$(s$, PIPES_POSITIONS(i)+3, 2)
                     PRINT "PIPE[" + i$ + "]=" + code$ + args$ + " @: " + pos$
                 CASE ELSE:
+                    SELECT CASE code$
+                        CASE "|[0":
+                            $nil = ansi_hide_cursor
+                    END SELECT
                     PRINT "PIPE[" + i$ + "]=" + code$ + " @: " + pos$
             END SELECT
         NEXT i

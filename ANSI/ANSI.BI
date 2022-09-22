@@ -38,7 +38,8 @@ old_fg_color&   = fg_color&
 old_bg_color&   = bg_color&
 
 
-
+DECLARE FUNCTION ansi_hide_cursor$ ()
+DECLARE FUNCTION ansi_show_cursor$ ()
 DECLARE FUNCTION ansi_home$ ()
 DECLARE FUNCTION ansi_locate$ (row%, col%)
 DECLARE FUNCTION ansi_move_up$ (n%)

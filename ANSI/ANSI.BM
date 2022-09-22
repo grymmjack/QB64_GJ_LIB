@@ -14,8 +14,10 @@
 ' in the same way as on Windows. This bug is described here:
 ' https://github.com/QB64Official/qb64/issues/33
 ' 
-' CURSOR MOVEMENT:
+' CURSOR VISIBILITY AND MOVEMENT:
 ' FUNCTION               NOTES
+' ansi_hide_cursor$      Hides cursor
+' ansi_show_cursor$      Shows cursor
 ' ansi_home$             Moves cursor to home position (0,0)
 ' ansi_locate$           Moves cursor to desired row and column
 ' ansi_move_up$          Moves cursor up n lines
@@ -107,6 +109,32 @@
 ' @see https://gist.github.com/grymmjack/9dae29a60ea65f086d0b35df96fe2291
 '
 $LET GJ_LIB_ANSI_INC_BM = 1
+
+
+''
+' Hides cursor
+'
+' @return string with ANSI escape codes to hide cursor
+FUNCTION ansi_hide_cursor$ ()
+    out$ = chr$(ANSI_ESC) + "[?25l"
+    IF GJ_LIB_ANSI_EMU THEN
+        LOCATE ,,0
+    END IF
+    ansi_hide_cursor$ = out$
+END FUNCTION
+
+
+''
+' Shows cursor
+'
+' @return string with ANSI escape codes to show cursor
+FUNCTION ansi_show_cursor$ ()
+    out$ = chr$(ANSI_ESC) + "[?25h"
+    IF GJ_LIB_ANSI_EMU THEN
+        LOCATE ,,1
+    END IF
+    ansi_show_cursor$ = out$
+END FUNCTION
 
 
 ''

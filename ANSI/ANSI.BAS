@@ -42,6 +42,8 @@ PRINT "In the following tests, _ = cursor position end."
 PRINT "Press a key to start tests"
 anykey
 
+test_ansi_hide_cursor
+test_ansi_show_cursor
 test_ansi_home
 test_ansi_locate
 test_ansi_move_up
@@ -93,6 +95,30 @@ CLS
 
 SUB anykey()
     SLEEP
+END SUB
+
+
+SUB test_ansi_hide_cursor ()
+    CLS
+    PRINT "Press a key to test ansi_hide_cursor()..."
+    anykey
+    nil$ = ansi_hide_cursor + "CURSOR IS HIDDEN?"
+    nil$ = nil$ + "_"
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
+    nil$ = ansi_mode_reset_all
+    anykey : test_complete
+END SUB
+
+
+SUB test_ansi_show_cursor ()
+    CLS
+    PRINT "Press a key to test ansi_show_cursor()..."
+    anykey
+    nil$ = ansi_show_cursor + "CURSOR IS VISIBLE?"
+    nil$ = nil$ + "_"
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
+    nil$ = ansi_mode_reset_all
+    anykey : test_complete
 END SUB
 
 
