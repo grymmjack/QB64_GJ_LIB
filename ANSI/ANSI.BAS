@@ -20,6 +20,9 @@ _TITLE "QB64_GJ_LIB ANSI LIB TESTS"
 ' Emulate ANSI support with native QB64 functionality
 GJ_LIB_ANSI_EMU = FALSE
 
+' Output ANSI codes
+GJ_LIB_ANSI_OUTPUT = TRUE
+
 
 ' Setup the console
 ' @bug MacOS/Linux only see: https://github.com/QB64Official/qb64/issues/33
@@ -102,7 +105,7 @@ SUB test_bg_rgb_colors ()
         nil$ = nil$ + ansi_bg_rgb(i, i, i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -117,7 +120,7 @@ SUB test_fg_rgb_colors ()
         nil$ = nil$ + ansi_fg_rgb(i, i, i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -132,7 +135,7 @@ SUB test_bg_256_colors ()
         nil$ = nil$ + ansi_bg_256(i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -147,7 +150,7 @@ SUB test_fg_256_colors ()
         nil$ = nil$ + ansi_fg_256(i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -174,7 +177,7 @@ SUB test_bg_colors_standard ()
     nil$ = nil$ + ansi_bg_bright_yellow + " BRIGHT YELLOW "
     nil$ = nil$ + ansi_bg_bright_white + " BRIGHT WHITE "
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -201,7 +204,7 @@ SUB test_fg_colors_standard ()
     nil$ = nil$ + ansi_fg_bright_yellow + " BRIGHT YELLOW "
     nil$ = nil$ + ansi_fg_bright_white + " BRIGHT WHITE "
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = ansi_mode_reset_all
     anykey : test_complete
 END SUB
@@ -211,7 +214,7 @@ SUB test_complete ()
     CLS
     PRINT "Test complete, press a key."
     nil$ = ansi_mode_reset_all
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
 END SUB
 
@@ -221,11 +224,11 @@ SUB test_ansi_bg_reset ()
     PRINT "Press a key to test ansi_bg_reset()..."
     anykey    
     nil$ = ansi_bg_bright_yellow + "This is bright yellow"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_bg_reset + "bg is reset"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -235,11 +238,11 @@ SUB test_ansi_fg_reset ()
     PRINT "Press a key to test ansi_fg_reset()..."
     anykey    
     nil$ = ansi_fg_bright_yellow + "This is bright yellow"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_fg_reset + "fg is reset"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -250,11 +253,11 @@ SUB test_ansi_mode_strikethrough_reset ()
     PRINT "Press a key to test ansi_mode_strikethrough()..."
     anykey    
     nil$ = ansi_mode_strikethrough + "This is strikethrough"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_strikethrough_reset + " - and this is NOT strikethrough"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -264,11 +267,11 @@ SUB test_ansi_mode_strikethrough ()
     PRINT "Press a key to test ansi_mode_strikethrough()..."
     anykey    
     nil$ = "This is not strikethrough"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_strikethrough + " - and this is strikethrough"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -278,11 +281,11 @@ SUB test_ansi_mode_invisible_reset ()
     PRINT "Press a key to test ansi_mode_invisible()..."
     anykey    
     nil$ = ansi_mode_invisible + "This is invisible"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_invisible_reset + " - and this is NOT invisible"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -292,11 +295,11 @@ SUB test_ansi_mode_invisible ()
     PRINT "Press a key to test ansi_mode_invisible()..."
     anykey    
     nil$ = "This is not invisible"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_invisible + " - and this is invisible"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -306,11 +309,11 @@ SUB test_ansi_mode_inverse_reset ()
     PRINT "Press a key to test ansi_mode_inverse()..."
     anykey    
     nil$ = ansi_mode_inverse + "This is inverse"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_inverse_reset + " - and this is NOT inverse"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -320,11 +323,11 @@ SUB test_ansi_mode_inverse ()
     PRINT "Press a key to test ansi_mode_inverse()..."
     anykey    
     nil$ = "This is not inverse"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_inverse + " - and this is inverse"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -334,11 +337,11 @@ SUB test_ansi_mode_blinking_reset ()
     PRINT "Press a key to test ansi_mode_blinking()..."
     anykey    
     nil$ = ansi_mode_blinking + "This is blinking"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_blinking_reset + " - and this is NOT blinking"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -348,11 +351,11 @@ SUB test_ansi_mode_blinking ()
     PRINT "Press a key to test ansi_mode_blinking()..."
     anykey    
     nil$ = "This is not blinking"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_blinking + " - and this is blinking"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -362,11 +365,11 @@ SUB test_ansi_mode_underline_reset ()
     PRINT "Press a key to test ansi_mode_underline()..."
     anykey    
     nil$ = ansi_mode_underline + "This is underline"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_underline_reset + " - and this is NOT underline"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -376,11 +379,11 @@ SUB test_ansi_mode_underline ()
     PRINT "Press a key to test ansi_mode_underline()..."
     anykey    
     nil$ = "This is not underline"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_underline + " - and this is underline"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -390,11 +393,11 @@ SUB test_ansi_mode_italic_reset ()
     PRINT "Press a key to test ansi_mode_italic()..."
     anykey    
     nil$ = ansi_mode_italic + "This is italic"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_italic_reset + " - and this is NOT italic"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -404,11 +407,11 @@ SUB test_ansi_mode_italic ()
     PRINT "Press a key to test ansi_mode_italic()..."
     anykey    
     nil$ = "This is not italic"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_italic + " - and this is italic"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -418,11 +421,11 @@ SUB test_ansi_mode_dim_reset ()
     PRINT "Press a key to test ansi_mode_dim()..."
     anykey    
     nil$ = ansi_mode_dim + "This is dim"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_dim_reset + " - and this is NOT dim"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -432,11 +435,11 @@ SUB test_ansi_mode_dim ()
     PRINT "Press a key to test ansi_mode_dim()..."
     anykey    
     nil$ = "This is not dim"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_dim + " - and this is dim"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -446,11 +449,11 @@ SUB test_ansi_mode_bold_reset ()
     PRINT "Press a key to test ansi_mode_bold()..."
     anykey    
     nil$ = ansi_mode_bold + "This is bold"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ =  ansi_mode_bold_reset + " - and this is NOT bold"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -460,11 +463,11 @@ SUB test_ansi_mode_bold ()
     PRINT "Press a key to test ansi_mode_bold()..."
     anykey    
     nil$ = "This is not bold"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = ansi_mode_bold + " - and this is bold"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -477,7 +480,7 @@ SUB test_ansi_mode_reset_all ()
     nil$ = "MODE IS NOT RESET" + "---stuff---" + ansi_mode_reset_all
     nil$ = nil$ + "MODE IS RESET"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -492,7 +495,7 @@ SUB test_ansi_erase_line ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_erase_line
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -507,7 +510,7 @@ SUB test_ansi_erase_from_sol ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_erase_from_sol
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -522,7 +525,7 @@ SUB test_ansi_erase_to_eol ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_erase_to_eol
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -535,7 +538,7 @@ SUB test_ansi_erase_screen ()
     anykey
     nil$ = ansi_erase_screen
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -550,7 +553,7 @@ SUB test_ansi_erase_to_bos ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_erase_to_bos
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -565,7 +568,7 @@ SUB test_ansi_erase_to_eos ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_erase_to_eos
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -578,7 +581,7 @@ SUB test_ansi_save_restore_pos ()
     nil$ = nil$ + "Line is here in the middle."
     nil$ = nil$ + ansi_save_pos
     nil$ = nil$ + "X <- original X"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
     nil$ = STRING$(50, " ")
     nil$ = nil$ + "If Y overwrites original X, it works."
@@ -586,7 +589,7 @@ SUB test_ansi_save_restore_pos ()
     nil$ = ansi_restore_pos
     nil$ = nil$ + "Y"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -596,12 +599,12 @@ SUB test_ansi_move_line_up ()
     PRINT "Press a key to test ansi cursor move up with ansi_move_line_up()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_line_up + "Line is one line up."
     nil$ = nil$ + ansi_move_line_up + "Line is two lines up."
     nil$ = nil$ + "_"    
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -617,7 +620,7 @@ SUB test_ansi_move_column ()
         nil$ = nil$ + ansi_move_column(i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -627,12 +630,12 @@ SUB test_ansi_move_lines_up ()
     PRINT "Press a key to test ansi cursor move up with ansi_move_lines_up()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_lines_up(1) + "Line is one line up."
     nil$ = nil$ + ansi_move_lines_up(5) + "Line is six lines up."
     nil$ = nil$ + "_"    
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -642,12 +645,12 @@ SUB test_ansi_move_lines_down ()
     PRINT "Press a key to test ansi cursor move down with ansi_move_lines_down()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_lines_down(1) + "Line is one line down."
     nil$ = nil$ + ansi_move_lines_down(5) + "Line is six lines down."
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -657,12 +660,12 @@ SUB test_ansi_move_left ()
     PRINT "Press a key to test ansi cursor move left with ansi_move_left()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_left(1) + "Moved left by one char."
     nil$ = nil$ + ansi_move_left(5) + "Moved left by 5 chars."
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -672,12 +675,12 @@ SUB test_ansi_move_right ()
     PRINT "Press a key to test ansi cursor move right with ansi_move_right()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_right(1) + "Moved right by one char."
     nil$ = nil$ + ansi_move_right(5) + "Moved right by 5 chars."
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -687,12 +690,12 @@ SUB test_ansi_move_down ()
     PRINT "Press a key to test ansi cursor move down with ansi_move_down()..."
     anykey
     nil$ = ansi_locate(ch, cw) + "Line is here in the middle."
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     nil$ = nil$ + ansi_locate(ch, cw)
     nil$ = nil$ + ansi_move_down(1) + "Line is one line down."
     nil$ = nil$ + ansi_move_down(5) + "Line is six lines down."
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -706,7 +709,7 @@ SUB test_ansi_move_up ()
     nil$ = nil$ + ansi_move_up(1) + "Line is one line up."
     nil$ = nil$ + ansi_move_up(5) + "Line is six lines up."
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -726,7 +729,7 @@ SUB test_ansi_locate ()
     nil$ = nil$ + ansi_locate(h,1)          + "C"
     nil$ = nil$ + ansi_locate(h,w-1)        + "D"
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 
@@ -737,7 +740,7 @@ SUB test_ansi_home ()
     anykey
     nil$ = ansi_home
     nil$ = nil$ + "_"
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
 END SUB
 

@@ -43,7 +43,7 @@ FUNCTION PIPEPRINT$ (s$, label$)
             char$ = MID$(s$, PIPES_POSITIONS(i), 1)
             i$    = _TRIM$(STR$(i))
             pos$  = _TRIM$(STR$(PIPES_POSITIONS(i)))
-            PRINT "PIPE["; i$; "] = "; char$; " @ POS: "; pos$
+            PRINT "PIPE[" + i$ + "]=" + char$ + " @: " + pos$
         NEXT i
     END IF
     PIPEPRINT$ = ""

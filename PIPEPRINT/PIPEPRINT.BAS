@@ -1,9 +1,38 @@
+'' 
+' QB64_GJ_LIB 
+' GRYMMJACK'S PIPEPRINT LIB
+' 
+' Pipe (|) Print emulates Mystic BBS pipe parsing
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses PIPEPRINT.BI
+' @uses PIPEPRINT.BM
+'
+$LET GJ_LIB_UNIFIED_TESTING = 1
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
+$END IF
+$IF GJ_LIB_PIPEPRINT_INC_BI = UNDEFINED THEN
+'$INCLUDE:'PIPEPRINT.BI'
+$END IF
 
-' Enable QB64 internals for ANSI emulation tests
-GJ_LIB_ANSI_EMU = TRUE
 
-SCREEN _NEWIMAGE(1024, 768, 256)
+
+_TITLE "QB64_GJ_LIB PIPEPRINT LIB TESTS"
+
+' Emulate ANSI support with native QB64 functionality
+GJ_LIB_ANSI_EMU = FALSE
+
+' Output ANSI codes
+GJ_LIB_ANSI_OUTPUT = TRUE
+
+' Setup the console
+' @bug MacOS/Linux only see: https://github.com/QB64Official/qb64/issues/33
+$IF WINDOWS THEN 
+    $CONSOLE:ONLY
+$ENDIF
+_CONTROLCHR OFF
+LOCATE 1,1,1 ' Initialize the cursor and turn it on
 
 DIM SHARED PIPE_TESTS_DICT(14) AS DICT
 PIPE_TESTS_DICT(0).key  = "PIPETEST_COLORS_STANDARD_FG"
@@ -61,6 +90,8 @@ END SUB
 
 SUB test_start (s$)
     CLS
+    nil$ = ansi_mode_reset_all
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     PRINT "Press any key to test "; s$
     anykey
 END SUB
@@ -69,8 +100,13 @@ END SUB
 SUB test_complete ()
     PRINT "Test complete, press a key."
     nil$ = ansi_mode_reset_all
-    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
+    IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     anykey
 END SUB
 
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BM'
+$END IF
+$IF GJ_LIB_PIPEPRINT_INC_BM = UNDEFINED THEN
+'$INCLUDE:'PIPEPRINT.BM'
+$END IF
