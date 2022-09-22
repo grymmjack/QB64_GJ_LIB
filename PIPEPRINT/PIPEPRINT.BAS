@@ -8,7 +8,7 @@
 ' @uses PIPEPRINT.BI
 ' @uses PIPEPRINT.BM
 '
-$LET GJ_LIB_UNIFIED_TESTING = 1
+' $LET GJ_LIB_UNIFIED_TESTING = 1
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
 $END IF
@@ -66,9 +66,6 @@ PIPE_TESTS_DICT(13).val = "|CL|23|00|@D10 |[B01|[D10 |[C09 |[B01|[D10|@D10 |15|0
 PIPE_TESTS_DICT(14).key = "PIPETEST_PIPE_STRING1"
 PIPE_TESTS_DICT(14).val = "|CL|08-|07-|15-|11[|14 YELLOW THING |11]|15-|07-|08"
 
-' PRINT dump_dict(PIPE_TESTS_DICT(), "PIPE_TESTS_DICT")
-' END
-
 ' Walk dict for tests
 l = LBOUND(PIPE_TESTS_DICT) : u = UBOUND(PIPE_TESTS_DICT)
 FOR i = l TO u
@@ -78,8 +75,7 @@ FOR i = l TO u
     test_complete
 NEXT i
 
-PRINT "All tests complete, press a key." : anykey
-CLS
+PRINT : PRINT "All tests complete!"
 
 
 

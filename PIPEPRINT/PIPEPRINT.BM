@@ -28,22 +28,25 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 '
 FUNCTION PIPEPRINT$ (s$, label$)
     l = LEN(s$)
-    ' Reset the working variables
+    ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_FOUND = 0 : REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
     ' Find the pipes
     str_find_pos s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND
+    REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
     u = UBOUND(PIPES_POSITIONS)
-    ' IF label$ = "PIPETEST_CURSORS_DELAY" THEN
-    '     PRINT dump_integer_array(PIPES_POSITIONS%(), "PIPES_POSITIONS")
-    '     sleep
-    ' END IF
     IF NUM_PIPES_FOUND THEN
         PRINT "Found "; _TRIM$(STR$(NUM_PIPES_FOUND)); " pipes!"
         FOR i = 0 TO u
-            char$ = MID$(s$, PIPES_POSITIONS(i), 1)
+            code$ = MID$(s$, PIPES_POSITIONS(i), 3)
             i$    = _TRIM$(STR$(i))
             pos$  = _TRIM$(STR$(PIPES_POSITIONS(i)))
-            PRINT "PIPE[" + i$ + "]=" + char$ + " @: " + pos$
+            SELECT CASE code$
+                CASE "|[X", "|[Y", "|[A", "|[B", "|[C", "|[D", "|[@", "|@D"
+                    args$ = MID$(s$, PIPES_POSITIONS(i)+3, 2)
+                    PRINT "PIPE[" + i$ + "]=" + code$ + args$ + " @: " + pos$
+                CASE ELSE:
+                    PRINT "PIPE[" + i$ + "]=" + code$ + " @: " + pos$
+            END SELECT
         NEXT i
     END IF
     PIPEPRINT$ = ""
