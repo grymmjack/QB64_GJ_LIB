@@ -1,0 +1,38 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S PIPEPRINT LIB
+'
+' Pipe (|) Print emulates Mystic BBS pipe parsing
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/PIPEPRINT/PIPEPRINT.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/PIPEPRINT/PIPEPRINT.BM' at the bottom of file
+' 
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses PIPEPRINT.BI
+' @uses STRINGS/STRINGS.BM
+' @uses ANSI/ANSI.BM
+'
+$LET GJ_LIB_PIPEPRINT_INC_BM = 1
+
+
+
+''
+' PIPEPRINT returns ANSI codes (and can emulate ANSI through QB internals)
+'
+' @param s$ STRING to parse
+' @return STRING parsed with pipe codes replaced by ANSI codes
+'
+FUNCTION PIPEPRINT$ (s$)
+    PIPEPRINT$ = ""
+END FUNCTION
+
+
+
+$IF GJ_LIB_STRINGS_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../STRINGS/STRINGS.BM'
+$END IF
+
+$IF GJ_LIB_ANSI_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../ANSI/ANSI.BM'
+$END IF

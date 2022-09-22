@@ -18,7 +18,7 @@ $END IF
 _TITLE "QB64_GJ_LIB ANSI LIB TESTS"
 
 ' Emulate ANSI support with native QB64 functionality
-GJ_LIB_ANSI_EMU = TRUE
+GJ_LIB_ANSI_EMU = FALSE
 
 
 ' Setup the console
@@ -210,7 +210,8 @@ END SUB
 SUB test_complete()
     CLS
     PRINT "Test complete, press a key."
-    PRINT ansi_mode_reset_all
+    nil$ = ansi_mode_reset_all
+    IF TEST_ANSI_OUTPUT THEN PRINT nil$;
     anykey
 END SUB
 
@@ -579,10 +580,9 @@ SUB test_ansi_save_restore_pos
     nil$ = nil$ + "X <- original X"
     IF TEST_ANSI_OUTPUT THEN PRINT nil$;
     anykey
-    PRINT
-    PRINT : PRINT SPC(50)
-    PRINT "If Y overwrites original X, it works."
-    PRINT TAB(50); "more stuff"
+    nil$ = STRING$(50, " ")
+    nil$ = nil$ + "If Y overwrites original X, it works."
+    nil$ = STRING$(50, " ") + "more stuff"
     nil$ = ansi_restore_pos
     nil$ = nil$ + "Y"
     nil$ = nil$ + "_"
@@ -613,10 +613,8 @@ SUB test_ansi_move_column()
     w$ = _TRIM$(STR$(w-1))
     h$ = _TRIM$(STR$(h))
     nil$ = ""
-    PRINT
     FOR i = 5 TO (w - 5) STEP 5
-        nil$ = nil$ + ansi_move_column(i)
-        PRINT i;
+        nil$ = nil$ + ansi_move_column(i) + STR$(i)
     NEXT i
     nil$ = nil$ + "_"
     IF TEST_ANSI_OUTPUT THEN PRINT nil$;
@@ -719,14 +717,14 @@ SUB test_ansi_locate()
     CLS
     w$ = _TRIM$(STR$(w-1))
     h$ = _TRIM$(STR$(h))
-    nil$ = ansi_locate(ch, cw)              : PRINT "A = 1,1"
-    nil$ = nli$ + ansi_locate(ch + 1, cw)   : PRINT "B = 1," + w$
-    nil$ = nli$ + ansi_locate(ch + 2, cw)   : PRINT "C = " + h$ + ",1"
-    nil$ = nli$ + ansi_locate(ch + 3, cw)   : PRINT "D = " + w$ + "," + h$
-    nil$ = nil$ + ansi_locate(1,1)          : PRINT "A"
-    nil$ = nil$ + ansi_locate(1,w-1)        : PRINT "B"
-    nil$ = nil$ + ansi_locate(h,1)          : PRINT "C"
-    nil$ = nil$ + ansi_locate(h,w-1)        : PRINT "D";
+    nil$ = ansi_locate(ch, cw)              + "A = 1,1"
+    nil$ = nli$ + ansi_locate(ch + 1, cw)   + "B = 1," + w$
+    nil$ = nli$ + ansi_locate(ch + 2, cw)   + "C = " + h$ + ",1"
+    nil$ = nli$ + ansi_locate(ch + 3, cw)   + "D = " + w$ + "," + h$
+    nil$ = nil$ + ansi_locate(1,1)          + "A"
+    nil$ = nil$ + ansi_locate(1,w-1)        + "B"
+    nil$ = nil$ + ansi_locate(h,1)          + "C"
+    nil$ = nil$ + ansi_locate(h,w-1)        + "D"
     nil$ = nil$ + "_"
     IF TEST_ANSI_OUTPUT THEN PRINT nil$;
     anykey : test_complete
@@ -735,7 +733,7 @@ END SUB
 
 SUB test_ansi_home()
     fill_screen_with_text "*"
-    PRINT "Press any key to clear the screen with ansi_home()...";
+    PRINT "Press any key to home the cursor with ansi_home()...";
     anykey
     nil$ = ansi_home
     nil$ = nil$ + "_"

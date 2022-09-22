@@ -17,6 +17,7 @@ in it's current state.
 | [DICT](DICT/) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/) | Debugging library | Like PHPs `print_r` (kind of) |
 | [STRINGS](STRINGS/) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
+| [PIPEPRINT](PIPEPRINT/) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
 
 
 

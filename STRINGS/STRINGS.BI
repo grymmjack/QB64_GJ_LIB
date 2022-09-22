@@ -1,4 +1,5 @@
 ''
+' QB64_GJ_LIB
 ' GRYMMJACK'S STRINGS LIB
 '
 ' Some commonly used functions that I missed in QB64 coming from PHP
