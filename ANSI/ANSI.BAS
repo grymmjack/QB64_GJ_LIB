@@ -18,7 +18,7 @@ $END IF
 _TITLE "QB64_GJ_LIB ANSI LIB TESTS"
 
 ' Emulate ANSI support with native QB64 functionality
-GJ_LIB_ANSI_EMU = FALSE
+GJ_LIB_ANSI_EMU = TRUE
 
 ' Output ANSI codes
 GJ_LIB_ANSI_OUTPUT = TRUE
@@ -42,6 +42,7 @@ PRINT "In the following tests, _ = cursor position end."
 PRINT "Press a key to start tests"
 anykey
 
+test_ansi_delay
 test_ansi_hide_cursor
 test_ansi_show_cursor
 test_ansi_home
@@ -95,6 +96,21 @@ CLS
 
 SUB anykey()
     SLEEP
+END SUB
+
+
+SUB test_ansi_delay ()
+    CLS
+    PRINT "Press a key to test ansi_delay()..."
+    anykey
+    nil$ = ""
+    FOR i = 10 to 1 STEP -1
+        i$ = _TRIM$(STR$(i))
+        nil$ = nil$ + i$ + ansi_delay(10)
+        IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
+    NEXT i
+    nil$ = ansi_mode_reset_all
+    anykey : test_complete
 END SUB
 
 

@@ -16,6 +16,7 @@
 ' 
 ' CURSOR VISIBILITY AND MOVEMENT:
 ' FUNCTION               NOTES
+' ansi_delay$            Creates a delay of n seconds
 ' ansi_hide_cursor$      Hides cursor
 ' ansi_show_cursor$      Shows cursor
 ' ansi_home$             Moves cursor to home position (0,0)
@@ -109,6 +110,23 @@
 ' @see https://gist.github.com/grymmjack/9dae29a60ea65f086d0b35df96fe2291
 '
 $LET GJ_LIB_ANSI_INC_BM = 1
+
+
+
+''
+' Create delay
+'
+' @return string with ANSI escape codes to create a delay
+FUNCTION ansi_delay$ (n%)
+    out$ = ""
+    FOR i = n% TO n% * 1000
+        out$ = out$ + ansi_save_pos + ansi_restore_pos
+    NEXT i
+    IF GJ_LIB_ANSI_EMU THEN
+        _DELAY n% \ 60
+    END IF
+    ansi_delay$ = out$
+END FUNCTION
 
 
 ''

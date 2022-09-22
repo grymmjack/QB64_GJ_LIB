@@ -37,6 +37,7 @@ bg_color&       = 0
 old_fg_color&   = fg_color&
 old_bg_color&   = bg_color&
 
+DECLARE FUNCTION ansi_delay$ (n%)
 
 DECLARE FUNCTION ansi_hide_cursor$ ()
 DECLARE FUNCTION ansi_show_cursor$ ()

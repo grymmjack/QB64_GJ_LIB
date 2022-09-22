@@ -35,6 +35,7 @@ FUNCTION PIPEPRINT$ (s$, label$)
     REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
     u = UBOUND(PIPES_POSITIONS)
     IF NUM_PIPES_FOUND THEN
+        nil$ = ""
         PRINT "Found "; _TRIM$(STR$(NUM_PIPES_FOUND)); " pipes!"
         FOR i = 0 TO u
             code$ = MID$(s$, PIPES_POSITIONS(i), 3)
@@ -47,7 +48,23 @@ FUNCTION PIPEPRINT$ (s$, label$)
                 CASE ELSE:
                     SELECT CASE code$
                         CASE "|[0":
-                            $nil = ansi_hide_cursor
+                            $nil = nil$ + ansi_hide_cursor
+                        CASE "|[1":
+                            $nil = nil$ + ansi_show_cursor
+                        CASE "|[K":
+                            $nil = nil$ + ansi_clear_to_eol
+                        CASE "|CL":
+                            $nil = nil$ + ansi_clear_screen
+                        CASE "|CN":
+                            $nil = nil$ + ansi_mode_blinking_reset
+                        CASE "|CY":
+                            $nil = nil$ + ansi_mode_blinking
+                        CASE "|CR":
+                            $nil = nil$ + CHR$(13)
+                        CASE "|PI":
+                            $nil = nil$ + "|"
+                        CASE "|PA":
+                            $nil = nil$ + ansi_delay_half_sec
                     END SELECT
                     PRINT "PIPE[" + i$ + "]=" + code$ + " @: " + pos$
             END SELECT
