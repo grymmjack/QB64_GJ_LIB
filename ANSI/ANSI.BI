@@ -26,6 +26,16 @@ GJ_LIB_ANSI_EMU = FALSE
 DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
 
+DIM SHARED fg_color&        ' Foreground color
+DIM SHARED bg_color&        ' Background color
+DIM SHARED old_fg_color&    ' Old Foreground color
+DIM SHARED old_bg_color&    ' Old Background color
+
+fg_color&       = 7
+bg_color&       = 0
+old_fg_color&   = fg_color&
+old_bg_color&   = bg_color&
+
 
 
 DECLARE FUNCTION ansi_home$ ()
