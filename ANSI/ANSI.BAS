@@ -93,7 +93,7 @@ SUB anykey()
 END SUB
 
 
-SUB test_bg_rgb_colors()
+SUB test_bg_rgb_colors ()
     CLS
     PRINT "Press a key to test ansi_bg_rgb()..."
     anykey
@@ -108,7 +108,7 @@ SUB test_bg_rgb_colors()
 END SUB
 
 
-SUB test_fg_rgb_colors()
+SUB test_fg_rgb_colors ()
     CLS
     PRINT "Press a key to test ansi_fg_rgb()..."
     anykey
@@ -123,7 +123,7 @@ SUB test_fg_rgb_colors()
 END SUB
 
 
-SUB test_bg_256_colors()
+SUB test_bg_256_colors ()
     CLS
     PRINT "Press a key to test ansi_bg_256()..."
     anykey
@@ -138,7 +138,7 @@ SUB test_bg_256_colors()
 END SUB
 
 
-SUB test_fg_256_colors()
+SUB test_fg_256_colors ()
     CLS
     PRINT "Press a key to test ansi_fg_256()..."
     anykey
@@ -153,7 +153,7 @@ SUB test_fg_256_colors()
 END SUB
 
 
-SUB test_bg_colors_standard()
+SUB test_bg_colors_standard ()
     CLS
     PRINT "Press a key to test ansi_bg_*()..."
     anykey
@@ -180,7 +180,7 @@ SUB test_bg_colors_standard()
 END SUB
 
 
-SUB test_fg_colors_standard()
+SUB test_fg_colors_standard ()
     CLS
     PRINT "Press a key to test ansi_fg_*()..."
     anykey
@@ -207,7 +207,7 @@ SUB test_fg_colors_standard()
 END SUB
 
 
-SUB test_complete()
+SUB test_complete ()
     CLS
     PRINT "Test complete, press a key."
     nil$ = ansi_mode_reset_all
@@ -216,7 +216,7 @@ SUB test_complete()
 END SUB
 
 
-SUB test_ansi_bg_reset()
+SUB test_ansi_bg_reset ()
     CLS
     PRINT "Press a key to test ansi_bg_reset()..."
     anykey    
@@ -230,7 +230,7 @@ SUB test_ansi_bg_reset()
 END SUB
 
 
-SUB test_ansi_fg_reset()
+SUB test_ansi_fg_reset ()
     CLS
     PRINT "Press a key to test ansi_fg_reset()..."
     anykey    
@@ -245,7 +245,7 @@ END SUB
 
 
 
-SUB test_ansi_mode_strikethrough_reset()
+SUB test_ansi_mode_strikethrough_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_strikethrough()..."
     anykey    
@@ -259,7 +259,7 @@ SUB test_ansi_mode_strikethrough_reset()
 END SUB
 
 
-SUB test_ansi_mode_strikethrough()
+SUB test_ansi_mode_strikethrough ()
     CLS
     PRINT "Press a key to test ansi_mode_strikethrough()..."
     anykey    
@@ -273,7 +273,7 @@ SUB test_ansi_mode_strikethrough()
 END SUB
 
 
-SUB test_ansi_mode_invisible_reset()
+SUB test_ansi_mode_invisible_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_invisible()..."
     anykey    
@@ -287,7 +287,7 @@ SUB test_ansi_mode_invisible_reset()
 END SUB
 
 
-SUB test_ansi_mode_invisible()
+SUB test_ansi_mode_invisible ()
     CLS
     PRINT "Press a key to test ansi_mode_invisible()..."
     anykey    
@@ -301,7 +301,7 @@ SUB test_ansi_mode_invisible()
 END SUB
 
 
-SUB test_ansi_mode_inverse_reset()
+SUB test_ansi_mode_inverse_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_inverse()..."
     anykey    
@@ -315,7 +315,7 @@ SUB test_ansi_mode_inverse_reset()
 END SUB
 
 
-SUB test_ansi_mode_inverse()
+SUB test_ansi_mode_inverse ()
     CLS
     PRINT "Press a key to test ansi_mode_inverse()..."
     anykey    
@@ -329,7 +329,7 @@ SUB test_ansi_mode_inverse()
 END SUB
 
 
-SUB test_ansi_mode_blinking_reset()
+SUB test_ansi_mode_blinking_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_blinking()..."
     anykey    
@@ -343,7 +343,7 @@ SUB test_ansi_mode_blinking_reset()
 END SUB
 
 
-SUB test_ansi_mode_blinking()
+SUB test_ansi_mode_blinking ()
     CLS
     PRINT "Press a key to test ansi_mode_blinking()..."
     anykey    
@@ -357,7 +357,7 @@ SUB test_ansi_mode_blinking()
 END SUB
 
 
-SUB test_ansi_mode_underline_reset()
+SUB test_ansi_mode_underline_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_underline()..."
     anykey    
@@ -371,7 +371,7 @@ SUB test_ansi_mode_underline_reset()
 END SUB
 
 
-SUB test_ansi_mode_underline()
+SUB test_ansi_mode_underline ()
     CLS
     PRINT "Press a key to test ansi_mode_underline()..."
     anykey    
@@ -385,7 +385,7 @@ SUB test_ansi_mode_underline()
 END SUB
 
 
-SUB test_ansi_mode_italic_reset()
+SUB test_ansi_mode_italic_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_italic()..."
     anykey    
@@ -399,7 +399,7 @@ SUB test_ansi_mode_italic_reset()
 END SUB
 
 
-SUB test_ansi_mode_italic()
+SUB test_ansi_mode_italic ()
     CLS
     PRINT "Press a key to test ansi_mode_italic()..."
     anykey    
@@ -413,7 +413,7 @@ SUB test_ansi_mode_italic()
 END SUB
 
 
-SUB test_ansi_mode_dim_reset()
+SUB test_ansi_mode_dim_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_dim()..."
     anykey    
@@ -427,7 +427,7 @@ SUB test_ansi_mode_dim_reset()
 END SUB
 
 
-SUB test_ansi_mode_dim()
+SUB test_ansi_mode_dim ()
     CLS
     PRINT "Press a key to test ansi_mode_dim()..."
     anykey    
@@ -441,7 +441,7 @@ SUB test_ansi_mode_dim()
 END SUB
 
 
-SUB test_ansi_mode_bold_reset()
+SUB test_ansi_mode_bold_reset ()
     CLS
     PRINT "Press a key to test ansi_mode_bold()..."
     anykey    
@@ -455,7 +455,7 @@ SUB test_ansi_mode_bold_reset()
 END SUB
 
 
-SUB test_ansi_mode_bold()
+SUB test_ansi_mode_bold ()
     CLS
     PRINT "Press a key to test ansi_mode_bold()..."
     anykey    
@@ -469,7 +469,7 @@ SUB test_ansi_mode_bold()
 END SUB
 
 
-SUB test_ansi_mode_reset_all()
+SUB test_ansi_mode_reset_all ()
     CLS
     PRINT "Press a key to test ansi_mode_reset_all()..."
     anykey    
@@ -482,7 +482,7 @@ SUB test_ansi_mode_reset_all()
 END SUB
 
 
-SUB test_ansi_erase_line()
+SUB test_ansi_erase_line ()
     CLS
     PRINT "Press a key to test erase line with ansi_erase_line()..."
     anykey    
@@ -497,7 +497,7 @@ SUB test_ansi_erase_line()
 END SUB
 
 
-SUB test_ansi_erase_from_sol()
+SUB test_ansi_erase_from_sol ()
     CLS
     PRINT "Press a key to test erase from start of line with ansi_erase_from_sol()..."
     anykey    
@@ -512,7 +512,7 @@ SUB test_ansi_erase_from_sol()
 END SUB
 
 
-SUB test_ansi_erase_to_eol()
+SUB test_ansi_erase_to_eol ()
     CLS
     PRINT "Press a key to test erase to end of line with ansi_erase_to_eol()..."
     anykey    
@@ -527,7 +527,7 @@ SUB test_ansi_erase_to_eol()
 END SUB
 
 
-SUB test_ansi_erase_screen()
+SUB test_ansi_erase_screen ()
     CLS
     PRINT "Press a key to test erase screen with ansi_erase_screen()..."
     anykey    
@@ -540,7 +540,7 @@ SUB test_ansi_erase_screen()
 END SUB
 
 
-SUB test_ansi_erase_to_bos()
+SUB test_ansi_erase_to_bos ()
     CLS
     PRINT "Press a key to test erase to beginning of screen with ansi_erase_to_bos()..."
     anykey    
@@ -555,7 +555,7 @@ SUB test_ansi_erase_to_bos()
 END SUB
 
 
-SUB test_ansi_erase_to_eos()
+SUB test_ansi_erase_to_eos ()
     CLS
     PRINT "Press a key to test erase to end of screen with ansi_erase_to_eos()..."
     anykey    
@@ -570,7 +570,7 @@ SUB test_ansi_erase_to_eos()
 END SUB
 
 
-SUB test_ansi_save_restore_pos
+SUB test_ansi_save_restore_pos ()
     CLS
     PRINT "Press a key to test ansi save and restore cursor..."
     anykey
@@ -591,7 +591,7 @@ SUB test_ansi_save_restore_pos
 END SUB
 
 
-SUB test_ansi_move_line_up()
+SUB test_ansi_move_line_up ()
     CLS
     PRINT "Press a key to test ansi cursor move up with ansi_move_line_up()..."
     anykey
@@ -606,7 +606,7 @@ SUB test_ansi_move_line_up()
 END SUB
 
 
-SUB test_ansi_move_column()
+SUB test_ansi_move_column ()
     PRINT "Press a key to move across screen by 5's with ansi_move_column()..."
     anykey
     CLS
@@ -622,7 +622,7 @@ SUB test_ansi_move_column()
 END SUB
 
 
-SUB test_ansi_move_lines_up()
+SUB test_ansi_move_lines_up ()
     CLS
     PRINT "Press a key to test ansi cursor move up with ansi_move_lines_up()..."
     anykey
@@ -637,7 +637,7 @@ SUB test_ansi_move_lines_up()
 END SUB
 
 
-SUB test_ansi_move_lines_down()
+SUB test_ansi_move_lines_down ()
     CLS
     PRINT "Press a key to test ansi cursor move down with ansi_move_lines_down()..."
     anykey
@@ -652,7 +652,7 @@ SUB test_ansi_move_lines_down()
 END SUB
 
 
-SUB test_ansi_move_left()
+SUB test_ansi_move_left ()
     CLS
     PRINT "Press a key to test ansi cursor move left with ansi_move_left()..."
     anykey
@@ -667,7 +667,7 @@ SUB test_ansi_move_left()
 END SUB
 
 
-SUB test_ansi_move_right()
+SUB test_ansi_move_right ()
     CLS
     PRINT "Press a key to test ansi cursor move right with ansi_move_right()..."
     anykey
@@ -682,7 +682,7 @@ SUB test_ansi_move_right()
 END SUB
 
 
-SUB test_ansi_move_down()
+SUB test_ansi_move_down ()
     CLS
     PRINT "Press a key to test ansi cursor move down with ansi_move_down()..."
     anykey
@@ -697,7 +697,7 @@ SUB test_ansi_move_down()
 END SUB
 
 
-SUB test_ansi_move_up()
+SUB test_ansi_move_up ()
     CLS
     PRINT "Press a key to test ansi cursor move up with ansi_move_up()..."
     anykey
@@ -711,7 +711,7 @@ SUB test_ansi_move_up()
 END SUB
 
 
-SUB test_ansi_locate()
+SUB test_ansi_locate ()
     PRINT "Press a key to locate to corners of the screen with ansi_locate()...";
     anykey
     CLS
@@ -731,7 +731,7 @@ SUB test_ansi_locate()
 END SUB
 
 
-SUB test_ansi_home()
+SUB test_ansi_home ()
     fill_screen_with_text "*"
     PRINT "Press any key to home the cursor with ansi_home()...";
     anykey
@@ -742,7 +742,7 @@ SUB test_ansi_home()
 END SUB
 
 
-SUB fill_screen_with_text(char$)
+SUB fill_screen_with_text (char$)
     CLS
     LOCATE 1,1
     FOR y = 0 TO _HEIGHT(0)
