@@ -1,0 +1,33 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S SYS LIB
+'
+' Contains misc. helpful utils/tools
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/SYS/SYS.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/SYS/SYS.BM' at the bottom of file
+' 
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$LET GJ_LIB_SYS_INC_BM = 1
+
+
+
+''
+' Opens a URL in the default web browser
+'
+' ex: open_url_in_browser "https://youtube.com/grymmjack"
+'
+' @param url$ URL to open (any protocol just passes through)
+'
+SUB open_url_in_browser (url$)
+    $IF WINDOWS THEN
+        cmd$ = "start " + url$
+    $ELSEIF MAC THEN
+        cmd$ = "open " + url$
+    $ELSEIF LINUX THEN
+        cmd$ = "xdg-open " + url$
+    $END IF
+    ret% = _SHELLHIDE(cmd$)
+END SUB
