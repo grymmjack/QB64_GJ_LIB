@@ -395,9 +395,8 @@ END FUNCTION
 '
 ' @return void
 FUNCTION ansi_erase_screen$ ()
-    out$ = chr$(ANSI_ESC) + "["
-    out$ = out$ + "2"
-    out$ = out$ + "J"
+    out$ = chr$(ANSI_ESC) + "[2J"
+    out$ = out$ + ansi_locate(1,1)
     IF GJ_LIB_ANSI_EMU THEN
         CLS
     END IF
