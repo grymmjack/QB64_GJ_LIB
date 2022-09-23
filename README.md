@@ -18,6 +18,7 @@ in it's current state.
 | [DUMP](DUMP/) | Debugging library | Like PHPs `print_r` (kind of) |
 | [STRINGS](STRINGS/) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
 | [PIPEPRINT](PIPEPRINT/) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
+| [SYS](SYS/) | System stuff | Contains misc. helpful utils/tools |
 
 
 
