@@ -1,0 +1,179 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S PIPEPRINT LIB
+'
+' Pipe (|) Print emulates Mystic BBS pipe parsing
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/PIPEPRINT/PIPEPRINT.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/PIPEPRINT/PIPEPRINT.BM' at the bottom of file
+' 
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses PIPEPRINT.BI
+' @uses DICT/DICT.BM
+' @uses DUMP/DUMP.BM
+' @uses ANSI/ANSI.BM
+' @uses STRINGS/STRINGS.BM
+'
+$LET GJ_LIB_PIPEPRINT_INC_BM = 1
+
+
+
+''
+' PIPEPRINT returns ANSI codes (and can emulate ANSI through QB internals)
+'
+' @param s$ STRING to parse
+' @param label$ STRING debug label
+' @return STRING parsed with pipe codes replaced by ANSI codes
+'
+FUNCTION PIPEPRINT$ (s$, label$)
+    l = LEN(s$)
+    ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
+    NUM_PIPES_FOUND = 0 : REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
+    ' Find the pipes
+    str_find_pos s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND
+    REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
+    u = UBOUND(PIPES_POSITIONS)
+    out$ = s$
+    IF NUM_PIPES_FOUND THEN
+        nil$ = ""
+        PRINT "Found "; _TRIM$(STR$(NUM_PIPES_FOUND)); " pipes!"
+        FOR i = 0 TO u
+            code$ = MID$(s$, PIPES_POSITIONS(i), 3)
+            i$    = _TRIM$(STR$(i))
+            pos$  = _TRIM$(STR$(PIPES_POSITIONS(i)))
+            SELECT CASE code$
+                CASE "|[X", "|[Y", "|[A", "|[B", "|[C", "|[D", "|@D"
+                    args$ = MID$(s$, PIPES_POSITIONS(i)+3, 2)
+                    SELECT CASE code$
+                        CASE "|[X":
+                            nil$ = nil$ + ansi_move_column(VAL(args$))
+                        CASE "|[Y":
+                            nil$ = nil$ + ansi_locate(CSRLIN, VAL(args$))
+                        CASE "|[A":
+                            nil$ = nil$ + ansi_move_up(VAL(args$))
+                        CASE "|[B":
+                            nil$ = nil$ + ansi_move_down(VAL(args$))
+                        CASE "|[C":
+                            nil$ = nil$ + ansi_move_right(VAL(args$))
+                        CASE "|[D":
+                            nil$ = nil$ + ansi_move_left(VAL(args$))
+                        CASE "|@D":
+                            char$ = MID$(s$, PIPES_POSITIONS(i+4), 1)
+                            nil$ = nil$ + STRING$(VAL(args$), char$)
+                    END SELECT
+                    PRINT "PIPE[" + i$ + "]=" + code$ + args$ + " @: " + pos$
+                CASE ELSE:
+                    SELECT CASE code$
+                        CASE "|[0":
+                            nil$ = nil$ + ansi_hide_cursor
+                        CASE "|[1":
+                            nil$ = nil$ + ansi_show_cursor
+                        CASE "|[K":
+                            nil$ = nil$ + ansi_erase_to_eol
+                        CASE "|CL":
+                            nil$ = nil$ + ansi_erase_screen
+                        CASE "|CN":
+                            nil$ = nil$ + ansi_mode_blinking_reset
+                        CASE "|CY":
+                            nil$ = nil$ + ansi_mode_blinking
+                        CASE "|CR":
+                            nil$ = nil$ + CHR$(13)
+                        CASE "|PI":
+                            nil$ = nil$ + "|"
+                        CASE "|PA":
+                            SLEEP
+                        CASE "|DE":
+                            nil$ = nil$ + ansi_delay(5)
+                        CASE "|@R":
+                            nil$ = nil$ + "" 'right justify
+                        CASE "|@L":
+                            nil$ = nil$ + "" 'left justify
+                        CASE "|@C":
+                            nil$ = nil$ + "" 'center justify
+                        CASE "|00":
+                            nil$ = nil$ + ansi_fg_black
+                        CASE "|01":
+                            nil$ = nil$ + ansi_fg_blue
+                        CASE "|02":
+                            nil$ = nil$ + ansi_fg_green
+                        CASE "|03":
+                            nil$ = nil$ + ansi_fg_cyan
+                        CASE "|04":
+                            nil$ = nil$ + ansi_fg_red
+                        CASE "|05":
+                            nil$ = nil$ + ansi_fg_magenta
+                        CASE "|06":
+                            nil$ = nil$ + ansi_fg_yellow
+                        CASE "|07":
+                            nil$ = nil$ + ansi_fg_white
+                        CASE "|08":
+                            nil$ = nil$ + ansi_fg_bright_black
+                        CASE "|09":
+                            nil$ = nil$ + ansi_fg_bright_blue
+                        CASE "|10":
+                            nil$ = nil$ + ansi_fg_bright_green
+                        CASE "|11":
+                            nil$ = nil$ + ansi_fg_bright_cyan
+                        CASE "|12":
+                            nil$ = nil$ + ansi_fg_bright_red
+                        CASE "|13":
+                            nil$ = nil$ + ansi_fg_bright_magenta
+                        CASE "|14":
+                            nil$ = nil$ + ansi_fg_bright_yellow
+                        CASE "|15":
+                            nil$ = nil$ + ansi_fg_bright_white
+                        CASE "|16":
+                            nil$ = nil$ + ansi_bg_black
+                        CASE "|17":
+                            nil$ = nil$ + ansi_bg_blue
+                        CASE "|18":
+                            nil$ = nil$ + ansi_bg_green
+                        CASE "|19":
+                            nil$ = nil$ + ansi_bg_cyan
+                        CASE "|20":
+                            nil$ = nil$ + ansi_bg_red
+                        CASE "|21":
+                            nil$ = nil$ + ansi_bg_magenta
+                        CASE "|22":
+                            nil$ = nil$ + ansi_bg_yellow
+                        CASE "|23":
+                            nil$ = nil$ + ansi_bg_white
+                        CASE "|24":
+                            nil$ = nil$ + ansi_bg_bright_black
+                        CASE "|25":
+                            nil$ = nil$ + ansi_bg_bright_blue
+                        CASE "|26":
+                            nil$ = nil$ + ansi_bg_bright_green
+                        CASE "|27":
+                            nil$ = nil$ + ansi_bg_bright_cyan
+                        CASE "|28":
+                            nil$ = nil$ + ansi_bg_bright_red
+                        CASE "|29":
+                            nil$ = nil$ + ansi_bg_bright_magenta
+                        CASE "|30":
+                            nil$ = nil$ + ansi_bg_bright_yellow
+                        CASE "|31":
+                            nil$ = nil$ + ansi_bg_bright_white
+                    END SELECT
+                    PRINT "PIPE[" + i$ + "]=" + code$ + " @: " + pos$
+            END SELECT
+        NEXT i
+    END IF
+    PIPEPRINT$ = out$
+END FUNCTION
+
+
+
+$IF GJ_LIB_DICT_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../DICT/DICT.BM'
+$END IF
+$IF GJ_LIB_DUMP_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../DUMP/DUMP.BM'
+$END IF
+$IF GJ_LIB_ANSI_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../ANSI/ANSI.BM'
+$END IF
+$IF GJ_LIB_STRINGS_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../STRINGS/STRINGS.BM'
+$END IF

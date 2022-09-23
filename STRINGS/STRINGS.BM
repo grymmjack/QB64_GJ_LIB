@@ -7,6 +7,9 @@
 ' str_implode$  Implodes a string array into a string using delimiter as glue
 ' str_explode   Explodes a string into an array of strings using a delimiter
 ' str_find_pos  Searches for strings in strings, fills array of found positions
+' str_insert$   Insert a string into another string at position
+' str_remove$   Remove a string from a string
+' str_replace$  Replaces a string with another string inside a string
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BI
@@ -108,3 +111,111 @@ SUB str_find_pos (target$, search$, arrFound%(), numFound%)
     LOOP UNTIL i = length
     numFound% = x
 END SUB
+
+
+''
+' Insert a string into another string at position
+'
+' @param s$ string to insert into
+' @param ins$ string to insert
+' @param p% position to insert
+' @return STRING with insertion
+'
+FUNCTION str_insert$ (s$, ins$, p%)
+    IF p% < LEN(s$) AND ins$ <> "" THEN
+        IF p% = 0 THEN
+            str_insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$)-1)
+        ELSE
+            str_insert$ = LEFT$(s$, p%+1) + ins$ + RIGHT$(s$, LEN(s$) - p%-1)
+        END IF
+    ELSE 
+        str_insert$ = s$
+    END IF
+END FUNCTION
+
+
+''
+' Remove a string from a string
+'
+' @param s$ string to remove from
+' @param del$ string to delete
+' @param count% number of times to remove
+' @return STRING with del$ removed
+'
+FUNCTION str_remove$ (s$, del$, count%)
+    IF count% = -1 THEN
+        DO 
+            p% = INSTR(s$, del$)
+            s$ = str_del$(s$, del$)
+        LOOP UNTIL p% = 0
+    ELSE
+        DO 
+            p% = INSTR(s$, del$)
+            s$ = str_del$(s$, del$)
+            count% = count% - 1
+        LOOP UNTIL p% = 0 OR count% = 0
+    END IF
+    str_remove$ = s$
+END FUNCTION
+
+
+''
+' Delete a string from a string once (helper for str_remove$)
+'
+' @param s$ string to delete from
+' @param del$ string to delete
+' @return STRING with del$ deleted
+'
+FUNCTION str_del$ (s$, del$)
+    i% = INSTR(s$, del$)
+    IF i% THEN 
+        str_del$ = LEFT$(s$, i%-1) + RIGHT$(s$, LEN(s$) - (i% + LEN(del$))+1) 
+    ELSE 
+        str_del$ = s$
+    END IF
+END FUNCTION
+
+
+''
+' Replaces a string with another string inside a string
+'
+' @param s$ string to replace within
+' @param search$ string to search for
+' @param replace$ string to replace search with
+' @param count% number of times to replace
+' @return STRING with replacements
+'
+FUNCTION str_replace$ (s$, search$, replace$, count%)
+    IF count% = -1 THEN
+        DO 
+            p% = INSTR(s$, search$)
+            s$ = str_rep$(s$, search$, replace$)
+        LOOP UNTIL p% = 0
+    ELSE
+        DO 
+            p% = INSTR(s$, search$)
+            s$ = str_rep$(s$, search$, replace$)
+            count% = count% - 1
+        LOOP UNTIL p% = 0 OR count% = 0
+    END IF
+    str_replace$ = s$
+END FUNCTION
+
+
+''
+' Replaces a string with another string once (helper for str_replace$)
+'
+' @param s$ string to replace within
+' @param search$ string to search for
+' @param replace$ string to replace search with
+' @return STRING with replacement
+'
+FUNCTION str_rep$ (s$, search$, replace$)
+    p% = INSTR(s$, search$)
+    IF p% THEN
+        s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
+        str_rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
+    ELSE 
+        str_rep$ = s$
+    END IF
+END FUNCTION

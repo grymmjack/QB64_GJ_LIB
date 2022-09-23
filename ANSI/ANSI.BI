@@ -16,12 +16,13 @@ $LET GJ_LIB_ANSI_INC_BI = 1
 $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
     CONST FALSE = 0 : CONST TRUE = NOT FALSE
 $END IF
-CONST TEST_ANSI_OUTPUT = TRUE
-
 CONST ANSI_ESC=27
 
 DIM SHARED GJ_LIB_ANSI_EMU AS INTEGER
 GJ_LIB_ANSI_EMU = FALSE
+
+DIM SHARED GJ_LIB_ANSI_OUTPUT AS INTEGER
+GJ_LIB_ANSI_OUTPUT = TRUE
 
 DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
@@ -36,8 +37,10 @@ bg_color&       = 0
 old_fg_color&   = fg_color&
 old_bg_color&   = bg_color&
 
+DECLARE FUNCTION ansi_delay$ (n%)
 
-
+DECLARE FUNCTION ansi_hide_cursor$ ()
+DECLARE FUNCTION ansi_show_cursor$ ()
 DECLARE FUNCTION ansi_home$ ()
 DECLARE FUNCTION ansi_locate$ (row%, col%)
 DECLARE FUNCTION ansi_move_up$ (n%)

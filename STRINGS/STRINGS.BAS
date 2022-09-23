@@ -42,7 +42,19 @@ PRINT dump_string_array$(words$(), "words")
 phrase2$ = str_implode$(words$(), "::")
 PRINT dump_string$(phrase2$, "phrase2")
 
-
+target$    = "apple orange apple grapes apple apple pear orange"
+search$    = "apple"
+replace$   = "bananafosters"
+num_times% = -1
+PRINT str_replace$(target$, search$, replace$, num_times%)
+target$    = "apple orange apple grapes apple apple pear orange"
+PRINT str_remove$(target$, search$ + " ", num_times%)
+target$    = "apple orange apple grapes apple apple pear orange"
+PRINT str_insert$(target$, "pumpkin ", 0)
+target$    = "apple orange apple grapes apple apple pear orange"
+PRINT str_insert$(target$, " pumpkin ", 1)
+target$    = "apple orange apple grapes apple apple pear orange"
+PRINT str_insert$(target$, "pumpkin ", 12)
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
 '$INCLUDE:'../_GJ_LIB.BM'
