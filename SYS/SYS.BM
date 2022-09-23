@@ -40,16 +40,34 @@ END SUB
 ' @return STRING of system information
 '
 FUNCTION sys_info$ ()
+    nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
     out$ = ""
-    out$ = out$ + "SCREEN" + CHR$(13)
-    out$ = out$ + "------" + CHR$(13)
-    out$ = out$ + "Width:  " + _TRIM$(STR$(_WIDTH)) + CHR$(13)
-    out$ = out$ + "Height: " + _TRIM$(STR$(_HEIGHT)) + CHR$(13)
-    out$ = out$ + "BPP:    " + _TRIM$(STR$(_PIXELSIZE)) + CHR$(13)
-    out$ = out$ + CHR$(13)
-    out$ = out$ + "DESKTOP" + CHR$(13)
-    out$ = out$ + "-------" + CHR$(13)
-    out$ = out$ + "Width:  " + _TRIM$(STR$(_DESKTOPWIDTH)) + CHR$(13)
-    out$ = out$ + "Height: " + _TRIM$(STR$(_DESKTOPHEIGHT)) + CHR$(13)
+    out$ = out$ + "QB64 " + _OS$ + nl$
+    out$ = out$ + "          _CWD$: " + _CWD$ + nl$
+    out$ = out$ + "     _STARTDIR$: " + _STARTDIR$ + nl$
+    out$ = out$ + "       COMMAND$: " + COMMAND$ + nl$
+    out$ = out$ + "SCREEN" + nl$
+    out$ = out$ + "          Width: " + _TRIM$(STR$(_WIDTH)) + nl$
+    out$ = out$ + "         Height: " + _TRIM$(STR$(_HEIGHT)) + nl$
+    out$ = out$ + "              X: " + _TRIM$(STR$(_SCREENX)) + nl$
+    out$ = out$ + "              Y: " + _TRIM$(STR$(_SCREENY)) + nl$
+    out$ = out$ + "            BPP: " + _TRIM$(STR$(_PIXELSIZE)) + nl$
+    out$ = out$ + "       _DISPLAY: " + _TRIM$(STR$(_DISPLAY)) + nl$
+    out$ = out$ + "          _DEST: " + _TRIM$(STR$(_DEST)) + nl$
+    out$ = out$ + "        _SOURCE: " + _TRIM$(STR$(_SOURCE)) + nl$
+    out$ = out$ + "DESKTOP" + nl$
+    out$ = out$ + "          Width: " + _TRIM$(STR$(_DESKTOPWIDTH)) + nl$
+    out$ = out$ + "         Height: " + _TRIM$(STR$(_DESKTOPHEIGHT)) + nl$
+    out$ = out$ + "FONTS" + nl$
+    out$ = out$ + "     Font Width: " + _TRIM$(STR$(_FONTWIDTH)) + nl$
+    out$ = out$ + "    Font Height: " + _TRIM$(STR$(_FONTHEIGHT)) + nl$
+    out$ = out$ + "     _PRINTMODE: " + _TRIM$(STR$(_PRINTMODE)) + nl$
+    out$ = out$ + "MISC" + nl$
+    out$ = out$ + "     _CONTROLCHR: " + _TRIM$(STR$(_CONTROLCHR)) + nl$
+    out$ = out$ + "          _BLINK: " + _TRIM$(STR$(_BLINK)) + nl$
+    out$ = out$ + "   _DEFAULTCOLOR: " + _TRIM$(STR$(_DEFAULTCOLOR)) + nl$
+    out$ = out$ + "_BACKGROUNDCOLOR: " + _TRIM$(STR$(_BACKGROUNDCOLOR)) + nl$
+    out$ = out$ + "     _CLIPBOARD$:" + nl$
+    out$ = out$ + _CLIPBOARD$ + nl$
     sys_info$ = out$
 END FUNCTION
