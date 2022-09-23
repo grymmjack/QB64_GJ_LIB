@@ -21,9 +21,9 @@
 | `\|[Bnn` | Move down nn rows (0 padded) | 
 | `\|[Cnn` | Move right nn columns (0 padded) |
 | `\|[Dnn` | Move left nn columns (0 padded) |
-| `\|@R` | Right justify text |
-| `\|@L` | Left justify text |
-| `\|@C` | Center text |
+| `\|@R{stuff}` | Right justify text on line|
+| `\|@L{stuff}` | Left justify text on line|
+| `\|@C{stuff}` | Center text on line|
 | `\|@DnnX` | Duplicate X  nn times |
 
 ## PIPEPRINT FOREGROUND COLORS
