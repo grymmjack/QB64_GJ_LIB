@@ -38,7 +38,7 @@ FUNCTION PIPEPRINT$ (s$, label$)
     REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
     u = UBOUND(PIPES_POSITIONS)
     out$ = s$
-
+    do_sleep% = 0
     ' Replace the pipe codes with ANSI codes
     IF NUM_PIPES_FOUND THEN
         FOR i = 0 TO u
@@ -70,7 +70,7 @@ FUNCTION PIPEPRINT$ (s$, label$)
                             out$ = str_replace$(out$, code$ + args$, _
                                 ansi_move_left(VAL(args$)), 1)
                         CASE "|@D":
-                            char$ = MID$(s$, PIPES_POSITIONS(i+4), 1)
+                            char$ = MID$(s$, PIPES_POSITIONS(i+3), 1)
                             out$ = str_replace$(out$, code$ + args$ + char$, _
                                 STRING$(VAL(args$), char$), 1)
                     END SELECT
@@ -90,10 +90,10 @@ FUNCTION PIPEPRINT$ (s$, label$)
                                 ansi_erase_screen, 1)
                         CASE "|CN":
                             out$ = str_replace$(out$, code$, _
-                                ansi_mode_blinking_reset, 1)
+                                ansi_mode_blinking, 1)
                         CASE "|CY":
                             out$ = str_replace$(out$, code$, _
-                                ansi_mode_blinking, 1)
+                                ansi_mode_blinking_reset, 1)
                         CASE "|CR":
                             out$ = str_replace$(out$, code$, _
                                 CHR$(13), 1)
@@ -101,7 +101,9 @@ FUNCTION PIPEPRINT$ (s$, label$)
                             out$ = str_replace$(out$, code$, _
                                 "|", 1)
                         CASE "|PA":
-                            SLEEP
+                            out$ = str_replace$(out$, code$, _
+                                "|PA", 1)
+                            do_sleep% = 1
                         CASE "|DE":
                             out$ = str_replace$(out$, code$, _
                                 ansi_delay(5), 1)
@@ -128,10 +130,10 @@ FUNCTION PIPEPRINT$ (s$, label$)
                                 ansi_fg_cyan, 1)
                         CASE "|04":
                             out$ = str_replace$(out$, code$, _
-                                ansi_fg_cyan, 1)
+                                ansi_fg_red, 1)
                         CASE "|05":
                             out$ = str_replace$(out$, code$, _
-                                ansi_fg_cyan, 1)
+                                ansi_fg_magenta, 1)
                         CASE "|06":
                             out$ = str_replace$(out$, code$, _
                                 ansi_fg_yellow, 1)
@@ -176,10 +178,10 @@ FUNCTION PIPEPRINT$ (s$, label$)
                                 ansi_bg_cyan, 1)
                         CASE "|20":
                             out$ = str_replace$(out$, code$, _
-                                ansi_bg_cyan, 1)
+                                ansi_bg_red, 1)
                         CASE "|21":
                             out$ = str_replace$(out$, code$, _
-                                ansi_bg_cyan, 1)
+                                ansi_bg_magenta, 1)
                         CASE "|22":
                             out$ = str_replace$(out$, code$, _
                                 ansi_bg_yellow, 1)
@@ -213,6 +215,9 @@ FUNCTION PIPEPRINT$ (s$, label$)
                     END SELECT
             END SELECT
         NEXT i
+    END IF
+    IF do_sleep% THEN
+        SLEEP
     END IF
     PIPEPRINT$ = out$
 END FUNCTION

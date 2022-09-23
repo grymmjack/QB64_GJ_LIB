@@ -595,7 +595,7 @@ FUNCTION ansi_mode_blinking$ ()
     out$ = chr$(ANSI_ESC) + "[5m"
     IF GJ_LIB_ANSI_EMU THEN 
         _BLINK ON
-        nil$ = ansi_mode_bold
+        ' nil$ = ansi_mode_bold
     END IF
     ansi_mode_blinking$ = out$
 END FUNCTION
@@ -609,7 +609,7 @@ FUNCTION ansi_mode_blinking_reset$ ()
     out$ = chr$(ANSI_ESC) + "[25m"
     IF GJ_LIB_ANSI_EMU THEN 
         _BLINK OFF
-        nil$ = ansi_mode_bold_reset
+        ' nil$ = ansi_mode_bold_reset
     END IF
     ansi_mode_blinking_reset$ = out$
 END FUNCTION
@@ -736,7 +736,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_black$ ()
-    out$ = chr$(ANSI_ESC) + "[1;30m"
+    out$ = chr$(ANSI_ESC) + "[30;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 8
     ansi_fg_bright_black$ = out$
 END FUNCTION
@@ -747,7 +747,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_black$ ()
-    out$ = chr$(ANSI_ESC) + "[40m"
+    out$ = chr$(ANSI_ESC) + "[0;40m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,0
     ansi_bg_black$ = out$
 END FUNCTION
@@ -758,7 +758,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_black$ ()
-    out$ = chr$(ANSI_ESC) + "[1;40m"
+    out$ = chr$(ANSI_ESC) + "[100;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,8
     ansi_bg_bright_black$ = out$
 END FUNCTION
@@ -769,7 +769,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_blue$ ()
-    out$ = chr$(ANSI_ESC) + "[34m"
+    out$ = chr$(ANSI_ESC) + "[0;34m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 1
     ansi_fg_blue$ = out$
 END FUNCTION
@@ -780,7 +780,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_blue$ ()
-    out$ = chr$(ANSI_ESC) + "[1;34m"
+    out$ = chr$(ANSI_ESC) + "[34;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 9
     ansi_fg_bright_blue$ = out$
 END FUNCTION
@@ -802,7 +802,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_blue$ ()
-    out$ = chr$(ANSI_ESC) + "[1;44m"
+    out$ = chr$(ANSI_ESC) + "[104;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,9
     ansi_bg_bright_blue$ = out$
 END FUNCTION
@@ -813,7 +813,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_green$ ()
-    out$ = chr$(ANSI_ESC) + "[32m"
+    out$ = chr$(ANSI_ESC) + "[0;32m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 2
     ansi_fg_green$ = out$
 END FUNCTION
@@ -824,7 +824,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_green$ ()
-    out$ = chr$(ANSI_ESC) + "[1;32m"
+    out$ = chr$(ANSI_ESC) + "[32;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 10
     ansi_fg_bright_green$ = out$
 END FUNCTION
@@ -845,7 +845,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_green$ ()
-    out$ = chr$(ANSI_ESC) + "[1;42m"
+    out$ = chr$(ANSI_ESC) + "[102;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,10
     ansi_bg_bright_green$ = out$
 END FUNCTION
@@ -856,7 +856,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_cyan$ ()
-    out$ = chr$(ANSI_ESC) + "[36m"
+    out$ = chr$(ANSI_ESC) + "[0;36m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 3
     ansi_fg_cyan$ = out$
 END FUNCTION
@@ -867,7 +867,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_cyan$ ()
-    out$ = chr$(ANSI_ESC) + "[1;36m"
+    out$ = chr$(ANSI_ESC) + "[36;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 11
     ansi_fg_bright_cyan$ = out$
 END FUNCTION
@@ -889,7 +889,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_cyan$ ()
-    out$ = chr$(ANSI_ESC) + "[1;46m"
+    out$ = chr$(ANSI_ESC) + "[106;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,11
     ansi_bg_bright_cyan$ = out$
 END FUNCTION
@@ -900,7 +900,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_red$ ()
-    out$ = chr$(ANSI_ESC) + "[31m"
+    out$ = chr$(ANSI_ESC) + "[0;31m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 4
     ansi_fg_red$ = out$
 END FUNCTION
@@ -911,7 +911,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_red$ ()
-    out$ = chr$(ANSI_ESC) + "[1;31m"
+    out$ = chr$(ANSI_ESC) + "[31;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 12
     ansi_fg_bright_red$ = out$
 END FUNCTION
@@ -933,7 +933,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_red$ ()
-    out$ = chr$(ANSI_ESC) + "[1;41m"
+    out$ = chr$(ANSI_ESC) + "[101;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,12
     ansi_bg_bright_red$ = out$
 END FUNCTION
@@ -944,7 +944,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_magenta$ ()
-    out$ = chr$(ANSI_ESC) + "[35m"
+    out$ = chr$(ANSI_ESC) + "[0;35m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 5
     ansi_fg_magenta$ = out$
 END FUNCTION
@@ -955,7 +955,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_magenta$ ()
-    out$ = chr$(ANSI_ESC) + "[1;35m"
+    out$ = chr$(ANSI_ESC) + "[35;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 13
     ansi_fg_bright_magenta$ = out$
 END FUNCTION
@@ -977,7 +977,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_magenta$ ()
-    out$ = chr$(ANSI_ESC) + "[1;45m"
+    out$ = chr$(ANSI_ESC) + "[105;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,13
     ansi_bg_bright_magenta$ = out$
 END FUNCTION
@@ -988,7 +988,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_yellow$ ()
-    out$ = chr$(ANSI_ESC) + "[33m"
+    out$ = chr$(ANSI_ESC) + "[0;33m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 6
     ansi_fg_yellow$ = out$
 END FUNCTION
@@ -999,7 +999,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_yellow$ ()
-    out$ = chr$(ANSI_ESC) + "[1;33m"
+    out$ = chr$(ANSI_ESC) + "[33;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 14
     ansi_fg_bright_yellow$ = out$
 END FUNCTION
@@ -1021,7 +1021,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_yellow$ ()
-    out$ = chr$(ANSI_ESC) + "[1;43m"
+    out$ = chr$(ANSI_ESC) + "[103;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,14
     ansi_bg_bright_yellow$ = out$
 END FUNCTION
@@ -1032,7 +1032,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_white$ ()
-    out$ = chr$(ANSI_ESC) + "[37m"
+    out$ = chr$(ANSI_ESC) + "[0;37m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 7
     ansi_fg_white$ = out$
 END FUNCTION
@@ -1043,7 +1043,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_fg_bright_white$ ()
-    out$ = chr$(ANSI_ESC) + "[1;37m"
+    out$ = chr$(ANSI_ESC) + "[37;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 15
     ansi_fg_bright_white$ = out$
 END FUNCTION
@@ -1065,7 +1065,7 @@ END FUNCTION
 '
 ' @return string with ANSI escape codes for setting color
 FUNCTION ansi_bg_bright_white$ ()
-    out$ = chr$(ANSI_ESC) + "[1;47m"
+    out$ = chr$(ANSI_ESC) + "[107;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,15
     ansi_bg_bright_white$ = out$
 END FUNCTION
