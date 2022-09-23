@@ -16,7 +16,11 @@ $LET GJ_LIB_ANSI_INC_BI = 1
 $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
     CONST FALSE = 0 : CONST TRUE = NOT FALSE
 $END IF
-CONST ANSI_ESC=27
+$IF ANSI_DEBUGGING = UNDEFINED THEN
+    CONST ANSI_ESC=27
+$ELSE
+    CONST ANSI_ESC=32
+$END IF
 
 DIM SHARED GJ_LIB_ANSI_EMU AS INTEGER
 GJ_LIB_ANSI_EMU = FALSE
@@ -26,6 +30,8 @@ GJ_LIB_ANSI_OUTPUT = TRUE
 
 DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
+ansi_x% = POS(0)
+ansy_y% = CSRLIN
 
 DIM SHARED fg_color&        ' Foreground color
 DIM SHARED bg_color&        ' Background color
