@@ -9,7 +9,9 @@
 | str_implode$  | Implodes a string array into a string using delimiter as glue |
 | str_explode   | Explodes a string into an array of strings using a delimiter |
 | str_find_pos  | Searches for strings in strings, fills array of found positions |
-
+| str_insert$   | Insert a string into another string at position |
+| str_remove$   | Remove a string from a string |
+| str_replace$  | Replaces a string with another string inside a string |
 
 
 ### USAGE for STRINGS LIB (separately)
