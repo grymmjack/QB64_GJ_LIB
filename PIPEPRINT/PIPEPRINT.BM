@@ -28,18 +28,23 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 '
 FUNCTION PIPEPRINT$ (s$, label$)
     l = LEN(s$)
+
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
-    NUM_PIPES_FOUND = 0 : REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
+    NUM_PIPES_FOUND = 0
+    REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
+
     ' Find the pipes
     str_find_pos s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND
     REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
     u = UBOUND(PIPES_POSITIONS)
     out$ = s$
+
+    ' Replace the pipe codes with ANSI codes
     IF NUM_PIPES_FOUND THEN
-        nil$ = ""
-        PRINT "Found "; _TRIM$(STR$(NUM_PIPES_FOUND)); " pipes!"
         FOR i = 0 TO u
             code$ = MID$(s$, PIPES_POSITIONS(i), 3)
+            args$ = ""
+            char$ = ""
             i$    = _TRIM$(STR$(i))
             pos$  = _TRIM$(STR$(PIPES_POSITIONS(i)))
             SELECT CASE code$
@@ -47,116 +52,165 @@ FUNCTION PIPEPRINT$ (s$, label$)
                     args$ = MID$(s$, PIPES_POSITIONS(i)+3, 2)
                     SELECT CASE code$
                         CASE "|[X":
-                            nil$ = nil$ + ansi_move_column(VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_move_column(VAL(args$)), 1)
                         CASE "|[Y":
-                            nil$ = nil$ + ansi_locate(CSRLIN, VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_locate(CSRLIN, VAL(args$)), 1)
                         CASE "|[A":
-                            nil$ = nil$ + ansi_move_up(VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_move_up(VAL(args$)), 1)
                         CASE "|[B":
-                            nil$ = nil$ + ansi_move_down(VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_move_down(VAL(args$)), 1)
                         CASE "|[C":
-                            nil$ = nil$ + ansi_move_right(VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_move_right(VAL(args$)), 1)
                         CASE "|[D":
-                            nil$ = nil$ + ansi_move_left(VAL(args$))
+                            out$ = str_replace$(out$, code$ + args$, _
+                                ansi_move_left(VAL(args$)), 1)
                         CASE "|@D":
                             char$ = MID$(s$, PIPES_POSITIONS(i+4), 1)
-                            nil$ = nil$ + STRING$(VAL(args$), char$)
+                            out$ = str_replace$(out$, code$ + args$ + char$, _
+                                STRING$(VAL(args$), char$), 1)
                     END SELECT
-                    PRINT "PIPE[" + i$ + "]=" + code$ + args$ + " @: " + pos$
                 CASE ELSE:
                     SELECT CASE code$
                         CASE "|[0":
-                            nil$ = nil$ + ansi_hide_cursor
+                            out$ = str_replace$(out$, code$, _
+                                ansi_hide_cursor, 1)
                         CASE "|[1":
-                            nil$ = nil$ + ansi_show_cursor
+                            out$ = str_replace$(out$, code$, _
+                                ansi_show_cursor, 1)
                         CASE "|[K":
-                            nil$ = nil$ + ansi_erase_to_eol
+                            out$ = str_replace$(out$, code$, _
+                                ansi_erase_to_eol, 1)
                         CASE "|CL":
-                            nil$ = nil$ + ansi_erase_screen
+                            out$ = str_replace$(out$, code$, _
+                                ansi_erase_screen, 1)
                         CASE "|CN":
-                            nil$ = nil$ + ansi_mode_blinking_reset
+                            out$ = str_replace$(out$, code$, _
+                                ansi_mode_blinking_reset, 1)
                         CASE "|CY":
-                            nil$ = nil$ + ansi_mode_blinking
+                            out$ = str_replace$(out$, code$, _
+                                ansi_mode_blinking, 1)
                         CASE "|CR":
-                            nil$ = nil$ + CHR$(13)
+                            out$ = str_replace$(out$, code$, _
+                                CHR$(13), 1)
                         CASE "|PI":
-                            nil$ = nil$ + "|"
+                            out$ = str_replace$(out$, code$, _
+                                "|", 1)
                         CASE "|PA":
                             SLEEP
                         CASE "|DE":
-                            nil$ = nil$ + ansi_delay(5)
-                        CASE "|@R":
-                            nil$ = nil$ + "" 'right justify
+                            out$ = str_replace$(out$, code$, _
+                                ansi_delay(5), 1)
+                        CASE "|@R": 'TODO
+                            out$ = str_replace$(out$, code$, _
+                                "", 1)
                         CASE "|@L":
-                            nil$ = nil$ + "" 'left justify
+                            out$ = str_replace$(out$, code$, _
+                                "", 1)
                         CASE "|@C":
-                            nil$ = nil$ + "" 'center justify
+                            out$ = str_replace$(out$, code$, _
+                                "", 1)
                         CASE "|00":
-                            nil$ = nil$ + ansi_fg_black
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_black, 1)
                         CASE "|01":
-                            nil$ = nil$ + ansi_fg_blue
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_blue, 1)
                         CASE "|02":
-                            nil$ = nil$ + ansi_fg_green
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_green, 1)
                         CASE "|03":
-                            nil$ = nil$ + ansi_fg_cyan
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_cyan, 1)
                         CASE "|04":
-                            nil$ = nil$ + ansi_fg_red
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_cyan, 1)
                         CASE "|05":
-                            nil$ = nil$ + ansi_fg_magenta
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_cyan, 1)
                         CASE "|06":
-                            nil$ = nil$ + ansi_fg_yellow
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_yellow, 1)
                         CASE "|07":
-                            nil$ = nil$ + ansi_fg_white
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_white, 1)
                         CASE "|08":
-                            nil$ = nil$ + ansi_fg_bright_black
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_black, 1)
                         CASE "|09":
-                            nil$ = nil$ + ansi_fg_bright_blue
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_blue, 1)
                         CASE "|10":
-                            nil$ = nil$ + ansi_fg_bright_green
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_green, 1)
                         CASE "|11":
-                            nil$ = nil$ + ansi_fg_bright_cyan
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_cyan, 1)
                         CASE "|12":
-                            nil$ = nil$ + ansi_fg_bright_red
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_red, 1)
                         CASE "|13":
-                            nil$ = nil$ + ansi_fg_bright_magenta
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_magenta, 1)
                         CASE "|14":
-                            nil$ = nil$ + ansi_fg_bright_yellow
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_yellow, 1)
                         CASE "|15":
-                            nil$ = nil$ + ansi_fg_bright_white
+                            out$ = str_replace$(out$, code$, _
+                                ansi_fg_bright_white, 1)
                         CASE "|16":
-                            nil$ = nil$ + ansi_bg_black
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_black, 1)
                         CASE "|17":
-                            nil$ = nil$ + ansi_bg_blue
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_blue, 1)
                         CASE "|18":
-                            nil$ = nil$ + ansi_bg_green
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_green, 1)
                         CASE "|19":
-                            nil$ = nil$ + ansi_bg_cyan
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_cyan, 1)
                         CASE "|20":
-                            nil$ = nil$ + ansi_bg_red
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_cyan, 1)
                         CASE "|21":
-                            nil$ = nil$ + ansi_bg_magenta
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_cyan, 1)
                         CASE "|22":
-                            nil$ = nil$ + ansi_bg_yellow
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_yellow, 1)
                         CASE "|23":
-                            nil$ = nil$ + ansi_bg_white
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_white, 1)
                         CASE "|24":
-                            nil$ = nil$ + ansi_bg_bright_black
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_black, 1)
                         CASE "|25":
-                            nil$ = nil$ + ansi_bg_bright_blue
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_blue, 1)
                         CASE "|26":
-                            nil$ = nil$ + ansi_bg_bright_green
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_green, 1)
                         CASE "|27":
-                            nil$ = nil$ + ansi_bg_bright_cyan
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_cyan, 1)
                         CASE "|28":
-                            nil$ = nil$ + ansi_bg_bright_red
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_red, 1)
                         CASE "|29":
-                            nil$ = nil$ + ansi_bg_bright_magenta
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_magenta, 1)
                         CASE "|30":
-                            nil$ = nil$ + ansi_bg_bright_yellow
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_yellow, 1)
                         CASE "|31":
-                            nil$ = nil$ + ansi_bg_bright_white
+                            out$ = str_replace$(out$, code$, _
+                                ansi_bg_bright_white, 1)
                     END SELECT
-                    PRINT "PIPE[" + i$ + "]=" + code$ + " @: " + pos$
             END SELECT
         NEXT i
     END IF
