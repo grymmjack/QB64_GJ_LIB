@@ -27,8 +27,12 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 ' @return STRING parsed with pipe codes replaced by ANSI codes
 '
 FUNCTION PIPEPRINT$ (s$, label$)
-    l = LEN(s$)
-
+    l  = LEN(s$)
+    h  = _HEIGHT : w = _WIDTH
+    sh = _DESKTOPHEIGHT : sw = _DESKTOPWIDTH
+    fh = _FONTHEIGHT : fw = _FONTWIDTH
+    PRINT sys_info 
+    END
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_FOUND = 0
     REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER

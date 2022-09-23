@@ -7,6 +7,7 @@
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
 | open_url_in_browser | Opens the default web browser with a URL on all operating systems |
+| sys_info$ | Get system information as a big string |
 
 
 

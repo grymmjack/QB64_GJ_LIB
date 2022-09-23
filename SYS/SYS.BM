@@ -31,3 +31,25 @@ SUB open_url_in_browser (url$)
     $END IF
     ret% = _SHELLHIDE(cmd$)
 END SUB
+
+
+
+''
+' Get system information as a big string
+'
+' @return STRING of system information
+'
+FUNCTION sys_info$ ()
+    out$ = ""
+    out$ = out$ + "SCREEN" + CHR$(13)
+    out$ = out$ + "------" + CHR$(13)
+    out$ = out$ + "Width:  " + _TRIM$(STR$(_WIDTH)) + CHR$(13)
+    out$ = out$ + "Height: " + _TRIM$(STR$(_HEIGHT)) + CHR$(13)
+    out$ = out$ + "BPP:    " + _TRIM$(STR$(_PIXELSIZE)) + CHR$(13)
+    out$ = out$ + CHR$(13)
+    out$ = out$ + "DESKTOP" + CHR$(13)
+    out$ = out$ + "-------" + CHR$(13)
+    out$ = out$ + "Width:  " + _TRIM$(STR$(_DESKTOPWIDTH)) + CHR$(13)
+    out$ = out$ + "Height: " + _TRIM$(STR$(_DESKTOPHEIGHT)) + CHR$(13)
+    sys_info$ = out$
+END FUNCTION
