@@ -31,7 +31,7 @@ GJ_LIB_ANSI_OUTPUT = TRUE
 DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
 ansi_x% = POS(0)
-ansy_y% = CSRLIN
+ansi_y% = CSRLIN
 
 DIM SHARED fg_color&        ' Foreground color
 DIM SHARED bg_color&        ' Background color
