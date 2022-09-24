@@ -15,6 +15,19 @@ $LET GJ_LIB_SYS_INC_BM = 1
 
 
 ''
+' Sets up console in a cross-platform way that honors existing bugs and stuff.
+'
+SUB console_setup ()
+    $IF WINDOWS THEN
+        $CONSOLE:ONLY
+    $ELSE
+        $CONSOLE
+        _DEST _CONSOLE
+    $ENDIF
+END SUB
+
+
+''
 ' Opens a URL in the default web browser
 '
 ' ex: open_url_in_browser "https://youtube.com/grymmjack"
@@ -31,7 +44,6 @@ SUB open_url_in_browser (url$)
     $END IF
     ret% = _SHELLHIDE(cmd$)
 END SUB
-
 
 
 ''
