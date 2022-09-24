@@ -98,7 +98,7 @@ END SUB
 '
 SUB str_find_pos (target$, search$, arrFound%(), numFound%)
     length = LEN(target$): found = -1: x = 0: i = 0
-    u = UBOUND(arrFound)
+    u = UBOUND(arrFound%)
     searchLen = LEN(search$)
     DO WHILE i <= length
         found = INSTR(i, target$, search$)
