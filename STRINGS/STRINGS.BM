@@ -97,18 +97,19 @@ END SUB
 ' @param numFound% The number of times search found a match
 '
 SUB str_find_pos (target$, search$, arrFound%(), numFound%)
-    length = LEN(target$): found = -1: x = 0: i = 1
+    length = LEN(target$): found = -1: x = 0: i = 0
+    u = UBOUND(arrFound)
     searchLen = LEN(search$)
-    DO
+    DO WHILE i <= length
         found = INSTR(i, target$, search$)
-        IF found > 0 THEN
+        IF found > 0 AND x <= u THEN
             arrFound%(x) = found
             i = found + searchLen
             x = x + 1
         ELSE
             i = i + 1
         END IF
-    LOOP UNTIL i = length
+    LOOP
     numFound% = x
 END SUB
 
