@@ -47,7 +47,6 @@ More information here: https://github.com/QB64Official/qb64/issues/33
 
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_delay$            | Creates a delay of n tenths of a second |
 | ansi_hide_cursor$      | Hides cursor |
 | ansi_home$             | Moves cursor to home position (0,0) | 
 | ansi_locate$           | Moves cursor to desired row and column |

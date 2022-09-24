@@ -26,6 +26,10 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 ' @return STRING parsed with pipe codes replaced by ANSI codes
 '
 FUNCTION PIPEPRINT$ (s$)
+    w% = _WIDTH
+    ansi_x% = POS(0) : ansi_y% = CSRLIN
+    out$ = s$
+    
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_FOUND = 0
     REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
@@ -34,168 +38,108 @@ FUNCTION PIPEPRINT$ (s$)
     str_find_pos s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND
     REDIM _PRESERVE PIPES_POSITIONS(NUM_PIPES_FOUND-1) AS INTEGER
     u = UBOUND(PIPES_POSITIONS)
-    out$ = s$
 
     ' Replace the pipe codes with ANSI codes
     IF NUM_PIPES_FOUND THEN
         FOR i = 0 TO u
-            code$ = MID$(s$, PIPES_POSITIONS(i), 3)
-            args$ = "" : char$ = "" : txt$ = "" : t$ = "" : args% = 0
+            p% = PIPES_POSITIONS(i)
+            code$ = MID$(s$, p%, 3)
+            args$ = "" : char$ = "" : txt$ = "" : t$ = "" : nums% = 0
             find$ = "" : repl$ = "" : spaces$ = ""
-            cur_row% = CSRLIN : cur_col% = POS(0)
-            w%    = _WIDTH
-            p%    = PIPES_POSITIONS(i)
-            i$    = _TRIM$(STR$(i))
-            pos$  = _TRIM$(STR$(PIPES_POSITIONS(i)))
             SELECT CASE code$
                 CASE "|[X", "|[Y", "|[A", "|[B", "|[C", "|[D", "|@D":
-                    args$ = _TRIM$(MID$(s$, PIPES_POSITIONS(i)+3, 2))
-                    args% = ABS(VAL(args$))
+                    args$ = _TRIM$(MID$(s$, p%+3, 2))
+                    nums% = ABS(VAL(args$))
                     find$ = code$ + args$
-                    SELECT CASE code$
-                        CASE "|[X":
-                            repl$ = ansi_move_column(args%)
-                        CASE "|[Y":
-                            repl$ = ansi_locate(args%, ansi_x%)
-                        CASE "|[A":
-                            repl$ = ansi_move_up(args%)
-                        CASE "|[B":
-                            repl$ = ansi_move_down(args%)
-                        CASE "|[C":
-                            repl$ = ansi_move_right(args%)
-                        CASE "|[D":
-                            repl$ = ansi_move_left(args%)
-                        CASE "|@D":
-                            char$ = MID$(s$, PIPES_POSITIONS(i)+5, 1)
-                            find$ = find$ + char$
-                            repl$ = STRING$(args%, char$)
-                    END SELECT
-                CASE ELSE:
-                    SELECT CASE code$
-                        CASE "|@R", "|@L", "|@C":
-                            l%    = INSTR(p%, s$, "{")+1
-                            r%    = INSTR(p%, s$, "}")
-                            txt$  = MID$(s$, l%, r%-l%)
-                            find$ = code$ + "{" + txt$ + "}"
-                    END SELECT
-                    SELECT CASE code$
-                        CASE "|@R":
-                            spaces$ = STRING$(w% - LEN(txt$), " ") 
-                            repl$   = spaces$ + txt$
-                            repl$   = CHR$(10) + ansi_locate(CSRLIN, 1) + repl$
-                        CASE "|@L":
-                            spaces$ = STRING$(w% - LEN(txt$), " ")
-                            repl$   = txt$ + spaces$
-                            repl$   = CHR$(10) + ansi_locate(CSRLIN, 1) + repl$
-                        CASE "|@C":
-                            spaces$ = STRING$((w% - LEN(txt$)) \ 2, " ")
-                            repl$   = spaces$ + txt$ + spaces$
-                            repl$   = CHR$(10) + ansi_locate(CSRLIN, 1) + repl$
-                    END SELECT
-                    SELECT CASE code$
-                        CASE "|[0", "|[1", "|[K", "|CL", "|CN", "|CY", "|CR", _
-                             "|PI", "|00", "|01", "|02", "|03", "|04", "|05", _
-                             "|06", "|07", "|08", "|09", "|10", "|11", "|12", _
-                             "|13", "|14", "|15", "|16", "|17", "|18", "|19", _
-                             "|20", "|21", "|22", "|23", "|24", "|25", "|26", _
-                             "|27", "|28", "|29", "|30", "|31":
-                             find$ = code$
-                    END SELECT 
-                    SELECT CASE code$
-                        CASE "|[0":
-                            repl$ = ansi_hide_cursor
-                        CASE "|[1":
-                            repl$ = ansi_show_cursor
-                        CASE "|[K":
-                            repl$ = ansi_erase_to_eol
-                        CASE "|CL":
-                            repl$ = ansi_erase_screen
-                        CASE "|CN":
-                            repl$ = ansi_mode_blinking
-                        CASE "|CY":
-                            repl$ = ansi_mode_blinking_reset
-                        CASE "|CR":
-                            repl$ = CHR$(10)
-                        CASE "|PI":
-                            repl$ = "|"
-                        CASE "|00":
-                            repl$ = ansi_fg_black
-                        CASE "|01":
-                            repl$ = ansi_fg_blue
-                        CASE "|02":
-                            repl$ = ansi_fg_green
-                        CASE "|03":
-                            repl$ = ansi_fg_cyan
-                        CASE "|04":
-                            repl$ = ansi_fg_red
-                        CASE "|05":
-                            repl$ = ansi_fg_magenta
-                        CASE "|06":
-                            repl$ = ansi_fg_yellow
-                        CASE "|07":
-                            repl$ = ansi_fg_white
-                        CASE "|08":
-                            repl$ = ansi_fg_bright_black
-                        CASE "|09":
-                            repl$ = ansi_fg_bright_blue
-                        CASE "|10":
-                            repl$ = ansi_fg_bright_green
-                        CASE "|11":
-                            repl$ = ansi_fg_bright_cyan
-                        CASE "|12":
-                            repl$ = ansi_fg_bright_red
-                        CASE "|13":
-                            repl$ = ansi_fg_bright_magenta
-                        CASE "|14":
-                            repl$ = ansi_fg_bright_yellow
-                        CASE "|15":
-                            repl$ = ansi_fg_bright_white
-                        CASE "|16":
-                            repl$ = ansi_bg_black
-                        CASE "|17":
-                            repl$ = ansi_bg_blue
-                        CASE "|18":
-                            repl$ = ansi_bg_green
-                        CASE "|19":
-                            repl$ = ansi_bg_cyan
-                        CASE "|20":
-                            repl$ = ansi_bg_red
-                        CASE "|21":
-                            repl$ = ansi_bg_magenta
-                        CASE "|22":
-                            repl$ = ansi_bg_yellow
-                        CASE "|23":
-                            repl$ = ansi_bg_white
-                        CASE "|24":
-                            repl$ = ansi_bg_bright_black
-                        CASE "|25":
-                            repl$ = ansi_bg_bright_blue
-                        CASE "|26":
-                            repl$ = ansi_bg_bright_green
-                        CASE "|27":
-                            repl$ = ansi_bg_bright_cyan
-                        CASE "|28":
-                            repl$ = ansi_bg_bright_red
-                        CASE "|29":
-                            repl$ = ansi_bg_bright_magenta
-                        CASE "|30":
-                            repl$ = ansi_bg_bright_yellow
-                        CASE "|31":
-                            repl$ = ansi_bg_bright_white
-                    END SELECT            
             END SELECT
-            IF find$ <> "" AND repl$ <> "" THEN
-                ' PRINT "find$="; find$
-                ' PRINT "repl$="; repl$
-                out$ = str_replace$(out$, find$, repl$, 1)
-            END IF
+            SELECT CASE code$
+                CASE "|[X": repl$ = ansi_move_column(nums%)
+                CASE "|[Y": repl$ = ansi_locate(nums%, ansi_x%)
+                CASE "|[A": repl$ = ansi_move_up(nums%)
+                CASE "|[B": repl$ = ansi_move_down(nums%)
+                CASE "|[C": repl$ = ansi_move_right(nums%)
+                CASE "|[D": repl$ = ansi_move_left(nums%)
+                CASE "|@D":
+                    char$ = MID$(s$, p%+5, 1)
+                    find$ = code$ + args$ + char$
+                    repl$ = STRING$(nums%, char$)
+            END SELECT
+            SELECT CASE code$
+                CASE "|@R", "|@L", "|@C":
+                    l%    = INSTR(p%, s$, "{")+1
+                    r%    = INSTR(p%, s$, "}")
+                    txt$  = MID$(s$, l%, r%-l%)
+                    find$ = code$ + "{" + txt$ + "}"
+            END SELECT
+            SELECT CASE code$
+                CASE "|@R":
+                    spaces$ = STRING$(w% - LEN(txt$), " ") 
+                    repl$   = spaces$ + txt$
+                    repl$   = ansi_move_column(1) + repl$
+                CASE "|@L":
+                    spaces$ = STRING$(w% - LEN(txt$), " ")
+                    repl$   = txt$ + spaces$
+                    repl$   = ansi_move_column(1) + repl$
+                CASE "|@C":
+                    spaces$ = STRING$((w% - LEN(txt$)) \ 2, " ")
+                    repl$   = spaces$ + txt$ + spaces$
+                    repl$   = ansi_move_column(1) + repl$
+            END SELECT
+            SELECT CASE code$
+                CASE "|[0", "|[1", "|[K", "|CL", "|CN", "|CY", "|CR", _
+                        "|PI", "|00", "|01", "|02", "|03", "|04", "|05", _
+                        "|06", "|07", "|08", "|09", "|10", "|11", "|12", _
+                        "|13", "|14", "|15", "|16", "|17", "|18", "|19", _
+                        "|20", "|21", "|22", "|23", "|24", "|25", "|26", _
+                        "|27", "|28", "|29", "|30", "|31":
+                        find$ = code$
+            END SELECT 
+            SELECT CASE code$
+                CASE "|[0": repl$ = ansi_hide_cursor
+                CASE "|[1": repl$ = ansi_show_cursor
+                CASE "|[K": repl$ = ansi_erase_to_eol
+                CASE "|CL": repl$ = ansi_erase_screen
+                CASE "|CN": repl$ = ansi_mode_blinking
+                CASE "|CY": repl$ = ansi_mode_blinking_reset
+                CASE "|CR": repl$ = ansi_move_down(1) + ansi_move_column(1)
+                CASE "|PI": repl$ = "|"
+                CASE "|00": repl$ = ansi_fg_black
+                CASE "|01": repl$ = ansi_fg_blue
+                CASE "|02": repl$ = ansi_fg_green
+                CASE "|03": repl$ = ansi_fg_cyan
+                CASE "|04": repl$ = ansi_fg_red
+                CASE "|05": repl$ = ansi_fg_magenta
+                CASE "|06": repl$ = ansi_fg_yellow
+                CASE "|07": repl$ = ansi_fg_white
+                CASE "|08": repl$ = ansi_fg_bright_black
+                CASE "|09": repl$ = ansi_fg_bright_blue
+                CASE "|10": repl$ = ansi_fg_bright_green
+                CASE "|11": repl$ = ansi_fg_bright_cyan
+                CASE "|12": repl$ = ansi_fg_bright_red
+                CASE "|13": repl$ = ansi_fg_bright_magenta
+                CASE "|14": repl$ = ansi_fg_bright_yellow
+                CASE "|15": repl$ = ansi_fg_bright_white
+                CASE "|16": repl$ = ansi_bg_black
+                CASE "|17": repl$ = ansi_bg_blue
+                CASE "|18": repl$ = ansi_bg_green
+                CASE "|19": repl$ = ansi_bg_cyan
+                CASE "|20": repl$ = ansi_bg_red
+                CASE "|21": repl$ = ansi_bg_magenta
+                CASE "|22": repl$ = ansi_bg_yellow
+                CASE "|23": repl$ = ansi_bg_white
+                CASE "|24": repl$ = ansi_bg_bright_black
+                CASE "|25": repl$ = ansi_bg_bright_blue
+                CASE "|26": repl$ = ansi_bg_bright_green
+                CASE "|27": repl$ = ansi_bg_bright_cyan
+                CASE "|28": repl$ = ansi_bg_bright_red
+                CASE "|29": repl$ = ansi_bg_bright_magenta
+                CASE "|30": repl$ = ansi_bg_bright_yellow
+                CASE "|31": repl$ = ansi_bg_bright_white
+            END SELECT            
+            out$ = str_replace$(out$, find$, repl$, 1)
         NEXT i
     END IF
-    IF LEN(out$) > 0 THEN
-        PIPEPRINT$ = out$
-    ELSE
-        PIPEPRINT$ = s$
-    END IF
+    PIPEPRINT$ = out$
 END FUNCTION
 
 
