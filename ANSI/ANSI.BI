@@ -32,6 +32,10 @@ DIM SHARED ansi_x%  ' Cursor x position
 DIM SHARED ansi_y%  ' Cursor y position
 ansi_x% = POS(0)
 ansi_y% = CSRLIN
+DIM SHARED save_x%  ' Cursor x position
+DIM SHARED save_y%  ' Cursor y position
+save_x% = POS(0)
+save_y% = CSRLIN
 
 DIM SHARED fg_color&        ' Foreground color
 DIM SHARED bg_color&        ' Background color

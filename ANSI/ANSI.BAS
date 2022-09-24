@@ -6,6 +6,7 @@
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+' $LET ANSI_DEBUGGING = 1
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
 $END IF
@@ -18,7 +19,7 @@ $END IF
 _TITLE "QB64_GJ_LIB ANSI LIB TESTS"
 
 ' Emulate ANSI support with native QB64 functionality
-GJ_LIB_ANSI_EMU = TRUE
+GJ_LIB_ANSI_EMU = FALSE
 
 ' Output ANSI codes
 GJ_LIB_ANSI_OUTPUT = TRUE
@@ -37,10 +38,10 @@ $ENDIF
 _CONTROLCHR OFF
 LOCATE 1,1,1 ' Initialize the cursor and turn it on
 
-DIM SHARED AS INTEGER w, h, cw, ch
+DIM SHARED w, h, cw, ch
 w = _WIDTH(0)
 h = _HEIGHT(0)
-cw = w \ 2 - 2
+cw = w \ 2 - 1
 ch = h \ 2 - 1
 
 PRINT "In the following tests, _ = cursor position end."
@@ -752,9 +753,9 @@ SUB test_ansi_locate ()
     w$ = _TRIM$(STR$(w-1))
     h$ = _TRIM$(STR$(h))
     nil$ = ansi_locate(ch, cw)              + "A = 1,1"
-    nil$ = nli$ + ansi_locate(ch + 1, cw)   + "B = 1," + w$
-    nil$ = nli$ + ansi_locate(ch + 2, cw)   + "C = " + h$ + ",1"
-    nil$ = nli$ + ansi_locate(ch + 3, cw)   + "D = " + w$ + "," + h$
+    nil$ = nil$ + ansi_locate(ch + 1, cw)   + "B = 1," + w$
+    nil$ = nil$ + ansi_locate(ch + 2, cw)   + "C = " + h$ + ",1"
+    nil$ = nil$ + ansi_locate(ch + 3, cw)   + "D = " + w$ + "," + h$
     nil$ = nil$ + ansi_locate(1,1)          + "A"
     nil$ = nil$ + ansi_locate(1,w-1)        + "B"
     nil$ = nil$ + ansi_locate(h,1)          + "C"
