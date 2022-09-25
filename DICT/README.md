@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S Dict Object
 
 Simulates a dictionary object as found in other languages.

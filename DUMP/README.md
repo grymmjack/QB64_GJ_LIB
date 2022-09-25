@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S DUMP LIBRARY
 
 Dumps variables in a human friendly way to assist in debugging.
