@@ -24,9 +24,15 @@ $END IF
 
 
 
+DECLARE FUNCTION dump_bit_array$ (arr`(), label$)
+DECLARE FUNCTION dump_unsigned_bit_array$ (arr~`(), label$)
+DECLARE FUNCTION dump_byte_array$ (arr%%(), label$)
+DECLARE FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$
+DECLARE FUNCTION dump_integer_array$ (arr%(), label$)
+DECLARE FUNCTION dump_unsigned_integer_array$ (arr~%(), label$)
+
 DECLARE FUNCTION dump_string$ (s$, label$)
 DECLARE FUNCTION dump_string_array$ (arr$(), label$)
-DECLARE FUNCTION dump_integer_array$ (arr%(), label$)
 DECLARE FUNCTION dump_single_array$ (arr!(), label$)
 DECLARE FUNCTION dump_long_array$ (arr&(), label$)
 DECLARE FUNCTION dump_double_array$ (arr#(), label$)

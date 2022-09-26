@@ -50,13 +50,18 @@
 ' you want while staying in the spirit of DUMP LIB.
 ' 
 ' FUNCTION              NOTES
-' dump_string$          Includes handy output of the strings length.
-' dump_string_array$    Works on 1 dimensional arrays only (right now).
-' dump_integer_array$   Works on 1 dimensional arrays only (right now).
-' dump_single_array$    Works on 1 dimensional arrays only (right now).
-' dump_long_array$      Works on 1 dimensional arrays only (right now).
-' dump_double_array$    Works on 1 dimensional arrays only (right now).
-' dump_dict$            Dump a dictionary object and it's contents.
+' dump_bit_array$           Returns string with a dump of an array of bits
+' dump_unsigned_bit_array$  Returns string with a dump of an array of unsigned bits
+' dump_byte_array$          Returns string with a dump of an array of bytes
+' dump_unsigned_byte_array$ Returns string with a dump of an array of unsigned bytes
+' dymp_unsigned_integer$    Returns string with a dump of an array of unsigned integers
+' dump_string$              Includes handy output of the strings length.
+' dump_string_array$        Works on 1 dimensional arrays only (right now).
+' dump_integer_array$       Works on 1 dimensional arrays only (right now).
+' dump_single_array$        Works on 1 dimensional arrays only (right now).
+' dump_long_array$          Works on 1 dimensional arrays only (right now).
+' dump_double_array$        Works on 1 dimensional arrays only (right now).
+' dump_dict$                Dump a dictionary object and it's contents.
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @depends DUMP.BI
@@ -68,7 +73,7 @@ $LET GJ_LIB_DUMP_INC_BM = 1
 
 
 ''
-' Returns a string containing a dump of a string
+' Returns string with a dump of a string
 ' 
 ' @param s$ String to dump
 ' @param label$ Label to give the dump block
@@ -84,7 +89,49 @@ END FUNCTION
 
 
 ''
-' Returns a string containing a dump of an array of strings
+' Returns string with a dump of an array of bits
+'
+' @param arr$() Array of bits to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_bit_array$ (arr`(), label$)
+    lb = LBOUND(arr`) : ub = UBOUND(arr`) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        l$ = _TRIM$(STR$(LEN(arr`(i))))
+        r$ = r$ + "  (" + i$ + "): " + CHR$(34) + arr`(i) + CHR$(34)
+        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_bit_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bits
+'
+' @param arr$() Array of unsigned bits to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_bit_array$ (arr~`(), label$)
+    lb = LBOUND(arr~`) : ub = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        l$ = _TRIM$(STR$(LEN(arr~`(i))))
+        r$ = r$ + "  (" + i$ + "): " + CHR$(34) + arr~`(i) + CHR$(34)
+        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_unsigned_bit_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of strings
 '
 ' @param arr$() Array of strings to dump
 ' @param label$ Label to give the dump block
@@ -105,7 +152,7 @@ END FUNCTION
 
 
 ''
-' Returns a string containing a dump of an array of integers
+' Returns string with a dump of an array of integers
 '
 ' @param arr%() Array of integers to dump
 ' @param label$ Label to give the dump block
@@ -121,6 +168,26 @@ FUNCTION dump_integer_array$ (arr%(), label$)
     NEXT i
     r$ = r$ + "}"
     dump_integer_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned integers
+'
+' @param arr%() Array of unsigned integers to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_integer_array$ (arr~%(), label$)
+    lb = LBOUND(arr~%) : ub = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr~%(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_unsigned_integer_array$ = r$
 END FUNCTION
 
 
@@ -179,6 +246,46 @@ FUNCTION dump_double_array$ (arr#(), label$)
     NEXT i
     r$ = r$ + "}"
     dump_double_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of bytes
+'
+' @param arr%%() Array of bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_byte_array$ (arr%%(), label$)
+    lb = LBOUND(arr%%) : ub = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr%%(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_byte_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bytes
+'
+' @param arr~%%() Array of unsigned bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
+    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr~%%(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_unsigned_byte_array$ = r$
 END FUNCTION
 
 
