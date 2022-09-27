@@ -56,6 +56,19 @@ PRINT str_insert$(target$, " pumpkin ", 1)
 target$    = "apple orange apple grapes apple apple pear orange"
 PRINT str_insert$(target$, "pumpkin ", 12)
 
+
+' Should return grapes:
+phrase$ = "Dragon's Dogma provides plentiful grapes. Grangrapes, even."
+PRINT phrase$
+'$DYNAMIC
+DIM SHARED parts%(20)
+found%=0
+str_find_pos phrase$, " ", parts%(), found%
+REDIM _PRESERVE parts%(found%)
+PRINT dump_integer_array(parts%(), "parts")
+PRINT str_slice_pos(phrase$, 0, parts%(0))
+
+
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
 '$INCLUDE:'../_GJ_LIB.BM'
 $END IF
