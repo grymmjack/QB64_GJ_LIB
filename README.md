@@ -13,12 +13,12 @@ in it's current state.
 
 | LIBRARY | PURPOSE | NOTES |
 |---------|---------|------|
-| [ANSI](ANSI/) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
-| [DICT](DICT/) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
-| [DUMP](DUMP/) | Debugging library | Like PHPs `print_r` (kind of) |
-| [STRINGS](STRINGS/) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
-| [PIPEPRINT](PIPEPRINT/) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
-| [SYS](SYS/) | System stuff | Contains misc. helpful utils/tools |
+| [ANSI](ANSI/README.md) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
+| [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
+| [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
+| [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
+| [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
+| [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 
 
 

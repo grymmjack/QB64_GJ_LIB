@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md) 
 ## GRYMMJACK'S SYS LIBRARY
 
 > Contains misc. helpful utils/tools

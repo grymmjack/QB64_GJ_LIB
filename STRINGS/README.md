@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S STRINGS LIBRARY
 
 > Some commonly used functions that I missed in QB64 coming from PHP.

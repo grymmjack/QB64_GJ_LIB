@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S PIPEPRINT LIBRARY
 
 > Pipe (`|`) Print emulates [Mystic BBS Display codes](http://wiki.mysticbbs.com/doku.php?id=displaycodes) (pipe codes) parsing

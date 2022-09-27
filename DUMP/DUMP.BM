@@ -50,13 +50,20 @@
 ' you want while staying in the spirit of DUMP LIB.
 ' 
 ' FUNCTION              NOTES
-' dump_string$          Includes handy output of the strings length.
-' dump_string_array$    Works on 1 dimensional arrays only (right now).
-' dump_integer_array$   Works on 1 dimensional arrays only (right now).
-' dump_single_array$    Works on 1 dimensional arrays only (right now).
-' dump_long_array$      Works on 1 dimensional arrays only (right now).
-' dump_double_array$    Works on 1 dimensional arrays only (right now).
-' dump_dict$            Dump a dictionary object and it's contents.
+' dump_bit_array$                     Returns string with a dump of an array of bits
+' dump_unsigned_bit_array$            Returns string with a dump of an array of unsigned bits
+' dump_byte_array$                    Returns string with a dump of an array of bytes
+' dump_unsigned_byte_array$           Returns string with a dump of an array of unsigned bytes
+' dump_unsigned_integer$              Returns string with a dump of an array of unsigned integers
+' dump_unsigned_byte_array_as_hex$    Returns string with a dump of an array of unsigned bytes as hex
+' dump_unsigned_byte_array_as_ascii$  Returns string with a dump of an array of unsigned bytes as hex and ASCII
+' dump_string$                        Includes handy output of the strings length.
+' dump_string_array$                  Works on 1 dimensional arrays only (right now).
+' dump_integer_array$                 Works on 1 dimensional arrays only (right now).
+' dump_single_array$                  Works on 1 dimensional arrays only (right now).
+' dump_long_array$                    Works on 1 dimensional arrays only (right now).
+' dump_double_array$                  Works on 1 dimensional arrays only (right now).
+' dump_dict$                          Dump a dictionary object and it's contents.
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @depends DUMP.BI
@@ -68,7 +75,7 @@ $LET GJ_LIB_DUMP_INC_BM = 1
 
 
 ''
-' Returns a string containing a dump of a string
+' Returns string with a dump of a string
 ' 
 ' @param s$ String to dump
 ' @param label$ Label to give the dump block
@@ -84,7 +91,47 @@ END FUNCTION
 
 
 ''
-' Returns a string containing a dump of an array of strings
+' Returns string with a dump of an array of bits
+'
+' @param arr$() Array of bits to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_bit_array$ (arr`(), label$)
+    lb = LBOUND(arr`) : ub = UBOUND(arr`) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        r$ = r$ + "  (" + i$ + "): " + STR$(arr`(i))
+        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_bit_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bits
+'
+' @param arr$() Array of unsigned bits to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_bit_array$ (arr~`(), label$)
+    lb = LBOUND(arr~`) : ub = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        r$ = r$ + "  (" + i$ + "): " + STR$(arr~`(i))
+        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_unsigned_bit_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of strings
 '
 ' @param arr$() Array of strings to dump
 ' @param label$ Label to give the dump block
@@ -105,7 +152,7 @@ END FUNCTION
 
 
 ''
-' Returns a string containing a dump of an array of integers
+' Returns string with a dump of an array of integers
 '
 ' @param arr%() Array of integers to dump
 ' @param label$ Label to give the dump block
@@ -121,6 +168,26 @@ FUNCTION dump_integer_array$ (arr%(), label$)
     NEXT i
     r$ = r$ + "}"
     dump_integer_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned integers
+'
+' @param arr%() Array of unsigned integers to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_integer_array$ (arr~%(), label$)
+    lb = LBOUND(arr~%) : ub = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
+    FOR i = lb TO ub
+        i$ = _TRIM$(STR$(i))
+        num$ = _TRIM$(STR$(arr~%(i)))
+        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+    NEXT i
+    r$ = r$ + "}"
+    dump_unsigned_integer_array$ = r$
 END FUNCTION
 
 
@@ -179,6 +246,149 @@ FUNCTION dump_double_array$ (arr#(), label$)
     NEXT i
     r$ = r$ + "}"
     dump_double_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of bytes
+'
+' @param arr%%() Array of bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_byte_array$ (arr%%(), label$)
+    lb = LBOUND(arr%%) : ub = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {"
+    FOR i% = lb TO ub
+        i$ = _TRIM$(STR$(i%))
+        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        num$ = _TRIM$(STR$(arr%%(i%)))
+        IF SGN(arr%%(i%)) = 1 THEN
+            IF LEN(num$) = 2 THEN 
+                num$ = " 0" + num$
+            ELSEIF LEN(num$) = 1 THEN 
+                num$ = " 00" + num$
+            END IF
+        ELSEIF SGN(arr%%(i%)) = 0 THEN
+            num$ = " 000"
+        ELSE
+            IF LEN(num$) = 3 THEN
+                num$ = "-0" + MID$(num$, 2, 2)
+            ELSEIF LEN(num$) = 2 THEN
+                num$ = "-00" + MID$(num$, 2, 1)
+            END IF
+        END IF
+        IF i% MOD 8 = 0 THEN
+            r$ = r$ + GJ_LIB_NL$
+            r$ = r$ + STRING$(4, " ") + i$ + ": "
+        END IF
+        r$ = r$ + num$ + " "
+    NEXT i%
+    r$ = r$ + GJ_LIB_NL$ + "}"
+    dump_byte_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bytes
+'
+' @param arr~%%() Array of unsigned bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
+    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    FOR i% = lb TO ub
+        i$ = _TRIM$(STR$(i%))
+        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        num$ = _TRIM$(STR$(arr~%%(i%)))
+        IF LEN(num$) = 2 THEN 
+            num$ = "0" + num$
+        ELSEIF LEN(num$) = 1 THEN 
+            num$ = "00" + num$
+        END IF
+        IF i% MOD 16 = 0 THEN
+            r$ = r$ + GJ_LIB_NL$
+            r$ = r$ + STRING$(4, " ") + i$ + ": "
+        END IF
+        r$ = r$ + num$ + " "
+    NEXT i%
+    r$ = r$ + GJ_LIB_NL$ + "}"
+    dump_unsigned_byte_array$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bytes as hex
+'
+' @param arr~%%() Array of unsigned bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_byte_array_as_hex$ (arr~%%(), label$)
+    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    FOR i% = lb TO ub
+        i$ = _TRIM$(STR$(i%))
+        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        h$ = HEX$(arr~%%(i%))
+        IF LEN(h$) = 1 THEN h$ = "0" + h$
+        num$ = _TRIM$(STR$(arr~%%(i%)))
+        IF i% MOD 16 = 0 THEN
+            r$ = r$ + GJ_LIB_NL$
+            r$ = r$ + STRING$(4, " ") + i$ + ": "
+        END IF
+        r$ = r$ + h$ + " "
+    NEXT i%
+    r$ = r$ + GJ_LIB_NL$ + "}"
+    dump_unsigned_byte_array_as_hex$ = r$
+END FUNCTION
+
+
+''
+' Returns string with a dump of an array of unsigned bytes as ascii
+'
+' @param arr~%%() Array of unsigned bytes to dump
+' @param label$ Label to give the dump block
+' @return STRING dump block
+'
+FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
+    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    FOR i% = lb TO ub
+        i$ = _TRIM$(STR$(i%))
+        DO WHILE LEN(i$) < LEN(STR$(ub))-1
+            i$ = "0" + i$
+        LOOP
+        h$ = HEX$(arr~%%(i%))
+        IF LEN(h$) = 1 THEN h$ = "0" + h$
+        num$ = _TRIM$(STR$(arr~%%(i%)))
+        IF i% MOD 16 = 0 THEN
+            r$ = r$ + GJ_LIB_NL$
+            r$ = r$ + STRING$(4, " ") + i$ + ": "
+        END IF
+        r$ = r$ + h$ + " "
+    NEXT i%
+    r$ = r$ + GJ_LIB_NL$ + "ASCII:"
+    FOR i% = lb TO ub
+        i$ = _TRIM$(STR$(i%))
+        DO WHILE LEN(i$) < LEN(STR$(ub))-1
+            i$ = "0" + i$
+        LOOP
+        IF arr~%%(i%) < 33 OR arr~%%(i%) > 254 THEN
+            c$ = ".."
+        ELSE
+            c$ = CHR$(arr~%%(i%)) + " "
+        END IF
+        IF i% MOD 16 = 0 THEN
+            r$ = r$ + GJ_LIB_NL$
+            r$ = r$ + STRING$(4, " ") + i$ + ": "
+        END IF
+        r$ = r$ + c$ + " "
+    NEXT i%
+    r$ = r$ + GJ_LIB_NL$ + "}"
+    dump_unsigned_byte_array_as_ascii$ = r$
 END FUNCTION
 
 

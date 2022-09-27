@@ -1,4 +1,4 @@
-# QB64_GJ_LIB 
+# [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S ANSI LIB
 
 > Support for [ANSI.SYS](https://gist.github.com/grymmjack/9dae29a60ea65f086d0b35df96fe2291) and extended codes for terminal.
