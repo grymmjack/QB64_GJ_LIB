@@ -19,6 +19,7 @@ in it's current state.
 | [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
+| [ASEPRITE](ASEPRITE/README.md) | Adds ASEPRITE support to QB64 | See https://www.aseprite.org |
 
 
 
