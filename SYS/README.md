@@ -3,7 +3,7 @@
 
 > Contains misc. helpful utils/tools
 
-## PIPEPRINT SYNTAX / CODES## WHAT'S IN THE LIBRARY
+## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
 | open_url_in_browser | Opens the default web browser with a URL on all operating systems |
