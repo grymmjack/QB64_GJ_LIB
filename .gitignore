@@ -3,3 +3,7 @@
 *.exe
 *.run
 *.command
+*.bi-bak
+*.bm-bak
+*.bas-bak
+*_start.command
