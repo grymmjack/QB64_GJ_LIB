@@ -9,6 +9,7 @@
 ' @uses ANSI/ANSI.BI
 ' @uses STRINGS/STRINGS.BI
 ' @uses PIPEPRINT/PIPEPRINT.BI
+' @uses SYS/SYS.BI
 '
 $LET GJ_LIB_INC_BI = 1 
 ' Unified testing

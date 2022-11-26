@@ -13,6 +13,7 @@
 ' @uses ANSI/ANSI.BM
 ' @uses STRINGS/STRINGS.BM
 ' @uses PIPEPRINT/PIPEPRINT.BM
+' @uses SYS/SYS.BM
 '
 $LET GJ_LIB_INC_BM = 1
 
