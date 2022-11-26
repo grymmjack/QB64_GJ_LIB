@@ -38,10 +38,10 @@ $END IF
 ' @return Nothing, but the dict() passed is populated by keys and values
 '
 SUB dict_populate (dict() AS Dict, keys$(), vals$())
+    DIM AS INTEGER uk, uv, i
     uk = UBOUND(keys$) : uv = UBOUND(vals$)
     IF uk <> uv THEN EXIT SUB
     FOR i = 0 TO uk
-        i$ = _TRIM$(STR$(i))
         dict(i).key = keys$(i)
         dict(i).val = vals$(i)
     NEXT i
@@ -54,12 +54,12 @@ END SUB
 ' @param dict() Dict object to fill
 ' @return Nothing, but the dict() passed in is filled
 '
-SUB dict_fill (dict() AS Dict)
+    SUB dict_fill (dict() AS Dict)
+    DIM AS INTEGER u, l, i
     u = UBOUND(dict) : l = LBOUND(dict)
     FOR i = l TO u
-        i$ = _TRIM$(STR$(i))
-        dict(i).key = "key" + i$
-        dict(i).val = i$
+        dict(i).key = "key" + _TRIM$(STR$(i))
+        dict(i).val = _TRIM$(STR$(i))
     NEXT i
 END SUB
 
@@ -72,6 +72,7 @@ END SUB
 ' @return INTEGER array index if found or -1 if not found
 '
 FUNCTION dict_get_index_by_key% (dict() AS Dict, key$)
+    DIM AS INTEGER u, l, i
     u = UBOUND(dict) : l = LBOUND(dict)
     FOR i = l TO u
         IF dict(i).key = key$ THEN
@@ -91,6 +92,7 @@ END FUNCTION
 ' @return STRING key of item at index
 ' 
 FUNCTION dict_get_key_by_index$ (dict() AS Dict, index%)
+    DIM AS INTEGER u, l, i
     u = UBOUND(dict) : l = LBOUND(dict)
     IF index% >= l AND index% <= u THEN
         dict_get_key_by_index$ = dict(index%).key
@@ -106,6 +108,7 @@ END FUNCTION
 ' @return STRING value of item at index
 '
 FUNCTION dict_get_val_by_index$ (dict() AS Dict, index%)
+    DIM AS INTEGER u, l, i
     u = UBOUND(dict) : l = LBOUND(dict)
     IF index% >= l AND index% <= u THEN
         dict_get_val_by_index$ = dict(index%).val
@@ -121,6 +124,7 @@ END FUNCTION
 ' @return STRING value of dictionary item by key
 '
 FUNCTION dict_get_val_by_key$ (dict() AS Dict, key$)
+    DIM AS INTEGER u, l, i
     u = UBOUND(dict) : l = LBOUND(dict)
     FOR i = l TO u
         IF dict(i).key = key$ THEN
@@ -139,6 +143,7 @@ END FUNCTION
 ' @return Nothing, but the keys$() array is populated
 '
 SUB dict_get_keys (dict() AS Dict, keys$())
+    DIM AS INTEGER u, l, i, c
     u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
     REDIM keys$(c)
     FOR i = l TO u
@@ -155,6 +160,7 @@ END SUB
 ' @return Nothing, but the vals$() array is populated
 '
 SUB dict_get_vals (dict() AS Dict, vals$())
+    DIM AS INTEGER u, l, i, c
     u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
     REDIM vals$(c)
     FOR i = l TO u
@@ -170,6 +176,7 @@ END SUB
 ' @return Nothing, but the dict() passed in is operated on directly
 '
 SUB dict_swap_keys_for_vals (dict() AS Dict)
+    DIM AS INTEGER u, l, i, c
     u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
     DIM res(c) AS Dict
     FOR i = l TO u

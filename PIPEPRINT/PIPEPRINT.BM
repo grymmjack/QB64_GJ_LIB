@@ -26,6 +26,8 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 ' @return STRING parsed with pipe codes replaced by ANSI codes
 '
 FUNCTION PIPEPRINT$ (s$)
+    DIM AS INTEGER w, nums, p
+    DIM AS STRING out, code, args, find, spaces, txt, t, nopi, repl
     w% = _WIDTH
     ansi_x% = POS(0) : ansi_y% = CSRLIN
     out$ = s$

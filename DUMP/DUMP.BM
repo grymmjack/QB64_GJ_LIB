@@ -82,6 +82,7 @@ $LET GJ_LIB_DUMP_INC_BM = 1
 ' @return STRING dump block
 '
 FUNCTION dump_string$ (s$, label$)
+    DIM AS STRING l, r
     l$ = _TRIM$(STR$(LEN(s$)))
     r$ = GJ_LIB_NL$ + "STRING: " + label$ + "$ {" + GJ_LIB_NL$
     r$ = r$ + "  " + CHR$(34) + s$ + CHR$(34) + " [" + l$ + "]" + GJ_LIB_NL$
@@ -98,12 +99,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_bit_array$ (arr`(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING t, r
     lb = LBOUND(arr`) : ub = UBOUND(arr`) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
-        r$ = r$ + "  (" + i$ + "): " + STR$(arr`(i))
-        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + STR$(arr`(i))
+        r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_bit_array$ = r$
@@ -118,12 +120,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_unsigned_bit_array$ (arr~`(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING t, r
     lb = LBOUND(arr~`) : ub = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
-        r$ = r$ + "  (" + i$ + "): " + STR$(arr~`(i))
-        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + STR$(arr~`(i))
+        r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_unsigned_bit_array$ = r$
@@ -138,13 +141,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_string_array$ (arr$(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING t, r
     lb = LBOUND(arr$) : ub = UBOUND(arr$) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
-        l$ = _TRIM$(STR$(LEN(arr$(i))))
-        r$ = r$ + "  (" + i$ + "): " + CHR$(34) + arr$(i) + CHR$(34)
-        r$ = r$ + " [" + l$ + "]" + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + CHR$(34) + arr$(i) + CHR$(34)
+        r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_string_array$ = r$
@@ -159,12 +162,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_integer_array$ (arr%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING t, r, l, num
     lb = LBOUND(arr%) : ub = UBOUND(arr%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
         num$ = _TRIM$(STR$(arr%(i)))
-        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_integer_array$ = r$
@@ -179,12 +183,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_unsigned_integer_array$ (arr~%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num
     lb = LBOUND(arr~%) : ub = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
         num$ = _TRIM$(STR$(arr~%(i)))
-        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_unsigned_integer_array$ = r$
@@ -199,12 +204,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_single_array$ (arr!(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num
     lb = LBOUND(arr!) : ub = UBOUND(arr!) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "SINGLE ARRAY: " + label$ + "!(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
         num$ = _TRIM$(STR$(arr!(i)))
-        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_single_array$ = r$
@@ -218,12 +224,13 @@ END FUNCTION
 ' @param label$ Label to give the dump block
 '
 FUNCTION dump_long_array$ (arr&(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num
     lb = LBOUND(arr&) : ub = UBOUND(arr&) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "LONG ARRAY: " + label$ + "&(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
         num$ = _TRIM$(STR$(arr&(i)))
-        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_long_array$ = r$
@@ -237,12 +244,13 @@ END FUNCTION
 ' @param label$ Label to give the dump block
 '
 FUNCTION dump_double_array$ (arr#(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num
     lb = LBOUND(arr#) : ub = UBOUND(arr#) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "DOUBLE ARRAY: " + label$ + "#(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
         num$ = _TRIM$(STR$(arr#(i)))
-        r$ = r$ + "  (" + i$ + "): " + num$ + GJ_LIB_NL$
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_double_array$ = r$
@@ -257,11 +265,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_byte_array$ (arr%%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num, si
     lb = LBOUND(arr%%) : ub = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {"
     FOR i% = lb TO ub
-        i$ = _TRIM$(STR$(i%))
-        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        si$ = _TRIM$(STR$(i%))
+        IF LEN(si$) = 1 THEN si$ = "0" + si$
         num$ = _TRIM$(STR$(arr%%(i%)))
         IF SGN(arr%%(i%)) = 1 THEN
             IF LEN(num$) = 2 THEN 
@@ -280,7 +290,7 @@ FUNCTION dump_byte_array$ (arr%%(), label$)
         END IF
         IF i% MOD 8 = 0 THEN
             r$ = r$ + GJ_LIB_NL$
-            r$ = r$ + STRING$(4, " ") + i$ + ": "
+            r$ = r$ + STRING$(4, " ") + si$ + ": "
         END IF
         r$ = r$ + num$ + " "
     NEXT i%
@@ -297,11 +307,13 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num, si
     lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb TO ub
-        i$ = _TRIM$(STR$(i%))
-        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        si$ = _TRIM$(STR$(i%))
+        IF LEN(si$) = 1 THEN si$ = "0" + si$
         num$ = _TRIM$(STR$(arr~%%(i%)))
         IF LEN(num$) = 2 THEN 
             num$ = "0" + num$
@@ -310,7 +322,7 @@ FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
         END IF
         IF i% MOD 16 = 0 THEN
             r$ = r$ + GJ_LIB_NL$
-            r$ = r$ + STRING$(4, " ") + i$ + ": "
+            r$ = r$ + STRING$(4, " ") + si$ + ": "
         END IF
         r$ = r$ + num$ + " "
     NEXT i%
@@ -327,17 +339,19 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_unsigned_byte_array_as_hex$ (arr~%%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num, si, h
     lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb TO ub
-        i$ = _TRIM$(STR$(i%))
-        IF LEN(i$) = 1 THEN i$ = "0" + i$
+        si$ = _TRIM$(STR$(i%))
+        IF LEN(si$) = 1 THEN si$ = "0" + si$
         h$ = HEX$(arr~%%(i%))
         IF LEN(h$) = 1 THEN h$ = "0" + h$
         num$ = _TRIM$(STR$(arr~%%(i%)))
         IF i% MOD 16 = 0 THEN
             r$ = r$ + GJ_LIB_NL$
-            r$ = r$ + STRING$(4, " ") + i$ + ": "
+            r$ = r$ + STRING$(4, " ") + si$ + ": "
         END IF
         r$ = r$ + h$ + " "
     NEXT i%
@@ -354,27 +368,29 @@ END FUNCTION
 ' @return STRING dump block
 '
 FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num, si, h, c
     lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb TO ub
-        i$ = _TRIM$(STR$(i%))
-        DO WHILE LEN(i$) < LEN(STR$(ub))-1
-            i$ = "0" + i$
+        si$ = _TRIM$(STR$(i%))
+        DO WHILE LEN(si$) < LEN(STR$(ub))-1
+            si$ = "0" + si$
         LOOP
         h$ = HEX$(arr~%%(i%))
         IF LEN(h$) = 1 THEN h$ = "0" + h$
         num$ = _TRIM$(STR$(arr~%%(i%)))
         IF i% MOD 16 = 0 THEN
             r$ = r$ + GJ_LIB_NL$
-            r$ = r$ + STRING$(4, " ") + i$ + ": "
+            r$ = r$ + STRING$(4, " ") + si$ + ": "
         END IF
         r$ = r$ + h$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "ASCII:"
     FOR i% = lb TO ub
-        i$ = _TRIM$(STR$(i%))
-        DO WHILE LEN(i$) < LEN(STR$(ub))-1
-            i$ = "0" + i$
+        si$ = _TRIM$(STR$(i%))
+        DO WHILE LEN(si$) < LEN(STR$(ub))-1
+            si$ = "0" + si$
         LOOP
         IF arr~%%(i%) < 33 OR arr~%%(i%) > 254 THEN
             c$ = ".."
@@ -383,7 +399,7 @@ FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
         END IF
         IF i% MOD 16 = 0 THEN
             r$ = r$ + GJ_LIB_NL$
-            r$ = r$ + STRING$(4, " ") + i$ + ": "
+            r$ = r$ + STRING$(4, " ") + si$ + ": "
         END IF
         r$ = r$ + c$ + " "
     NEXT i%
@@ -399,15 +415,16 @@ END FUNCTION
 ' @param label$ Label to give the dump block
 '
 FUNCTION dump_dict$ (dict() AS Dict, label$)
+    DIM AS INTEGER lb, ub, i
+    DIM AS STRING r, t, num, si, q, skey, sval
     lb = LBOUND(dict) : ub = UBOUND(dict) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
     q$ = CHR$(34)
     FOR i = lb TO ub
-        i$ = _TRIM$(STR$(i))
-        key$ = dict(i).key
-        val$ = dict(i).val
-        r$ = r$ + "  (" + i$ + ") " + q$ + key$ + q$
-        r$ = r$ + ": " + q$ + val$ + q$ + GJ_LIB_NL$
+        skey$ = dict(i).key
+        sval$ = dict(i).val
+        r$ = r$ + "  (" + _TRIM$(STR$(i)) + ") " + q$ + skey$ + q$
+        r$ = r$ + ": " + q$ + sval$ + q$ + GJ_LIB_NL$
     NEXT i
     r$ = r$ + "}"
     dump_dict$ = r$

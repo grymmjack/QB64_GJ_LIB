@@ -19,7 +19,7 @@ $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
 $END IF
 
 ' Enable and disable debugging by setting this variable to TRUE or FALSE:
-GJ_LIB_DEBUGGING = TRUE
+DIM GJ_LIB_DEBUGGING AS INTEGER : GJ_LIB_DEBUGGING = TRUE
 
 ' Unified includes to use everything in the library from single BI include
 $IF GJ_LIB_DICT_INC_BI = UNDEFINED THEN
