@@ -35,6 +35,8 @@ END SUB
 ' @param url$ URL to open (any protocol just passes through)
 '
 SUB open_url_in_browser (url$)
+    DIM AS STRING cmd
+    DIM AS INTEGER ret
     $IF WINDOWS THEN
         cmd$ = "start " + url$
     $ELSEIF MAC THEN
@@ -52,36 +54,37 @@ END SUB
 ' @return STRING of system information
 '
 FUNCTION sys_info$ ()
+    DIM AS STRING sout, nl
     nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
-    out$ = ""
-    out$ = out$ + "QB64 " + _OS$ + nl$
-    out$ = out$ + "          _CWD$: " + _CWD$ + nl$
-    out$ = out$ + "     _STARTDIR$: " + _STARTDIR$ + nl$
-    out$ = out$ + "       COMMAND$: " + COMMAND$ + nl$
-    out$ = out$ + "SCREEN" + nl$
-    out$ = out$ + "          Width: " + _TRIM$(STR$(_WIDTH)) + nl$
-    out$ = out$ + "         Height: " + _TRIM$(STR$(_HEIGHT)) + nl$
-    out$ = out$ + "              X: " + _TRIM$(STR$(_SCREENX)) + nl$
-    out$ = out$ + "              Y: " + _TRIM$(STR$(_SCREENY)) + nl$
-    out$ = out$ + "            BPP: " + _TRIM$(STR$(_PIXELSIZE)) + nl$
-    out$ = out$ + "       _DISPLAY: " + _TRIM$(STR$(_DISPLAY)) + nl$
-    out$ = out$ + "          _DEST: " + _TRIM$(STR$(_DEST)) + nl$
-    out$ = out$ + "        _SOURCE: " + _TRIM$(STR$(_SOURCE)) + nl$
-    out$ = out$ + "DESKTOP" + nl$
-    out$ = out$ + "          Width: " + _TRIM$(STR$(_DESKTOPWIDTH)) + nl$
-    out$ = out$ + "         Height: " + _TRIM$(STR$(_DESKTOPHEIGHT)) + nl$
-    out$ = out$ + "FONTS" + nl$
-    out$ = out$ + "     Font Width: " + _TRIM$(STR$(_FONTWIDTH)) + nl$
-    out$ = out$ + "    Font Height: " + _TRIM$(STR$(_FONTHEIGHT)) + nl$
-    out$ = out$ + "     _PRINTMODE: " + _TRIM$(STR$(_PRINTMODE)) + nl$
-    out$ = out$ + "MISC" + nl$
-    out$ = out$ + "     _CONTROLCHR: " + _TRIM$(STR$(_CONTROLCHR)) + nl$
-    out$ = out$ + "          _BLINK: " + _TRIM$(STR$(_BLINK)) + nl$
-    out$ = out$ + "   _DEFAULTCOLOR: " + _TRIM$(STR$(_DEFAULTCOLOR)) + nl$
-    out$ = out$ + "_BACKGROUNDCOLOR: " + _TRIM$(STR$(_BACKGROUNDCOLOR)) + nl$
-    out$ = out$ + "     _CLIPBOARD$:" + nl$
-    out$ = out$ + _CLIPBOARD$ + nl$
-    sys_info$ = out$
+    sout$ = ""
+    sout$ = sout$ + "QB64 " + _OS$ + nl$
+    sout$ = sout$ + "          _CWD$: " + _CWD$ + nl$
+    sout$ = sout$ + "     _STARTDIR$: " + _STARTDIR$ + nl$
+    sout$ = sout$ + "       COMMAND$: " + COMMAND$ + nl$
+    sout$ = sout$ + "SCREEN" + nl$
+    sout$ = sout$ + "          Width: " + _TRIM$(STR$(_WIDTH)) + nl$
+    sout$ = sout$ + "         Height: " + _TRIM$(STR$(_HEIGHT)) + nl$
+    sout$ = sout$ + "              X: " + _TRIM$(STR$(_SCREENX)) + nl$
+    sout$ = sout$ + "              Y: " + _TRIM$(STR$(_SCREENY)) + nl$
+    sout$ = sout$ + "            BPP: " + _TRIM$(STR$(_PIXELSIZE)) + nl$
+    sout$ = sout$ + "       _DISPLAY: " + _TRIM$(STR$(_DISPLAY)) + nl$
+    sout$ = sout$ + "          _DEST: " + _TRIM$(STR$(_DEST)) + nl$
+    sout$ = sout$ + "        _SOURCE: " + _TRIM$(STR$(_SOURCE)) + nl$
+    sout$ = sout$ + "DESKTOP" + nl$
+    sout$ = sout$ + "          Width: " + _TRIM$(STR$(_DESKTOPWIDTH)) + nl$
+    sout$ = sout$ + "         Height: " + _TRIM$(STR$(_DESKTOPHEIGHT)) + nl$
+    sout$ = sout$ + "FONTS" + nl$
+    sout$ = sout$ + "     Font Width: " + _TRIM$(STR$(_FONTWIDTH)) + nl$
+    sout$ = sout$ + "    Font Height: " + _TRIM$(STR$(_FONTHEIGHT)) + nl$
+    sout$ = sout$ + "     _PRINTMODE: " + _TRIM$(STR$(_PRINTMODE)) + nl$
+    sout$ = sout$ + "MISC" + nl$
+    sout$ = sout$ + "     _CONTROLCHR: " + _TRIM$(STR$(_CONTROLCHR)) + nl$
+    sout$ = sout$ + "          _BLINK: " + _TRIM$(STR$(_BLINK)) + nl$
+    sout$ = sout$ + "   _DEFAULTCOLOR: " + _TRIM$(STR$(_DEFAULTCOLOR)) + nl$
+    sout$ = sout$ + "_BACKGROUNDCOLOR: " + _TRIM$(STR$(_BACKGROUNDCOLOR)) + nl$
+    sout$ = sout$ + "     _CLIPBOARD$:" + nl$
+    sout$ = sout$ + _CLIPBOARD$ + nl$
+    sys_info$ = sout$
 END FUNCTION
 
 
@@ -91,14 +94,16 @@ END FUNCTION
 ' @return STRING of devices and button information
 '
 FUNCTION device_info$ ()
+    DIM AS STRING sout, nl, device_name, snum_buttons
+    DIM AS INTEGER i, num_buttons, device_count
     nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
-    out$ = ""
+    sout$ = ""
     device_count% = _DEVICES
     FOR i% = 1 TO device_count%
         device_name$ = _DEVICE$(i%)
         num_buttons% = _LASTBUTTON(i%)
-        num_buttons$ = _TRIM$(STR$(num_buttons%))
-        out$ = out$ + "DEVICE: " + device_name$ + " #BTN: " + num_buttons$ + nl$
+        snum_buttons$ = _TRIM$(STR$(num_buttons%))
+        sout$ = sout$ + "DEVICE: " + device_name$ + " #BTN: " + snum_buttons$ + nl$
     NEXT i%
-    device_info$ = out$
+    device_info$ = sout$
 END FUNCTION

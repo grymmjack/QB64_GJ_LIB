@@ -26,11 +26,11 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 ' @return STRING parsed with pipe codes replaced by ANSI codes
 '
 FUNCTION PIPEPRINT$ (s$)
-    DIM AS INTEGER w, nums, p
-    DIM AS STRING out, code, args, find, spaces, txt, t, nopi, repl
+    DIM AS INTEGER w, nums, p, u, i, l, r
+    DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
     w% = _WIDTH
     ansi_x% = POS(0) : ansi_y% = CSRLIN
-    out$ = s$
+    sout$ = s$
     
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_FOUND = 0
@@ -147,10 +147,10 @@ FUNCTION PIPEPRINT$ (s$)
                 CASE "|30": repl$ = ansi_bg_bright_yellow
                 CASE "|31": repl$ = ansi_bg_bright_white
             END SELECT            
-            out$ = str_replace$(out$, find$, repl$, 1)
+            sout$ = str_replace$(sout$, find$, repl$, 1)
         NEXT i
     END IF
-    PIPEPRINT$ = out$
+    PIPEPRINT$ = sout$
 END FUNCTION
 
 
@@ -161,7 +161,9 @@ END FUNCTION
 ' @return STRING with pipe codes stripped
 '
 FUNCTION PIPESTRIP$ (s$)
-    out$ = s$
+    DIM AS INTEGER w, nums, p, u, i, l, r
+    DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
+    sout$ = s$
     
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_STRIP_FOUND = 0
@@ -215,10 +217,10 @@ FUNCTION PIPESTRIP$ (s$)
                         find$ = code$
             END SELECT 
             repl$ = ""
-            out$ = str_replace$(out$, find$, repl$, 1)
+            sout$ = str_replace$(sout$, find$, repl$, 1)
         NEXT i
     END IF
-    PIPESTRIP$ = out$
+    PIPESTRIP$ = sout$
 END FUNCTION
 
 
