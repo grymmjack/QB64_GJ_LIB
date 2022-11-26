@@ -7,15 +7,17 @@
 '   Insert '$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BM' at the bottom of file
 '
 ' @author Rick Christy <grymmjack@gmail.com>
+' @uses _GJ_LIB_COMMON.BI
 ' @uses ANSI.BM
 '
 $LET GJ_LIB_ANSI_INC_BI = 1
 
+$IF GJ_LIB_INC_COMMON_BI = UNDEFINED THEN
+'$INCLUDE:'../_GJ_LIB_COMMON.BI'
+$END IF
+
 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
 ' Default = FALSE
-$IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
-    CONST FALSE = 0 : CONST TRUE = NOT FALSE
-$END IF
 $IF ANSI_DEBUGGING = UNDEFINED THEN
     CONST ANSI_ESC=27
 $ELSE
