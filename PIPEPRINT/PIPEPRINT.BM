@@ -162,7 +162,7 @@ END FUNCTION
 '
 FUNCTION PIPESTRIP$ (s$)
     DIM AS INTEGER w, nums, p, u, i, l, r
-    DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
+    DIM AS STRING sout, code, args, find, spaces, txt, t, repl, char
     sout$ = s$
     
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)

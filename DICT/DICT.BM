@@ -92,7 +92,7 @@ END FUNCTION
 ' @return STRING key of item at index
 ' 
 FUNCTION dict_get_key_by_index$ (dict() AS Dict, index%)
-    DIM AS INTEGER u, l, i
+    DIM AS INTEGER u, l
     u = UBOUND(dict) : l = LBOUND(dict)
     IF index% >= l AND index% <= u THEN
         dict_get_key_by_index$ = dict(index%).key
@@ -108,7 +108,7 @@ END FUNCTION
 ' @return STRING value of item at index
 '
 FUNCTION dict_get_val_by_index$ (dict() AS Dict, index%)
-    DIM AS INTEGER u, l, i
+    DIM AS INTEGER u, l
     u = UBOUND(dict) : l = LBOUND(dict)
     IF index% >= l AND index% <= u THEN
         dict_get_val_by_index$ = dict(index%).val

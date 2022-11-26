@@ -163,7 +163,7 @@ END FUNCTION
 '
 FUNCTION dump_integer_array$ (arr%(), label$)
     DIM AS INTEGER lb, ub, i
-    DIM AS STRING t, r, l, num
+    DIM AS STRING t, r, num
     lb = LBOUND(arr%) : ub = UBOUND(arr%) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
     FOR i = lb TO ub
@@ -416,7 +416,7 @@ END FUNCTION
 '
 FUNCTION dump_dict$ (dict() AS Dict, label$)
     DIM AS INTEGER lb, ub, i
-    DIM AS STRING r, t, num, si, q, skey, sval
+    DIM AS STRING r, t, q, skey, sval
     lb = LBOUND(dict) : ub = UBOUND(dict) : t$ = _TRIM$(STR$(ub - lb))
     r$ = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
     q$ = CHR$(34)
