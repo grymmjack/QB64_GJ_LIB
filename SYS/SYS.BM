@@ -93,8 +93,8 @@ END FUNCTION
 FUNCTION device_info$ ()
     nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
     out$ = ""
-    device_count = _DEVICES
-    FOR i% = 1 TO device_count
+    device_count% = _DEVICES
+    FOR i% = 1 TO device_count%
         device_name$ = _DEVICE$(i%)
         num_buttons% = _LASTBUTTON(i%)
         num_buttons$ = _TRIM$(STR$(num_buttons%))
