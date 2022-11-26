@@ -1,0 +1,32 @@
+'' 
+' QB64_GJ_LIB 
+' GRYMMJACK'S SYS LIB
+' 
+' Contains misc. helpful utils/tools
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses SYS.BI
+' @uses SYS.BM
+'
+' $LET GJ_LIB_UNIFIED_TESTING = 1
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
+'$INCLUDE:'../_GJ_LIB.BI'
+$END IF
+$IF GJ_LIB_SYS_INC_BI = UNDEFINED THEN
+'$INCLUDE:'SYS.BI'
+$END IF
+
+
+
+PRINT sys_info$
+PRINT device_info$
+SLEEP
+
+
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM = UNDEFINED THEN
+'$INCLUDE:'../_GJ_LIB.BM'
+$END IF
+$IF GJ_LIB_SYS_INC_BM = UNDEFINED THEN
+'$INCLUDE:'SYS.BM'
+$END IF
