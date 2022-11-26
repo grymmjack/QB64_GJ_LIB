@@ -4,6 +4,7 @@
 ' This is the master BI file, which includes the other BI files for the library.
 '
 ' @author Rick Christy <grymmjack@gmail.com>
+' @uses _GJ_LIB_COMMON.BI
 ' @uses DICT/DICT.BI
 ' @uses DUMP/DUMP.BI
 ' @uses ANSI/ANSI.BI
@@ -12,13 +13,12 @@
 ' @uses SYS/SYS.BI
 '
 $LET GJ_LIB_INC_BI = 1 
-' Unified testing
-' $LET GJ_LIB_UNIFIED_TESTING = 1
-
-$IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
-    CONST FALSE = 0 : CONST TRUE = NOT FALSE
+$IF GJ_LIB_INC_COMMON_BI = UNDEFINED THEN
+'$INCLUDE:'_GJ_LIB_COMMON.BI'
 $END IF
 
+' Unified testing
+' $LET GJ_LIB_UNIFIED_TESTING = 1
 ' Enable and disable debugging by setting this variable to TRUE or FALSE:
 DIM GJ_LIB_DEBUGGING AS INTEGER : GJ_LIB_DEBUGGING = TRUE
 
