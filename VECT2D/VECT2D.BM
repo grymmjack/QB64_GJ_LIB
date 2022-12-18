@@ -1,0 +1,149 @@
+SUB VECT2D_setAxes (vret AS VECT2D, x AS SINGLE, y AS SINGLE)
+    vret.x! = x!
+    vret.y! = y!
+END SUB
+
+SUB VECT2D_setX (vret AS VECT2D, x AS SINGLE)
+    vret.x! = x!
+END SUB
+
+SUB VECT2D_setY (vret AS VECT2D, y AS SINGLE)
+    vret.y! = y!
+END SUB
+
+FUNCTION VECT2D$ (vec1 AS VECT2D, rounded AS INTEGER)
+    IF rounded% = FALSE THEN
+        VECT2D$ = "(" _
+            + _TRIM$(STR$(vec1.x!)) _
+            + ", " + _TRIM$(STR$(vec1.y!)) _
+        + ")"
+    ELSE
+        DIM vret AS VECT2D
+        VECT2D_round vret, vec1
+        VECT2D$ = "(" _
+            + _TRIM$(STR$(vret.x!)) _
+            + ", " + _TRIM$(STR$(vret.y!)) _
+        + ")"
+    END IF
+END FUNCTION
+
+FUNCTION VECT2D_getX! (vec1 AS VECT2D)
+    VECT2D_getX! = vec1.x!
+END FUNCTION
+
+FUNCTION VECT2D_getY! (vec1 AS VECT2D)
+    VECT2D_getY! = vec1.y!
+END FUNCTION
+
+SUB VECT2D_add (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! + vec2.x!
+    vret.y! = vec1.y! + vec2.y!
+END SUB
+
+SUB VECT2D_sub (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! - vec2.x!
+    vret.y! = vec1.y! - vec2.y!
+END SUB
+
+SUB VECT2D_multByVECT2D (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! * vec2.x!
+    vret.y! = vec1.y! * vec2.y!
+END SUB
+
+SUB VECT2D_multBySingle (vret AS VECT2D, vec1 AS VECT2D, n AS single)
+    vret.x! = vec1.x! * n!
+    vret.y! = vec1.y! * n!
+END SUB
+
+SUB VECT2D_divByVECT2D (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! / vec2.x!
+    vret.y! = vec1.y! / vec2.y!
+END SUB
+
+SUB VECT2D_divBySingle (vret AS VECT2D, vec1 AS VECT2D, n AS SINGLE)
+    vret.x! = vec1.x! / n!
+    vret.y! = vec1.y! / n!
+END SUB
+
+SUB VECT2D_normalize (vret AS VECT2D, vec1 AS VECT2D)
+    DIM magnitude AS SINGLE
+    magnitude! = VECT2D_magnitude(vec1.x!, vec1.y!)
+    VECT2D_divBySingle vret, vec1, magnitude!
+END SUB
+
+SUB VECT2D_unit (vret AS VECT2D, vec1 AS VECT2D)
+    VECT2D_normalize vret, vec1
+END SUB
+
+SUB VECT2D_reverse (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = -vec1.x!
+    vret.y! = -vec1.y!
+END SUB
+
+SUB VECT2D_abs (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = ABS(vec1.x!)
+    vret.y! = ABS(vec1.y!)
+END SUB
+
+SUB VECT2D_zero (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = 0
+    vret.y! = 0
+END SUB
+
+FUNCTION VECT2D_distance! (vec1 AS VECT2D, vec2 AS VECT2D)
+    DIM AS SINGLE x, y
+    x! = vec1.x! - vec2.x!
+    y! = vec1.y! - vec2.y!
+    VECT2D_distance! = SQR(x! * x! + y! * y!)
+END FUNCTION
+
+SUB VECT2D_rotate (vret as VECT2D, vec1 AS VECT2D, radians as SINGLE)
+    DIM AS SINGLE cosine, sine
+    cosine! = COS(radians)
+    sine!   = SIN(radians)
+    vret.x! = vec1.x! * cosine! - vec1.y! * sine!
+    vret.y! = vec1.x! * sine! + vec1.y! * cosine!
+END SUB
+
+SUB VECT2D_round (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = _ROUND(vec1.x!)
+    vret.y! = _ROUND(vec1.y!)
+END SUB
+
+FUNCTION VECT2D_lengthsq! (vec1 AS VECT2D)
+    VECT2D_lengthsq! = vec1.x! * vec1.x! + vec1.y! * vec1.y!
+END FUNCTION
+
+FUNCTION VECT2D_length! (vec1 AS VECT2D)
+    VECT2D_length! = VECT2D_magnitude(vec1.x!, vec1.y!)
+END FUNCTION
+
+FUNCTION VECT2D_dotproduct! (vec1 AS VECT2D, vec2 AS VECT2D)
+    VECT2D_dotproduct! = vec1.x! * vec2.x! + vec1.y! * vec2.y!
+END FUNCTION
+
+FUNCTION VECT2D_crossproduct! (vec1 AS VECT2D, vec2 AS VECT2D)
+    VECT2D_crossproduct! = vec1.x! * vec2.y! - vec1.y! * vec2.x!
+END FUNCTION
+
+FUNCTION VECT2D_magnitude! (x AS SINGLE, y AS SINGLE)
+    VECT2D_magnitude! = SQR(x * x + y * y)
+END FUNCTION
+
+FUNCTION VECT2D_eq% (vec1 AS VECT2D, vec2 AS VECT2D)
+    IF vec1.x! = vec2.x! AND vec1.y! = vec2.y! THEN
+        VECT2D_eq% = TRUE
+    ELSE
+        VECT2D_eq% = FALSE
+    END IF
+END FUNCTION
+
+FUNCTION radians_to_degrees! (radians AS SINGLE)
+    radians_to_degrees! = _R2D(radians)
+    ' radians_to_degrees! = radians! * 180 / _PI
+END FUNCTION
+
+FUNCTION degrees_to_radians! (degrees AS SINGLE)
+    degrees_to_radians! = _D2R(degrees)
+    ' degrees_to_radians! = degrees! * _PI / 180
+END FUNCTION

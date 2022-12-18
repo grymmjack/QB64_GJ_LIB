@@ -1,0 +1,4 @@
+TYPE VECT2D
+     x AS SINGLE
+     y AS SINGLE
+END TYPE
