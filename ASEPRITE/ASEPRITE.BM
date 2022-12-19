@@ -1,0 +1,36 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S ASEPRITE LIB
+'
+' Adds support to QB64 for ASEPRITE images
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/ASEPRITE/ASEPRITE.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/ASEPRITE/ASEPRITE.BM' at the bottom of file
+' 
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$LET GJ_LIB_ASEPRITE_INC_BM = 1
+
+
+
+''
+' Loads an ASEPRITE image into memory
+'
+' @param img_path$ Path to the image to load
+' @param img_data ASEPRITE_IMAGE type data
+'
+SUB load_aseprite_image (img_path$, img_data AS ASEPRITE_IMAGE)
+END SUB
+
+
+''
+' Gets info for an ASEPRITE image
+'
+' @return string of info
+'
+FUNCTION get_aseprite_info$ (img_path$)
+    nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
+    out$ = ""
+    get_aseprite_info$ = out$
+END FUNCTION

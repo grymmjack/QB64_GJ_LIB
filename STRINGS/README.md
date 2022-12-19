@@ -6,12 +6,14 @@
 ## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
-| str_implode$  | Implodes a string array into a string using delimiter as glue |
-| str_explode   | Explodes a string into an array of strings using a delimiter |
-| str_find_pos  | Searches for strings in strings, fills array of found positions |
-| str_insert$   | Insert a string into another string at position |
-| str_remove$   | Remove a string from a string |
-| str_replace$  | Replaces a string with another string inside a string |
+| str_implode$   | Implodes a string array into a string using delimiter as glue |
+| str_explode    | Explodes a string into an array of strings using a delimiter |
+| str_find_pos   | Searches for strings in strings, fills array of found positions |
+| str_insert$    | Insert a string into another string at position |
+| str_remove$    | Remove a string from a string |
+| str_replace$   | Replaces a string with another string inside a string |
+| str_slice_pos$ | Returns part of a string from start pos. to end pos. |
+
 
 
 ### USAGE for STRINGS LIB (separately)

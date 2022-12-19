@@ -3,13 +3,14 @@
 '
 ' Some commonly used functions that I missed in QB64 coming from PHP
 '
-' SUB/FUNCTION  NOTE
-' str_implode$  Implodes a string array into a string using delimiter as glue
-' str_explode   Explodes a string into an array of strings using a delimiter
-' str_find_pos  Searches for strings in strings, fills array of found positions
-' str_insert$   Insert a string into another string at position
-' str_remove$   Remove a string from a string
-' str_replace$  Replaces a string with another string inside a string
+' SUB/FUNCTION   NOTE
+' str_implode$   Implodes a string array into a string using delimiter as glue
+' str_explode    Explodes a string into an array of strings using a delimiter
+' str_find_pos   Searches for strings in strings, fills array of found positions
+' str_insert$    Insert a string into another string at position
+' str_remove$    Remove a string from a string
+' str_replace$   Replaces a string with another string inside a string
+' str_slice_pos$ Returns part of a string from start pos. to end pos.
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BI
@@ -227,5 +228,27 @@ FUNCTION str_rep$ (s$, search$, replace$)
         str_rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
     ELSE 
         str_rep$ = s$
+    END IF
+END FUNCTION
+
+
+''
+' Returns part of a string from start pos. to end pos.
+' NOTE: This is different than MID$ as MID$ specifies a start and a length,
+'       NOT an end position.
+'
+' @param s$ String to slice from
+' @param startPos% Position to start slice from
+' @param endPos% Position to end slice from
+' @return STRING of sliced portion of original stright
+'
+FUNCTION str_slice_pos$ (s$, startPos%, endPos%)
+    IF startPos% <= 0 THEN
+        startPos% = 1
+    END IF
+    IF endPos% > 0 THEN
+        str_slice_pos$ = MID$(s$, startPos%, endPos%-startPos%)
+    ELSE
+        str_slice_pos$ = MID$(s$, startPos%)
     END IF
 END FUNCTION

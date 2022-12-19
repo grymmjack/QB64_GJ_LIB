@@ -3,11 +3,15 @@
 
 > Pipe (`|`) Print emulates [Mystic BBS Display codes](http://wiki.mysticbbs.com/doku.php?id=displaycodes) (pipe codes) parsing
 
+
+
 ## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
 | PIPEPRINT$ | Parses pipe codes and returns ANSI (can emulate ANSI via QB) |
 | PIPESTRIP$ | Strips all pipe codes from a string |
+
+
 
 ## PIPEPRINT SYNTAX / CODES
 | Pipe Code | Description |
