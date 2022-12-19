@@ -1,0 +1,363 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S VECT2D LIB
+'
+' 2D Vector support for QB64
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/VECT2D/VECT2D.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/VECT2D/VECT2D.BM' at the bottom of file
+' 
+' @author Rick Christy <grymmjack@gmail.com>
+' @author Evan Shortiss <https://github.com/evanshortiss/vector2d>
+' @support William Barnes
+'
+$LET GJ_LIB_VECT2D_INC_BM = 1
+
+''
+' Sets both x and y axes of the vector
+' @param VECT2D vret Vector with both axes set
+' @param SINGLE x x axis
+' @param SINGLE y y axis
+' @return VECT2D inside vret
+'
+SUB VECT2D_setAxes (vret AS VECT2D, x AS SINGLE, y AS SINGLE)
+    vret.x! = x!
+    vret.y! = y!
+END SUB
+
+
+''
+' Sets x axis of the vector
+' @param VECT2D vret Vector with x axis set
+' @param SINGLE x x axis
+' @return VECT2D inside vret
+'
+SUB VECT2D_setX (vret AS VECT2D, x AS SINGLE)
+    vret.x! = x!
+END SUB
+
+
+''
+' Sets y axis of the vector
+' @param VECT2D vret Vector with y axis set
+' @param SINGLE y y axis
+' @return VECT2D inside vret
+'
+SUB VECT2D_setY (vret AS VECT2D, y AS SINGLE)
+    vret.y! = y!
+END SUB
+
+
+''
+' Returns VECT2D as a string
+' @param VECT2D vec1 Vector to return as string
+' @param INTEGER (TRUE/FALSE) round x and y?
+' @return STRING representation of VECT2D
+'
+FUNCTION VECT2D$ (vec1 AS VECT2D, rounded AS INTEGER)
+    IF rounded% = FALSE THEN
+        VECT2D$ = "(" _
+            + _TRIM$(STR$(vec1.x!)) _
+            + ", " + _TRIM$(STR$(vec1.y!)) _
+        + ")"
+    ELSE
+        DIM vret AS VECT2D
+        VECT2D_round vret, vec1
+        VECT2D$ = "(" _
+            + _TRIM$(STR$(vret.x!)) _
+            + ", " + _TRIM$(STR$(vret.y!)) _
+        + ")"
+    END IF
+END FUNCTION
+
+
+''
+' Get x axis of VECT2D
+' @param VECT2D vec1 Vector to get x axis for
+' @return SINGLE x axis
+'
+FUNCTION VECT2D_getX! (vec1 AS VECT2D)
+    VECT2D_getX! = vec1.x!
+END FUNCTION
+
+
+
+''
+' Get y axis of VECT2D
+' @param VECT2D vec1 Vector to get y axis for
+' @return SINGLE y axis
+'
+FUNCTION VECT2D_getY! (vec1 AS VECT2D)
+    VECT2D_getY! = vec1.y!
+END FUNCTION
+
+
+''
+' Add two VECT2D axes together
+' @param VECT2D vret Return vector with result of addition
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec2 Right VECT2D operand
+' @return VECT2D inside vret
+' 
+SUB VECT2D_add (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! + vec2.x!
+    vret.y! = vec1.y! + vec2.y!
+END SUB
+
+
+''
+' Subtract two VECT2D axes from each other
+' @param VECT2D vret Return vector with result of subtraction
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec2 Right VECT2D operand
+' @return VECT2D inside vret
+' 
+SUB VECT2D_sub (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! - vec2.x!
+    vret.y! = vec1.y! - vec2.y!
+END SUB
+
+
+''
+' Multiply two VECT2D axes together
+' @param VECT2D vret Return vector with result of mulitplication
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec2 Right VECT2D operand
+' @return VECT2D inside vret
+' 
+SUB VECT2D_multByVECT2D (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! * vec2.x!
+    vret.y! = vec1.y! * vec2.y!
+END SUB
+
+
+''
+' Multiply VECT2D axes by a single number
+' @param VECT2D vret Return vector with result of mulitplication
+' @param VECT2D vec1 VECT2D to multiply axes of
+' @param SINGLE n Number to mulitply by
+' @return VECT2D inside vret
+' 
+SUB VECT2D_multBySingle (vret AS VECT2D, vec1 AS VECT2D, n AS single)
+    vret.x! = vec1.x! * n!
+    vret.y! = vec1.y! * n!
+END SUB
+
+
+''
+' Divide two VECT2D axes from each other
+' @param VECT2D vret Return vector with result of division
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec2 Right VECT2D operand
+' @return VECT2D inside vret
+' 
+SUB VECT2D_divByVECT2D (vret AS VECT2D, vec1 AS VECT2D, vec2 AS VECT2D)
+    vret.x! = vec1.x! / vec2.x!
+    vret.y! = vec1.y! / vec2.y!
+END SUB
+
+
+''
+' Divide VECT2D axes by a single number
+' @param VECT2D vret Return vector with result of division
+' @param VECT2D vec1 VECT2D to divide axes of
+' @param SINGLE n Number to divide by
+' @return VECT2D inside vret
+' 
+SUB VECT2D_divBySingle (vret AS VECT2D, vec1 AS VECT2D, n AS SINGLE)
+    vret.x! = vec1.x! / n!
+    vret.y! = vec1.y! / n!
+END SUB
+
+
+''
+' Normalize a VEC2D into a unit vector
+' @param VECT2D vret Return vector normalized
+' @param VECT2D vec1 Vector to normalize
+' @return VECT2D inside vret
+' 
+SUB VECT2D_normalize (vret AS VECT2D, vec1 AS VECT2D)
+    DIM magnitude AS SINGLE
+    magnitude! = VECT2D_magnitude(vec1.x!, vec1.y!)
+    VECT2D_divBySingle vret, vec1, magnitude!
+END SUB
+
+
+''
+' Normalize a VEC2D into a unit vector (alias)
+' @param VECT2D vret Return vector normalized
+' @param VECT2D vec1 Vector to normalize
+' @return VECT2D inside vret
+' 
+SUB VECT2D_unit (vret AS VECT2D, vec1 AS VECT2D)
+    VECT2D_normalize vret, vec1
+END SUB
+
+
+''
+' Reverse both VECT2D axes (invert sign)
+' @param VECT2D vret Return vector with axes reversed/inverted
+' @param VECT2D vec1 Vector to reverse/invert
+' @return VECT2D inside vret
+' 
+SUB VECT2D_reverse (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = -vec1.x!
+    vret.y! = -vec1.y!
+END SUB
+
+
+''
+' Get absolute values for VECT2D axes (ignore sign)
+' @param VECT2D vret Return vector with unsigned axes 
+' @param VECT2D vec1 Vector to get axes for
+' @return VECT2D inside vret
+' 
+SUB VECT2D_abs (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = ABS(vec1.x!)
+    vret.y! = ABS(vec1.y!)
+END SUB
+
+
+''
+' Set both VECT2D axes to 0
+' @param VECT2D vret Return vector with zeroed axes
+' @param VECT2D vec1 Vector to zero axes for
+' @return VECT2D inside vret
+' 
+SUB VECT2D_zero (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = 0
+    vret.y! = 0
+END SUB
+
+
+''
+' Get distance between two VECT2Ds
+' @param VECT2D vec1 Vector to measure distance from
+' @param VECT2D vec2 Vector to measure distance to
+' @return SINGLE distance between the vectors
+' 
+FUNCTION VECT2D_distance! (vec1 AS VECT2D, vec2 AS VECT2D)
+    DIM AS SINGLE x, y
+    x! = vec1.x! - vec2.x!
+    y! = vec1.y! - vec2.y!
+    VECT2D_distance! = SQR(x! * x! + y! * y!)
+END FUNCTION
+
+
+''
+' Rotate a vector by radians
+' @param VECT2D vret Return vector with rotated axes
+' @param VECT2D vec1 Vectore to rotate axes of
+' @param SINGLE radians Radians to rotate vector by
+' @return VECT2D inside vret
+'
+SUB VECT2D_rotate (vret as VECT2D, vec1 AS VECT2D, radians as SINGLE)
+    DIM AS SINGLE cosine, sine
+    cosine! = COS(radians)
+    sine!   = SIN(radians)
+    vret.x! = vec1.x! * cosine! - vec1.y! * sine!
+    vret.y! = vec1.x! * sine! + vec1.y! * cosine!
+END SUB
+
+
+''
+' Round the axes of a vector
+' @param VECT2D vret Return vector with rounded axes
+' @param VECT2D vec1 Vector to round axes for
+' @return VECT2D inside vret
+' 
+SUB VECT2D_round (vret AS VECT2D, vec1 AS VECT2D)
+    vret.x! = _ROUND(vec1.x!)
+    vret.y! = _ROUND(vec1.y!)
+END SUB
+
+
+''
+' Return length squared of vector
+' @param VECT2D vec1 Vector to operate on
+' @return SINGLE length squared of vector
+' 
+FUNCTION VECT2D_lengthsq! (vec1 AS VECT2D)
+    VECT2D_lengthsq! = vec1.x! * vec1.x! + vec1.y! * vec1.y!
+END FUNCTION
+
+
+''
+' Return length(magnitude) of vector
+' @param VECT2D vec1 Vector to get length(magnitude) for
+' @return SINGLE length of vector
+' 
+FUNCTION VECT2D_length! (vec1 AS VECT2D)
+    VECT2D_length! = VECT2D_magnitude(vec1.x!, vec1.y!)
+END FUNCTION
+
+
+''
+' Get dot product of two vectors
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec1 Right VECT2D operand
+' @return SINGLE dot product of two vectors
+'
+FUNCTION VECT2D_dotproduct! (vec1 AS VECT2D, vec2 AS VECT2D)
+    VECT2D_dotproduct! = vec1.x! * vec2.x! + vec1.y! * vec2.y!
+END FUNCTION
+
+
+''
+' Get cross product of two vectors
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec1 Right VECT2D operand
+' @return SINGLE cross product of two vectors
+'
+FUNCTION VECT2D_crossproduct! (vec1 AS VECT2D, vec2 AS VECT2D)
+    VECT2D_crossproduct! = vec1.x! * vec2.y! - vec1.y! * vec2.x!
+END FUNCTION
+
+
+''
+' Get magnitude(length) of vector
+' @param SINGLE x axis of vector
+' @param SINGLE y axis of vector
+' @return SINGLE magnitude(length) of vector
+' 
+FUNCTION VECT2D_magnitude! (x AS SINGLE, y AS SINGLE)
+    VECT2D_magnitude! = SQR(x * x + y * y)
+END FUNCTION
+
+
+''
+' Check if two vectors have equal axes
+' @param VECT2D vec1 Left VECT2D operand
+' @param VECT2D vec2 Right VECT2D operand
+' @return INTEGER (TRUE/FALSE) if vectors are equal
+' 
+FUNCTION VECT2D_eq% (vec1 AS VECT2D, vec2 AS VECT2D)
+    IF vec1.x! = vec2.x! AND vec1.y! = vec2.y! THEN
+        VECT2D_eq% = TRUE
+    ELSE
+        VECT2D_eq% = FALSE
+    END IF
+END FUNCTION
+
+
+''
+' Converts radians to degress (wrapper to _R2D)
+' @param SINGLE radians to convert to degrees
+' @return SINGLE degrees converted from radians
+' 
+FUNCTION radians_to_degrees! (radians AS SINGLE)
+    radians_to_degrees! = _R2D(radians)
+    ' Formula: radians_to_degrees! = radians! * 180 / _PI
+END FUNCTION
+
+
+''
+' Converts degrees to radians (wrapper to _D2R)
+' @param SINGLE radians to convert to degrees
+' @return SINGLE radians converted from degrees
+' 
+FUNCTION degrees_to_radians! (degrees AS SINGLE)
+    degrees_to_radians! = _D2R(degrees)
+    ' Formula: degrees_to_radians! = degrees! * _PI / 180
+END FUNCTION

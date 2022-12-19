@@ -33,10 +33,10 @@ _CONTROLCHR OFF
 LOCATE 1,1,1 ' Initialize the cursor and turn it on
 
 PRINT sys_info$
-SLEEP
+PRINT device_info$
 
-url$ = "https://youtube.com/grymmjack"
-open_url_in_browser url$
+' url$ = "https://youtube.com/grymmjack"
+' open_url_in_browser url$
 SYSTEM 1
 
 

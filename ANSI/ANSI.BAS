@@ -29,6 +29,11 @@ GJ_LIB_ANSI_OUTPUT = TRUE
 ' @bug MacOS/Linux only see: https://github.com/QB64Official/qb64/issues/33
 $IF WINDOWS THEN 
     $CONSOLE:ONLY
+$ELSE
+    $CONSOLE
+    _CONSOLE ON
+    _DEST _CONSOLE
+    _SOURCE _CONSOLE
 $ENDIF
 _CONTROLCHR OFF
 LOCATE 1,1,1 ' Initialize the cursor and turn it on

@@ -27,6 +27,8 @@ $LET DEBUGGING = 1
 ' @return STRING of array parts from the implosion
 '
 FUNCTION str_implode$ (arr$(), delim$)
+    DIM AS STRING r
+    DIM AS INTEGER lb, ub, i
     r$ = ""
     lb = LBOUND(arr$) : ub = UBOUND(arr$)
     FOR i = lb to ub
@@ -51,10 +53,12 @@ END FUNCTION
 ' @param numParts% The number of strings in the array
 '
 SUB str_explode (target$, delim$, dest$(), numParts%)
+    DIM AS INTEGER length, delimLen, numFound, i
     length = LEN(target$)
     delimLen = LEN(delim$)
+    DIM delimsPos%(length)
     IF length = 0 THEN EXIT SUB
-    DIM delimsPos%(length): numFound% = 0
+    numFound% = 0
     str_find_pos target$, delim$, delimsPos%(), numFound%
     IF numFound% > 0 THEN
         REDIM _PRESERVE delimsPos%(numFound% - 1)
@@ -98,6 +102,7 @@ END SUB
 ' @param numFound% The number of times search found a match
 '
 SUB str_find_pos (target$, search$, arrFound%(), numFound%)
+    DIM AS INTEGER length, found, x, i, u, searchLen
     length = LEN(target$): found = -1: x = 0: i = 0
     u = UBOUND(arrFound%)
     searchLen = LEN(search$)
@@ -145,6 +150,7 @@ END FUNCTION
 ' @return STRING with del$ removed
 '
 FUNCTION str_remove$ (s$, del$, count%)
+    DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
             p% = INSTR(s$, del$)
@@ -169,6 +175,7 @@ END FUNCTION
 ' @return STRING with del$ deleted
 '
 FUNCTION str_del$ (s$, del$)
+    DIM AS INTEGER i
     i% = INSTR(s$, del$)
     IF i% THEN 
         str_del$ = LEFT$(s$, i%-1) + RIGHT$(s$, LEN(s$) - (i% + LEN(del$))+1) 
@@ -188,6 +195,7 @@ END FUNCTION
 ' @return STRING with replacements
 '
 FUNCTION str_replace$ (s$, search$, replace$, count%)
+    DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
             p% = INSTR(s$, search$)
@@ -213,6 +221,7 @@ END FUNCTION
 ' @return STRING with replacement
 '
 FUNCTION str_rep$ (s$, search$, replace$)
+    DIM AS INTEGER p
     p% = INSTR(s$, search$)
     IF p% THEN
         s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)

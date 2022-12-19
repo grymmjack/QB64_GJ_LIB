@@ -12,7 +12,5 @@
 '
 $LET GJ_LIB_SYS_INC_BI = 1
 
-
-
 DECLARE SUB open_url_in_browser (url$)
 DECLARE FUNCTION sys_info$ ()

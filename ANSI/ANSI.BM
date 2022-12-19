@@ -168,9 +168,10 @@ END SUB
 ' @return string with ANSI escape codes to hide cursor
 '
 FUNCTION ansi_hide_cursor$ ()
-    out$ = CHR$(ANSI_ESC) + "[?25l"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[?25l"
     IF GJ_LIB_ANSI_EMU THEN LOCATE ,,0
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_hide_cursor$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_hide_cursor$ = sout$
 END FUNCTION
 
 
@@ -180,9 +181,10 @@ END FUNCTION
 ' @return string with ANSI escape codes to show cursor
 '
 FUNCTION ansi_show_cursor$ ()
-    out$ = CHR$(ANSI_ESC) + "[?25h"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[?25h"
     IF GJ_LIB_ANSI_EMU THEN LOCATE ,,1
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_show_cursor$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_show_cursor$ = sout$
 END FUNCTION
 
 
@@ -192,10 +194,11 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_home$ ()
-    out$ = CHR$(ANSI_ESC) + "[H"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[H"
     ansi_x% = 0 : ansi_y% = 0
     IF GJ_LIB_ANSI_EMU THEN safe_locate ansi_y%, ansi_x%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_home$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_home$ = sout$
 END FUNCTION
 
 
@@ -207,12 +210,13 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_locate$ (row%, col%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(row%)) + ";"
-    out$ = out$ + _TRIM$(STR$(col%)) + "H"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(row%)) + ";"
+    sout$ = sout$ + _TRIM$(STR$(col%)) + "H"
     ansi_x% = col% : ansi_y% = row%
     IF GJ_LIB_ANSI_EMU THEN safe_locate ansi_y%, ansi_x%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_locate$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_locate$ = sout$
 END FUNCTION
 
 
@@ -223,11 +227,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_up$ (n%)
-    out$ = CHR$(ANSI_ESC) + "[" 
-    out$ = out$ + _TRIM$(STR$(n%)) + "A"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[" 
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "A"
     ansi_y% = clamp_zero(ansi_y% - n%)
     IF GJ_LIB_ANSI_EMU THEN safe_locate_y ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_up$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_up$ = sout$
 END FUNCTION
 
 
@@ -238,11 +243,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_down$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "B"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "B"
     ansi_y% = ansi_y% + n%
     IF GJ_LIB_ANSI_EMU THEN safe_locate_y ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_down$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_down$ = sout$
 END FUNCTION
 
 
@@ -253,11 +259,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_right$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "C"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "C"
     ansi_x% = ansi_x% + n%
     IF GJ_LIB_ANSI_EMU THEN safe_locate_x ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_right$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_right$ = sout$
 END FUNCTION
 
 
@@ -268,11 +275,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_left$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "D"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "D"
     ansi_x% = clamp_zero(ansi_x% - n%)
     IF GJ_LIB_ANSI_EMU THEN safe_locate_x ansi_x%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_left$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_left$ = sout$
 END FUNCTION
 
 
@@ -283,11 +291,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_lines_down$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "E"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "E"
     ansi_y% = ansi_y% + n%
     IF GJ_LIB_ANSI_EMU THEN safe_locate_y ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_lines_down$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_lines_down$ = sout$
 END FUNCTION
 
 
@@ -298,11 +307,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_lines_up$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "F"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "F"
     ansi_y% = clamp_zero(ansi_y% - n%)
     IF GJ_LIB_ANSI_EMU THEN safe_locate_y ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_lines_up$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_lines_up$ = sout$
 END FUNCTION
 
 
@@ -313,11 +323,12 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_column$ (n%)
-    out$ = CHR$(ANSI_ESC) + "["
-    out$ = out$ + _TRIM$(STR$(n%)) + "G"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "["
+    sout$ = sout$ + _TRIM$(STR$(n%)) + "G"
     ansi_x% = n%
     IF GJ_LIB_ANSI_EMU THEN safe_locate_x ansi_x%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_column$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_column$ = sout$
 END FUNCTION
 
 
@@ -327,10 +338,11 @@ END FUNCTION
 ' @return string with ANSI escape codes to move cursor
 '
 FUNCTION ansi_move_line_up$ ()
-    out$ = CHR$(ANSI_ESC) + "M"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "M"
     ansi_y% = clamp_zero(ansi_y% - 1)
     IF GJ_LIB_ANSI_EMU THEN safe_locate_y ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_line_up$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_move_line_up$ = sout$
 END FUNCTION
 
 
@@ -340,9 +352,10 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_save_pos$ ()
-    out$ = CHR$(ANSI_ESC) + "[s"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[s"
     save_x% = ansi_x% : save_y% = ansi_y%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_save_pos$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_save_pos$ = sout$
 END FUNCTION
 
 
@@ -352,10 +365,11 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_restore_pos$ ()
-    out$ = CHR$(ANSI_ESC) + "[u"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[u"
     nil$ = ansi_locate(save_y%, save_x%)
     IF GJ_LIB_ANSI_EMU THEN safe_locate save_y%, save_x%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_restore_pos$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_restore_pos$ = sout$
 END FUNCTION
 
 
@@ -365,7 +379,9 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_to_eos$ ()
-    out$ = CHR$(ANSI_ESC) + "[0J"
+    DIM AS STRING sout
+    DIM AS INTEGER w, h, x, y, row
+    sout$ = CHR$(ANSI_ESC) + "[0J"
     IF GJ_LIB_ANSI_EMU THEN
         w = _WIDTH
         h = _HEIGHT
@@ -378,7 +394,7 @@ FUNCTION ansi_erase_to_eos$ ()
         NEXT row
         safe_locate ansi_y%, ansi_x%
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_eos$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_eos$ = sout$
 END FUNCTION
 
 
@@ -388,7 +404,9 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_to_bos$ ()
-    out$ = CHR$(ANSI_ESC) + "[1J"
+    DIM AS STRING sout
+    DIM AS INTEGER w, h, row
+    sout$ = CHR$(ANSI_ESC) + "[1J"
     IF GJ_LIB_ANSI_EMU THEN
         w = _WIDTH
         h = _HEIGHT
@@ -400,7 +418,7 @@ FUNCTION ansi_erase_to_bos$ ()
         NEXT row
         safe_locate ansi_y%, ansi_x%
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_bos$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_bos$ = sout$
 END FUNCTION
 
 
@@ -410,14 +428,15 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_screen$ ()
-    out$ = CHR$(ANSI_ESC) + "[2J"
-    out$ = out$ + ansi_locate(1,1)
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[2J"
+    sout$ = sout$ + ansi_locate(1,1)
     ansi_x% = 0 : ansi_y% = 0
     IF GJ_LIB_ANSI_EMU THEN 
         safe_locate ansi_y%, ansi_x%
         CLS
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_screen$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_screen$ = sout$
 END FUNCTION
 
 
@@ -427,13 +446,15 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_to_eol$ ()
-    out$ = CHR$(ANSI_ESC) + "[0K"
+    DIM AS STRING sout
+    DIM AS INTEGER w
+    sout$ = CHR$(ANSI_ESC) + "[0K"
     IF GJ_LIB_ANSI_EMU THEN
         w = _WIDTH
         PRINT SPC(w-ansi_x%)
         safe_locate ansi_y%, ansi_x%
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_eol$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_to_eol$ = sout$
 END FUNCTION
 
 
@@ -443,13 +464,15 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_from_sol$ ()
-    out$ = CHR$(ANSI_ESC) + "[1K"
+    DIM AS STRING sout
+    DIM AS INTEGER w
+    sout$ = CHR$(ANSI_ESC) + "[1K"
     IF GJ_LIB_ANSI_EMU THEN
         w = _WIDTH
         safe_locate ansi_y%, ansi_x%
         PRINT SPC(w-ansi_x%)
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_from_sol$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_from_sol$ = sout$
 END FUNCTION
 
 
@@ -459,7 +482,9 @@ END FUNCTION
 ' @return string with ANSI escape codes 
 '
 FUNCTION ansi_erase_line$ ()
-    out$ = CHR$(ANSI_ESC) + "[2K"
+    DIM AS STRING sout
+    DIM AS INTEGER w, x, y
+    sout$ = CHR$(ANSI_ESC) + "[2K"
     IF GJ_LIB_ANSI_EMU THEN
         w = _WIDTH
         x = ansi_x%
@@ -468,7 +493,7 @@ FUNCTION ansi_erase_line$ ()
         PRINT SPC(w)
         safe_locate ansi_y%, ansi_x%
     END IF    
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_line$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_erase_line$ = sout$
 END FUNCTION
 
 
@@ -478,13 +503,14 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting 1modes
 '
 FUNCTION ansi_mode_reset_all$ ()
-    out$ = CHR$(ANSI_ESC) + "[0m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0m"
     IF GJ_LIB_ANSI_EMU THEN
         fg_color& = 7 : bg_color& = 0
         COLOR fg_color&, bg_color&
         _BLINK ON
     END IF    
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_reset_all$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_reset_all$ = sout$
 END FUNCTION
 
 
@@ -494,12 +520,13 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_bold$ ()
-    out$ = CHR$(ANSI_ESC) + "[1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[1m"
     IF GJ_LIB_ANSI_EMU THEN
         IF fg_color& <= 7 THEN fg_color& = fg_color& + 8
         COLOR fg_color&
     END IF    
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_bold$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_bold$ = sout$
 END FUNCTION
 
 
@@ -509,12 +536,13 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_bold_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[22m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[22m"
     IF GJ_LIB_ANSI_EMU THEN
         IF fg_color& >= 8 THEN fg_color& = fg_color& - 8
         COLOR fg_color&
     END IF    
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_bold_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_bold_reset$ = sout$
 END FUNCTION
 
 
@@ -524,9 +552,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_dim$ ()
-    out$ = CHR$(ANSI_ESC) + "[2m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[2m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold_reset
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_dim$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_dim$ = sout$
 END FUNCTION
 
 
@@ -536,9 +565,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_dim_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[22m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[22m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold_reset
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_dim_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_dim_reset$ = sout$
 END FUNCTION
 
 
@@ -548,9 +578,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_italic$ ()
-    out$ = CHR$(ANSI_ESC) + "[3m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[3m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_italic$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_italic$ = sout$
 END FUNCTION
 
 
@@ -560,9 +591,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_italic_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[23m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[23m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold_reset
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_italic_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_italic_reset$ = sout$
 END FUNCTION
 
 
@@ -572,9 +604,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_underline$ ()
-    out$ = CHR$(ANSI_ESC) + "[4m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[4m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_underline$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_underline$ = sout$
 END FUNCTION
 
 
@@ -584,9 +617,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_underline_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[24m"
+    DIM AS STRING sout, nil
+    sout$ = CHR$(ANSI_ESC) + "[24m"
     IF GJ_LIB_ANSI_EMU THEN nil$ = ansi_mode_bold_reset
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_underline_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_underline_reset$ = sout$
 END FUNCTION
 
 
@@ -596,9 +630,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_blinking$ ()
-    out$ = CHR$(ANSI_ESC) + "[5m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[5m"
     IF GJ_LIB_ANSI_EMU THEN _BLINK ON
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_blinking$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_blinking$ = sout$
 END FUNCTION
 
 
@@ -608,9 +643,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_blinking_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[25m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[25m"
     IF GJ_LIB_ANSI_EMU THEN _BLINK OFF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_blinking_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_blinking_reset$ = sout$
 END FUNCTION
 
 
@@ -620,8 +656,9 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_inverse$ ()
-    out$ = CHR$(ANSI_ESC) + "[?5h"
-    out$ = out$ + CHR$(ANSI_ESC) + "[7m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[?5h"
+    sout$ = sout$ + CHR$(ANSI_ESC) + "[7m"
     IF GJ_LIB_ANSI_EMU THEN 
         old_fg_color& = fg_color&
         old_bg_color& = bg_color&
@@ -629,7 +666,7 @@ FUNCTION ansi_mode_inverse$ ()
         bg_color& = old_fg_color&
         COLOR fg_color&, bg_color&
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_inverse$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_inverse$ = sout$
 END FUNCTION
 
 
@@ -639,10 +676,11 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_inverse_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[?5l"
-    out$ = out$ + CHR$(ANSI_ESC) + "[27m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[?5l"
+    sout$ = sout$ + CHR$(ANSI_ESC) + "[27m"
     IF GJ_LIB_ANSI_EMU THEN COLOR old_fg_color&, old_bg_color&
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_inverse_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_inverse_reset$ = sout$
 END FUNCTION
 
 
@@ -652,14 +690,15 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_invisible$ ()
-    out$ = CHR$(ANSI_ESC) + "[8m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[8m"
     IF GJ_LIB_ANSI_EMU THEN 
         old_fg_color& = fg_color&
         old_bg_color& = bg_color&
         fg_color& = bg_color&
         COLOR fg_color&, bg_color&
     END IF
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_invisible$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_invisible$ = sout$
 END FUNCTION
 
 
@@ -669,9 +708,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_invisible_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[28m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[28m"
     IF GJ_LIB_ANSI_EMU THEN COLOR old_fg_color&, old_bg_color&
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_invisible_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_invisible_reset$ = sout$
 END FUNCTION
 
 
@@ -681,8 +721,9 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting mode
 '
 FUNCTION ansi_mode_strikethrough$ ()
-    out$ = CHR$(ANSI_ESC) + "[9m"
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_strikethrough$ = out$
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[9m"
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_strikethrough$ = sout$
 END FUNCTION
 
 
@@ -692,8 +733,9 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting mode
 '
 FUNCTION ansi_mode_strikethrough_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[29m"
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_strikethrough_reset$ = out$
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[29m"
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_mode_strikethrough_reset$ = sout$
 END FUNCTION
 
 
@@ -703,9 +745,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting foreground color
 '
 FUNCTION ansi_fg_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[0m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 7
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_reset$ = sout$
 END FUNCTION
 
 
@@ -715,9 +758,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for resetting background color
 '
 FUNCTION ansi_bg_reset$ ()
-    out$ = CHR$(ANSI_ESC) + "[0m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,0
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_reset$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_reset$ = sout$
 END FUNCTION
 
 
@@ -727,9 +771,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_black$ ()
-    out$ = CHR$(ANSI_ESC) + "[30m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[30m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 0
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_black$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_black$ = sout$
 END FUNCTION
 
 
@@ -739,9 +784,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_black$ ()
-    out$ = CHR$(ANSI_ESC) + "[30;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[30;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 8
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_black$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_black$ = sout$
 END FUNCTION
 
 
@@ -751,9 +797,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_black$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;40m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;40m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,0
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_black$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_black$ = sout$
 END FUNCTION
 
 
@@ -763,9 +810,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_black$ ()
-    out$ = CHR$(ANSI_ESC) + "[100;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[100;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,8
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_black$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_black$ = sout$
 END FUNCTION
 
 
@@ -775,9 +823,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_blue$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;34m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;34m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 1
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_blue$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_blue$ = sout$
 END FUNCTION
 
 
@@ -787,9 +836,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_blue$ ()
-    out$ = CHR$(ANSI_ESC) + "[34;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[34;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 9
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_blue$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_blue$ = sout$
 END FUNCTION
 
 
@@ -799,9 +849,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_blue$ ()
-    out$ = CHR$(ANSI_ESC) + "[44m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[44m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,1
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_blue$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_blue$ = sout$
 END FUNCTION
 
 
@@ -811,9 +862,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_blue$ ()
-    out$ = CHR$(ANSI_ESC) + "[104;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[104;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,9
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_blue$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_blue$ = sout$
 END FUNCTION
 
 
@@ -823,9 +875,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_green$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;32m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;32m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 2
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_green$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_green$ = sout$
 END FUNCTION
 
 
@@ -835,9 +888,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_green$ ()
-    out$ = CHR$(ANSI_ESC) + "[32;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[32;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 10
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_green$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_green$ = sout$
 END FUNCTION
 
 ''
@@ -846,9 +900,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_green$ ()
-    out$ = CHR$(ANSI_ESC) + "[42m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[42m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,2
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_green$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_green$ = sout$
 END FUNCTION
 
 
@@ -858,9 +913,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_green$ ()
-    out$ = CHR$(ANSI_ESC) + "[102;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[102;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,10
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_green$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_green$ = sout$
 END FUNCTION
 
 
@@ -870,9 +926,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_cyan$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;36m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;36m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 3
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_cyan$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_cyan$ = sout$
 END FUNCTION
 
 
@@ -882,9 +939,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_cyan$ ()
-    out$ = CHR$(ANSI_ESC) + "[36;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[36;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 11
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_cyan$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_cyan$ = sout$
 END FUNCTION
 
 
@@ -894,9 +952,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_cyan$ ()
-    out$ = CHR$(ANSI_ESC) + "[46m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[46m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,3
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_cyan$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_cyan$ = sout$
 END FUNCTION
 
 
@@ -906,9 +965,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_cyan$ ()
-    out$ = CHR$(ANSI_ESC) + "[106;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[106;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,11
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_cyan$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_cyan$ = sout$
 END FUNCTION
 
 
@@ -918,9 +978,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_red$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;31m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;31m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 4
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_red$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_red$ = sout$
 END FUNCTION
 
 
@@ -930,9 +991,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_red$ ()
-    out$ = CHR$(ANSI_ESC) + "[31;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[31;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 12
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_red$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_red$ = sout$
 END FUNCTION
 
 
@@ -942,9 +1004,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_red$ ()
-    out$ = CHR$(ANSI_ESC) + "[41m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[41m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,4
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_red$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_red$ = sout$
 END FUNCTION
 
 
@@ -954,9 +1017,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_red$ ()
-    out$ = CHR$(ANSI_ESC) + "[101;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[101;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,12
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_red$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_red$ = sout$
 END FUNCTION
 
 
@@ -966,9 +1030,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_magenta$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;35m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;35m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 5
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_magenta$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_magenta$ = sout$
 END FUNCTION
 
 
@@ -978,9 +1043,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_magenta$ ()
-    out$ = CHR$(ANSI_ESC) + "[35;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[35;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 13
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_magenta$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_magenta$ = sout$
 END FUNCTION
 
 
@@ -990,9 +1056,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_magenta$ ()
-    out$ = CHR$(ANSI_ESC) + "[45m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[45m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,5
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_magenta$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_magenta$ = sout$
 END FUNCTION
 
 
@@ -1002,9 +1069,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_magenta$ ()
-    out$ = CHR$(ANSI_ESC) + "[105;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[105;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,13
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_magenta$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_magenta$ = sout$
 END FUNCTION
 
 
@@ -1014,9 +1082,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_yellow$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;33m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;33m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 6
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_yellow$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_yellow$ = sout$
 END FUNCTION
 
 
@@ -1026,9 +1095,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_yellow$ ()
-    out$ = CHR$(ANSI_ESC) + "[33;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[33;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 14
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_yellow$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_yellow$ = sout$
 END FUNCTION
 
 
@@ -1038,9 +1108,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_yellow$ ()
-    out$ = CHR$(ANSI_ESC) + "[43m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[43m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,6
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_yellow$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_yellow$ = sout$
 END FUNCTION
 
 
@@ -1050,9 +1121,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_yellow$ ()
-    out$ = CHR$(ANSI_ESC) + "[103;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[103;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,14
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_yellow$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_yellow$ = sout$
 END FUNCTION
 
 
@@ -1062,9 +1134,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_white$ ()
-    out$ = CHR$(ANSI_ESC) + "[0;37m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[0;37m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 7
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_white$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_white$ = sout$
 END FUNCTION
 
 
@@ -1074,9 +1147,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_bright_white$ ()
-    out$ = CHR$(ANSI_ESC) + "[37;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[37;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR 15
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_white$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_bright_white$ = sout$
 END FUNCTION
 
 
@@ -1086,9 +1160,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_white$ ()
-    out$ = CHR$(ANSI_ESC) + "[47m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[47m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,7
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_white$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_white$ = sout$
 END FUNCTION
 
 
@@ -1098,9 +1173,10 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_bright_white$ ()
-    out$ = CHR$(ANSI_ESC) + "[107;1m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[107;1m"
     IF GJ_LIB_ANSI_EMU THEN COLOR ,15
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_white$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_bright_white$ = sout$
 END FUNCTION
 
 
@@ -1111,11 +1187,12 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_256$ (c%)
-    out$ = CHR$(ANSI_ESC) + "[38;5"
-    out$ = out$ + ";" + _TRIM$(STR$(c%))
-    out$ = out$ + "m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[38;5"
+    sout$ = sout$ + ";" + _TRIM$(STR$(c%))
+    sout$ = sout$ + "m"
     IF GJ_LIB_ANSI_EMU THEN COLOR c%, bg_color&
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_256$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_256$ = sout$
 END FUNCTION
 
 
@@ -1126,11 +1203,12 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_256$ (c%)
-    out$ = CHR$(ANSI_ESC) + "[48;5"
-    out$ = out$ + ";" + _TRIM$(STR$(c%))
-    out$ = out$ + "m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[48;5"
+    sout$ = sout$ + ";" + _TRIM$(STR$(c%))
+    sout$ = sout$ + "m"
     IF GJ_LIB_ANSI_EMU THEN COLOR fg_color& ,c%
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_256$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_256$ = sout$
 END FUNCTION
 
 
@@ -1143,13 +1221,14 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_fg_rgb$ (r%, g%, b%)
-    out$ = CHR$(ANSI_ESC) + "[38;2"
-    out$ = out$ + ";" + _TRIM$(STR$(r%))
-    out$ = out$ + ";" + _TRIM$(STR$(g%))
-    out$ = out$ + ";" + _TRIM$(STR$(b%))
-    out$ = out$ + "m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[38;2"
+    sout$ = sout$ + ";" + _TRIM$(STR$(r%))
+    sout$ = sout$ + ";" + _TRIM$(STR$(g%))
+    sout$ = sout$ + ";" + _TRIM$(STR$(b%))
+    sout$ = sout$ + "m"
     IF GJ_LIB_ANSI_EMU THEN COLOR _RGB(r%, g%, b%), bg_color&
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_rgb$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_fg_rgb$ = sout$
 END FUNCTION
 
 
@@ -1162,11 +1241,12 @@ END FUNCTION
 ' @return string with ANSI escape codes for setting color
 '
 FUNCTION ansi_bg_rgb$ (r%, g%, b%)
-    out$ = CHR$(ANSI_ESC) + "[48;2"
-    out$ = out$ + ";" + _TRIM$(STR$(r%))
-    out$ = out$ + ";" + _TRIM$(STR$(g%))
-    out$ = out$ + ";" + _TRIM$(STR$(b%))
-    out$ = out$ + "m"
+    DIM AS STRING sout
+    sout$ = CHR$(ANSI_ESC) + "[48;2"
+    sout$ = sout$ + ";" + _TRIM$(STR$(r%))
+    sout$ = sout$ + ";" + _TRIM$(STR$(g%))
+    sout$ = sout$ + ";" + _TRIM$(STR$(b%))
+    sout$ = sout$ + "m"
     IF GJ_LIB_ANSI_EMU THEN COLOR fg_color& ,_RGB(r%, g%, b%)
-    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_rgb$ = out$
+    IF GJ_LIB_ANSI_OUTPUT THEN ansi_bg_rgb$ = sout$
 END FUNCTION
