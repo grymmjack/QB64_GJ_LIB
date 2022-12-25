@@ -14,6 +14,7 @@
 '
 $LET GJ_LIB_VECT2D_INC_BM = 1
 
+
 ''
 ' Sets both x and y axes of the vector
 ' @param VECT2D vret Vector with both axes set
