@@ -1,0 +1,7 @@
+# Ensure all files are checked into the repo with LF line endings and checked 
+# out with LFs.
+* text=auto eol=lf
+
+# Except these files will always be checked out with CRLFs (regardless of the
+# OS they were checked out on).
+**/*.ans text eol=crlf

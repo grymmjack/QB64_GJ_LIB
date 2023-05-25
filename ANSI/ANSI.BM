@@ -116,6 +116,7 @@ $LET GJ_LIB_ANSI_INC_BM = 1
 ''
 ' Clamps a value from going below 0
 '
+' @param var% variable to clamp to zero
 ' @return void
 ' 
 FUNCTION clamp_zero% (var%)
