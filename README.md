@@ -114,3 +114,5 @@ things. I'll try to keep backwards compatibility though.
 - More ANSI stuff (file loading / displaying / ANSI music?)
 - Color stuff (palette cycling / `dump_rgb`)
 - PETSCII library
+
+Update test :)
