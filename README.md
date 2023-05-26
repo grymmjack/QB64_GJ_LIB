@@ -115,4 +115,3 @@ things. I'll try to keep backwards compatibility though.
 - Color stuff (palette cycling / `dump_rgb`)
 - PETSCII library
 
-Update test :)
