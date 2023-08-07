@@ -16,6 +16,31 @@
 > First things first, there are 2 separate LIGHTBAR modules; a SCREEN 0 text
 > version, and a 32bit BPP version.
 
+### TL;DR: The bare-bones example:
+```basic
+'$INCLUDE:'LIGHTBAR.BI'
+_BLINK OFF
+DIM menu AS LIGHTBAR
+DIM opts(1) AS STRING
+DIM options(1) AS LIGHTBAR_OPTION
+DIM choice AS INTEGER
+menu.opt_bg_color% = 0  : menu.opt_fg_color% = 12 ' Unselected option colors
+menu.bar_bg_color% = 3  : menu.bar_fg_color% = 11 ' Selected option colors
+menu.bar_kf_color% = 14 : menu.bar_kb_color% = 3  ' Selected hot key colors
+menu.key_bg_color% = 0  : menu.key_fg_color% = 14 ' Unselected hot key colors
+menu.opt_vertical% = 0
+menu.delimeter$ = "|"
+menu.max_width% = _WIDTH(0)
+opts$(0) = " |Y|es "
+opts$(1) = " |N|o "
+PRINT "Hey, is this neat or what? ";
+choice% = LIGHTBAR%(menu, opts$(), options())
+LOCATE 2, 1
+IF choice% = 0 THEN PRINT "IKR!?"
+IF choice% = 1 THEN PRINT "Pffft! whatever..."
+'$INCLUDE:'LIGHTBAR.BM'
+```
+
 ### Setup for LIGHTBAR (either version)
 1. Include in your project before any other code `LIGHTBAR.BI` at the top
 2. Include in your project after all other code `LIGHTBAR.BM` at the bottom
