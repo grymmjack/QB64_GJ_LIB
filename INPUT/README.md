@@ -1,6 +1,6 @@
 # [QB64_GJ_LIB](../README.md)
 ## GRYMMJACK'S INPUT LIBRARY
-
+> NOTE: QB64PE v3.8.0+ Required (SOUND updates)
 
 
 ## WHAT'S IN THE LIBRARY
