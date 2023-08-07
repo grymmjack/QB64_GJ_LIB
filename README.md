@@ -16,6 +16,7 @@ in it's current state.
 | [ANSI](ANSI/README.md) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
+| [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
 | [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
@@ -108,7 +109,6 @@ things. I'll try to keep backwards compatibility though.
 
 
 ## WHAT IS NEXT? (no promises or deadlines!)
-- INPUT library
 - TEXT_GUI library (menus (lightbar/mouse), dialogs?, forms?)
 - More STRINGS stuff (sorting, reversing, TitleCase, printf, pipeprint, etc.)
 - More ANSI stuff (file loading / displaying / ANSI music?)
