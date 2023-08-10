@@ -21,7 +21,6 @@
 '$INCLUDE:'LIGHTBAR.BI'
 _BLINK OFF
 DIM menu AS LIGHTBAR
-DIM opts(1) AS STRING
 DIM options(1) AS LIGHTBAR_OPTION
 DIM choice AS INTEGER
 menu.opt_bg_color% = 0  : menu.opt_fg_color% = 12 ' Unselected option colors
@@ -31,10 +30,10 @@ menu.key_bg_color% = 0  : menu.key_fg_color% = 14 ' Unselected hot key colors
 menu.opt_vertical% = 0
 menu.delimeter$ = "|"
 menu.max_width% = _WIDTH(0)
-opts$(0) = " |Y|es "
-opts$(1) = " |N|o "
+options(0).txt = " |Y|es "
+options(1).txt = " |N|o "
 PRINT "Hey, is this neat or what? ";
-choice% = LIGHTBAR%(menu, opts$(), options())
+choice% = LIGHTBAR%(menu, options())
 LOCATE 2, 1
 IF choice% = 0 THEN PRINT "IKR!?"
 IF choice% = 1 THEN PRINT "Pffft! whatever..."
@@ -48,11 +47,10 @@ IF choice% = 1 THEN PRINT "Pffft! whatever..."
 4. In each menu choice use a common delimiter for your hot keys (if you like)
 5. Insert `DIM menu AS LIGHTBAR` (or LIGHTBAR32 if using RGB32 one)
 6. Configure your `menu` LIGHTBAR (see below)
-7. Insert `DIM opts(3) AS STRING` (you can call `opts` whatever you want)
-8. Insert `DIM options(3) AS LIGHTBAR_OPTION` (or LIGHTBAR32_OPTION...)
-9. Position your cursor where you want the menu to start
-10. Insert `choice% = LIGHTBAR%(menu, opts$(), options())`
-11. Which option user picked will be an INTEGER in choice% according to array
+7. Insert `DIM options(3) AS LIGHTBAR_OPTION` (or LIGHTBAR32_OPTION...)
+8. Position your cursor where you want the menu to start
+9. Insert `choice% = LIGHTBAR%(menu, opts$(), options())`
+10. Which option user picked will be an INTEGER in choice% according to array
 
 #### LIGHTBAR Configuration
 > NOTE: Colors are INTEGERS to be compatible with SCREEN 0 mode
