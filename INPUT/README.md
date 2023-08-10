@@ -11,14 +11,18 @@
 
 
 ### THINGS I WANT TO ADD (in order of preference/usefulness)
-- [ ] **Individual colors per option** 
+
+- **Individual colors per option** 
     - Use default if not set in individual options
-- [ ] **Individual sounds for pick sound** 
+
+- **Individual sounds for pick sound**:
     - Use default if not set in individual options
-- [ ] **Non-hot key mode**
+
+- **Non-hot key mode**
     - Technically, this already works if we do not use delimiters and put an extra space in front of the option `.txt`
     - Just want to make the option official and add documentation
-- [ ] **Make arrows more intuitive** 
+
+- **Make arrows more intuitive** 
     - So up and down arrows only work when in vertical orientation or when applicable
     - If run out of space to draw options vertically against _SCREENHEIGHT, stack to make another column to the right side and allow left and right arrows to go move between vertical column stacks.
         - Same true for horizontal where if multiple rows are drawn then allow the use of the up and down arrows to go to the option above or below
@@ -63,10 +67,19 @@
                     4. move to the weightiest
                     5. if duplicate weights exist, to break ties use move candidate closest to selected options center.
             ```
-- [ ] **Random choice select**
+
+- **Multiple choice support**
+    - Present options, then use a key to select or unselect.
+        - possible args:
+            - select_keycode: (default space)
+            - min_selections_allowed
+            - max_selections_allowed
+
+- **Random choice select**
     - In this way interest can be gained. Imagine you don't care which option a user chooses, but you want it to be chance based. Why would you want this? Users who are playing a game where chance is a factor will get into the habit of hotkey sequencing. Imagine you are in a combat, and you want to fight, and the foes you want to choose from are in a lightbar menu. BUT your characters composure is impacted negatively so he is in fight-or-flight mode, and thus his own actions would be a little chaotic and random. We can simulate this with our random choice option. Picking a foe to fight in the list of foes for targetting an attack being random makes the player have to slow down and take a deep breath -- what if you target the foe your previous party member targetted and likelihood is high that the monster will be dead when it's your turn to attack? ... aha! gotcha. you just swung at the air! next time don't be so confident...
-    - In this mode, hot keys should be skipped.    
-- [ ] **Slot machine select** 
+    - In this mode, hot keys should be skipped.
+
+- **Slot machine select** 
     - Imagine the Price is Right game show wheel.
     - In this mode, hot keys should be skipped.    
     - While the lightbar menu isn't a wheel, it could spin by automatically moving the selected option through a linear sequence.
@@ -79,7 +92,8 @@
             - user_activated_stop: true/false - if false spin only stops when user presses activation key to stop.
             - spin_activation_keycode: key used to initiate the spin
             - stop_activation_keycode: key used to stop the spin
-- [ ] **Auto move with a speed option** 
+
+- **Auto move with a speed option** 
     - Here is another idea where the lightbar selection movement could be chaotic
     - In this mode, hot keys should be skipped.
     - Choosing options in ways like:
@@ -87,9 +101,11 @@
         - Semi-random - random 1 time, then neighbor options n+/- selected option x times, repeat
         - Weighted random - options can have weights when the weight is higher, it is more likely to be chosen.
     - This could be used for simple games. Like the menu draws, but it moves at speed on it's own and the user can only hit the activation keycode (no arrow keys to navigate, etc.) for elements of chance. 
-- [ ] **pipeprint support** for option text
+
+- **pipeprint support** for option text
     - So that options can be super fancy with multiple colors and formatting through `pipeprint`
-- [ ] **adjacent selector support**
+
+- **adjacent selector support**
     - Easier to show with example, but, options are presented just like they normally would be but instead of a bar simulating movement and selection changing colors, a text string chooses instead:
         ```
         example: -> is the text string chooser.
