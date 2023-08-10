@@ -96,6 +96,7 @@
 - [ ] **Auto move with a speed option** 
     - Here is another idea where the lightbar selection movement could be chaotic
     - In this mode, hot keys should be skipped.
+    - Obviously speed should be a parameter. ;)
     - Choosing options in ways like:
         - Random - complete chaos
         - Semi-random - random 1 time, then neighbor options n+/- selected option x times, repeat
