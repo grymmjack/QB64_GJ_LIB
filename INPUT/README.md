@@ -12,6 +12,12 @@
 
 ### THINGS I WANT TO ADD (in order of preference/usefulness)
 
+- [ ] **Picked color**
+    - When lightbar menu option is chosen, redraws menu with the color so it appears picked.
+    - This is handy to reinforce to the user what they chose, esp. when lightbar menus might be different colors.
+    - A background color change that was used to choose options and staying like that when they press enter is helpful but can be improved by using a picked color.
+    - If no picked color set, use regular bar color bg and fg.
+    
 - [ ] **Individual colors per option** 
     - Use default if not set in individual options
 
