@@ -56,28 +56,28 @@ $SED -i 's/{Q}/LONG/g' ARR_LONG.BAS
 $SED -i 's/{q}/long/g' ARR_LONG.BAS
 $SED -i 's/{UT}/LONG/g' ARR_LONG.BAS
 $SED -i 's/{LT}/long/g' ARR_LONG.BAS
-$SED -i 's/{SY}/&/g' ARR_LONG.BAS
+$SED -i 's/{SY}/\&/g' ARR_LONG.BAS
 
 # ULONG
 $SED -i 's/{Q}/_UNSIGNED LONG/g' ARR_ULONG.BAS
 $SED -i 's/{q}/_unsigned long/g' ARR_ULONG.BAS
 $SED -i 's/{UT}/ULONG/g' ARR_ULONG.BAS
 $SED -i 's/{LT}/ulong/g' ARR_ULONG.BAS
-$SED -i 's/{SY}/~&/g' ARR_ULONG.BAS
+$SED -i 's/{SY}/~\&/g' ARR_ULONG.BAS
 
 # INT64
 $SED -i 's/{Q}/_INTEGER64/g' ARR_INT64.BAS
 $SED -i 's/{q}/_integer64/g' ARR_INT64.BAS
 $SED -i 's/{UT}/INT64/g' ARR_INT64.BAS
 $SED -i 's/{LT}/int64/g' ARR_INT64.BAS
-$SED -i 's/{SY}/&&/g' ARR_INT64.BAS
+$SED -i 's/{SY}/\&\&/g' ARR_INT64.BAS
 
 # UINT64
 $SED -i 's/{Q}/_UNSIGNED _INTEGER64/g' ARR_UINT64.BAS
 $SED -i 's/{q}/_unsigned _integer64/g' ARR_UINT64.BAS
 $SED -i 's/{UT}/UINT64/g' ARR_UINT64.BAS
 $SED -i 's/{LT}/uint64/g' ARR_UINT64.BAS
-$SED -i 's/{SY}/~&&/g' ARR_UINT64.BAS
+$SED -i 's/{SY}/~\&\&/g' ARR_UINT64.BAS
 
 # SNG
 $SED -i 's/{Q}/SINGLE/g' ARR_SNG.BAS
