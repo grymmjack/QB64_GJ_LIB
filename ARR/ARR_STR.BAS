@@ -1,20 +1,4 @@
-
-'STRING = actual type used in syntax uppercase         _BYTE       _UNSIGNED _BYTE     INTEGER     _UNSIGNED INTEGER   LONG    _UNSIGNED LONG  _INTEGER64  _UNSIGNED _INTEGER64    SINGLE  DOUBLE  _FLOAT
-'string = actual type used in syntax as lowercase      _byte       _unsigned _byte     integer     _unsigned integer   long    _unsigned long  _integer64  _unsigned _integer64    single  double  _float
-'STR = uppercase type full name identifier         BYTE        UBYTE               INTEGER     UNSIGNED INTEGER    LONG    ULONG           INTEGER64   UINT64                  SINGLE  DOUBLE  FLOAT
-'str = lowercase type full name identifier         byte        ubyte               integer     unsigned integer    long    ulong           integer64   uint64                  single  double  float
-'$ = sigil                                       %%          ~%%                 %           ~%                  &       ~&              &&          ~&&                     !       #       ##
-
-'STRING = actual type used in syntax uppercase         STRING
-'string = actual type used in syntax as lowercase      string
-'STR = uppercase type full name identifier         STRING
-'str = lowercase type full name identifier         string
-'$ = sigil                                       $
-
 '$DYNAMIC
-OPTION _EXPLICIT
-
-
 
 ''
 ' Slice an array from source to destination starting at index and count slices
@@ -133,7 +117,7 @@ SUB ARR_STR.join(arr$(), s$)
     s$ = ""
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
     FOR i& = lb& TO ub&
-        s$ = s$ + _TRIM$(STR$(arr$(i&))) + ", "
+        s$ = s$ + _TRIM$(arr$(i&)) + ", "
     NEXT i&
     ' remove trailing comma
     s$ = MID$(s$, 1, (LEN(s$)-LEN(", ")))
@@ -154,17 +138,20 @@ SUB ARR_STR.new(arr$(), s$)
     NEXT i&
     REDIM arr(0 TO count&) AS STRING
     IF count& = 0 THEN
-        arr$(0) = VAL(s$)
+        arr$(0) = s$
         EXIT SUB
     END IF
     count& = 0
     FOR i& = 1 TO LEN(s$)
         t$ = t$ + CHR$(ASC(s$, i&))
-        IF ASC(s$, i&) = ASC(",") OR i& = LEN(s$) THEN 
-            arr$(count&) = VAL(t$)
+        IF ASC(s$, i&) = ASC(",") THEN 
+            IF i& <> LEN(s$) THEN
+                arr$(count&) = LEFT$(t$, LEN(t$) - 1)
+            END IF
             count& = count& + 1
             t$ = ""
         END IF
+        arr$(count&) = t$
     NEXT i&
 END SUB
 
@@ -179,90 +166,12 @@ FUNCTION ARR_STR.longest$(arr$())
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
     res& = 0 : lw& = 0
     FOR i& = lb& TO ub&
-        IF LEN(_TRIM$(STR$(arr$(i&)))) > lw& THEN
-            lw&  = LEN(_TRIM$(STR$(arr$(i&))))
+        IF LEN(_TRIM$(arr$(i&))) > lw& THEN
+            lw&  = LEN(_TRIM$(arr$(i&)))
             res& = i&
         END IF
     NEXT i&
     ARR_STR.longest$ = arr$(res&)
-END FUNCTION
-
-
-''
-' Perform some math on every element of a STRING array
-' @param STRING ARRAY source_arr$() to do math on
-' @param STRING ARRAY dest_arr$() to store results in
-' @param STRING op$ one of:
-'                          and   or    xor   shl   shr 
-' "+", "-", "*", "\", "&&", "||", "!!", "<<", ">>"
-' @param STRING value$ to use for operand
-'
-SUB ARR_STR.math(source_arr$(), dest_arr$(), op$, value$)
-    DIM AS LONG lb, ub, i
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    REDIM dest_arr(lb& TO ub&) AS STRING
-    FOR i& = lb& TO ub&
-        SELECT CASE op$
-            CASE "+":
-                dest_arr$(i&) = source_arr$(i&) + value$
-            CASE "-":
-                dest_arr$(i&) = source_arr$(i&) - value$
-            CASE "*":
-                dest_arr$(i&) = source_arr$(i&) * value$
-            CASE "\":
-                IF value$ > 0 THEN
-                    dest_arr$(i&) = source_arr$(i&) \ value$
-                END IF
-            CASE "&&":
-                dest_arr$(i&) = source_arr$(i&) AND value$
-            CASE "||":
-                dest_arr$(i&) = source_arr$(i&) OR value$
-            CASE "!!":
-                dest_arr$(i&) = source_arr$(i&) XOR value$
-            CASE "<<":
-                dest_arr$(i&) = _SHL(source_arr$(i&), value$)
-            CASE ">>":
-                dest_arr$(i&) = _SHR(source_arr$(i&), value$)
-        END SELECT
-    NEXT i&
-END SUB
-
-
-''
-' Return the minimum element value in STRING array
-' @param STRING ARRAY arr$() to check in
-' @return STRING minimum value found
-'
-FUNCTION ARR_STR.min$(arr$())
-    DIM AS LONG lb, ub, i
-    DIM AS STRING s
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    s$ = 127
-    FOR i& = lb& TO ub&
-        IF arr$(i&) < s$ THEN
-            s$ = arr$(i&)
-        END IF
-    NEXT i&
-    ARR_STR.min$ = s$
-END FUNCTION
-
-
-''
-' Return the maximum element value in STRING array
-' @param STRING ARRAY arr$() to check in
-' @return STRING maximum value found
-'
-FUNCTION ARR_STR.max$(arr$())
-    DIM AS LONG lb, ub, i
-    DIM AS STRING s
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    s$ = 0
-    FOR i& = lb& TO ub&
-        IF arr$(i&) > s$ THEN
-            s$ = arr$(i&)
-        END IF
-    NEXT i&
-    ARR_STR.max$ = s$
 END FUNCTION
 
 
@@ -274,10 +183,10 @@ END FUNCTION
 FUNCTION ARR_STR.shortest$(arr$())
     DIM AS LONG lb, ub, i, res, sw
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    res& = 0 : sw& = 0
+    res& = 0 : sw& = 255
     FOR i& = lb& TO ub&
-        IF LEN(_TRIM$(STR$(arr$(i&)))) < sw& THEN
-            sw&  = LEN(_TRIM$(STR$(arr$(i&))))
+        IF LEN(_TRIM$(arr$(i&))) < sw& THEN
+            sw&  = LEN(_TRIM$(arr$(i&)))
             res& = i&
         END IF
     NEXT i&
@@ -380,7 +289,13 @@ END FUNCTION
 ' @return LONG size in bytes
 '
 FUNCTION ARR_STR.size&(arr$())
-    ARR_STR.size& = LEN(arr$())
+    DIM AS LONG lb, ub, i, n
+    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
+    n& = 0
+    FOR i& = lb& TO ub&
+        n& = n& + LEN(arr$(i&))
+    NEXT i&
+    ARR_STR.size& = n&
 END FUNCTION
 
 
@@ -415,38 +330,6 @@ END FUNCTION
 
 
 ''
-' Returns the sum of all elements in a STRING array
-' @param STRING ARRAY arr$() array to get some for
-' @return LONG sum of all elements
-'
-FUNCTION ARR_STR.sum&(arr$())
-    DIM AS LONG lb, ub, i
-    DIM sum AS LONG
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    FOR i& = lb& TO ub&
-        sum& = sum& + arr$(i&)
-    NEXT i&
-    ARR_STR.sum& = sum&
-END FUNCTION
-
-
-''
-' Returns the average value of elements in a STRING array
-' @param STRING ARRAY arr$() array to get average for
-' @return LONG average of elements
-'
-FUNCTION ARR_STR.avg&(arr$())
-    DIM AS LONG lb, ub, i
-    DIM sum AS LONG
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    FOR i& = lb& TO ub&
-        sum& = sum& + arr$(i&)
-    NEXT i&
-    ARR_STR.avg& = sum& / (ub& - lb&)
-END FUNCTION
-
-
-''
 ' Shuffle the elements of a STRING array
 ' @param STRING ARRAY source_arr$() to shuffle
 ' @param STRING ARRAY dest_arr$() to store shuffled array in
@@ -476,90 +359,6 @@ SUB ARR_STR.unique(source_arr$(), dest_arr$())
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
         IF NOT ARR_STR.in%(work_arr$(), source_arr$(i&)) THEN
-            CALL ARR_STR.push(work_arr$(), source_arr$(i&))
-        END IF
-    NEXT i&
-    CALL ARR_STR.shift(work_arr$(), tmp$)
-    CALL ARR_STR.copy(work_arr$(), dest_arr$())
-END SUB
-
-
-''
-' Filters a STRING array to only elements greater than value
-' @param STRING ARRAY source_arr$() array to work on
-' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING value$ to be greater than to be returned
-'
-SUB ARR_STR.gt(source_arr$(), dest_arr$(), value$)
-    DIM AS LONG lb, ub, i
-    DIM tmp AS STRING
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    DIM work_arr(0) AS STRING
-    FOR i& = lb& TO ub&
-        IF source_arr$(i&) > value$ THEN
-            CALL ARR_STR.push(work_arr$(), source_arr$(i&))
-        END IF
-    NEXT i&
-    CALL ARR_STR.shift(work_arr$(), tmp$)
-    CALL ARR_STR.copy(work_arr$(), dest_arr$())
-END SUB
-
-
-''
-' Filters a STRING array to only elements greater than or equal to value
-' @param STRING ARRAY source_arr$() array to work on
-' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING value$ to be greater than or equal to be returned
-'
-SUB ARR_STR.gte(source_arr$(), dest_arr$(), value$)
-    DIM AS LONG lb, ub, i
-    DIM tmp AS STRING
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    DIM work_arr(0) AS STRING
-    FOR i& = lb& TO ub&
-        IF source_arr$(i&) >= value$ THEN
-            CALL ARR_STR.push(work_arr$(), source_arr$(i&))
-        END IF
-    NEXT i&
-    CALL ARR_STR.shift(work_arr$(), tmp$)
-    CALL ARR_STR.copy(work_arr$(), dest_arr$())
-END SUB
-
-
-''
-' Filters a STRING array to only elements less than value
-' @param STRING ARRAY source_arr$() array to work on
-' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING value$ to be less than to be returned
-'
-SUB ARR_STR.lt(source_arr$(), dest_arr$(), value$)
-    DIM AS LONG lb, ub, i
-    DIM tmp AS STRING
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    DIM work_arr(0) AS STRING
-    FOR i& = lb& TO ub&
-        IF source_arr$(i&) < value$ THEN
-            CALL ARR_STR.push(work_arr$(), source_arr$(i&))
-        END IF
-    NEXT i&
-    CALL ARR_STR.shift(work_arr$(), tmp$)
-    CALL ARR_STR.copy(work_arr$(), dest_arr$())
-END SUB
-
-
-''
-' Filters a STRING array to only elements less than or equal to value
-' @param STRING ARRAY source_arr$() array to work on
-' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING value$ to be less than or equal to be returned
-'
-SUB ARR_STR.lte(source_arr$(), dest_arr$(), value$)
-    DIM AS LONG lb, ub, i
-    DIM tmp AS STRING
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    DIM work_arr(0) AS STRING
-    FOR i& = lb& TO ub&
-        IF source_arr$(i&) <= value$ THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
     NEXT i&
@@ -649,7 +448,7 @@ SUB ARR_STR.odd(source_arr$(), dest_arr$())
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF source_arr$(i&) MOD 2 <> 0 THEN
+        IF i& MOD 2 <> 0 THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
     NEXT i&
@@ -669,7 +468,7 @@ SUB ARR_STR.even(source_arr$(), dest_arr$())
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF source_arr$(i&) MOD 2 = 0 THEN
+        IF i& MOD 2 = 0 THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
     NEXT i&
@@ -682,15 +481,15 @@ END SUB
 ' Filters a STRING array to only elements that have values evenly divisible by divisor
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING divisor$ for modulo
+' @param INTEGER divisor% for modulo
 '
-SUB ARR_STR.mod(source_arr$(), dest_arr$(), divisor$)
+SUB ARR_STR.mod(source_arr$(), dest_arr$(), divisor%)
     DIM AS LONG lb, ub, i
     DIM tmp AS STRING
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF source_arr$(i&) MOD divisor$ = 0 THEN
+        IF i& MOD divisor% = 0 THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
     NEXT i&
@@ -703,17 +502,17 @@ END SUB
 ' Filters a STRING array to only elements between min and max
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
-' @param STRING min$ to be greater than or equal to be returned
-' @param STRING max$ to be less than or equal to be returned
+' @param INTEGER min% to be greater than or equal to be returned
+' @param INTEGER max% to be less than or equal to be returned
 '
-SUB ARR_STR.between(source_arr$(), dest_arr$(), min$, max$)
+SUB ARR_STR.between(source_arr$(), dest_arr$(), min%, max%)
     DIM AS LONG lb, ub, i
     DIM tmp AS STRING
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF source_arr$(i&) >= min$ _
-        AND source_arr$(i&) <= max$ THEN
+        IF VAL(source_arr$(i&)) >= min% _
+        AND VAL(source_arr$(i&)) <= max% THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
     NEXT i&

@@ -1,20 +1,4 @@
-
-'_BYTE = actual type used in syntax uppercase         _BYTE       _UNSIGNED _BYTE     INTEGER     _UNSIGNED INTEGER   LONG    _UNSIGNED LONG  _INTEGER64  _UNSIGNED _INTEGER64    SINGLE  DOUBLE  _FLOAT
-'_byte = actual type used in syntax as lowercase      _byte       _unsigned _byte     integer     _unsigned integer   long    _unsigned long  _integer64  _unsigned _integer64    single  double  _float
-'BYTE = uppercase type full name identifier         BYTE        UBYTE               INTEGER     UNSIGNED INTEGER    LONG    ULONG           INTEGER64   UINT64                  SINGLE  DOUBLE  FLOAT
-'byte = lowercase type full name identifier         byte        ubyte               integer     unsigned integer    long    ulong           integer64   uint64                  single  double  float
-'%% = sigil                                       %%          ~%%                 %           ~%                  &       ~&              &&          ~&&                     !       #       ##
-
-'_BYTE = actual type used in syntax uppercase         STRING
-'_byte = actual type used in syntax as lowercase      string
-'BYTE = uppercase type full name identifier         STRING
-'byte = lowercase type full name identifier         string
-'%% = sigil                                       $
-
 '$DYNAMIC
-OPTION _EXPLICIT
-
-
 
 ''
 ' Slice an array from source to destination starting at index and count slices
