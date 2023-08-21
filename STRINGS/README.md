@@ -17,6 +17,8 @@
 | str_pad_end$ | Returns a string padded at the end using char. |
 | str_pad_both$ | Returns a string padded on both sides using char. |
 | str_repeat$ | Returns a string repeated num times. |
+| str_starts_with% | Determines if a string starts with another string. |
+| str_ends_with% | Determines if a string ends with another string. |
 
 
 

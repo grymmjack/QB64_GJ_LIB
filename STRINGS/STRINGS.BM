@@ -254,6 +254,28 @@ END FUNCTION
 
 
 ''
+' Determines if a string starts with another string
+'
+' @param STRING s$ string to check
+' @param INTEGER chars$ chars to check if string starts with
+' @return INTEGER -1 if starts with 0 if not
+FUNCTION str_starts_with%(s$, chars$)
+    str_starts_with% = (LEFT$(s$, LEN(chars$)) = chars$)
+END FUNCTION
+
+
+''
+' Determines if a string ends with another string
+'
+' @param STRING s$ string to check
+' @param INTEGER chars$ chars to check if string ends with
+' @return INTEGER -1 if ends with 0 if not
+FUNCTION str_ends_with%(s$, chars$)
+    str_ends_with% = (RIGHT$(s$, LEN(chars$)) = chars$)
+END FUNCTION
+
+
+''
 ' Pads the start of a string with num% chars
 '
 ' @param STRING s$ string to pad

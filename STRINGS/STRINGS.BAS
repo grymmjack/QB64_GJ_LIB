@@ -74,6 +74,10 @@ PRINT str_pad_both$("FML", "!", 5)
 PRINT str_repeat$("WOOF! ", 4)
 PRINT str_repeat$("whimper ", 2); str_repeat$("*whine* ", 3)
 
+PRINT "cat butt ends with 'butt' -> "; str_ends_with%("cat butt", "butt")
+PRINT "cat butt starts with 'cat' -> "; str_starts_with%("cat butt", "cat")
+PRINT "cat butt ends with 'bum' -> "; str_ends_with%("cat butt", "bum")
+PRINT "cat butt starts with 'dog' -> "; str_starts_with%("cat butt", "dog")
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
 '$INCLUDE:'../_GJ_LIB.BM'
