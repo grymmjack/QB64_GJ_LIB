@@ -13,6 +13,9 @@
 | str_remove$    | Remove a string from a string |
 | str_replace$   | Replaces a string with another string inside a string |
 | str_slice_pos$ | Returns part of a string from start pos. to end pos. |
+| str_pad_start$ | Returns a string padded at the start using char. |
+| str_pad_end$ | Returns a string padded at the end using char. |
+| str_pad_both$ | Returns a string padded on both sides using char. |
 
 
 

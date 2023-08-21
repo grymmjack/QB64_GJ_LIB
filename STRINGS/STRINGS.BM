@@ -213,6 +213,42 @@ END FUNCTION
 
 
 ''
+' Pads both sides of a string with num% chars
+'
+' @param STRING s$ string to pad
+' @param STRING char$ character to use for padding
+' @param INTEGER num% number of characters to pad to
+' @return STRING padded at the end
+FUNCTION str_pad_both$(s$, char$, num%)
+    str_pad_both$ = str_pad_end$(str_pad_start$(s$, char$, num%), char$, num%)
+END FUNCTION
+
+
+''
+' Pads the end of a string with num% chars
+'
+' @param STRING s$ string to pad
+' @param STRING char$ character to use for padding
+' @param INTEGER num% number of characters to pad to
+' @return STRING padded at the end
+FUNCTION str_pad_end$(s$, char$, num%)
+    str_pad_end$ = s$ + STRING$(num%, char$)
+END FUNCTION
+
+
+''
+' Pads the start of a string with num% chars
+'
+' @param STRING s$ string to pad
+' @param STRING char$ character to use for padding
+' @param INTEGER num% number of characters to pad to
+' @return STRING padded at the end
+FUNCTION str_pad_start$(s$, char$, num%)
+    str_pad_start$ = STRING$(num%, char$) + s$
+END FUNCTION
+
+
+''
 ' Replaces a string with another string once (helper for str_replace$)
 '
 ' @param s$ string to replace within
