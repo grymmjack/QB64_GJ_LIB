@@ -17,7 +17,6 @@ TYPES=(
     SNG
     DBL
     FLT
-    STR
 )
 for t in ${TYPES[@]}; do
     cp ARR_TEMPLATE.BAS "ARR_${t}.BAS"
