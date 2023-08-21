@@ -3,8 +3,8 @@
 ''
 ' Slice an array from source to destination starting at index and count slices
 '
-' @param UINT() source_arr~% to slice from
-' @param UINT() dest_arr~% to put slices into
+' @param _UNSIGNED INTEGER() source_arr~% to slice from
+' @param _UNSIGNED INTEGER() dest_arr~% to put slices into
 ' @param INTEGER start_idx% starting index to use as slice range
 ' @param INTEGER count% number of slices - if negative, backwards from index
 '
