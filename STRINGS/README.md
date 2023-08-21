@@ -16,6 +16,7 @@
 | str_pad_start$ | Returns a string padded at the start using char. |
 | str_pad_end$ | Returns a string padded at the end using char. |
 | str_pad_both$ | Returns a string padded on both sides using char. |
+| str_repeat$ | Returns a string repeated num times. |
 
 
 

@@ -237,6 +237,23 @@ END FUNCTION
 
 
 ''
+' Repeats a string num times
+'
+' @param STRING s$ string to repeat
+' @param INTEGER num% number of times to repeat
+' @return STRING repeated
+FUNCTION str_repeat$(s$, num%)
+    DIM i AS INTEGER
+    DIM res AS STRING
+    res$ = ""
+    FOR i% = 1 TO num%
+        res$ = res$ + s$
+    NEXT i%
+    str_repeat$ = res$
+END FUNCTION
+
+
+''
 ' Pads the start of a string with num% chars
 '
 ' @param STRING s$ string to pad

@@ -71,6 +71,8 @@ PRINT str_slice_pos(phrase$, 0, parts%(0))
 PRINT str_pad_end$("My dog needs to go out", ".", 3)
 PRINT str_pad_start$("but my shoes are upstairs and i'm lazy", ".", 10)
 PRINT str_pad_both$("FML", "!", 5)
+PRINT str_repeat$("WOOF! ", 4)
+PRINT str_repeat$("whimper ", 2); str_repeat$("*whine* ", 3)
 
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
