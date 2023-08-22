@@ -39,3 +39,30 @@
 > Screenshot of output from [STRINGS.BAS](STRINGS.BAS)
 
 ![](STRINGS.png)
+
+
+### TO DO
+- [ ] str_word_count
+- [ ] str_lower_first
+- [ ] str_upper_first
+- [ ] str_reverse
+- [ ] str_shuffle
+- [ ] str_add_slashes
+- [ ] str_strip_slashes
+- [ ] str_capitalize
+- [ ] str_camelcase
+- [ ] str_snakecase
+- [ ] str_is_alphanumeric
+- [ ] str_is_numeric
+- [ ] str_is_ucase
+- [ ] str_is_lcase
+- [ ] str_is_lower_ascii
+- [ ] str_is_upper_ascii
+- [ ] str_is_ctrlchar
+- [ ] str_is_decimal
+- [ ] str_is_whitespace
+- [ ] str_number_format
+- [ ] str_format
+- [ ] str_wordwrap
+
+
