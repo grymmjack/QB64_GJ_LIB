@@ -33,3 +33,6 @@ Simulates a dictionary object as found in other languages.
 > Screenshot of output from [DICT.BAS](DICT.BAS)
 
 ![Example output from [DICT.BAS](DICT.BAS)](DICT.png)
+
+### TO DO:
+- [ ] dict_templatize_str (like \` \` in js {key} replaced with {val})

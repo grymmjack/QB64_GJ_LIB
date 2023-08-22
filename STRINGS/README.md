@@ -42,16 +42,28 @@
 
 
 ### TO DO
+- [ ] str_ub `_TRIM$(STR$(n~%%))`
+- [ ] str_ui `_TRIM$(STR$(n~%))`
+- [ ] str_ul `_TRIM$(STR$(n~&))`
+- [ ] str_b  `_TRIM$(STR$(n%%))`
+- [ ] str_i  `_TRIM$(STR$(n%))`
+- [ ] str_l  `_TRIM$(STR$(n&))`
+- [ ] str_s  `_TRIM$(STR$(n!))`
+- [ ] str_d  `_TRIM$(STR$(n#))`
+- [ ] str_f  `_TRIM$(STR$(n##))`
+- [ ] str_wrap
+- [ ] str_wrap_pair
 - [ ] str_word_count
 - [ ] str_lower_first
 - [ ] str_upper_first
 - [ ] str_reverse
 - [ ] str_shuffle
-- [ ] str_add_slashes
-- [ ] str_strip_slashes
-- [ ] str_capitalize
-- [ ] str_camelcase
-- [ ] str_snakecase
+- [ ] str_add_slashes (single quotes, double quotes)
+- [ ] str_strip_slashes (remove from single quotes, double quotes)
+- [ ] str_strip_whitespace (space, \r, \n, \t)
+- [ ] str_titlecase `Title Case`
+- [ ] str_camelcase `CamelCase`
+- [ ] str_snakecase `snakeCase`
 - [ ] str_is_alphanumeric
 - [ ] str_is_numeric
 - [ ] str_is_ucase
@@ -64,5 +76,3 @@
 - [ ] str_number_format
 - [ ] str_format
 - [ ] str_wordwrap
-
-
