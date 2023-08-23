@@ -19,6 +19,15 @@
 | str_repeat$ | Returns a string repeated num times. |
 | str_starts_with% | Determines if a string starts with another string. |
 | str_ends_with% | Determines if a string ends with another string. |
+| str_ub$ | Returns a space trimmed _UNSIGNED _BYTE as a string. |
+| str_ui$ | Returns a space trimmed _UNSIGNED INTEGER as a string. |
+| str_ul$ | Returns a space trimmed _UNSIGNED LONG as a string. |
+| str_b$ | Returns a space trimmed _BYTE as a string. |
+| str_i$ | Returns a space trimmed INTEGER as a string. |
+| str_l$ | Returns a space trimmed LONG as a string. |
+| str_d$ | Returns a space trimmed DOUBLE as a string. |
+| str_s$ | Returns a space trimmed SINGLE as a string. |
+| str_v$ | Returns a space trimmed _FLOAT as a string. |
 
 
 
@@ -42,15 +51,6 @@
 
 
 ### TO DO
-- [ ] str_ub `_TRIM$(STR$(n~%%))`
-- [ ] str_ui `_TRIM$(STR$(n~%))`
-- [ ] str_ul `_TRIM$(STR$(n~&))`
-- [ ] str_b  `_TRIM$(STR$(n%%))`
-- [ ] str_i  `_TRIM$(STR$(n%))`
-- [ ] str_l  `_TRIM$(STR$(n&))`
-- [ ] str_s  `_TRIM$(STR$(n!))`
-- [ ] str_d  `_TRIM$(STR$(n#))`
-- [ ] str_f  `_TRIM$(STR$(n##))`
 - [ ] str_wrap
 - [ ] str_wrap_pair
 - [ ] str_word_count

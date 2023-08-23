@@ -327,3 +327,102 @@ FUNCTION str_slice_pos$ (s$, startPos%, endPos%)
         str_slice_pos$ = MID$(s$, startPos%)
     END IF
 END FUNCTION
+
+
+''
+' Returns a space trimmed _UNSIGNED _BYTE as a string
+'
+' @param _UNSIGNED _BYTE n~%% number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_ub$ (n~%%)
+    str_ub$ = _TRIM$(STR$(n~%%))
+END FUNCTION
+
+
+''
+' Returns a space trimmed _UNSIGNED INTEGER as a string
+'
+' @param _UNSIGNED INTEGER n~% number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_ui$ (n~%)
+    str_ui$ = _TRIM$(STR$(n~%))
+END FUNCTION
+
+
+''
+' Returns a space trimmed _UNSIGNED LONG as a string
+'
+' @param _UNSIGNED LONG n~& number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_ul$ (n~&)
+    str_ul$ = _TRIM$(STR$(n~&))
+END FUNCTION
+
+
+''
+' Returns a space trimmed _BYTE as a string
+'
+' @param _BYTE n~% number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_b$ (n%%)
+    str_b$ = _TRIM$(STR$(n%%))
+END FUNCTION
+
+
+''
+' Returns a space trimmed INTEGER as a string
+'
+' @param INTEGER n% number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_i$ (n%)
+    str_i$ = _TRIM$(STR$(n%))
+END FUNCTION
+
+
+''
+' Returns a space trimmed LONG as a string
+'
+' @param LONG n& number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_l$ (n&)
+    str_l$ = _TRIM$(STR$(n&))
+END FUNCTION
+
+
+''
+' Returns a space trimmed SINGLE as a string
+'
+' @param SINGLE n! number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_s$ (n!)
+    str_s$ = _TRIM$(STR$(n!))
+END FUNCTION
+
+
+''
+' Returns a space trimmed DOUBLE as a string
+'
+' @param DOUBLE n& number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_d$ (n#)
+    str_d$ = _TRIM$(STR$(n#))
+END FUNCTION
+
+
+''
+' Returns a space trimmed _FLOAT as a string
+'
+' @param _FLOAT n& number to return
+' @return STRING space trimmed number
+'
+FUNCTION str_f$ (n##)
+    str_f$ = _TRIM$(STR$(n##))
+END FUNCTION
