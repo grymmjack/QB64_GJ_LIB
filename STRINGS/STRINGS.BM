@@ -2,15 +2,6 @@
 ' GRYMMJACK'S STRINGS LIB
 '
 ' Some commonly used functions that I missed in QB64 coming from PHP
-'
-' SUB/FUNCTION   NOTE
-' str_implode$   Implodes a string array into a string using delimiter as glue
-' str_explode    Explodes a string into an array of strings using a delimiter
-' str_find_pos   Searches for strings in strings, fills array of found positions
-' str_insert$    Insert a string into another string at position
-' str_remove$    Remove a string from a string
-' str_replace$   Replaces a string with another string inside a string
-' str_slice_pos$ Returns part of a string from start pos. to end pos.
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BI
@@ -209,6 +200,25 @@ FUNCTION str_replace$ (s$, search$, replace$, count%)
         LOOP UNTIL p% = 0 OR count% = 0
     END IF
     str_replace$ = s$
+END FUNCTION
+
+
+''
+' Reverses a string
+' 
+' @param STRING s$ string to reverse
+' @return STRING reversed string
+'
+FUNCTION str_reverse$(s$)
+    DIM AS INTEGER i, l
+    DIM AS STRING res
+    res$ = ""
+    l% = LEN(s$)
+    IF l% = 0 THEN EXIT FUNCTION
+    FOR i% = l% TO 1 STEP -1
+        res$ = res$ + CHR$(ASC(s$, i%))
+    NEXT i%
+    str_reverse$ = res$
 END FUNCTION
 
 

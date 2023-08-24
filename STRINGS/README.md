@@ -19,6 +19,7 @@
 | str_repeat$ | Returns a string repeated num times. |
 | str_starts_with% | Determines if a string starts with another string. |
 | str_ends_with% | Determines if a string ends with another string. |
+| str_reverse$ | Reverses a string. |
 | str_ub$ | Returns a space trimmed _UNSIGNED _BYTE as a string. |
 | str_ui$ | Returns a space trimmed _UNSIGNED INTEGER as a string. |
 | str_ul$ | Returns a space trimmed _UNSIGNED LONG as a string. |
@@ -56,7 +57,6 @@
 - [ ] str_word_count
 - [ ] str_lower_first
 - [ ] str_upper_first
-- [ ] str_reverse
 - [ ] str_shuffle
 - [ ] str_add_slashes (single quotes, double quotes)
 - [ ] str_strip_slashes (remove from single quotes, double quotes)
