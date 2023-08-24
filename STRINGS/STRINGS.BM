@@ -45,10 +45,10 @@ END FUNCTION
 '
 SUB str_explode (target$, delim$, dest$(), numParts%)
     DIM AS INTEGER length, delimLen, numFound, i
-    length = LEN(target$)
-    delimLen = LEN(delim$)
+    length% = LEN(target$)
+    delimLen% = LEN(delim$)
     DIM delimsPos%(length)
-    IF length = 0 THEN EXIT SUB
+    IF length% = 0 THEN EXIT SUB
     numFound% = 0
     str_find_pos target$, delim$, delimsPos%(), numFound%
     IF numFound% > 0 THEN
@@ -60,23 +60,23 @@ SUB str_explode (target$, delim$, dest$(), numParts%)
     END IF
     IF numFound% > 0 THEN
         IF numFound% = 1 THEN
-            dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen)
-            dest$(1) = MID$(target$, delimsPos%(0) + delimLen)
+            dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
+            dest$(1) = MID$(target$, delimsPos%(0) + delimLen%)
             numParts% = 1
         END IF
         IF numFound% > 1 THEN
-            dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen)
+            dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
             FOR i = 1 TO numFound%
                 IF i + 1 <= numFound% THEN
                     dest$(i) = MID$( _
                         target$, _
-                        delimsPos%(i - 1) + delimLen, _
-                        delimsPos%(i) - delimsPos%(i - 1) - delimLen _
+                        delimsPos%(i - 1) + delimLen%, _
+                        delimsPos%(i) - delimsPos%(i - 1) - delimLen% _
                     )
                 END IF
             NEXT i
             dest$(numFound%) = MID$( _
-                target$, delimsPos%(numFound% - 1) + delimLen _
+                target$, delimsPos%(numFound% - 1) + delimLen% _
             )
             numParts% = numFound%
         END IF
@@ -219,6 +219,29 @@ FUNCTION str_reverse$(s$)
         res$ = res$ + CHR$(ASC(s$, i%))
     NEXT i%
     str_reverse$ = res$
+END FUNCTION
+
+
+''
+' Shuffles (randomizes) the characters in a string
+' 
+' @param STRING s$ string to reverse
+' @return STRING shuffled string
+'
+FUNCTION str_shuffle$(s$)
+    DIM AS INTEGER r
+    DIM AS STRING c, ls, rs, res
+    IF LEN(s$) = 0 THEN EXIT FUNCTION
+    RANDOMIZE TIMER
+    DO
+        r%   = INT(RND * LEN(s$) + 1) ' random pos in diminishing string
+        c$   = MID$(s$, r%, 1)        ' random char at pos from diminishing string
+        ls$  = MID$(s$, 1, r% - 1)    ' left side of diminishing string sans c$
+        rs$  = MID$(s$, r% + 1)       ' right side of diminishing string sans c$
+        s$   = ls$ + rs$              ' diminish the string (remove c$)
+        res$ = res$ + c$              ' build the returned string
+    LOOP UNTIL LEN(s$) = 0
+    str_shuffle$ = res$
 END FUNCTION
 
 

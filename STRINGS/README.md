@@ -20,6 +20,7 @@
 | str_starts_with% | Determines if a string starts with another string. |
 | str_ends_with% | Determines if a string ends with another string. |
 | str_reverse$ | Reverses a string. |
+| str_shuffle$ | Shuffles (randomizes) the characters in a string. |
 | str_ub$ | Returns a space trimmed _UNSIGNED _BYTE as a string. |
 | str_ui$ | Returns a space trimmed _UNSIGNED INTEGER as a string. |
 | str_ul$ | Returns a space trimmed _UNSIGNED LONG as a string. |
@@ -57,7 +58,6 @@
 - [ ] str_word_count
 - [ ] str_lower_first
 - [ ] str_upper_first
-- [ ] str_shuffle
 - [ ] str_add_slashes (single quotes, double quotes)
 - [ ] str_strip_slashes (remove from single quotes, double quotes)
 - [ ] str_strip_whitespace (space, \r, \n, \t)

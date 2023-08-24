@@ -101,7 +101,19 @@ PRINT ": [" + str_d$(d#) + "]"
 PRINT ": [" + str_f$(f##) + "]"
 PRINT
 
-PRINT str_reverse$("Four score and seven years ago")
+PRINT "[Four score and seven years ago]"
+PRINT "[" + str_reverse$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
 '$INCLUDE:'../_GJ_LIB.BM'
