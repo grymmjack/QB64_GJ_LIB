@@ -53,6 +53,7 @@
 
 
 ### TO DO
+- [ ] str_word_shuffle
 - [ ] str_wrap
 - [ ] str_wrap_pair
 - [ ] str_word_count
