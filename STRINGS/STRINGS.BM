@@ -44,14 +44,12 @@ END FUNCTION
 ' @param INTEGER numParts% the number of strings in the array
 '
 SUB str_explode(target$, delim$, dest$(), numParts%)
-    PRINT "................"
-    PRINT "[" + delim$ + "]"
     DIM AS INTEGER length, delimLen, numFound, i
     length% = LEN(target$) : delimLen% = LEN(delim$) : numFound% = 0
     DIM delimsPos(length%) AS INTEGER
     IF length% = 0 THEN EXIT SUB
 
-    str_find_pos target$, delim$, delimsPos%(), numFound%
+    CALL str_find_pos(target$, delim$, delimsPos%(), numFound%)
 
     IF numFound% <= 0 THEN
         numParts% = 0
@@ -95,10 +93,6 @@ SUB str_find_pos(target$, search$, arrFound%(), numFound%)
     length% = LEN(target$) : found% = -1 : x% = 0: i% = 0
     ub% = UBOUND(arrFound%)
     searchLen% = LEN(search$)
-    PRINT ub%; searchLen%
-    PRINT target$
-    PRINT "................."
-    PRINT "[" + search$ + "]"
     DO WHILE i% <= length%
         found% = INSTR(i%, target$, search$)
         IF found% > 0 AND x% <= ub% THEN
