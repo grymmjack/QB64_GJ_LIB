@@ -13,23 +13,23 @@ $LET DEBUGGING = 1
 ''
 ' Implodes a string array into a string using delimiter as glue
 ' 
-' @param arr$() Array to implode from
-' @param delim$ Delimiter to glue the array parts together with
-' @return STRING of array parts from the implosion
+' @param STRING ARRAY arr$() to implode from
+' @param STRING delim$ Delimiter to glue the array parts together with
+' @return STRING of array parts glued together with delimiter
 '
-FUNCTION str_implode$ (arr$(), delim$)
-    DIM AS STRING r
+FUNCTION str_implode$(arr$(), delim$)
+    DIM AS STRING res
     DIM AS INTEGER lb, ub, i
-    r$ = ""
-    lb = LBOUND(arr$) : ub = UBOUND(arr$)
-    FOR i = lb to ub
-        IF i + 1 <= ub THEN
-            r$ = r$ + arr$(i) + delim$
+    res$ = ""
+    lb% = LBOUND(arr$) : ub% = UBOUND(arr$)
+    FOR i% = lb% TO ub%
+        IF i% + 1 <= ub% THEN
+            res$ = res$ + arr$(i) + delim$
         ELSE
-            r$ = r$ + arr$(i)
+            res$ = res$ + arr$(i)
         END IF
-    NEXT i
-    str_implode$ = r$
+    NEXT i%
+    str_implode$ = res$
 END FUNCTION
 
 
@@ -38,43 +38,41 @@ END FUNCTION
 '
 ' If the delimiter is not found, returns the target as dest$(0)
 ' 
-' @param target$ String to explode
-' @param delim$ Delimiter
-' @param dest$() Array to explode into
-' @param numParts% The number of strings in the array
+' @param STRING target$ to explode
+' @param STRING delim$ delimiter
+' @param STRING ARRAY dest$() to explode into
+' @param INTEGER numParts% the number of strings in the array
 '
-SUB str_explode (target$, delim$, dest$(), numParts%)
+SUB str_explode(target$, delim$, dest$(), numParts%)
+    PRINT "................"
+    PRINT "[" + delim$ + "]"
     DIM AS INTEGER length, delimLen, numFound, i
-    length% = LEN(target$)
-    delimLen% = LEN(delim$)
-    DIM delimsPos%(length)
+    length% = LEN(target$) : delimLen% = LEN(delim$) : numFound% = 0
+    DIM delimsPos(length%) AS INTEGER
     IF length% = 0 THEN EXIT SUB
-    numFound% = 0
+
     str_find_pos target$, delim$, delimsPos%(), numFound%
-    IF numFound% > 0 THEN
-        REDIM _PRESERVE delimsPos%(numFound% - 1)
-    ELSE
-        dest$(0) = target$
+
+    IF numFound% <= 0 THEN
         numParts% = 0
-        EXIT SUB
-    END IF
-    IF numFound% > 0 THEN
+        dest$(0)  = target$
+    ELSE
+        REDIM _PRESERVE delimsPos%(numFound% - 1)
         IF numFound% = 1 THEN
-            dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
-            dest$(1) = MID$(target$, delimsPos%(0) + delimLen%)
             numParts% = 1
-        END IF
-        IF numFound% > 1 THEN
+            dest$(0)  = LEFT$(target$, delimsPos%(0) - delimLen%)
+            dest$(1)  = MID$(target$, delimsPos%(0) + delimLen%)
+        ELSEIF numFound% > 1 THEN
             dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
-            FOR i = 1 TO numFound%
-                IF i + 1 <= numFound% THEN
-                    dest$(i) = MID$( _
+            FOR i% = 1 TO numFound%
+                IF i% + 1 <= numFound% THEN
+                    dest$(i%) = MID$( _
                         target$, _
-                        delimsPos%(i - 1) + delimLen%, _
-                        delimsPos%(i) - delimsPos%(i - 1) - delimLen% _
+                        delimsPos%(i% - 1) + delimLen%, _
+                        delimsPos%(i%) - delimsPos%(i% - 1) - delimLen% _
                     )
                 END IF
-            NEXT i
+            NEXT i%
             dest$(numFound%) = MID$( _
                 target$, delimsPos%(numFound% - 1) + delimLen% _
             )
@@ -87,42 +85,46 @@ END SUB
 ''
 ' Searches for strings inside of strings and fills array with found positions
 '
-' @param target$ String to search
-' @param search$ String to search for in target
-' @param arrFound% The array to populate with positions search found in target
-' @param numFound% The number of times search found a match
+' @param STRING target$ to search
+' @param STRING search$ for in target
+' @param INTEGER ARRAY arrFound%() populate with positions search found
+' @param INTEGER numFound% times search found a match
 '
-SUB str_find_pos (target$, search$, arrFound%(), numFound%)
-    DIM AS INTEGER length, found, x, i, u, searchLen
-    length = LEN(target$): found = -1: x = 0: i = 0
-    u = UBOUND(arrFound%)
-    searchLen = LEN(search$)
-    DO WHILE i <= length
-        found = INSTR(i, target$, search$)
-        IF found > 0 AND x <= u THEN
-            arrFound%(x) = found
-            i = found + searchLen
-            x = x + 1
+SUB str_find_pos(target$, search$, arrFound%(), numFound%)
+    DIM AS INTEGER length, found, x, i, ub, searchLen
+    length% = LEN(target$) : found% = -1 : x% = 0: i% = 0
+    ub% = UBOUND(arrFound%)
+    searchLen% = LEN(search$)
+    PRINT ub%; searchLen%
+    PRINT target$
+    PRINT "................."
+    PRINT "[" + search$ + "]"
+    DO WHILE i% <= length%
+        found% = INSTR(i%, target$, search$)
+        IF found% > 0 AND x% <= ub% THEN
+            arrFound%(x%) = found%
+            i% = found% + searchLen%
+            x% = x% + 1
         ELSE
-            i = i + 1
+            i% = i% + 1
         END IF
     LOOP
-    numFound% = x
+    numFound% = x%
 END SUB
 
 
 ''
 ' Insert a string into another string at position
 '
-' @param s$ string to insert into
-' @param ins$ string to insert
-' @param p% position to insert
+' @param STRING s$ to insert into
+' @param STRING ins$ insert
+' @param INTEGER p% position to insert
 ' @return STRING with insertion
 '
-FUNCTION str_insert$ (s$, ins$, p%)
+FUNCTION str_insert$(s$, ins$, p%)
     IF p% < LEN(s$) AND ins$ <> "" THEN
         IF p% = 0 THEN
-            str_insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$)-1)
+            str_insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$) - 1)
         ELSE
             str_insert$ = LEFT$(s$, p%+1) + ins$ + RIGHT$(s$, LEN(s$) - p%-1)
         END IF
@@ -135,12 +137,12 @@ END FUNCTION
 ''
 ' Remove a string from a string
 '
-' @param s$ string to remove from
-' @param del$ string to delete
-' @param count% number of times to remove
+' @param STRING s$ to remove from
+' @param STRING del$ to delete
+' @param INTEGER count% times to remove
 ' @return STRING with del$ removed
 '
-FUNCTION str_remove$ (s$, del$, count%)
+FUNCTION str_remove$(s$, del$, count%)
     DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
@@ -161,11 +163,11 @@ END FUNCTION
 ''
 ' Delete a string from a string once (helper for str_remove$)
 '
-' @param s$ string to delete from
-' @param del$ string to delete
+' @param STRING s$ to delete from
+' @param STRING del$ to delete
 ' @return STRING with del$ deleted
 '
-FUNCTION str_del$ (s$, del$)
+FUNCTION str_del$(s$, del$)
     DIM AS INTEGER i
     i% = INSTR(s$, del$)
     IF i% THEN 
@@ -179,13 +181,13 @@ END FUNCTION
 ''
 ' Replaces a string with another string inside a string
 '
-' @param s$ string to replace within
-' @param search$ string to search for
-' @param replace$ string to replace search with
-' @param count% number of times to replace
+' @param STRING s$ to replace within
+' @param STRING search$
+' @param STRING replace$
+' @param INTEGER count% number of times to replace
 ' @return STRING with replacements
 '
-FUNCTION str_replace$ (s$, search$, replace$, count%)
+FUNCTION str_replace$(s$, search$, replace$, count%)
     DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
@@ -206,7 +208,7 @@ END FUNCTION
 ''
 ' Reverses a string
 ' 
-' @param STRING s$ string to reverse
+' @param STRING s$ to reverse
 ' @return STRING reversed string
 '
 FUNCTION str_reverse$(s$)
@@ -323,12 +325,12 @@ END FUNCTION
 ''
 ' Replaces a string with another string once (helper for str_replace$)
 '
-' @param s$ string to replace within
-' @param search$ string to search for
-' @param replace$ string to replace search with
+' @param STRING s$ to replace within
+' @param STRING search$
+' @param STRING replace$
 ' @return STRING with replacement
 '
-FUNCTION str_rep$ (s$, search$, replace$)
+FUNCTION str_rep$(s$, search$, replace$)
     DIM AS INTEGER p
     p% = INSTR(s$, search$)
     IF p% THEN
@@ -345,12 +347,12 @@ END FUNCTION
 ' NOTE: This is different than MID$ as MID$ specifies a start and a length,
 '       NOT an end position.
 '
-' @param s$ String to slice from
-' @param startPos% Position to start slice from
-' @param endPos% Position to end slice from
+' @param STRING s$ to slice from
+' @param INTEGER startPos% to start slice from
+' @param INTEGER endPos% to end slice from
 ' @return STRING of sliced portion of original stright
 '
-FUNCTION str_slice_pos$ (s$, startPos%, endPos%)
+FUNCTION str_slice_pos$(s$, startPos%, endPos%)
     IF startPos% <= 0 THEN
         startPos% = 1
     END IF
@@ -368,7 +370,7 @@ END FUNCTION
 ' @param _UNSIGNED _BYTE n~%% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ub$ (n~%%)
+FUNCTION str_ub$(n~%%)
     str_ub$ = _TRIM$(STR$(n~%%))
 END FUNCTION
 
@@ -379,7 +381,7 @@ END FUNCTION
 ' @param _UNSIGNED INTEGER n~% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ui$ (n~%)
+FUNCTION str_ui$(n~%)
     str_ui$ = _TRIM$(STR$(n~%))
 END FUNCTION
 
@@ -390,7 +392,7 @@ END FUNCTION
 ' @param _UNSIGNED LONG n~& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ul$ (n~&)
+FUNCTION str_ul$(n~&)
     str_ul$ = _TRIM$(STR$(n~&))
 END FUNCTION
 
@@ -401,7 +403,7 @@ END FUNCTION
 ' @param _BYTE n~% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_b$ (n%%)
+FUNCTION str_b$(n%%)
     str_b$ = _TRIM$(STR$(n%%))
 END FUNCTION
 
@@ -412,7 +414,7 @@ END FUNCTION
 ' @param INTEGER n% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_i$ (n%)
+FUNCTION str_i$(n%)
     str_i$ = _TRIM$(STR$(n%))
 END FUNCTION
 
@@ -423,7 +425,7 @@ END FUNCTION
 ' @param LONG n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_l$ (n&)
+FUNCTION str_l$(n&)
     str_l$ = _TRIM$(STR$(n&))
 END FUNCTION
 
@@ -434,7 +436,7 @@ END FUNCTION
 ' @param SINGLE n! number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_s$ (n!)
+FUNCTION str_s$(n!)
     str_s$ = _TRIM$(STR$(n!))
 END FUNCTION
 
@@ -445,7 +447,7 @@ END FUNCTION
 ' @param DOUBLE n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_d$ (n#)
+FUNCTION str_d$(n#)
     str_d$ = _TRIM$(STR$(n#))
 END FUNCTION
 
@@ -456,6 +458,6 @@ END FUNCTION
 ' @param _FLOAT n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_f$ (n##)
+FUNCTION str_f$(n##)
     str_f$ = _TRIM$(STR$(n##))
 END FUNCTION

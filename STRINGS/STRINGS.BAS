@@ -114,6 +114,16 @@ PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 
+DIM AS STRING sentence, delimeter
+DIM words_extracted(50) AS STRING
+DIM word_count AS INTEGER
+sentence$   = "Four-score and seven years ago"
+delimiter$  = "-"
+word_count% = 0
+str_explode sentence$, delimeter$, words_extracted$(), word_count%
+' PRINT str_implode$(words_extracted$(), " ")
+
+
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
 '$INCLUDE:'../_GJ_LIB.BM'
