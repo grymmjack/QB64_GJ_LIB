@@ -16,13 +16,17 @@ $IF GJ_LIB_DUMP_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../DUMP/DUMP.BI'
 $END IF
 '$DYNAMIC
-
+OPTION _EXPLICIT
+OPTION _EXPLICITARRAY
 
 
 _TITLE "QB64_GJ_LIB STRINGS LIB TESTS"
 
 SCREEN _NEWIMAGE(1024, 768, 32)
 _SCREENMOVE _MIDDLE
+
+DIM AS STRING phrase, phrase2, target, search, replace
+DIM AS INTEGER num_times, found, wordCount
 
 phrase$ = ""
 phrase$ = "foo"
@@ -81,7 +85,7 @@ PRINT "cat butt starts with 'dog' -> "; str_starts_with%("cat butt", "dog")
 
 DIM ub AS _UNSIGNED _BYTE       : ub~%% = 255
 DIM ui AS _UNSIGNED INTEGER     : ui~%  = 65535
-DIM ul AS _UNSIGNED LONG        : ul&   = 3133731337
+DIM ul AS _UNSIGNED LONG        : ul~&  = 3133731337
 DIM b AS _BYTE                  : b%%   = 127
 DIM i AS INTEGER                : i%    = 10
 DIM l AS LONG                   : l&    = 31337
@@ -113,6 +117,16 @@ PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
 PRINT "[" + str_shuffle$("Four score and seven years ago") + "]"
+
+DIM AS STRING sentence, delimiter
+DIM words_extracted(50) AS STRING
+DIM word_count AS INTEGER
+sentence$   = "Four score and seven years ago"
+delimiter$  = " "
+word_count% = 0
+CALL str_explode(sentence$, delimiter$, words_extracted$(), word_count%)
+PRINT str_implode$(words_extracted$(), " ")
+
 
 
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BM <> 1 THEN
