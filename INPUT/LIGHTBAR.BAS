@@ -26,7 +26,7 @@ DIM options(13) AS LIGHTBAR_OPTION  ' Menu options storage
 ' choice variable will contain the choice the user made using either the 
 ' hot key directly, or by using the home, end, or arrow keys to select 
 ' and confirm with ENTER. This var  will be -1 if the user hit ESC to abort.
-DIM choice AS INTEGER   
+DIM choice AS INTEGER
 
 ' Configure the LIGHTBAR menu
 menu.opt_bg_color% = 0  : menu.opt_fg_color% = 12 ' Unselected option colors
@@ -57,38 +57,38 @@ menu.snd_abrt_vol! = 0.5
 ' Populate the LIGHTBAR options - NOTE: Vertical options are padded with spaces
 ' If you want longer bars, add more spaces or characters that bar is made of
 IF menu.opt_vertical% = 1 THEN ' Vertical LIGHTBAR menu
-    options(0).txt  = " |P|izza                   " ' | = delimeter, so |P| for Pizza
-    options(1).txt  = " |R|ibs                    " ' Notice that Ribs, ...
-    options(2).txt  = " |H|ot Wings               " ' Hot Wings, ...
-    options(3).txt  = " |S|alad                   " ' Salad, ...
-    options(4).txt  = " |B|readsticks             " ' ...
-    options(5).txt  = " |A|pple Pie               " ' ...
-    options(6).txt  = " |C|innamon Sticks         " ' ...
-    options(7).txt  = " |K|rispy Kreme Donuts     " ' ...
-    options(8).txt  = " |D|eluxe Pepperoni Bread  " ' ...
-    options(9).txt  = " |E|ggplant Parmesan       " ' ...
-    options(10).txt = " |F|ettucinni Alfredo Bowl " ' ...
-    options(11).txt = " |J|uice for the Bambinos  " ' ...
-    options(12).txt = " |W|ine for Padre + Madre  " ' All of the same length
-    options(13).txt = " |Q|uit " ' However, each can have diff bar length like this.
+    options(0).txt$  = " |P|izza                   " ' | = delimeter, so |P| for Pizza
+    options(1).txt$  = " |R|ibs                    " ' Notice that Ribs, ...
+    options(2).txt$  = " |H|ot Wings               " ' Hot Wings, ...
+    options(3).txt$  = " |S|alad                   " ' Salad, ...
+    options(4).txt$  = " |B|readsticks             " ' ...
+    options(5).txt$  = " |A|pple Pie               " ' ...
+    options(6).txt$  = " |C|innamon Sticks         " ' ...
+    options(7).txt$  = " |K|rispy Kreme Donuts     " ' ...
+    options(8).txt$  = " |D|eluxe Pepperoni Bread  " ' ...
+    options(9).txt$  = " |E|ggplant Parmesan       " ' ...
+    options(10).txt$ = " |F|ettucinni Alfredo Bowl " ' ...
+    options(11).txt$ = " |J|uice for the Bambinos  " ' ...
+    options(12).txt$ = " |W|ine for Padre + Madre  " ' All of the same length
+    options(13).txt$ = " |Q|uit " ' However, each can have diff bar length like this.
 END IF
 
 ' Populate the LIGHTBAR options - NOTE: Horizontal options aren't padded.
 IF menu.opt_vertical% = 0 THEN ' Horizontal LIGHTBAR menu
-    options(0).txt  = " |P|izza "
-    options(1).txt  = " |R|ibs "
-    options(2).txt  = " |H|ot Wings "
-    options(3).txt  = " |S|alad "
-    options(4).txt  = " |B|readsticks "
-    options(5).txt  = " |A|pple Pie "
-    options(6).txt  = " |C|innamon Sticks "
-    options(7).txt  = " |K|rispy Kreme Donut "
-    options(8).txt  = " |D|eluxe Pepperoni Bread "
-    options(9).txt  = " |E|ggplant Parmesan "
-    options(10).txt = " |F|ettucinni Alfredo Bowl "
-    options(11).txt = " |J|uice for the Bambinos "
-    options(12).txt = " |W|ine for Padre + Madre "
-    options(13).txt = " |Q|uit "
+    options(0).txt$  = " |P|izza "
+    options(1).txt$  = " |R|ibs "
+    options(2).txt$  = " |H|ot Wings "
+    options(3).txt$  = " |S|alad "
+    options(4).txt$  = " |B|readsticks "
+    options(5).txt$  = " |A|pple Pie "
+    options(6).txt$  = " |C|innamon Sticks "
+    options(7).txt$  = " |K|rispy Kreme Donut "
+    options(8).txt$  = " |D|eluxe Pepperoni Bread "
+    options(9).txt$  = " |E|ggplant Parmesan "
+    options(10).txt$ = " |F|ettucinni Alfredo Bowl "
+    options(11).txt$ = " |J|uice for the Bambinos "
+    options(12).txt$ = " |W|ine for Padre + Madre "
+    options(13).txt$ = " |Q|uit "
 END IF
 
 ' Draw some basic goofy screen under which we will have a LIGHTBAR menu
@@ -113,7 +113,7 @@ IF choice% <> -1 THEN
     COLOR 11, 0 : PRINT "You chose option ";
     COLOR 14, 0 : PRINT UCASE$(_TRIM$(STR$(choice%)));
     COLOR 11, 0 : PRINT ": ";
-    COLOR 12, 0 : PRINT _TRIM$(options(choice%).txt)
+    COLOR 12, 0 : PRINT _TRIM$(options(choice%).txt$)
     IF choice% = 0 THEN
         COLOR 10, 0 : PRINT "An excellent choice! It is also my favorite!"
     END IF

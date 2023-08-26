@@ -1,23 +1,12 @@
 ''
 ' QB64_GJ_LIB
-' GRYMMJACK'S DICT Object (part of _GJ_LIB)
+' GRYMMJACK'S DICTIONARY Object (part of _GJ_LIB)
 '
 ' Simulates a dictionary object as found in other languages.
 '
 ' USAGE FOR Dict Object alone:
 '   Insert '$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BI' at the top of file
 '   Insert '$INCLUDE:'path_to_GJ_LIB/DICT/DICT.BM' at the bottom of file
-'
-' SUB / FUNCTION           NOTES
-' dict_populate            Populates a dict with arrays of keys and values
-' dict_fill                Fills a dict with serialized keys and values
-' dict_get_index_by_key    Gets a dict array index by key
-' dict_get_key_by_index    Gets a dict items key by its array index
-' dict_get_val_by_index    Gets a dict items value by its array index
-' dict_get_val_by_key      Gets a dict items value by its key
-' dict_get_keys            Get all dict object keys as an array of strings
-' dict_get_vals            Get all dict object values as an array of strings
-' dict_swap_keys_for_vals  Swaps a dict objects keys for its values
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BI
@@ -32,18 +21,18 @@ $END IF
 ''
 ' Populates a dictionary with arrays of keys and values
 '
-' @param dict() Dict object to populate
-' @param keys$() String array of keys to use for dict keys
-' @param vals$() String array of vals to use for dict vals
-' @return Nothing, but the dict() passed is populated by keys and values
+' @param DICTIONARY d() object to populate
+' @param STRING ARRAY keys$() keys to use for dict keys
+' @param STRING ARRAY vals$() vals to use for dict vals
+' @return Nothing, but the d() passed is populated by keys and values
 '
-SUB dict_populate (dict() AS Dict, keys$(), vals$())
+SUB DICT.populate(d() AS DICTIONARY, keys$(), vals$())
     DIM AS INTEGER uk, uv, i
-    uk = UBOUND(keys$) : uv = UBOUND(vals$)
-    IF uk <> uv THEN EXIT SUB
-    FOR i = 0 TO uk
-        dict(i).key = keys$(i)
-        dict(i).val = vals$(i)
+    uk% = UBOUND(keys$) : uv% = UBOUND(vals$)
+    IF uk% <> uv% THEN EXIT SUB
+    FOR i% = 0 TO uk%
+        d(i%).key$ = keys$(i)
+        d(i%).val$ = vals$(i)
     NEXT i
 END SUB
 
@@ -51,15 +40,15 @@ END SUB
 ''
 ' Fills a dictionary with serialized keys and values
 '
-' @param dict() Dict object to fill
-' @return Nothing, but the dict() passed in is filled
+' @param DICTIONARY d() object to fill
+' @return Nothing, but the d() passed in is filled
 '
-    SUB dict_fill (dict() AS Dict)
-    DIM AS INTEGER u, l, i
-    u = UBOUND(dict) : l = LBOUND(dict)
-    FOR i = l TO u
-        dict(i).key = "key" + _TRIM$(STR$(i))
-        dict(i).val = _TRIM$(STR$(i))
+SUB DICT.fill(d() AS DICTIONARY)
+    DIM AS INTEGER ub, lb, i
+    ub% = UBOUND(d) : lb% = LBOUND(d)
+    FOR i% = lb% TO ub%
+        d(i%).key$ = "key" + _TRIM$(STR$(i%))
+        d(i%).val$ = _TRIM$(STR$(i%))
     NEXT i
 END SUB
 
@@ -67,35 +56,35 @@ END SUB
 ''
 ' Gets a dictionary array index by key
 '
-' @param dict() Dictionary to look in
-' @param key$ String key to find the index for
-' @return INTEGER array index if found or -1 if not found
+' @param DICTIONARY d() to look in
+' @param STRING ARRAY key$ to find the index for
+' @return INTEGER array index if found or 0 if not found
 '
-FUNCTION dict_get_index_by_key% (dict() AS Dict, key$)
-    DIM AS INTEGER u, l, i
-    u = UBOUND(dict) : l = LBOUND(dict)
-    FOR i = l TO u
-        IF dict(i).key = key$ THEN
-            dict_get_index_by_key% = i
+FUNCTION DICT.get_index_by_key%(d() AS DICTIONARY, key$)
+    DIM AS INTEGER ub, lb, i
+    ub% = UBOUND(d) : lb% = LBOUND(d)
+    FOR i% = lb% TO ub%
+        IF d(i%).key$ = key$ THEN
+            DICT.get_index_by_key% = i%
             EXIT FUNCTION
         END IF
-    NEXT i
-    dict_get_index_by_key% = -1
+    NEXT i%
+    DICT.get_index_by_key% = 0
 END FUNCTION
 
 
 ''
 ' Gets a dictionary items key by its array index
 '
-' @param dict() Dictionary to look in
-' @param index% Index to lookup the key for
+' @param DICTIONARY d() to look in
+' @param INTEGER index% to lookup the key for
 ' @return STRING key of item at index
 ' 
-FUNCTION dict_get_key_by_index$ (dict() AS Dict, index%)
-    DIM AS INTEGER u, l
-    u = UBOUND(dict) : l = LBOUND(dict)
-    IF index% >= l AND index% <= u THEN
-        dict_get_key_by_index$ = dict(index%).key
+FUNCTION DICT.get_key_by_index$(d() AS DICTIONARY, index%)
+    DIM AS INTEGER ub, lb
+    ub% = UBOUND(d) : lb% = LBOUND(d)
+    IF index% >= lb% AND index% <= ub% THEN
+        DICT.get_key_by_index$ = d(index%).key$
     END IF
 END FUNCTION
 
@@ -103,15 +92,15 @@ END FUNCTION
 ''
 ' Gets a dictionary items value by its array index
 ' 
-' @param dict() Dictionary to look in
-' @param index% Index to lookup the value for
+' @param DICTIONARY d() to look in
+' @param INTEGER index% to lookup the value for
 ' @return STRING value of item at index
 '
-FUNCTION dict_get_val_by_index$ (dict() AS Dict, index%)
-    DIM AS INTEGER u, l
-    u = UBOUND(dict) : l = LBOUND(dict)
-    IF index% >= l AND index% <= u THEN
-        dict_get_val_by_index$ = dict(index%).val
+FUNCTION DICT.get_val_by_index$(d() AS DICTIONARY, index%)
+    DIM AS INTEGER ub, lb
+    ub% = UBOUND(d) : lb% = LBOUND(d)
+    IF index% >= lb% AND index% <= ub% THEN
+        DICT.get_val_by_index$ = d(index%).val$
     END IF
 END FUNCTION
 
@@ -119,70 +108,70 @@ END FUNCTION
 ''
 ' Gets a dictionary items value by its key
 '
-' @param dict() Dictionary to look in
-' @param key$ Key to get the value for
+' @param DICTIONARY d() to look in
+' @param STRING key$ to get the value for
 ' @return STRING value of dictionary item by key
 '
-FUNCTION dict_get_val_by_key$ (dict() AS Dict, key$)
-    DIM AS INTEGER u, l, i
-    u = UBOUND(dict) : l = LBOUND(dict)
-    FOR i = l TO u
-        IF dict(i).key = key$ THEN
-            dict_get_val_by_key$ = dict(i).val
+FUNCTION DICT.get_val_by_key$(d() AS DICTIONARY, key$)
+    DIM AS INTEGER ub, lb, i
+    ub% = UBOUND(d) : lb% = LBOUND(d)
+    FOR i% = lb% TO ub%
+        IF d(i%).key$ = key$ THEN
+            DICT.get_val_by_key$ = d(i%).val$
             EXIT FUNCTION
         END IF
-    NEXT i
+    NEXT i%
 END FUNCTION
 
 
 ''
 ' Get all dictionary object keys as an array of strings
 '
-' @param dict() Dictionary to look in
-' @param keys$() String array to store dict object keys into
+' @param DICTIONARY d() to look in
+' @param STRING ARRAY keys$() to store dict object keys into
 ' @return Nothing, but the keys$() array is populated
 '
-SUB dict_get_keys (dict() AS Dict, keys$())
-    DIM AS INTEGER u, l, i, c
-    u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
-    REDIM keys$(c)
-    FOR i = l TO u
-        keys$(i) = dict(i).key
-    NEXT i
+SUB DICT.get_keys(d() AS DICTIONARY, keys$())
+    DIM AS INTEGER ub, lb, i, c
+    ub = UBOUND(d) : lb = LBOUND(d) : c% = ub% - lb%
+    REDIM keys$(c%)
+    FOR i% = lb% TO ub%
+        keys$(i%) = d(i%).key$
+    NEXT i%
 END SUB
 
 
 ''
 ' Get all dictionary object values as an array of strings
 '
-' @param dict() Dictionary to look in
-' @param vals$() String array to store dict object vals into
+' @param DICTIONARY d() to look in
+' @param STRING ARRAY vals$() to store dict object vals into
 ' @return Nothing, but the vals$() array is populated
 '
-SUB dict_get_vals (dict() AS Dict, vals$())
-    DIM AS INTEGER u, l, i, c
-    u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
-    REDIM vals$(c)
-    FOR i = l TO u
-        vals$(i) = dict(i).val
-    NEXT i
+SUB DICT.get_vals(d() AS DICTIONARY, vals$())
+    DIM AS INTEGER ub, lb, i, c
+    ub = UBOUND(d) : lb = LBOUND(d) : c% = ub% - lb%
+    REDIM vals$(c%)
+    FOR i% = lb% TO ub%
+        vals$(i%) = d(i%).val$
+    NEXT i%
 END SUB
 
 
 ''
 ' Swaps a dictionary objects keys for its values
 '
-' @param dict() Dictionary to operate on
+' @param DICTIONARY d() to operate on
 ' @return Nothing, but the dict() passed in is operated on directly
 '
-SUB dict_swap_keys_for_vals (dict() AS Dict)
-    DIM AS INTEGER u, l, i, c
-    u = UBOUND(dict) : l = LBOUND(dict) : c = u - l
-    DIM res(c) AS Dict
-    FOR i = l TO u
-        res(i).key = dict(i).val
-        res(i).val = dict(i).key
-        SWAP dict(i).key, res(i).key
-        SWAP dict(i).val, res(i).val
-    NEXT i
+SUB DICT.swap_keys_for_vals(d() AS DICTIONARY)
+    DIM AS INTEGER ub, lb, i, c
+    ub = UBOUND(d) : lb = LBOUND(d) : c% = ub% - lb%
+    DIM res(c%) AS DICTIONARY
+    FOR i% = lb% TO ub%
+        res(i%).key$ = d(i%).val$
+        res(i%).val$ = d(i%).key$
+        SWAP d(i%).key$, res(i%).key$
+        SWAP d(i%).val$, res(i%).val$
+    NEXT i%
 END SUB

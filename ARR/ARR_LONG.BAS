@@ -34,6 +34,7 @@ END SUB
 
 ''
 ' Push a long onto the end of a LONG array
+'
 ' @param LONG arr&() array to push into
 ' @param LONG value& of byte to push
 '
@@ -47,6 +48,7 @@ END SUB
 
 ''
 ' Pop a long from the end of a LONG array
+'
 ' @param LONG arr&() array to pop from
 ' @param LONG var& of long to store popped long
 '
@@ -60,6 +62,7 @@ END SUB
 
 ''
 ' Pop a long from the beginning of a LONG array
+'
 ' @param LONG arr&() array to pop from
 ' @param LONG var& of long to store popped long
 '
@@ -76,6 +79,7 @@ END SUB
 
 ''
 ' Copy an array of LONGs to another LONG array
+'
 ' @param LONG ARRAY source_arr&() source array to copy
 ' @param LONG ARRAY dest_arr&() dest array to copy into
 '
@@ -91,6 +95,7 @@ END SUB
 
 ''
 ' Push a long into the beginning of a LONG array
+'
 ' @param LONG arr&() array to push into
 ' @param LONG value& of long to push
 '
@@ -109,6 +114,7 @@ END SUB
 
 ''
 ' Joins an array of LONGs as a string
+'
 ' @param LONG ARRAY arr&() to get as a string
 ' @param STRING s$ to store stringified array in
 ' 
@@ -126,6 +132,7 @@ END SUB
 
 ''
 ' Create a new LONG array using string of longs seperated by commas
+'
 ' @param LONG ARRAY arr&() to store the longs in
 ' @param STRING s$ string of comma separated longs
 '
@@ -155,6 +162,7 @@ END SUB
 
 ''
 ' Return the visually longest element of a LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG value of visually longest element
 '
@@ -174,6 +182,7 @@ END FUNCTION
 
 ''
 ' Perform some math on every element of a LONG array
+'
 ' @param LONG ARRAY source_arr&() to do math on
 ' @param LONG ARRAY dest_arr&() to store results in
 ' @param STRING op$ one of:
@@ -214,6 +223,7 @@ END SUB
 
 ''
 ' Return the minimum element value in LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG minimum value found
 '
@@ -233,6 +243,7 @@ END FUNCTION
 
 ''
 ' Return the maximum element value in LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG maximum value found
 '
@@ -252,6 +263,7 @@ END FUNCTION
 
 ''
 ' Return the visually shortest element of a LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG value of visually shortest element
 '
@@ -271,6 +283,7 @@ END FUNCTION
 
 ''
 ' Return the first element of a LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG value of first element
 '
@@ -281,6 +294,7 @@ END FUNCTION
 
 ''
 ' Return the last element of a LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @return LONG value of last element
 '
@@ -291,6 +305,7 @@ END FUNCTION
 
 ''
 ' Return every nth array element of a LONG array
+'
 ' @param LONG ARRAY source_arr&() to get from
 ' @param LONG ARRAY dest_arr&() to store in
 ' @param INTEGER nth% element
@@ -312,6 +327,7 @@ END SUB
 
 ''
 ' Checks if value exists in LONG array
+'
 ' @param LONG ARRAY arr&() to check in
 ' @param LONG value& value to check for
 ' @return INTEGER -1 if found or 0 if not found
@@ -331,6 +347,7 @@ END FUNCTION
 
 ''
 ' Checks if value exists in LONG array and returns index if found
+'
 ' @param LONG ARRAY arr&() to check in
 ' @param LONG value& value to check for
 ' @return INTEGER index of element if found or -1 if not found
@@ -350,6 +367,7 @@ END FUNCTION
 
 ''
 ' Return the number of elements in a LONG array
+'
 ' @param LONG ARRAY arr&() to count
 ' @return INTEGER number of elements
 '
@@ -360,6 +378,7 @@ END FUNCTION
 
 ''
 ' Return the size of a LONG array
+'
 ' @param LONG ARRAY arr&() to get size of
 ' @return LONG size in bytes
 '
@@ -370,6 +389,7 @@ END FUNCTION
 
 ''
 ' Reverses the elements of a LONG array
+'
 ' @param LONG ARRAY source_arr&() to reverse
 ' @param LONG ARRAY dest_arr&() to store reversed array in
 '
@@ -387,6 +407,7 @@ END SUB
 
 ''
 ' Returns a random long from a LONG array
+'
 ' @param LONG ARRAY arr&() array to get random element from
 ' @return LONG random element
 '
@@ -400,6 +421,7 @@ END FUNCTION
 
 ''
 ' Returns the sum of all elements in a LONG array
+'
 ' @param LONG ARRAY arr&() array to get some for
 ' @return LONG sum of all elements
 '
@@ -416,6 +438,7 @@ END FUNCTION
 
 ''
 ' Returns the average value of elements in a LONG array
+'
 ' @param LONG ARRAY arr&() array to get average for
 ' @return LONG average of elements
 '
@@ -432,6 +455,7 @@ END FUNCTION
 
 ''
 ' Shuffle the elements of a LONG array
+'
 ' @param LONG ARRAY source_arr&() to shuffle
 ' @param LONG ARRAY dest_arr&() to store shuffled array in
 '
@@ -450,6 +474,7 @@ END SUB
 
 ''
 ' Makes a LONG array contain only unique values
+'
 ' @param LONG ARRAY source_arr&() array to get uniques for
 ' @param LONG ARRAY dest_arr&() array to store uniques in
 '
@@ -470,6 +495,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements greater than value
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG value& to be greater than to be returned
@@ -491,6 +517,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements greater than or equal to value
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG value& to be greater than or equal to be returned
@@ -512,6 +539,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements less than value
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG value& to be less than to be returned
@@ -533,6 +561,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements less than or equal to value
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG value& to be less than or equal to be returned
@@ -554,6 +583,7 @@ END SUB
 
 ''
 ' Finds and replaces values across all elements in a LONG ARRAY
+'
 ' @param LONG ARRAY arr&() to check in
 ' @param LONG find& value to find
 ' @param LONG replace& value to replace with if found
@@ -571,6 +601,7 @@ END SUB
 
 ''
 ' Inserts a new element into LONG array after index
+'
 ' @param LONG ARRAY arr&() array to work on
 ' @param LONG value& to insert
 ' @param INTEGER index% of element to insert at
@@ -599,6 +630,7 @@ END SUB
 
 ''
 ' Removes element from a LONG array by element index
+'
 ' @param LONG ARRAY arr&() array to work on
 ' @param INTEGER index% of element to remove
 '
@@ -624,6 +656,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements that have odd values
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 '
@@ -644,6 +677,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements that have even values
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 '
@@ -664,6 +698,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements that have values evenly divisible by divisor
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG divisor& for modulo
@@ -685,6 +720,7 @@ END SUB
 
 ''
 ' Filters a LONG array to only elements between min and max
+'
 ' @param LONG ARRAY source_arr&() array to work on
 ' @param LONG ARRAY dest_arr&() array to store in
 ' @param LONG min& to be greater than or equal to be returned
@@ -708,6 +744,7 @@ END SUB
 
 ''
 ' Sorts LONG array in ascending order
+'
 ' @param LONG ARRAY source_arr&() array to sort
 ' @param LONG ARRAY dest_arr&() array to store sorted in
 '
@@ -723,6 +760,7 @@ END SUB
 
 ''
 ' Sorts LONG array in descending order
+'
 ' @param LONG ARRAY source_arr&() array to sort
 ' @param LONG ARRAY dest_arr&() array to store sorted in
 '

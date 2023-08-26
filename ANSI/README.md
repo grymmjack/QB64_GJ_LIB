@@ -47,100 +47,100 @@ More information here: https://github.com/QB64Official/qb64/issues/33
 
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_hide_cursor$      | Hides cursor |
-| ansi_home$             | Moves cursor to home position (0,0) | 
-| ansi_locate$           | Moves cursor to desired row and column |
-| ansi_move_up$          | Moves cursor up n lines |
-| ansi_move_down$        | Moves cursor down n lines | 
-| ansi_move_right$       | Moves cursor right n lines |
-| ansi_move_left$        | Moves cursor left n lines |
-| ansi_move_lines_down$  | Moves cursor to beginning of next line, n lines down |
-| ansi_move_lines_up$    | Moves cursor to beginning of next line, n lines up |
-| ansi_move_column$      | Moves cursor to column position n |
-| ansi_move_line_up$     | Moves cursor one one line up, scrolling if needed |
-| ansi_save_pos$         | Save cursor position |
-| ansi_restore_pos$      | Restore cursor position |
+| ANSI.hide_cursor$      | Hides cursor |
+| ANSI.home$             | Moves cursor to home position (0,0) | 
+| ANSI.locate$           | Moves cursor to desired row and column |
+| ANSI.move_up$          | Moves cursor up n lines |
+| ANSI.move_down$        | Moves cursor down n lines | 
+| ANSI.move_right$       | Moves cursor right n lines |
+| ANSI.move_left$        | Moves cursor left n lines |
+| ANSI.move_lines_down$  | Moves cursor to beginning of next line, n lines down |
+| ANSI.move_lines_up$    | Moves cursor to beginning of next line, n lines up |
+| ANSI.move_column$      | Moves cursor to column position n |
+| ANSI.move_line_up$     | Moves cursor one one line up, scrolling if needed |
+| ANSI.save_pos$         | Save cursor position |
+| ANSI.restore_pos$      | Restore cursor position |
 
 ### ERASE
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_erase_to_eos$     | Erase from cursor to end of screen |
-| ansi_erase_to_bos$     | Erase from cursor to beginning of screen |
-| ansi_erase_screen$     | Erase entire screen |
-| ansi_erase_to_eol$     | Erase from cursor to end of line |
-| ansi_erase_from_sol$   | Erase from start of line to cursor |
-| ansi_erase_line$       | Erase line |
+| ANSI.erase_to_eos$     | Erase from cursor to end of screen |
+| ANSI.erase_to_bos$     | Erase from cursor to beginning of screen |
+| ANSI.erase_screen$     | Erase entire screen |
+| ANSI.erase_to_eol$     | Erase from cursor to end of line |
+| ANSI.erase_from_sol$   | Erase from start of line to cursor |
+| ANSI.erase_line$       | Erase line |
 
 ### MODES 
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_mode_reset_all$              | Reset all modes |
-| ansi_mode_bold$                   | Set bold mode |
-| ansi_mode_bold_reset$             | Reset bold mode |
-| ansi_mode_dim$                    | Set dim mode |
-| ansi_mode_dim_reset$              | Reset dim mode |
-| ansi_mode_italic$                 | Set italic mode |
-| ansi_mode_italic_reset$           | Reset italic mode |
-| ansi_mode_underline$              | Set underline mode |
-| ansi_mode_underline_reset$        | Reset underline mode |
-| ansi_mode_blinking$               | Set blinking mode |
-| ansi_mode_blinking_reset$         | Reset blinking mode |
-| ansi_mode_inverse$                | Set inverse mode |
-| ansi_mode_inverse_reset$          | Reset inverse mode |
-| ansi_mode_invisible$              | Set invisible mode |
-| ansi_mode_invisible_reset$        | Reset invisible mode |
-| ansi_mode_strikethrough$          | Set strikethrough mode |
-| ansi_mode_strikethrough_reset$    | Reset strikethrough mode |
+| ANSI.mode_reset_all$              | Reset all modes |
+| ANSI.mode_bold$                   | Set bold mode |
+| ANSI.mode_bold_reset$             | Reset bold mode |
+| ANSI.mode_dim$                    | Set dim mode |
+| ANSI.mode_dim_reset$              | Reset dim mode |
+| ANSI.mode_italic$                 | Set italic mode |
+| ANSI.mode_italic_reset$           | Reset italic mode |
+| ANSI.mode_underline$              | Set underline mode |
+| ANSI.mode_underline_reset$        | Reset underline mode |
+| ANSI.mode_blinking$               | Set blinking mode |
+| ANSI.mode_blinking_reset$         | Reset blinking mode |
+| ANSI.mode_inverse$                | Set inverse mode |
+| ANSI.mode_inverse_reset$          | Reset inverse mode |
+| ANSI.mode_invisible$              | Set invisible mode |
+| ANSI.mode_invisible_reset$        | Reset invisible mode |
+| ANSI.mode_strikethrough$          | Set strikethrough mode |
+| ANSI.mode_strikethrough_reset$    | Reset strikethrough mode |
 
 ### STANDARD COLORS
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_fg_reset$            | Reset foreground color |
-| ansi_bg_reset$            | Reset background color |
-| ansi_fg_black$            | Set foreground color to black |
-| ansi_fg_blue$             | Set foreground color to blue |
-| ansi_fg_green$            | Set foreground color to green |
-| ansi_fg_cyan$             | Set foreground color to cyan |
-| ansi_fg_red$              | Set foreground color to red |
-| ansi_fg_magenta$          | Set foreground color to magenta |
-| ansi_fg_yellow$           | Set foreground color to yellow |
-| ansi_fg_white$            | Set foreground color to white |
-| ansi_fg_bright_black$     | Set foreground color to black |
-| ansi_fg_bright_blue$      | Set foreground color to blue |
-| ansi_fg_bright_green$     | Set foreground color to green |
-| ansi_fg_bright_cyan$      | Set foreground color to cyan |
-| ansi_fg_bright_red$       | Set foreground color to red |
-| ansi_fg_bright_magenta$   | Set foreground color to magenta |
-| ansi_fg_bright_yellow$    | Set foreground color to yellow |
-| ansi_fg_bright_white$     | Set foreground color to white |
-| ansi_bg_black$            | Set background color to black |
-| ansi_bg_blue$             | Set background color to blue |
-| ansi_bg_green$            | Set background color to green |
-| ansi_bg_cyan$             | Set background color to cyan |
-| ansi_bg_red$              | Set background color to red |
-| ansi_bg_magenta$          | Set background color to magenta |
-| ansi_bg_yellow$           | Set background color to yellow |
-| ansi_bg_white$            | Set background color to white |
-| ansi_bg_bright_black$     | Set background color to black |
-| ansi_bg_bright_blue$      | Set background color to blue |
-| ansi_bg_bright_green$     | Set background color to green |
-| ansi_bg_bright_cyan$      | Set background color to cyan |
-| ansi_bg_bright_red$       | Set background color to red |
-| ansi_bg_bright_magenta$   | Set background color to magenta |
-| ansi_bg_bright_yellow$    | Set background color to yellow |
-| ansi_bg_bright_white$     | Set background color to white |
+| ANSI.fg_reset$            | Reset foreground color |
+| ANSI.bg_reset$            | Reset background color |
+| ANSI.fg_black$            | Set foreground color to black |
+| ANSI.fg_blue$             | Set foreground color to blue |
+| ANSI.fg_green$            | Set foreground color to green |
+| ANSI.fg_cyan$             | Set foreground color to cyan |
+| ANSI.fg_red$              | Set foreground color to red |
+| ANSI.fg_magenta$          | Set foreground color to magenta |
+| ANSI.fg_yellow$           | Set foreground color to yellow |
+| ANSI.fg_white$            | Set foreground color to white |
+| ANSI.fg_bright_black$     | Set foreground color to black |
+| ANSI.fg_bright_blue$      | Set foreground color to blue |
+| ANSI.fg_bright_green$     | Set foreground color to green |
+| ANSI.fg_bright_cyan$      | Set foreground color to cyan |
+| ANSI.fg_bright_red$       | Set foreground color to red |
+| ANSI.fg_bright_magenta$   | Set foreground color to magenta |
+| ANSI.fg_bright_yellow$    | Set foreground color to yellow |
+| ANSI.fg_bright_white$     | Set foreground color to white |
+| ANSI.bg_black$            | Set background color to black |
+| ANSI.bg_blue$             | Set background color to blue |
+| ANSI.bg_green$            | Set background color to green |
+| ANSI.bg_cyan$             | Set background color to cyan |
+| ANSI.bg_red$              | Set background color to red |
+| ANSI.bg_magenta$          | Set background color to magenta |
+| ANSI.bg_yellow$           | Set background color to yellow |
+| ANSI.bg_white$            | Set background color to white |
+| ANSI.bg_bright_black$     | Set background color to black |
+| ANSI.bg_bright_blue$      | Set background color to blue |
+| ANSI.bg_bright_green$     | Set background color to green |
+| ANSI.bg_bright_cyan$      | Set background color to cyan |
+| ANSI.bg_bright_red$       | Set background color to red |
+| ANSI.bg_bright_magenta$   | Set background color to magenta |
+| ANSI.bg_bright_yellow$    | Set background color to yellow |
+| ANSI.bg_bright_white$     | Set background color to white |
 
 ### 256 COLORS:
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_fg_256$ | Sets text foreground color using 256 color mode |
-| ansi_bg_256$ | Sets text background color using 256 color mode |
+| ANSI.fg_256$ | Sets text foreground color using 256 color mode |
+| ANSI.bg_256$ | Sets text background color using 256 color mode |
 
 ### 24-BIT COLORS:
 | FUNCTION | NOTES |
 |----------|-------|
-| ansi_fg_rgb$ | Sets text color foreground using RGB 8-bit mode |
-| ansi_bg_rgb$ | Sets text color background using RGB 8-bit mode |
+| ANSI.fg_rgb$ | Sets text color foreground using RGB 8-bit mode |
+| ANSI.bg_rgb$ | Sets text color background using RGB 8-bit mode |
 
 
 

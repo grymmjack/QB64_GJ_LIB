@@ -25,7 +25,7 @@ FUNCTION LIGHTBAR32%(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION)
     lb% = LBOUND(o) : ub% = UBOUND(o)
 
     ' Capture initial state for cursor and colors
-    row%     = CSRLIN : col% = POS(0)       ' Store initial cursor position
+    row% = CSRLIN : col% = POS(0) ' Store initial cursor position
     orig_fg~& = LB_EGA(7) ' Store initial foreground color
     orig_bg~& = LB_EGA(0) ' Store initial background color
 

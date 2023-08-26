@@ -34,6 +34,7 @@ END SUB
 
 ''
 ' Push a {LT} onto the end of a {Q} array
+'
 ' @param {Q} arr{SY}() array to push into
 ' @param {Q} value{SY} of byte to push
 '
@@ -47,6 +48,7 @@ END SUB
 
 ''
 ' Pop a {LT} from the end of a {Q} array
+'
 ' @param {Q} arr{SY}() array to pop from
 ' @param {Q} var{SY} of {LT} to store popped {LT}
 '
@@ -60,6 +62,7 @@ END SUB
 
 ''
 ' Pop a {LT} from the beginning of a {Q} array
+'
 ' @param {Q} arr{SY}() array to pop from
 ' @param {Q} var{SY} of {LT} to store popped {LT}
 '
@@ -76,6 +79,7 @@ END SUB
 
 ''
 ' Copy an array of {UT}s to another {Q} array
+'
 ' @param {Q} ARRAY source_arr{SY}() source array to copy
 ' @param {Q} ARRAY dest_arr{SY}() dest array to copy into
 '
@@ -91,6 +95,7 @@ END SUB
 
 ''
 ' Push a {LT} into the beginning of a {Q} array
+'
 ' @param {Q} arr{SY}() array to push into
 ' @param {Q} value{SY} of {LT} to push
 '
@@ -109,6 +114,7 @@ END SUB
 
 ''
 ' Joins an array of {UT}s as a string
+'
 ' @param {Q} ARRAY arr{SY}() to get as a string
 ' @param STRING s$ to store stringified array in
 ' 
@@ -126,6 +132,7 @@ END SUB
 
 ''
 ' Create a new {Q} array using string of {LT}s seperated by commas
+'
 ' @param {Q} ARRAY arr{SY}() to store the {LT}s in
 ' @param STRING s$ string of comma separated {LT}s
 '
@@ -155,6 +162,7 @@ END SUB
 
 ''
 ' Return the visually longest element of a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} value of visually longest element
 '
@@ -174,6 +182,7 @@ END FUNCTION
 
 ''
 ' Perform some math on every element of a {Q} array
+'
 ' @param {Q} ARRAY source_arr{SY}() to do math on
 ' @param {Q} ARRAY dest_arr{SY}() to store results in
 ' @param STRING op$ one of:
@@ -214,6 +223,7 @@ END SUB
 
 ''
 ' Return the minimum element value in {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} minimum value found
 '
@@ -233,6 +243,7 @@ END FUNCTION
 
 ''
 ' Return the maximum element value in {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} maximum value found
 '
@@ -252,6 +263,7 @@ END FUNCTION
 
 ''
 ' Return the visually shortest element of a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} value of visually shortest element
 '
@@ -271,6 +283,7 @@ END FUNCTION
 
 ''
 ' Return the first element of a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} value of first element
 '
@@ -281,6 +294,7 @@ END FUNCTION
 
 ''
 ' Return the last element of a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @return {Q} value of last element
 '
@@ -291,6 +305,7 @@ END FUNCTION
 
 ''
 ' Return every nth array element of a {Q} array
+'
 ' @param {Q} ARRAY source_arr{SY}() to get from
 ' @param {Q} ARRAY dest_arr{SY}() to store in
 ' @param INTEGER nth% element
@@ -312,6 +327,7 @@ END SUB
 
 ''
 ' Checks if value exists in {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @param {Q} value{SY} value to check for
 ' @return INTEGER -1 if found or 0 if not found
@@ -331,6 +347,7 @@ END FUNCTION
 
 ''
 ' Checks if value exists in {Q} array and returns index if found
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @param {Q} value{SY} value to check for
 ' @return INTEGER index of element if found or -1 if not found
@@ -350,6 +367,7 @@ END FUNCTION
 
 ''
 ' Return the number of elements in a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to count
 ' @return INTEGER number of elements
 '
@@ -360,6 +378,7 @@ END FUNCTION
 
 ''
 ' Return the size of a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() to get size of
 ' @return LONG size in bytes
 '
@@ -370,6 +389,7 @@ END FUNCTION
 
 ''
 ' Reverses the elements of a {Q} array
+'
 ' @param {Q} ARRAY source_arr{SY}() to reverse
 ' @param {Q} ARRAY dest_arr{SY}() to store reversed array in
 '
@@ -387,6 +407,7 @@ END SUB
 
 ''
 ' Returns a random {LT} from a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() array to get random element from
 ' @return {Q} random element
 '
@@ -400,6 +421,7 @@ END FUNCTION
 
 ''
 ' Returns the sum of all elements in a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() array to get some for
 ' @return LONG sum of all elements
 '
@@ -416,6 +438,7 @@ END FUNCTION
 
 ''
 ' Returns the average value of elements in a {Q} array
+'
 ' @param {Q} ARRAY arr{SY}() array to get average for
 ' @return LONG average of elements
 '
@@ -432,6 +455,7 @@ END FUNCTION
 
 ''
 ' Shuffle the elements of a {Q} array
+'
 ' @param {Q} ARRAY source_arr{SY}() to shuffle
 ' @param {Q} ARRAY dest_arr{SY}() to store shuffled array in
 '
@@ -450,6 +474,7 @@ END SUB
 
 ''
 ' Makes a {Q} array contain only unique values
+'
 ' @param {Q} ARRAY source_arr{SY}() array to get uniques for
 ' @param {Q} ARRAY dest_arr{SY}() array to store uniques in
 '
@@ -470,6 +495,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements greater than value
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} value{SY} to be greater than to be returned
@@ -491,6 +517,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements greater than or equal to value
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} value{SY} to be greater than or equal to be returned
@@ -512,6 +539,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements less than value
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} value{SY} to be less than to be returned
@@ -533,6 +561,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements less than or equal to value
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} value{SY} to be less than or equal to be returned
@@ -554,6 +583,7 @@ END SUB
 
 ''
 ' Finds and replaces values across all elements in a {Q} ARRAY
+'
 ' @param {Q} ARRAY arr{SY}() to check in
 ' @param {Q} find{SY} value to find
 ' @param {Q} replace{SY} value to replace with if found
@@ -571,6 +601,7 @@ END SUB
 
 ''
 ' Inserts a new element into {Q} array after index
+'
 ' @param {Q} ARRAY arr{SY}() array to work on
 ' @param {Q} value{SY} to insert
 ' @param INTEGER index% of element to insert at
@@ -599,6 +630,7 @@ END SUB
 
 ''
 ' Removes element from a {Q} array by element index
+'
 ' @param {Q} ARRAY arr{SY}() array to work on
 ' @param INTEGER index% of element to remove
 '
@@ -624,6 +656,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements that have odd values
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 '
@@ -644,6 +677,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements that have even values
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 '
@@ -664,6 +698,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements that have values evenly divisible by divisor
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} divisor{SY} for modulo
@@ -685,6 +720,7 @@ END SUB
 
 ''
 ' Filters a {Q} array to only elements between min and max
+'
 ' @param {Q} ARRAY source_arr{SY}() array to work on
 ' @param {Q} ARRAY dest_arr{SY}() array to store in
 ' @param {Q} min{SY} to be greater than or equal to be returned
@@ -708,6 +744,7 @@ END SUB
 
 ''
 ' Sorts {Q} array in ascending order
+'
 ' @param {Q} ARRAY source_arr{SY}() array to sort
 ' @param {Q} ARRAY dest_arr{SY}() array to store sorted in
 '
@@ -723,6 +760,7 @@ END SUB
 
 ''
 ' Sorts {Q} array in descending order
+'
 ' @param {Q} ARRAY source_arr{SY}() array to sort
 ' @param {Q} ARRAY dest_arr{SY}() array to store sorted in
 '

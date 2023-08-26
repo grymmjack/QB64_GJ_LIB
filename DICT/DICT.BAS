@@ -17,6 +17,8 @@ $IF GJ_LIB_DUMP_INC_BI = UNDEFINED THEN
 $END IF
 '$DYNAMIC
 
+OPTION _EXPLICIT
+OPTION _EXPLICITARRAY
 
 
 _TITLE "QB64_GJ_LIB Dict OBJECT TESTS"
@@ -24,11 +26,13 @@ _TITLE "QB64_GJ_LIB Dict OBJECT TESTS"
 SCREEN _NEWIMAGE(1024, 768, 32)
 _SCREENMOVE _MIDDLE
 
+DIM index AS INTEGER
+DIM AS STRING mykey, myval
 DIM keys$(5)
 DIM vals$(5)
 DIM SHARED keys2$(5)
 DIM SHARED vals2$(5)
-DIM SHARED myDict(5) AS Dict
+DIM SHARED myDict(5) AS DICTIONARY
 
 keys$(0) = "bilbo"
 keys$(1) = "frodo"
@@ -44,28 +48,25 @@ vals$(4) = "bebbins"
 vals$(5) = "zobbins"
 
 ' dict_fill myDict()
-dict_populate myDict(), keys$(), vals$()
+CALL DICT.populate(myDict(), keys$(), vals$())
 
-PRINT dump_dict$(myDict(), "myDict")
+PRINT DUMP.dict$(myDict(), "myDict")
+index% = DICT.get_index_by_key(myDict(), "barbo")
+PRINT "index = " + _TRIM$(STR$(index%))
+mykey$ = DICT.get_key_by_index(myDict(), index%)
+PRINT "mykey = " + mykey$
+myval$ = DICT.get_val_by_index(myDict(), index%) 
+PRINT "myval (from index) = " + myval$
+PRINT "myval (from mykey) = " + mykey$
 
-index% = dict_get_index_by_key(myDict(), "barbo")
-index$ = _TRIM$(STR$(index%))
-PRINT "index = " + index$
-key$ = dict_get_key_by_index(myDict(), index%)
-PRINT "key = " + key$
-val$ = dict_get_val_by_index(myDict(), index%) 
-PRINT "val (from index) = " + val$
-PRINT "val (from key) = " + key$
+CALL DICT.get_keys(myDict(), keys2$())
+CALL DICT.get_vals(myDict(), vals2$())
 
+PRINT DUMP.string_array(keys2$(), "keys from dict_get_keys")
+PRINT DUMP.string_array(vals2$(), "vals from dict_get_vals")
 
-dict_get_keys myDict(), keys2$()
-dict_get_vals myDict(), vals2$()
-
-PRINT dump_string_array(keys2$(), "keys from dict_get_keys")
-PRINT dump_string_array(vals2$(), "vals from dict_get_vals")
-
-dict_swap_keys_for_vals myDict()
-PRINT dump_dict(myDict(), "myDict swapped")
+CALL DICT.swap_keys_for_vals(myDict())
+PRINT DUMP.dict(myDict(), "myDict swapped")
 
 
 

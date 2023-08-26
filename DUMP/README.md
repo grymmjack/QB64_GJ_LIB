@@ -9,20 +9,20 @@ Inspired by PHP [print_r()](https://www.php.net/manual/en/function.print-r.php) 
 ## WHAT'S IN THE LIBRARY
 | FUNCTION | NOTES |
 |----------|-------|
-| dump_bit_array$                     | Returns string with a dump of an array of bits |
-| dump_unsigned_bit_array$            | Returns string with a dump of an array of unsigned bits |
-| dump_byte_array$                    | Returns string with a dump of an array of bytes |
-| dump_unsigned_byte_array$           | Returns string with a dump of an array of unsigned bytes |
-| dump_unsigned_integer$              | Returns string with a dump of an array of unsigned integers |
-| dump_unsigned_byte_array_as_hex$    | Returns string with a dump of an array of unsigned bytes as hex |
-| dump_unsigned_byte_array_as_ascii$  | Returns string with a dump of an array of unsigned bytes as hex and ASCII |
-| dump_string$                        | Includes handy output of the strings length. |
-| dump_string_array$                  | Works on 1 dimensional arrays only (right now). |
-| dump_integer_array$                 | Works on 1 dimensional arrays only (right now). |
-| dump_single_array$                  | Works on 1 dimensional arrays only (right now). |
-| dump_long_array$                    | Works on 1 dimensional arrays only (right now). |
-| dump_double_array$                  | Works on 1 dimensional arrays only (right now). |
-| dump_dict$                          | Dump a dictionary object and it's contents. |
+| DUMP.bit_array$                     | Returns string with a dump of an array of bits |
+| DUMP.unsigned_bit_array$            | Returns string with a dump of an array of unsigned bits |
+| DUMP.byte_array$                    | Returns string with a dump of an array of bytes |
+| DUMP.unsigned_byte_array$           | Returns string with a dump of an array of unsigned bytes |
+| DUMP.unsigned_integer$              | Returns string with a dump of an array of unsigned integers |
+| DUMP.unsigned_byte_array_as_hex$    | Returns string with a dump of an array of unsigned bytes as hex |
+| DUMP.unsigned_byte_array_as_ascii$  | Returns string with a dump of an array of unsigned bytes as hex and ASCII |
+| DUMP.string$                        | Includes handy output of the strings length. |
+| DUMP.string_array$                  | Works on 1 dimensional arrays only (right now). |
+| DUMP.integer_array$                 | Works on 1 dimensional arrays only (right now). |
+| DUMP.single_array$                  | Works on 1 dimensional arrays only (right now). |
+| DUMP.long_array$                    | Works on 1 dimensional arrays only (right now). |
+| DUMP.double_array$                  | Works on 1 dimensional arrays only (right now). |
+| DUMP.dict$                          | Dump a dictionary object and it's contents. |
 
 
 
@@ -49,7 +49,7 @@ _Here is an example of a dump of a string array:_
 ```basic
 DIM words$(2)
 words$(0) = "foo" : words$(1) = "bar" : words$(2) = "baz"
-PRINT dump_string_array(words$(), "words")
+PRINT DUMP.string_array(words$(), "words")
 ```
 
 _output:_

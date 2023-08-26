@@ -98,10 +98,3 @@ $SED -i 's/{q}/_float/g' ARR_FLT.BAS
 $SED -i 's/{UT}/FLT/g' ARR_FLT.BAS
 $SED -i 's/{LT}/flt/g' ARR_FLT.BAS
 $SED -i 's/{SY}/##/g' ARR_FLT.BAS
-
-# STR
-$SED -i 's/{Q}/STRING/g' ARR_STR.BAS
-$SED -i 's/{q}/string/g' ARR_STR.BAS
-$SED -i 's/{UT}/STR/g' ARR_STR.BAS
-$SED -i 's/{LT}/str/g' ARR_STR.BAS
-$SED -i 's/{SY}/$/g' ARR_STR.BAS

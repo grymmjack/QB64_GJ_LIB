@@ -34,6 +34,7 @@ END SUB
 
 ''
 ' Push a str onto the end of a STRING array
+'
 ' @param STRING arr$() array to push into
 ' @param STRING value$ of byte to push
 '
@@ -47,6 +48,7 @@ END SUB
 
 ''
 ' Pop a str from the end of a STRING array
+'
 ' @param STRING arr$() array to pop from
 ' @param STRING var$ of str to store popped str
 '
@@ -60,6 +62,7 @@ END SUB
 
 ''
 ' Pop a str from the beginning of a STRING array
+'
 ' @param STRING arr$() array to pop from
 ' @param STRING var$ of str to store popped str
 '
@@ -76,6 +79,7 @@ END SUB
 
 ''
 ' Copy an array of STRs to another STRING array
+'
 ' @param STRING ARRAY source_arr$() source array to copy
 ' @param STRING ARRAY dest_arr$() dest array to copy into
 '
@@ -91,6 +95,7 @@ END SUB
 
 ''
 ' Push a str into the beginning of a STRING array
+'
 ' @param STRING arr$() array to push into
 ' @param STRING value$ of str to push
 '
@@ -109,6 +114,7 @@ END SUB
 
 ''
 ' Joins an array of STRs as a string
+'
 ' @param STRING ARRAY arr$() to get as a string
 ' @param STRING s$ to store stringified array in
 ' 
@@ -126,6 +132,7 @@ END SUB
 
 ''
 ' Create a new STRING array using string of strs seperated by commas
+'
 ' @param STRING ARRAY arr$() to store the strs in
 ' @param STRING s$ string of comma separated strs
 '
@@ -158,6 +165,7 @@ END SUB
 
 ''
 ' Return the visually longest element of a STRING array
+'
 ' @param STRING ARRAY arr$() to check in
 ' @return STRING value of visually longest element
 '
@@ -177,6 +185,7 @@ END FUNCTION
 
 ''
 ' Return the visually shortest element of a STRING array
+'
 ' @param STRING ARRAY arr$() to check in
 ' @return STRING value of visually shortest element
 '
@@ -196,6 +205,7 @@ END FUNCTION
 
 ''
 ' Return the first element of a STRING array
+'
 ' @param STRING ARRAY arr$() to check in
 ' @return STRING value of first element
 '
@@ -206,6 +216,7 @@ END FUNCTION
 
 ''
 ' Return the last element of a STRING array
+'
 ' @param STRING ARRAY arr$() to check in
 ' @return STRING value of last element
 '
@@ -216,6 +227,7 @@ END FUNCTION
 
 ''
 ' Return every nth array element of a STRING array
+'
 ' @param STRING ARRAY source_arr$() to get from
 ' @param STRING ARRAY dest_arr$() to store in
 ' @param INTEGER nth% element
@@ -237,6 +249,7 @@ END SUB
 
 ''
 ' Checks if value exists in STRING array
+'
 ' @param STRING ARRAY arr$() to check in
 ' @param STRING value$ value to check for
 ' @return INTEGER -1 if found or 0 if not found
@@ -256,6 +269,7 @@ END FUNCTION
 
 ''
 ' Checks if value exists in STRING array and returns index if found
+'
 ' @param STRING ARRAY arr$() to check in
 ' @param STRING value$ value to check for
 ' @return INTEGER index of element if found or -1 if not found
@@ -275,6 +289,7 @@ END FUNCTION
 
 ''
 ' Return the number of elements in a STRING array
+'
 ' @param STRING ARRAY arr$() to count
 ' @return INTEGER number of elements
 '
@@ -285,6 +300,7 @@ END FUNCTION
 
 ''
 ' Return the size of a STRING array
+'
 ' @param STRING ARRAY arr$() to get size of
 ' @return LONG size in bytes
 '
@@ -301,6 +317,7 @@ END FUNCTION
 
 ''
 ' Reverses the elements of a STRING array
+'
 ' @param STRING ARRAY source_arr$() to reverse
 ' @param STRING ARRAY dest_arr$() to store reversed array in
 '
@@ -318,6 +335,7 @@ END SUB
 
 ''
 ' Returns a random str from a STRING array
+'
 ' @param STRING ARRAY arr$() array to get random element from
 ' @return STRING random element
 '
@@ -331,6 +349,7 @@ END FUNCTION
 
 ''
 ' Shuffle the elements of a STRING array
+'
 ' @param STRING ARRAY source_arr$() to shuffle
 ' @param STRING ARRAY dest_arr$() to store shuffled array in
 '
@@ -349,6 +368,7 @@ END SUB
 
 ''
 ' Makes a STRING array contain only unique values
+'
 ' @param STRING ARRAY source_arr$() array to get uniques for
 ' @param STRING ARRAY dest_arr$() array to store uniques in
 '
@@ -369,6 +389,7 @@ END SUB
 
 ''
 ' Finds and replaces values across all elements in a STRING ARRAY
+'
 ' @param STRING ARRAY arr$() to check in
 ' @param STRING find$ value to find
 ' @param STRING replace$ value to replace with if found
@@ -386,6 +407,7 @@ END SUB
 
 ''
 ' Inserts a new element into STRING array after index
+'
 ' @param STRING ARRAY arr$() array to work on
 ' @param STRING value$ to insert
 ' @param INTEGER index% of element to insert at
@@ -414,6 +436,7 @@ END SUB
 
 ''
 ' Removes element from a STRING array by element index
+'
 ' @param STRING ARRAY arr$() array to work on
 ' @param INTEGER index% of element to remove
 '
@@ -439,6 +462,7 @@ END SUB
 
 ''
 ' Filters a STRING array to only elements that have odd values
+'
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
 '
@@ -459,6 +483,7 @@ END SUB
 
 ''
 ' Filters a STRING array to only elements that have even values
+'
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
 '
@@ -479,6 +504,7 @@ END SUB
 
 ''
 ' Filters a STRING array to only elements that have values evenly divisible by divisor
+'
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
 ' @param INTEGER divisor% for modulo
@@ -500,6 +526,7 @@ END SUB
 
 ''
 ' Filters a STRING array to only elements between min and max
+'
 ' @param STRING ARRAY source_arr$() array to work on
 ' @param STRING ARRAY dest_arr$() array to store in
 ' @param INTEGER min% to be greater than or equal to be returned
@@ -523,6 +550,7 @@ END SUB
 
 ''
 ' Sorts STRING array in ascending order
+'
 ' @param STRING ARRAY source_arr$() array to sort
 ' @param STRING ARRAY dest_arr$() array to store sorted in
 '
@@ -538,6 +566,7 @@ END SUB
 
 ''
 ' Sorts STRING array in descending order
+'
 ' @param STRING ARRAY source_arr$() array to sort
 ' @param STRING ARRAY dest_arr$() array to store sorted in
 '

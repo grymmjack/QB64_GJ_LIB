@@ -17,7 +17,7 @@ $LET DEBUGGING = 1
 ' @param STRING delim$ Delimiter to glue the array parts together with
 ' @return STRING of array parts glued together with delimiter
 '
-FUNCTION str_implode$(arr$(), delim$)
+FUNCTION STR.implode$(arr$(), delim$)
     DIM AS STRING res
     DIM AS INTEGER lb, ub, i
     res$ = ""
@@ -29,7 +29,7 @@ FUNCTION str_implode$(arr$(), delim$)
             res$ = res$ + arr$(i)
         END IF
     NEXT i%
-    str_implode$ = res$
+    STR.implode$ = res$
 END FUNCTION
 
 
@@ -43,13 +43,13 @@ END FUNCTION
 ' @param STRING ARRAY dest$() to explode into
 ' @param INTEGER numParts% the number of strings in the array
 '
-SUB str_explode(target$, delim$, dest$(), numParts%)
+SUB STR.explode(target$, delim$, dest$(), numParts%)
     DIM AS INTEGER length, delimLen, numFound, i
     length% = LEN(target$) : delimLen% = LEN(delim$) : numFound% = 0
     DIM delimsPos(length%) AS INTEGER
     IF length% = 0 THEN EXIT SUB
 
-    CALL str_find_pos(target$, delim$, delimsPos%(), numFound%)
+    CALL STR.find_pos(target$, delim$, delimsPos%(), numFound%)
 
     IF numFound% <= 0 THEN
         numParts% = 0
@@ -88,7 +88,7 @@ END SUB
 ' @param INTEGER ARRAY arrFound%() populate with positions search found
 ' @param INTEGER numFound% times search found a match
 '
-SUB str_find_pos(target$, search$, arrFound%(), numFound%)
+SUB STR.find_pos(target$, search$, arrFound%(), numFound%)
     DIM AS INTEGER length, found, x, i, ub, searchLen
     length% = LEN(target$) : found% = -1 : x% = 0: i% = 0
     ub% = UBOUND(arrFound%)
@@ -115,15 +115,15 @@ END SUB
 ' @param INTEGER p% position to insert
 ' @return STRING with insertion
 '
-FUNCTION str_insert$(s$, ins$, p%)
+FUNCTION STR.insert$(s$, ins$, p%)
     IF p% < LEN(s$) AND ins$ <> "" THEN
         IF p% = 0 THEN
-            str_insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$) - 1)
+            STR.insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$) - 1)
         ELSE
-            str_insert$ = LEFT$(s$, p%+1) + ins$ + RIGHT$(s$, LEN(s$) - p%-1)
+            STR.insert$ = LEFT$(s$, p%+1) + ins$ + RIGHT$(s$, LEN(s$) - p%-1)
         END IF
     ELSE 
-        str_insert$ = s$
+        STR.insert$ = s$
     END IF
 END FUNCTION
 
@@ -136,38 +136,38 @@ END FUNCTION
 ' @param INTEGER count% times to remove
 ' @return STRING with del$ removed
 '
-FUNCTION str_remove$(s$, del$, count%)
+FUNCTION STR.remove$(s$, del$, count%)
     DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
             p% = INSTR(s$, del$)
-            s$ = str_del$(s$, del$)
+            s$ = STR.del$(s$, del$)
         LOOP UNTIL p% = 0
     ELSE
         DO 
             p% = INSTR(s$, del$)
-            s$ = str_del$(s$, del$)
+            s$ = STR.del$(s$, del$)
             count% = count% - 1
         LOOP UNTIL p% = 0 OR count% = 0
     END IF
-    str_remove$ = s$
+    STR.remove$ = s$
 END FUNCTION
 
 
 ''
-' Delete a string from a string once (helper for str_remove$)
+' Delete a string from a string once (helper for STR.remove$)
 '
 ' @param STRING s$ to delete from
 ' @param STRING del$ to delete
 ' @return STRING with del$ deleted
 '
-FUNCTION str_del$(s$, del$)
+FUNCTION STR.del$(s$, del$)
     DIM AS INTEGER i
     i% = INSTR(s$, del$)
     IF i% THEN 
-        str_del$ = LEFT$(s$, i%-1) + RIGHT$(s$, LEN(s$) - (i% + LEN(del$))+1) 
+        STR.del$ = LEFT$(s$, i%-1) + RIGHT$(s$, LEN(s$) - (i% + LEN(del$))+1) 
     ELSE 
-        str_del$ = s$
+        STR.del$ = s$
     END IF
 END FUNCTION
 
@@ -181,21 +181,21 @@ END FUNCTION
 ' @param INTEGER count% number of times to replace
 ' @return STRING with replacements
 '
-FUNCTION str_replace$(s$, search$, replace$, count%)
+FUNCTION STR.replace$(s$, search$, replace$, count%)
     DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
             p% = INSTR(s$, search$)
-            s$ = str_rep$(s$, search$, replace$)
+            s$ = STR.rep$(s$, search$, replace$)
         LOOP UNTIL p% = 0
     ELSE
         DO 
             p% = INSTR(s$, search$)
-            s$ = str_rep$(s$, search$, replace$)
+            s$ = STR.rep$(s$, search$, replace$)
             count% = count% - 1
         LOOP UNTIL p% = 0 OR count% = 0
     END IF
-    str_replace$ = s$
+    STR.replace$ = s$
 END FUNCTION
 
 
@@ -205,7 +205,7 @@ END FUNCTION
 ' @param STRING s$ to reverse
 ' @return STRING reversed string
 '
-FUNCTION str_reverse$(s$)
+FUNCTION STR.reverse$(s$)
     DIM AS INTEGER i, l
     DIM AS STRING res
     res$ = ""
@@ -214,7 +214,7 @@ FUNCTION str_reverse$(s$)
     FOR i% = l% TO 1 STEP -1
         res$ = res$ + CHR$(ASC(s$, i%))
     NEXT i%
-    str_reverse$ = res$
+    STR.reverse$ = res$
 END FUNCTION
 
 
@@ -224,7 +224,7 @@ END FUNCTION
 ' @param STRING s$ string to reverse
 ' @return STRING shuffled string
 '
-FUNCTION str_shuffle$(s$)
+FUNCTION STR.shuffle$(s$)
     DIM AS INTEGER r
     DIM AS STRING c, ls, rs, res
     IF LEN(s$) = 0 THEN EXIT FUNCTION
@@ -237,7 +237,7 @@ FUNCTION str_shuffle$(s$)
         s$   = ls$ + rs$              ' diminish the string (remove c$)
         res$ = res$ + c$              ' build the returned string
     LOOP UNTIL LEN(s$) = 0
-    str_shuffle$ = res$
+    STR.shuffle$ = res$
 END FUNCTION
 
 
@@ -248,8 +248,8 @@ END FUNCTION
 ' @param STRING char$ character to use for padding
 ' @param INTEGER num% number of characters to pad to
 ' @return STRING padded at the end
-FUNCTION str_pad_both$(s$, char$, num%)
-    str_pad_both$ = str_pad_end$(str_pad_start$(s$, char$, num%), char$, num%)
+FUNCTION STR.pad_both$(s$, char$, num%)
+    STR.pad_both$ = STR.pad_end$(STR.pad_start$(s$, char$, num%), char$, num%)
 END FUNCTION
 
 
@@ -260,8 +260,8 @@ END FUNCTION
 ' @param STRING char$ character to use for padding
 ' @param INTEGER num% number of characters to pad to
 ' @return STRING padded at the end
-FUNCTION str_pad_end$(s$, char$, num%)
-    str_pad_end$ = s$ + STRING$(num%, char$)
+FUNCTION STR.pad_end$(s$, char$, num%)
+    STR.pad_end$ = s$ + STRING$(num%, char$)
 END FUNCTION
 
 
@@ -271,14 +271,14 @@ END FUNCTION
 ' @param STRING s$ string to repeat
 ' @param INTEGER num% number of times to repeat
 ' @return STRING repeated
-FUNCTION str_repeat$(s$, num%)
+FUNCTION STR.repeat$(s$, num%)
     DIM i AS INTEGER
     DIM res AS STRING
     res$ = ""
     FOR i% = 1 TO num%
         res$ = res$ + s$
     NEXT i%
-    str_repeat$ = res$
+    STR.repeat$ = res$
 END FUNCTION
 
 
@@ -288,8 +288,8 @@ END FUNCTION
 ' @param STRING s$ string to check
 ' @param INTEGER chars$ chars to check if string starts with
 ' @return INTEGER -1 if starts with 0 if not
-FUNCTION str_starts_with%(s$, chars$)
-    str_starts_with% = (LEFT$(s$, LEN(chars$)) = chars$)
+FUNCTION STR.starts_with%(s$, chars$)
+    STR.starts_with% = (LEFT$(s$, LEN(chars$)) = chars$)
 END FUNCTION
 
 
@@ -299,8 +299,8 @@ END FUNCTION
 ' @param STRING s$ string to check
 ' @param INTEGER chars$ chars to check if string ends with
 ' @return INTEGER -1 if ends with 0 if not
-FUNCTION str_ends_with%(s$, chars$)
-    str_ends_with% = (RIGHT$(s$, LEN(chars$)) = chars$)
+FUNCTION STR.ends_with%(s$, chars$)
+    STR.ends_with% = (RIGHT$(s$, LEN(chars$)) = chars$)
 END FUNCTION
 
 
@@ -311,27 +311,27 @@ END FUNCTION
 ' @param STRING char$ character to use for padding
 ' @param INTEGER num% number of characters to pad to
 ' @return STRING padded at the end
-FUNCTION str_pad_start$(s$, char$, num%)
-    str_pad_start$ = STRING$(num%, char$) + s$
+FUNCTION STR.pad_start$(s$, char$, num%)
+    STR.pad_start$ = STRING$(num%, char$) + s$
 END FUNCTION
 
 
 ''
-' Replaces a string with another string once (helper for str_replace$)
+' Replaces a string with another string once (helper for STR.replace$)
 '
 ' @param STRING s$ to replace within
 ' @param STRING search$
 ' @param STRING replace$
 ' @return STRING with replacement
 '
-FUNCTION str_rep$(s$, search$, replace$)
+FUNCTION STR.rep$(s$, search$, replace$)
     DIM AS INTEGER p
     p% = INSTR(s$, search$)
     IF p% THEN
         s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
-        str_rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
+        STR.rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
     ELSE 
-        str_rep$ = s$
+        STR.rep$ = s$
     END IF
 END FUNCTION
 
@@ -346,14 +346,14 @@ END FUNCTION
 ' @param INTEGER endPos% to end slice from
 ' @return STRING of sliced portion of original stright
 '
-FUNCTION str_slice_pos$(s$, startPos%, endPos%)
+FUNCTION STR.slice_pos$(s$, startPos%, endPos%)
     IF startPos% <= 0 THEN
         startPos% = 1
     END IF
     IF endPos% > 0 THEN
-        str_slice_pos$ = MID$(s$, startPos%, endPos%-startPos%)
+        STR.slice_pos$ = MID$(s$, startPos%, endPos%-startPos%)
     ELSE
-        str_slice_pos$ = MID$(s$, startPos%)
+        STR.slice_pos$ = MID$(s$, startPos%)
     END IF
 END FUNCTION
 
@@ -364,8 +364,8 @@ END FUNCTION
 ' @param _UNSIGNED _BYTE n~%% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ub$(n~%%)
-    str_ub$ = _TRIM$(STR$(n~%%))
+FUNCTION STR.ub$(n~%%)
+    STR.ub$ = _TRIM$(STR$(n~%%))
 END FUNCTION
 
 
@@ -375,8 +375,8 @@ END FUNCTION
 ' @param _UNSIGNED INTEGER n~% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ui$(n~%)
-    str_ui$ = _TRIM$(STR$(n~%))
+FUNCTION STR.ui$(n~%)
+    STR.ui$ = _TRIM$(STR$(n~%))
 END FUNCTION
 
 
@@ -386,8 +386,8 @@ END FUNCTION
 ' @param _UNSIGNED LONG n~& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_ul$(n~&)
-    str_ul$ = _TRIM$(STR$(n~&))
+FUNCTION STR.ul$(n~&)
+    STR.ul$ = _TRIM$(STR$(n~&))
 END FUNCTION
 
 
@@ -397,8 +397,8 @@ END FUNCTION
 ' @param _BYTE n~% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_b$(n%%)
-    str_b$ = _TRIM$(STR$(n%%))
+FUNCTION STR.b$(n%%)
+    STR.b$ = _TRIM$(STR$(n%%))
 END FUNCTION
 
 
@@ -408,8 +408,8 @@ END FUNCTION
 ' @param INTEGER n% number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_i$(n%)
-    str_i$ = _TRIM$(STR$(n%))
+FUNCTION STR.i$(n%)
+    STR.i$ = _TRIM$(STR$(n%))
 END FUNCTION
 
 
@@ -419,8 +419,8 @@ END FUNCTION
 ' @param LONG n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_l$(n&)
-    str_l$ = _TRIM$(STR$(n&))
+FUNCTION STR.l$(n&)
+    STR.l$ = _TRIM$(STR$(n&))
 END FUNCTION
 
 
@@ -430,8 +430,8 @@ END FUNCTION
 ' @param SINGLE n! number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_s$(n!)
-    str_s$ = _TRIM$(STR$(n!))
+FUNCTION STR.s$(n!)
+    STR.s$ = _TRIM$(STR$(n!))
 END FUNCTION
 
 
@@ -441,8 +441,8 @@ END FUNCTION
 ' @param DOUBLE n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_d$(n#)
-    str_d$ = _TRIM$(STR$(n#))
+FUNCTION STR.d$(n#)
+    STR.d$ = _TRIM$(STR$(n#))
 END FUNCTION
 
 
@@ -452,6 +452,6 @@ END FUNCTION
 ' @param _FLOAT n& number to return
 ' @return STRING space trimmed number
 '
-FUNCTION str_f$(n##)
-    str_f$ = _TRIM$(STR$(n##))
+FUNCTION STR.f$(n##)
+    STR.f$ = _TRIM$(STR$(n##))
 END FUNCTION

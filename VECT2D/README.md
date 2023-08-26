@@ -11,32 +11,32 @@
 ## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
-| VECT2D_setAxes | Sets both x and y axes of the vector |
-| VECT2D_setX | Sets x axis of the vector |
-| VECT2D_setY Sub | Sets y axis of the vector |
+| VECT2D.setAxes | Sets both x and y axes of the vector |
+| VECT2D.setX | Sets x axis of the vector |
+| VECT2D.setY Sub | Sets y axis of the vector |
 | VECT2D$  | Returns VECT2D as a string |
-| VECT2D_getX | Get x axis of VECT2D |
-| VECT2D_getY | Get y axis of VECT2D |
-| VECT2D_add | Add two VECT2D axes together |
-| VECT2D_sub | Subtract two VECT2D axes from each other |
-| VECT2D_multByVECT2D | Multiply two VECT2D axes together |
-| VECT2D_multBySingle | Multiply VECT2D axes by a single number |
-| VECT2D_divByVECT2D | Divide two VECT2D axes from each other |
-| VECT2D_divBySingle | Divide VECT2D axes by a single number |
-| VECT2D_normalize | Normalize a VEC2D into a unit vector |
-| VECT2D_unit | Normalize a VEC2D into a unit vector (alias) |
-| VECT2D_reverse | Reverse both VECT2D axes (invert sign) |
-| VECT2D_abs | Get absolute values for VECT2D axes (ignore sign) |
-| VECT2D_zero | Set both VECT2D axes to 0 |
-| VECT2D_distance | Get distance between two VECT2Ds |
-| VECT2D_rotate | Rotate a vector by radians |
-| VECT2D_round | Round the axes of a vector |
-| VECT2D_lengthsq | Return length squared of vector |
-| VECT2D_length | Return length(magnitude) of vector |
-| VECT2D_dotproduct | Get dot product of two vectors |
-| VECT2D_crossproduct | Get cross product of two vectors |
-| VECT2D_magnitude | Get magnitude(length) of vector |
-| VECT2D_eq | Check if two vectors have equal axes |
+| VECT2D.getX | Get x axis of VECT2D |
+| VECT2D.getY | Get y axis of VECT2D |
+| VECT2D.add | Add two VECT2D axes together |
+| VECT2D.sub | Subtract two VECT2D axes from each other |
+| VECT2D.multByVECT2D | Multiply two VECT2D axes together |
+| VECT2D.multBySingle | Multiply VECT2D axes by a single number |
+| VECT2D.divByVECT2D | Divide two VECT2D axes from each other |
+| VECT2D.divBySingle | Divide VECT2D axes by a single number |
+| VECT2D.normalize | Normalize a VEC2D into a unit vector |
+| VECT2D.unit | Normalize a VEC2D into a unit vector (alias) |
+| VECT2D.reverse | Reverse both VECT2D axes (invert sign) |
+| VECT2D.abs | Get absolute values for VECT2D axes (ignore sign) |
+| VECT2D.zero | Set both VECT2D axes to 0 |
+| VECT2D.distance | Get distance between two VECT2Ds |
+| VECT2D.rotate | Rotate a vector by radians |
+| VECT2D.round | Round the axes of a vector |
+| VECT2D.lengthsq | Return length squared of vector |
+| VECT2D.length | Return length(magnitude) of vector |
+| VECT2D.dotproduct | Get dot product of two vectors |
+| VECT2D.crossproduct | Get cross product of two vectors |
+| VECT2D.magnitude | Get magnitude(length) of vector |
+| VECT2D.eq | Check if two vectors have equal axes |
 | radians_to_degrees | Converts radians to degress (wrapper to _R2D) |
 | degrees_to_radians | Converts degrees to radians (wrapper to _D2R) |
 
