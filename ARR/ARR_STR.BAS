@@ -1,4 +1,5 @@
 '$DYNAMIC
+$LET GJ_LIB_ARR_STR_BAS = 1
 
 ''
 ' Slice an array from source to destination starting at index and count slices

@@ -41,7 +41,7 @@ $SED -i 's/{Q}/INTEGER/g' ARR_INT.BAS
 $SED -i 's/{q}/INTEGER/g' ARR_INT.BAS
 $SED -i 's/{UT}/INT/g' ARR_INT.BAS
 $SED -i 's/{LT}/int/g' ARR_INT.BAS
-$SED -i 's/{SY}/~%/g' ARR_INT.BAS
+$SED -i 's/{SY}/%/g' ARR_INT.BAS
 
 # UINT
 $SED -i 's/{Q}/_UNSIGNED INTEGER/g' ARR_UINT.BAS
