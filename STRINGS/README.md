@@ -6,6 +6,22 @@
 ## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
+| STR.bool$ | Returns a string if n is true or false |
+| STR.is_alpha_numeric% | Check if string consists purely of alphabet chars or numbers |
+| STR.is_alpha% | Check if string consists purely of alphabetic characters |
+| STR.is_numeric% | Check if string consists purely of numbers |
+| STR.is_upper_case% | Check if string consists purely of upper case characters |
+| STR.is_lower_case% | Check if string consists purely of lower case characters |
+| STR.is_white_space% | Check if string consists of only white space |
+| STR.is_printable% | Check if string consists of only printable characters |
+| STR.is_graphical% | Check if string consists of only graphic characters |
+| STR.is_punctuation% | Check if string consists of only punctuation characters |
+| STR.is_control_chars% | Check if string consists of only control characters |
+| STR.is_blank% | Check if string consists of only space or tab characters |
+| STR.is_empty% | Check if string is null |
+| STR.is_falsey% | Check if string is falsy: null or 0 |
+| STR.is_truthy% | Check if string is truthy: not null or -1 |
+| STR.is_sentence% | Check if string ends with ., !, or ? |
 | STR.implode$   | Implodes a string array into a string using delimiter as glue |
 | STR.explode    | Explodes a string into an array of strings using a delimiter |
 | STR.find_pos   | Searches for strings in strings, fills array of found positions |
@@ -53,27 +69,19 @@
 
 
 ### TO DO
+- [ ] STR.strip_newlines (\r, \n)
+- [ ] STR.strip_white_space (space, \r, \n, \t)
+- [ ] STR.strip_slashes (remove from single quotes, double quotes)
+- [ ] STR.add_slashes (single quotes, double quotes)
+- [ ] STR.number_format
+- [ ] STR.format
+- [ ] STR.title_case `Title Case`
+- [ ] STR.camel_case `CamelCase`
+- [ ] STR.snake_case `snakeCase`
+- [ ] STR.lower_first
+- [ ] STR.upper_first
+- [ ] STR.word_count
 - [ ] STR.word_shuffle
 - [ ] STR.wrap
 - [ ] STR.wrap_pair
-- [ ] STR.word_count
-- [ ] STR.lower_first
-- [ ] STR.upper_first
-- [ ] STR.add_slashes (single quotes, double quotes)
-- [ ] STR.strip_slashes (remove from single quotes, double quotes)
-- [ ] STR.strip_whitespace (space, \r, \n, \t)
-- [ ] STR.titlecase `Title Case`
-- [ ] STR.camelcase `CamelCase`
-- [ ] STR.snakecase `snakeCase`
-- [ ] STR.is_alphanumeric
-- [ ] STR.is_numeric
-- [ ] STR.is_ucase
-- [ ] STR.is_lcase
-- [ ] STR.is_lower_ascii
-- [ ] STR.is_upper_ascii
-- [ ] STR.is_ctrlchar
-- [ ] STR.is_decimal
-- [ ] STR.is_whitespace
-- [ ] STR.number_format
-- [ ] STR.format
-- [ ] STR.wordwrap
+- [ ] STR.word_wrap

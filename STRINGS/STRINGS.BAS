@@ -1,7 +1,7 @@
-'' 
-' QB64_GJ_LIB 
+''
+' QB64_GJ_LIB
 ' GRYMMJACK'S STRINGS LIB
-' 
+'
 ' Tests and example for STRINGS lib.
 '
 ' @author Rick Christy <grymmjack@gmail.com>
@@ -25,8 +25,72 @@ _TITLE "QB64_GJ_LIB STRINGS LIB TESTS"
 SCREEN _NEWIMAGE(1024, 768, 32)
 _SCREENMOVE _MIDDLE
 
-DIM AS STRING phrase, phrase2, target, search, replace
+DIM AS STRING phrase, phrase2, target, search, replace, temp_str
 DIM AS INTEGER num_times, found, wordCount
+
+temp_str$ = "Intel486"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " alpha numeric? ";
+PRINT STR.bool$(STR.is_alpha_numeric%(temp_str$), "Yes", "No")
+
+temp_str$ = "Apple"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " alpha? ";
+PRINT STR.bool$(STR.is_alpha%(temp_str$), "Yes", "No")
+
+temp_str$ = "8088"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " numeric? ";
+PRINT STR.bool$(STR.is_numeric%(temp_str$), "Yes", "No")
+
+temp_str$ = "IBM"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " upper case? ";
+PRINT STR.bool$(STR.is_upper_case%(temp_str$), "Yes", "No")
+
+temp_str$ = "basicprogramming"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " lower case? ";
+PRINT STR.bool$(STR.is_lower_case%(temp_str$), "Yes", "No")
+
+temp_str$ = "    "
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " white space? ";
+PRINT STR.bool$(STR.is_white_space%(temp_str$), "Yes", "No")
+
+temp_str$ = "a,b!"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " printable? ";
+PRINT STR.bool$(STR.is_printable%(temp_str$), "Yes", "No")
+
+temp_str$ = "Hello, World!"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " graphical? ";
+PRINT STR.bool$(STR.is_graphical%(temp_str$), "Yes", "No")
+
+temp_str$ = "!"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " punctuation? ";
+PRINT STR.bool$(STR.is_punctuation%(temp_str$), "Yes", "No")
+
+temp_str$ = CHR$(7)
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " control chars? ";
+PRINT STR.bool$(STR.is_control_chars%(temp_str$), "Yes", "No")
+
+temp_str$ = "DEADBEEFD34DB33F"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " hexadecimal? ";
+PRINT STR.bool$(STR.is_hexadecimal%(temp_str$), "Yes", "No")
+
+temp_str$ = "   "
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " blank? ";
+PRINT STR.bool$(STR.is_blank%(temp_str$), "Yes", "No")
+
+temp_str$ = ""
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " empty? ";
+PRINT STR.bool$(STR.is_empty%(temp_str$), "Yes", "No")
+
+temp_str$ = ""
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " falsey? ";
+PRINT STR.bool$(STR.is_falsey%(temp_str$), "Yes", "No")
+
+temp_str$ = ""
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " truthy? ";
+PRINT STR.bool$(STR.is_truthy%(temp_str$), "Yes", "No")
+
+temp_str$ = "Did you eat yet?"
+PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " a sentence? ";
+PRINT STR.bool$(STR.is_sentence%(temp_str$), "Yes", "No")
 
 phrase$ = ""
 phrase$ = "foo"
