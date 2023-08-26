@@ -28,6 +28,15 @@ _SCREENMOVE _MIDDLE
 DIM AS STRING phrase, phrase2, target, search, replace, temp_str
 DIM AS INTEGER num_times, found, wordCount
 
+
+DIM vars() AS STRING
+CALL ARR_STR.new(vars$(), "Rick,3")
+PRINT STR.format("Hello %s, there are %d hours left until daybreak", vars$())
+
+DIM d() AS DICTIONARY
+CALL ARR_STR.new(vars$(), "Rick,3")
+PRINT STR.format("Hello %s, there are %d hours left until daybreak", vars$())
+
 temp_str$ = "Intel486"
 PRINT "Is "; CHR$(34); temp_str$; CHR$(34); " alpha numeric? ";
 PRINT STR.bool$(STR.is_alpha_numeric%(temp_str$), "Yes", "No")
