@@ -106,7 +106,7 @@ END SUB
 
 SUB test_start(s$)
     DIM nil AS STRING
-    nil$ = ansi_mode_reset_all
+    nil$ = ANSI.mode_reset_all
     IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     CLS
     PRINT "Press any key to test "; s$
@@ -117,7 +117,7 @@ END SUB
 SUB test_complete ()
     DIM nil AS STRING
     PRINT "Test complete, press a key."
-    nil$ = ansi_mode_reset_all
+    nil$ = ANSI.mode_reset_all
     IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     CALL anykey
 END SUB

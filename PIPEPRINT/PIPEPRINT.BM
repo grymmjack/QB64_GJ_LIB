@@ -26,7 +26,7 @@ $LET GJ_LIB_PIPEPRINT_INC_BM = 1
 ' @return STRING parsed with pipe codes replaced by ANSI codes
 '
 FUNCTION PIPEPRINT$(s$)
-    DIM AS INTEGER w, nums, p, ub, i, lb, r, l
+    DIM AS INTEGER w, nums, p, ub, i, lb, r, l, ansi_x,  ansi_y
     DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
     w% = _WIDTH
     ansi_x% = POS(0) : ansi_y% = CSRLIN
@@ -37,7 +37,7 @@ FUNCTION PIPEPRINT$(s$)
     REDIM PIPES_POSITIONS(MAX_PIPES) AS INTEGER
 
     ' Find the pipes
-    CALL str_find_pos(s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND)
+    CALL STR.find_pos(s$, "|", PIPES_POSITIONS%(), NUM_PIPES_FOUND)
     IF NUM_PIPES_FOUND = 0 THEN
         PIPEPRINT$ = s$
         EXIT FUNCTION
@@ -60,12 +60,12 @@ FUNCTION PIPEPRINT$(s$)
                     find$ = code$ + args$
             END SELECT
             SELECT CASE code$
-                CASE "|[X": repl$ = ansi_move_column(nums%)
-                CASE "|[Y": repl$ = ansi_locate(nums%, ansi_x%)
-                CASE "|[A": repl$ = ansi_move_up(nums%)
-                CASE "|[B": repl$ = ansi_move_down(nums%)
-                CASE "|[C": repl$ = ansi_move_right(nums%)
-                CASE "|[D": repl$ = ansi_move_left(nums%)
+                CASE "|[X": repl$ = ANSI.move_column(nums%)
+                CASE "|[Y": repl$ = ANSI.locate(nums%, ansi_x%)
+                CASE "|[A": repl$ = ANSI.move_up(nums%)
+                CASE "|[B": repl$ = ANSI.move_down(nums%)
+                CASE "|[C": repl$ = ANSI.move_right(nums%)
+                CASE "|[D": repl$ = ANSI.move_left(nums%)
                 CASE "|@D":
                     IF args$ = "00" THEN
                         nums% = w%
@@ -86,15 +86,15 @@ FUNCTION PIPEPRINT$(s$)
                 CASE "|@R":
                     spaces$ = STRING$(w% - LEN(nopi$), " ") 
                     repl$   = spaces$ + txt$
-                    repl$   = ansi_move_column(1) + repl$
+                    repl$   = ANSI.move_column(1) + repl$
                 CASE "|@L":
                     spaces$ = STRING$(w% - LEN(nopi$), " ")
                     repl$   = txt$ + spaces$
-                    repl$   = ansi_move_column(1) + repl$
+                    repl$   = ANSI.move_column(1) + repl$
                 CASE "|@C":
                     spaces$ = STRING$((w% - LEN(nopi$)) \ 2, " ")
                     repl$   = spaces$ + txt$ + spaces$
-                    repl$   = ansi_move_column(1) + repl$
+                    repl$   = ANSI.move_column(1) + repl$
             END SELECT
             SELECT CASE code$
                 CASE "|[0", "|[1", "|[K", "|CL", "|CN", "|CY", "|CR", _
@@ -106,48 +106,48 @@ FUNCTION PIPEPRINT$(s$)
                         find$ = code$
             END SELECT 
             SELECT CASE code$
-                CASE "|[0": repl$ = ansi_hide_cursor
-                CASE "|[1": repl$ = ansi_show_cursor
-                CASE "|[K": repl$ = ansi_erase_to_eol
-                CASE "|CL": repl$ = ansi_erase_screen
-                CASE "|CN": repl$ = ansi_mode_blinking
-                CASE "|CY": repl$ = ansi_mode_blinking_reset
-                CASE "|CR": repl$ = ansi_move_down(1) + ansi_move_column(1)
+                CASE "|[0": repl$ = ANSI.hide_cursor
+                CASE "|[1": repl$ = ANSI.show_cursor
+                CASE "|[K": repl$ = ANSI.erase_to_eol
+                CASE "|CL": repl$ = ANSI.erase_screen
+                CASE "|CN": repl$ = ANSI.mode_blinking
+                CASE "|CY": repl$ = ANSI.mode_blinking_reset
+                CASE "|CR": repl$ = ANSI.move_down(1) + ANSI.move_column(1)
                 CASE "|PI": repl$ = "|"
-                CASE "|00": repl$ = ansi_fg_black
-                CASE "|01": repl$ = ansi_fg_blue
-                CASE "|02": repl$ = ansi_fg_green
-                CASE "|03": repl$ = ansi_fg_cyan
-                CASE "|04": repl$ = ansi_fg_red
-                CASE "|05": repl$ = ansi_fg_magenta
-                CASE "|06": repl$ = ansi_fg_yellow
-                CASE "|07": repl$ = ansi_fg_white
-                CASE "|08": repl$ = ansi_fg_bright_black
-                CASE "|09": repl$ = ansi_fg_bright_blue
-                CASE "|10": repl$ = ansi_fg_bright_green
-                CASE "|11": repl$ = ansi_fg_bright_cyan
-                CASE "|12": repl$ = ansi_fg_bright_red
-                CASE "|13": repl$ = ansi_fg_bright_magenta
-                CASE "|14": repl$ = ansi_fg_bright_yellow
-                CASE "|15": repl$ = ansi_fg_bright_white
-                CASE "|16": repl$ = ansi_bg_black
-                CASE "|17": repl$ = ansi_bg_blue
-                CASE "|18": repl$ = ansi_bg_green
-                CASE "|19": repl$ = ansi_bg_cyan
-                CASE "|20": repl$ = ansi_bg_red
-                CASE "|21": repl$ = ansi_bg_magenta
-                CASE "|22": repl$ = ansi_bg_yellow
-                CASE "|23": repl$ = ansi_bg_white
-                CASE "|24": repl$ = ansi_bg_bright_black
-                CASE "|25": repl$ = ansi_bg_bright_blue
-                CASE "|26": repl$ = ansi_bg_bright_green
-                CASE "|27": repl$ = ansi_bg_bright_cyan
-                CASE "|28": repl$ = ansi_bg_bright_red
-                CASE "|29": repl$ = ansi_bg_bright_magenta
-                CASE "|30": repl$ = ansi_bg_bright_yellow
-                CASE "|31": repl$ = ansi_bg_bright_white
+                CASE "|00": repl$ = ANSI.fg_black
+                CASE "|01": repl$ = ANSI.fg_blue
+                CASE "|02": repl$ = ANSI.fg_green
+                CASE "|03": repl$ = ANSI.fg_cyan
+                CASE "|04": repl$ = ANSI.fg_red
+                CASE "|05": repl$ = ANSI.fg_magenta
+                CASE "|06": repl$ = ANSI.fg_yellow
+                CASE "|07": repl$ = ANSI.fg_white
+                CASE "|08": repl$ = ANSI.fg_bright_black
+                CASE "|09": repl$ = ANSI.fg_bright_blue
+                CASE "|10": repl$ = ANSI.fg_bright_green
+                CASE "|11": repl$ = ANSI.fg_bright_cyan
+                CASE "|12": repl$ = ANSI.fg_bright_red
+                CASE "|13": repl$ = ANSI.fg_bright_magenta
+                CASE "|14": repl$ = ANSI.fg_bright_yellow
+                CASE "|15": repl$ = ANSI.fg_bright_white
+                CASE "|16": repl$ = ANSI.bg_black
+                CASE "|17": repl$ = ANSI.bg_blue
+                CASE "|18": repl$ = ANSI.bg_green
+                CASE "|19": repl$ = ANSI.bg_cyan
+                CASE "|20": repl$ = ANSI.bg_red
+                CASE "|21": repl$ = ANSI.bg_magenta
+                CASE "|22": repl$ = ANSI.bg_yellow
+                CASE "|23": repl$ = ANSI.bg_white
+                CASE "|24": repl$ = ANSI.bg_bright_black
+                CASE "|25": repl$ = ANSI.bg_bright_blue
+                CASE "|26": repl$ = ANSI.bg_bright_green
+                CASE "|27": repl$ = ANSI.bg_bright_cyan
+                CASE "|28": repl$ = ANSI.bg_bright_red
+                CASE "|29": repl$ = ANSI.bg_bright_magenta
+                CASE "|30": repl$ = ANSI.bg_bright_yellow
+                CASE "|31": repl$ = ANSI.bg_bright_white
             END SELECT            
-            sout$ = str_replace$(sout$, find$, repl$, 1)
+            sout$ = STR.replace$(sout$, find$, repl$, 1)
         NEXT i%
     END IF
     PIPEPRINT$ = sout$
@@ -170,7 +170,7 @@ FUNCTION PIPESTRIP$(s$)
     REDIM PIPES_STRIP_POSITIONS(MAX_PIPES_STRIP) AS INTEGER
 
     ' Find the pipes
-    CALL str_find_pos(s$, "|", PIPES_STRIP_POSITIONS%(), NUM_PIPES_STRIP_FOUND)
+    CALL STR.find_pos(s$, "|", PIPES_STRIP_POSITIONS%(), NUM_PIPES_STRIP_FOUND)
     IF NUM_PIPES_STRIP_FOUND = 0 THEN
         PIPESTRIP$ = s$
         EXIT FUNCTION
@@ -217,7 +217,7 @@ FUNCTION PIPESTRIP$(s$)
                         find$ = code$
             END SELECT 
             repl$ = ""
-            sout$ = str_replace$(sout$, find$, repl$, 1)
+            sout$ = STR.replace$(sout$, find$, repl$, 1)
         NEXT i%
     END IF
     PIPESTRIP$ = sout$
