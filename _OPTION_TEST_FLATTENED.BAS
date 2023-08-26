@@ -16682,8 +16682,8 @@ OPTION _EXPLICITARRAY
                 ' @param SINGLE radians to convert to degrees
                 ' @return SINGLE degrees converted from radians
                 ' 
-                FUNCTION radians_to_degrees!(radians AS SINGLE)
-                    radians_to_degrees! = _R2D(radians)
+                FUNCTION VECT2D.radians_to_degrees!(radians AS SINGLE)
+                    VECT2D.radians_to_degrees! = _R2D(radians)
                     ' Formula: radians_to_degrees! = radians! * 180 / _PI
                 END FUNCTION
                 
@@ -16694,8 +16694,8 @@ OPTION _EXPLICITARRAY
                 ' @param SINGLE radians to convert to degrees
                 ' @return SINGLE radians converted from degrees
                 ' 
-                FUNCTION degrees_to_radians!(degrees AS SINGLE)
-                    degrees_to_radians! = _D2R(degrees)
+                FUNCTION VECT2D.degrees_to_radians!(degrees AS SINGLE)
+                    VECT2D.degrees_to_radians! = _D2R(degrees)
                     ' Formula: degrees_to_radians! = degrees! * _PI / 180
                 END FUNCTION
         $END IF
