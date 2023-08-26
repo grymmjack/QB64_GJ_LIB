@@ -35,4 +35,19 @@ Simulates a dictionary object as found in other languages.
 ![Example output from [DICT.BAS](DICT.BAS)](DICT.png)
 
 ### TO DO:
+- [ ] DICT.keys (wrapper for DICT.get_keys)
+- [ ] DICT.vals (wrapper for DICT.get_vals)
+- [ ] DICT.clear
+- [ ] DICT.new(d(), "foo=bar,baz=bop,fip=fap,end=done")
+- [ ] DICT.add(d(), "foo=bar,baz=bop,fip=fap")
 - [ ] DICT.templatize_str (like \` \` in js {key} replaced with {val})
+- [ ] DICT.insert(d(), key$, val$)
+- [ ] DICT.remove(d(), key$)
+- [ ] DICT.key_sort
+- [ ] DICT.val_sort
+- [ ] DICT.from_json
+- [ ] DICT.to_json
+- [ ] DICT.from_yaml
+- [ ] DICT.to_yaml
+- [ ] DICT.from_xml
+- [ ] DICT.to_xml

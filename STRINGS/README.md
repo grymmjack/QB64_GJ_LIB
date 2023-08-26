@@ -69,6 +69,7 @@
 
 
 ### TO DO
+- [ ] STR.strip_quotes
 - [ ] STR.strip_newlines (\r, \n)
 - [ ] STR.strip_white_space (space, \r, \n, \t)
 - [ ] STR.strip_slashes (remove from single quotes, double quotes)

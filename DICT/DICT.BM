@@ -17,7 +17,6 @@ $IF GJ_LIB_DICT_INC_BI = UNDEFINED THEN
 $END IF
 
 
-
 ''
 ' Populates a dictionary with arrays of keys and values
 '
