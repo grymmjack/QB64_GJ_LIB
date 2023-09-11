@@ -4,8 +4,8 @@ $LET GJ_LIB_ARR_STR_BAS = 1
 ''
 ' Slice an array from source to destination starting at index and count slices
 '
-' @param STR() source_arr$ to slice from
-' @param STR() dest_arr$ to put slices into
+' @param STRING source_arr$() to slice from
+' @param STRING dest_arr$() to put slices into
 ' @param INTEGER start_idx% starting index to use as slice range
 ' @param INTEGER count% number of slices - if negative, backwards from index
 '
