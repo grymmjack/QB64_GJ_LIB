@@ -104,7 +104,7 @@ FUNCTION STR.is_blank%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isblank(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isblank(ASC(s$, i%)) = 0 THEN
             STR.is_blank% = 0
             EXIT FUNCTION
         END IF
@@ -126,7 +126,7 @@ FUNCTION STR.is_hexadecimal%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isxdigit(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isxdigit(ASC(s$, i%)) = 0 THEN
             STR.is_hexadecimal% = 0
             EXIT FUNCTION
         END IF
@@ -170,7 +170,7 @@ FUNCTION STR.is_punctuation%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF ispunct%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_ispunct%(ASC(s$, i%)) = 0 THEN
             STR.is_punctuation% = 0
             EXIT FUNCTION
         END IF
@@ -196,7 +196,7 @@ FUNCTION STR.is_graphical%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isgraph%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isgraph%(ASC(s$, i%)) = 0 THEN
             STR.is_graphical% = 0
             EXIT FUNCTION
         END IF
@@ -218,7 +218,7 @@ FUNCTION STR.is_printable%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isprint%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isprint%(ASC(s$, i%)) = 0 THEN
             STR.is_printable% = 0
             EXIT FUNCTION
         END IF
@@ -240,7 +240,7 @@ FUNCTION STR.is_white_space%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isspace%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isspace%(ASC(s$, i%)) = 0 THEN
             STR.is_white_space% = 0
             EXIT FUNCTION
         END IF
@@ -261,7 +261,7 @@ FUNCTION STR.is_lower_case%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF islower%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_islower%(ASC(s$, i%)) = 0 THEN
             STR.is_lower_case% = 0
             EXIT FUNCTION
         END IF
@@ -282,7 +282,7 @@ FUNCTION STR.is_upper_case%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isupper%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isupper%(ASC(s$, i%)) = 0 THEN
             STR.is_upper_case% = 0
             EXIT FUNCTION
         END IF
@@ -303,7 +303,7 @@ FUNCTION STR.is_numeric%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isdigit%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isdigit%(ASC(s$, i%)) = 0 THEN
             STR.is_numeric% = 0
             EXIT FUNCTION
         END IF
@@ -324,7 +324,7 @@ FUNCTION STR.is_alpha%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isalpha%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isalpha%(ASC(s$, i%)) = 0 THEN
             STR.is_alpha% = 0
             EXIT FUNCTION
         END IF
@@ -345,7 +345,7 @@ FUNCTION STR.is_alpha_numeric%(s$)
     IF s$ = "" THEN EXIT FUNCTION
     i% = 1
     DO:
-        IF isalnum%(ASC(s$, i%)) = 0 THEN
+        IF GJ_LIB_isalnum%(ASC(s$, i%)) = 0 THEN
             STR.is_alpha_numeric% = 0
             EXIT FUNCTION
         END IF

@@ -327,31 +327,31 @@ OPTION _EXPLICITARRAY
                 
                 DECLARE LIBRARY
                      'is an alphabet letter(isalpha(c) or isdigit(c))
-                    FUNCTION isalnum% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isalnum% (BYVAL c AS INTEGER)
                     'is letter (isupper(c) or islower(c))
-                    FUNCTION isalpha% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isalpha% (BYVAL c AS INTEGER)
                     'is a decimal digit
-                    FUNCTION isdigit% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isdigit% (BYVAL c AS INTEGER)
                     'is a printing character other than space
-                    FUNCTION isgraph% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isgraph% (BYVAL c AS INTEGER)
                     'is a lower-case letter
-                    FUNCTION islower% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_islower% (BYVAL c AS INTEGER)
                     'is printing character. ASCII: &H20 (" ") to &H7E (~)
-                    FUNCTION isprint% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isprint% (BYVAL c AS INTEGER)
                     'is printing character other than space, letter, digit
-                    FUNCTION ispunct% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_ispunct% (BYVAL c AS INTEGER)
                     'is space, formfeed, newline, return, tab, vertical tab
-                    FUNCTION isspace% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isspace% (BYVAL c AS INTEGER)
                     'is only space or tab
-                    FUNCTION isblank% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isblank% (BYVAL c AS INTEGER)
                     'is upper-case letter
-                    FUNCTION isupper% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isupper% (BYVAL c AS INTEGER)
                     'is a hexdecimal digit character(0 thru 9 or A thru F)
-                    FUNCTION isxdigit% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB_isxdigit% (BYVAL c AS INTEGER)
                     'return lower-case equivalent
-                    FUNCTION tolower% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB.tolower% (BYVAL c AS INTEGER)
                     'return upper-case equivalent
-                    FUNCTION toupper% (BYVAL c AS INTEGER)
+                    FUNCTION GJ_LIB.toupper% (BYVAL c AS INTEGER)
                 END DECLARE
         $END IF
         $IF GJ_LIB_PIPEPRINT_INC_BI = UNDEFINED THEN
@@ -549,31 +549,31 @@ OPTION _EXPLICITARRAY
                         
                         DECLARE LIBRARY
                              'is an alphabet letter(isalpha(c) or isdigit(c))
-                            FUNCTION isalnum% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isalnum% (BYVAL c AS INTEGER)
                             'is letter (isupper(c) or islower(c))
-                            FUNCTION isalpha% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isalpha% (BYVAL c AS INTEGER)
                             'is a decimal digit
-                            FUNCTION isdigit% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isdigit% (BYVAL c AS INTEGER)
                             'is a printing character other than space
-                            FUNCTION isgraph% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isgraph% (BYVAL c AS INTEGER)
                             'is a lower-case letter
-                            FUNCTION islower% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_islower% (BYVAL c AS INTEGER)
                             'is printing character. ASCII: &H20 (" ") to &H7E (~)
-                            FUNCTION isprint% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isprint% (BYVAL c AS INTEGER)
                             'is printing character other than space, letter, digit
-                            FUNCTION ispunct% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_ispunct% (BYVAL c AS INTEGER)
                             'is space, formfeed, newline, return, tab, vertical tab
-                            FUNCTION isspace% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isspace% (BYVAL c AS INTEGER)
                             'is only space or tab
-                            FUNCTION isblank% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isblank% (BYVAL c AS INTEGER)
                             'is upper-case letter
-                            FUNCTION isupper% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isupper% (BYVAL c AS INTEGER)
                             'is a hexdecimal digit character(0 thru 9 or A thru F)
-                            FUNCTION isxdigit% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB_isxdigit% (BYVAL c AS INTEGER)
                             'return lower-case equivalent
-                            FUNCTION tolower% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB.tolower% (BYVAL c AS INTEGER)
                             'return upper-case equivalent
-                            FUNCTION toupper% (BYVAL c AS INTEGER)
+                            FUNCTION GJ_LIB.toupper% (BYVAL c AS INTEGER)
                         END DECLARE
                 $END IF
                 
@@ -6409,8 +6409,8 @@ OPTION _EXPLICITARRAY
                 ''
                 ' Slice an array from source to destination starting at index and count slices
                 '
-                ' @param STR() source_arr$ to slice from
-                ' @param STR() dest_arr$ to put slices into
+                ' @param STRING source_arr$() to slice from
+                ' @param STRING dest_arr$() to put slices into
                 ' @param INTEGER start_idx% starting index to use as slice range
                 ' @param INTEGER count% number of slices - if negative, backwards from index
                 '
@@ -12678,7 +12678,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isblank(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isblank(ASC(s$, i%)) = 0 THEN
                             STR.is_blank% = 0
                             EXIT FUNCTION
                         END IF
@@ -12700,7 +12700,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isxdigit(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isxdigit(ASC(s$, i%)) = 0 THEN
                             STR.is_hexadecimal% = 0
                             EXIT FUNCTION
                         END IF
@@ -12744,7 +12744,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF ispunct%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_ispunct%(ASC(s$, i%)) = 0 THEN
                             STR.is_punctuation% = 0
                             EXIT FUNCTION
                         END IF
@@ -12770,7 +12770,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isgraph%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isgraph%(ASC(s$, i%)) = 0 THEN
                             STR.is_graphical% = 0
                             EXIT FUNCTION
                         END IF
@@ -12792,7 +12792,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isprint%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isprint%(ASC(s$, i%)) = 0 THEN
                             STR.is_printable% = 0
                             EXIT FUNCTION
                         END IF
@@ -12814,7 +12814,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isspace%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isspace%(ASC(s$, i%)) = 0 THEN
                             STR.is_white_space% = 0
                             EXIT FUNCTION
                         END IF
@@ -12835,7 +12835,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF islower%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_islower%(ASC(s$, i%)) = 0 THEN
                             STR.is_lower_case% = 0
                             EXIT FUNCTION
                         END IF
@@ -12856,7 +12856,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isupper%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isupper%(ASC(s$, i%)) = 0 THEN
                             STR.is_upper_case% = 0
                             EXIT FUNCTION
                         END IF
@@ -12877,7 +12877,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isdigit%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isdigit%(ASC(s$, i%)) = 0 THEN
                             STR.is_numeric% = 0
                             EXIT FUNCTION
                         END IF
@@ -12898,7 +12898,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isalpha%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isalpha%(ASC(s$, i%)) = 0 THEN
                             STR.is_alpha% = 0
                             EXIT FUNCTION
                         END IF
@@ -12919,7 +12919,7 @@ OPTION _EXPLICITARRAY
                     IF s$ = "" THEN EXIT FUNCTION
                     i% = 1
                     DO:
-                        IF isalnum%(ASC(s$, i%)) = 0 THEN
+                        IF GJ_LIB_isalnum%(ASC(s$, i%)) = 0 THEN
                             STR.is_alpha_numeric% = 0
                             EXIT FUNCTION
                         END IF
@@ -15509,7 +15509,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isblank(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isblank(ASC(s$, i%)) = 0 THEN
                                     STR.is_blank% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15531,7 +15531,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isxdigit(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isxdigit(ASC(s$, i%)) = 0 THEN
                                     STR.is_hexadecimal% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15575,7 +15575,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF ispunct%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_ispunct%(ASC(s$, i%)) = 0 THEN
                                     STR.is_punctuation% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15601,7 +15601,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isgraph%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isgraph%(ASC(s$, i%)) = 0 THEN
                                     STR.is_graphical% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15623,7 +15623,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isprint%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isprint%(ASC(s$, i%)) = 0 THEN
                                     STR.is_printable% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15645,7 +15645,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isspace%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isspace%(ASC(s$, i%)) = 0 THEN
                                     STR.is_white_space% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15666,7 +15666,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF islower%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_islower%(ASC(s$, i%)) = 0 THEN
                                     STR.is_lower_case% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15687,7 +15687,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isupper%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isupper%(ASC(s$, i%)) = 0 THEN
                                     STR.is_upper_case% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15708,7 +15708,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isdigit%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isdigit%(ASC(s$, i%)) = 0 THEN
                                     STR.is_numeric% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15729,7 +15729,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isalpha%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isalpha%(ASC(s$, i%)) = 0 THEN
                                     STR.is_alpha% = 0
                                     EXIT FUNCTION
                                 END IF
@@ -15750,7 +15750,7 @@ OPTION _EXPLICITARRAY
                             IF s$ = "" THEN EXIT FUNCTION
                             i% = 1
                             DO:
-                                IF isalnum%(ASC(s$, i%)) = 0 THEN
+                                IF GJ_LIB_isalnum%(ASC(s$, i%)) = 0 THEN
                                     STR.is_alpha_numeric% = 0
                                     EXIT FUNCTION
                                 END IF
