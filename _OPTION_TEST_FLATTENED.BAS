@@ -12626,7 +12626,6 @@ OPTION _EXPLICITARRAY
                 ' @return INTEGER -1 if true, 0 if false
                 '
                 FUNCTION STR.is_truthy%(s$)
-                    DIM AS INTEGER i
                     IF s$ <> "" OR s$ = "-1" THEN 
                         STR.is_truthy% = -1
                         EXIT FUNCTION
@@ -12642,7 +12641,6 @@ OPTION _EXPLICITARRAY
                 ' @return INTEGER -1 if true, 0 if false
                 '
                 FUNCTION STR.is_falsey%(s$)
-                    DIM AS INTEGER i
                     IF s$ = "" OR s$ = "0" THEN 
                         STR.is_falsey% = -1
                         EXIT FUNCTION
@@ -12658,7 +12656,6 @@ OPTION _EXPLICITARRAY
                 ' @return INTEGER -1 if true, 0 if false
                 '
                 FUNCTION STR.is_empty%(s$)
-                    DIM AS INTEGER i
                     IF s$ = "" THEN 
                         STR.is_empty% = -1
                         EXIT FUNCTION
@@ -13096,21 +13093,21 @@ OPTION _EXPLICITARRAY
                 '
                 ' @param STRING s$ to replace within
                 ' @param STRING search$
-                ' @param STRING replace$
+                ' @param STRING rep$ string to replace search with if found
                 ' @param INTEGER count% number of times to replace
                 ' @return STRING with replacements
                 '
-                FUNCTION STR.replace$(s$, search$, replace$, count%)
+                FUNCTION STR.replace$(s$, search$, rep$, count%)
                     DIM AS INTEGER p
                     IF count% = -1 THEN
                         DO 
                             p% = INSTR(s$, search$)
-                            s$ = STR.rep$(s$, search$, replace$)
+                            s$ = STR.rep$(s$, search$, rep$)
                         LOOP UNTIL p% = 0
                     ELSE
                         DO 
                             p% = INSTR(s$, search$)
-                            s$ = STR.rep$(s$, search$, replace$)
+                            s$ = STR.rep$(s$, search$, rep$)
                             count% = count% - 1
                         LOOP UNTIL p% = 0 OR count% = 0
                     END IF
@@ -13240,15 +13237,15 @@ OPTION _EXPLICITARRAY
                 '
                 ' @param STRING s$ to replace within
                 ' @param STRING search$
-                ' @param STRING replace$
+                ' @param STRING rep$ string to replace search with if found
                 ' @return STRING with replacement
                 '
-                FUNCTION STR.rep$(s$, search$, replace$)
+                FUNCTION STR.rep$(s$, search$, rep$)
                     DIM AS INTEGER p
                     p% = INSTR(s$, search$)
                     IF p% THEN
                         s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
-                        STR.rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
+                        STR.rep$ = LEFT$(s$, p%-1) + rep$ + RIGHT$(s$, LEN(s$) - p%+1)
                     ELSE 
                         STR.rep$ = s$
                     END IF
@@ -13404,7 +13401,7 @@ OPTION _EXPLICITARRAY
                 ' @return STRING parsed with pipe codes replaced by ANSI codes
                 '
                 FUNCTION PIPEPRINT$(s$)
-                    DIM AS INTEGER w, nums, p, ub, i, lb, r, l, ansi_x,  ansi_y
+                    DIM AS INTEGER w, nums, p, ub, i, r, l, ansi_x,  ansi_y
                     DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
                     w% = _WIDTH
                     ansi_x% = POS(0) : ansi_y% = CSRLIN
@@ -13539,7 +13536,7 @@ OPTION _EXPLICITARRAY
                 ' @return STRING with pipe codes stripped
                 '
                 FUNCTION PIPESTRIP$(s$)
-                    DIM AS INTEGER w, nums, p, ub, i, lb, r, l
+                    DIM AS INTEGER w, nums, p, ub, i, r, l
                     DIM AS STRING sout, code, args, find, spaces, txt, t, repl, char
                     sout$ = s$
                     
@@ -15457,7 +15454,6 @@ OPTION _EXPLICITARRAY
                         ' @return INTEGER -1 if true, 0 if false
                         '
                         FUNCTION STR.is_truthy%(s$)
-                            DIM AS INTEGER i
                             IF s$ <> "" OR s$ = "-1" THEN 
                                 STR.is_truthy% = -1
                                 EXIT FUNCTION
@@ -15473,7 +15469,6 @@ OPTION _EXPLICITARRAY
                         ' @return INTEGER -1 if true, 0 if false
                         '
                         FUNCTION STR.is_falsey%(s$)
-                            DIM AS INTEGER i
                             IF s$ = "" OR s$ = "0" THEN 
                                 STR.is_falsey% = -1
                                 EXIT FUNCTION
@@ -15489,7 +15484,6 @@ OPTION _EXPLICITARRAY
                         ' @return INTEGER -1 if true, 0 if false
                         '
                         FUNCTION STR.is_empty%(s$)
-                            DIM AS INTEGER i
                             IF s$ = "" THEN 
                                 STR.is_empty% = -1
                                 EXIT FUNCTION
@@ -15927,21 +15921,21 @@ OPTION _EXPLICITARRAY
                         '
                         ' @param STRING s$ to replace within
                         ' @param STRING search$
-                        ' @param STRING replace$
+                        ' @param STRING rep$ string to replace search with if found
                         ' @param INTEGER count% number of times to replace
                         ' @return STRING with replacements
                         '
-                        FUNCTION STR.replace$(s$, search$, replace$, count%)
+                        FUNCTION STR.replace$(s$, search$, rep$, count%)
                             DIM AS INTEGER p
                             IF count% = -1 THEN
                                 DO 
                                     p% = INSTR(s$, search$)
-                                    s$ = STR.rep$(s$, search$, replace$)
+                                    s$ = STR.rep$(s$, search$, rep$)
                                 LOOP UNTIL p% = 0
                             ELSE
                                 DO 
                                     p% = INSTR(s$, search$)
-                                    s$ = STR.rep$(s$, search$, replace$)
+                                    s$ = STR.rep$(s$, search$, rep$)
                                     count% = count% - 1
                                 LOOP UNTIL p% = 0 OR count% = 0
                             END IF
@@ -16071,15 +16065,15 @@ OPTION _EXPLICITARRAY
                         '
                         ' @param STRING s$ to replace within
                         ' @param STRING search$
-                        ' @param STRING replace$
+                        ' @param STRING rep$ string to replace search with if found
                         ' @return STRING with replacement
                         '
-                        FUNCTION STR.rep$(s$, search$, replace$)
+                        FUNCTION STR.rep$(s$, search$, rep$)
                             DIM AS INTEGER p
                             p% = INSTR(s$, search$)
                             IF p% THEN
                                 s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
-                                STR.rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
+                                STR.rep$ = LEFT$(s$, p%-1) + rep$ + RIGHT$(s$, LEN(s$) - p%+1)
                             ELSE 
                                 STR.rep$ = s$
                             END IF
@@ -16548,10 +16542,9 @@ OPTION _EXPLICITARRAY
                 ' Set both VECT2D axes to 0
                 '
                 ' @param VECT2D vret Return vector with zeroed axes
-                ' @param VECT2D vec1 Vector to zero axes for
                 ' @return VECT2D inside vret
                 ' 
-                SUB VECT2D.zero(vret AS VECT2D, vec1 AS VECT2D)
+                SUB VECT2D.zero(vret AS VECT2D)
                     vret.x! = 0
                     vret.y! = 0
                 END SUB

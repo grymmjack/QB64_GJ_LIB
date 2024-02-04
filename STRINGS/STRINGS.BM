@@ -52,7 +52,6 @@ END FUNCTION
 ' @return INTEGER -1 if true, 0 if false
 '
 FUNCTION STR.is_truthy%(s$)
-    DIM AS INTEGER i
     IF s$ <> "" OR s$ = "-1" THEN 
         STR.is_truthy% = -1
         EXIT FUNCTION
@@ -68,7 +67,6 @@ END FUNCTION
 ' @return INTEGER -1 if true, 0 if false
 '
 FUNCTION STR.is_falsey%(s$)
-    DIM AS INTEGER i
     IF s$ = "" OR s$ = "0" THEN 
         STR.is_falsey% = -1
         EXIT FUNCTION
@@ -84,7 +82,6 @@ END FUNCTION
 ' @return INTEGER -1 if true, 0 if false
 '
 FUNCTION STR.is_empty%(s$)
-    DIM AS INTEGER i
     IF s$ = "" THEN 
         STR.is_empty% = -1
         EXIT FUNCTION

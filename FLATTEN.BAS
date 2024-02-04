@@ -18,7 +18,7 @@
 
 $Debug
 $If WIN Then
-    Const Slash$ = "\"
+    Const Slash$ = "/"
 $Else
     const Slash$ = "/"
 $End If

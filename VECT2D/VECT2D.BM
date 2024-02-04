@@ -240,10 +240,9 @@ END SUB
 ' Set both VECT2D axes to 0
 '
 ' @param VECT2D vret Return vector with zeroed axes
-' @param VECT2D vec1 Vector to zero axes for
 ' @return VECT2D inside vret
 ' 
-SUB VECT2D.zero(vret AS VECT2D, vec1 AS VECT2D)
+SUB VECT2D.zero(vret AS VECT2D)
     vret.x! = 0
     vret.y! = 0
 END SUB
