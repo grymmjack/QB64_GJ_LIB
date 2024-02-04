@@ -522,21 +522,21 @@ END FUNCTION
 '
 ' @param STRING s$ to replace within
 ' @param STRING search$
-' @param STRING replace$
+' @param STRING rep$ string to replace search with if found
 ' @param INTEGER count% number of times to replace
 ' @return STRING with replacements
 '
-FUNCTION STR.replace$(s$, search$, replace$, count%)
+FUNCTION STR.replace$(s$, search$, rep$, count%)
     DIM AS INTEGER p
     IF count% = -1 THEN
         DO 
             p% = INSTR(s$, search$)
-            s$ = STR.rep$(s$, search$, replace$)
+            s$ = STR.rep$(s$, search$, rep$)
         LOOP UNTIL p% = 0
     ELSE
         DO 
             p% = INSTR(s$, search$)
-            s$ = STR.rep$(s$, search$, replace$)
+            s$ = STR.rep$(s$, search$, rep$)
             count% = count% - 1
         LOOP UNTIL p% = 0 OR count% = 0
     END IF
@@ -666,15 +666,15 @@ END FUNCTION
 '
 ' @param STRING s$ to replace within
 ' @param STRING search$
-' @param STRING replace$
+' @param STRING rep$ string to replace search with if found
 ' @return STRING with replacement
 '
-FUNCTION STR.rep$(s$, search$, replace$)
+FUNCTION STR.rep$(s$, search$, rep$)
     DIM AS INTEGER p
     p% = INSTR(s$, search$)
     IF p% THEN
         s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
-        STR.rep$ = LEFT$(s$, p%-1) + replace$ + RIGHT$(s$, LEN(s$) - p%+1)
+        STR.rep$ = LEFT$(s$, p%-1) + rep$ + RIGHT$(s$, LEN(s$) - p%+1)
     ELSE 
         STR.rep$ = s$
     END IF
