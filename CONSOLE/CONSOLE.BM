@@ -114,4 +114,6 @@ SUB console.error(msg$)
     msg$ = ""
 END SUB
 
+$IF GJ_LIB_STRINGS_INC_BM = UNDEFINED THEN
 '$INCLUDE:'../STRINGS/STRINGS.BM'
+$END IF
