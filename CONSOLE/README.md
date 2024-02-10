@@ -23,12 +23,12 @@ See the example and screenshot for more information.
 ## WHAT'S IN THE LIBRARY
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
-| CONSOLE.log | Log to console if DEBUGGING |
-| CONSOLE.info | Log to console as info if DEBUGGING |
-| CONSOLE.warn | Log to console as warning if DEBUGGING |
-| CONSOLE.error | Log to console as error if DEBUGGING |
-| CONSOLE.banner | Log a banner to console if DEBUGGING |
-| CONSOLE.box | Log a boxed message to console if DEBUGGING |
+| console.log | Log to console if DEBUGGING |
+| console.info | Log to console as info if DEBUGGING |
+| console.warn | Log to console as warning if DEBUGGING |
+| console.error | Log to console as error if DEBUGGING |
+| console.banner | Log a banner to console if DEBUGGING |
+| console.box | Log a boxed message to console if DEBUGGING |
 
 
 

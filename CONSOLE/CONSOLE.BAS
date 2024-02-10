@@ -20,17 +20,17 @@ PRINT "This example outputs only this message to the program window."
 PRINT "To see the purpose and output look at the terminal window."
 
 '$INCLUDE:'CONSOLE.BI'
-CONSOLE.log "This is a CONSOLE.log message."
+console.log "This is a console.log message."
 
 'If you are used to using console.log() you might want to use CALL to use ()'s
-CALL CONSOLE.log("This is another CONSOLE.log message.")
+CALL console.log("This is another console.log message.")
 
-CONSOLE.info "This is a CONSOLE.info message."
-CONSOLE.warn "This is a CONSOLE.warn message."
-CONSOLE.error "This is a CONSOLE.error message."
+console.info "This is a console.info message."
+console.warn "This is a console.warn message."
+console.error "This is a console.error message."
 
-'CONSOLE.banner and CONSOLE.box take a color code argument to draw in that color
-CONSOLE.banner "This is a CONSOLE.banner message.", 13
-CONSOLE.box "This is a CONSOLE.box message.", 5
+'console.banner and console.box take a color code argument to draw in that color
+console.banner "This is a console.banner message.", 13
+console.box "This is a console.box message.", 5
 
 '$INCLUDE:'CONSOLE.BM'
