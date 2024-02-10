@@ -23,6 +23,8 @@ in it's current state.
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 | [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |
 | [ASEPRITE](ASEPRITE/README.md) | Adds ASEPRITE support to QB64 | See https://www.aseprite.org |
+| [CONSOLE](CONSOLE/README.md) | CONSOLE object with debugging. |
+| [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
 
 
 
