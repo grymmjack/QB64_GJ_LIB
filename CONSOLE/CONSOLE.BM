@@ -20,7 +20,7 @@ $LET GJ_LIB_CONSOLE_INC_BM = 1
 SUB console.box(msg$, kolor%)
     $IF DEBUGGING = TRUE THEN
         DIM AS STRING e, color_code, lines, intensity
-        DIM AS INTEGER fg, afg
+        DIM AS INTEGER afg
         intensity$ = "0"
         e$ = CHR$(27)
         afg% = ANSI_COLOR%(kolor%)
@@ -45,7 +45,7 @@ END SUB
 SUB console.banner(msg$, kolor%)
     $IF DEBUGGING = TRUE THEN
         DIM AS STRING e, color_code, intensity
-        DIM AS INTEGER fg, afg
+        DIM AS INTEGER afg
         intensity$ = "0"
         e$ = CHR$(27)
         afg% = ANSI_COLOR(kolor%)
