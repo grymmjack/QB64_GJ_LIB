@@ -18,9 +18,6 @@
 $LET GJ_LIB_INC_BM = 1
 
 ' Unified includes to use everything in the library from single BM include
-$IF GJ_LIB_INC_COMMON_BM = UNDEFINED THEN
-'$INCLUDE:'_GJ_LIB_COMMON.BM'
-$END IF
 $IF GJ_LIB_ARR_BYTE_BAS = UNDEFINED THEN
 '$INCLUDE:'ARR/ARR_BYTE.BAS'
 $END IF
