@@ -71,7 +71,13 @@
 ' @see [1] https://www.php.net/manual/en/function.print-r.php
 '
 $LET GJ_LIB_DUMP_INC_BM = 1
-
+$IF GJ_LIB_NL_BM = UNDEFINED AND WIN THEN
+$LET GJ_LIB_NL_BM = 1
+    GJ_LIB_NL$ = CHR$(13)
+$ELSE
+$LET GJ_LIB_NL_BM = 1
+    GJ_LIB_NL$ = CHR$(10)
+$END IF
 
 
 ''
