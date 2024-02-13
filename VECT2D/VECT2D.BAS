@@ -85,7 +85,7 @@ CALL VECT2D.abs(v3, v1)
 PRINT VECT2D$(v3, FALSE)
 
 ' zero
-CALL VECT2D.zero(v3, v1)
+CALL VECT2D.zero(v3)
 PRINT VECT2D$(v3, FALSE)
 
 ' distance

@@ -42,6 +42,14 @@ OPTION _EXPLICITARRAY
                     $LET TRUE = TRUE
                     CONST FALSE = 0 : CONST TRUE = NOT FALSE
                 $END IF
+                
+                $IF SLASH = UNDEFINED THEN
+                    $IF WIN AND SLASH THEN
+                        CONST SLASH$ = "\"
+                    $ELSE
+                        CONST SLASH$ = "/"
+                    $END IF 
+                $END IF
         $END IF
         
         ' Unified testing
@@ -113,11 +121,14 @@ OPTION _EXPLICITARRAY
                         END TYPE
                 $END IF
                 
+                $IF GJ_LIB_NL = UNDEFINED THEN
+                $LET GJ_LIB_NL = 1
                 DIM SHARED GJ_LIB_NL AS STRING
                 $IF WIN THEN
                     GJ_LIB_NL$ = CHR$(13)
                 $ELSE
                     GJ_LIB_NL$ = CHR$(10)
+                $END IF
                 $END IF
         $END IF
         $IF GJ_LIB_INPUT_LIGHTBAR_INC_BI = UNDEFINED THEN
@@ -273,6 +284,14 @@ OPTION _EXPLICITARRAY
                             $LET TRUE = TRUE
                             CONST FALSE = 0 : CONST TRUE = NOT FALSE
                         $END IF
+                        
+                        $IF SLASH = UNDEFINED THEN
+                            $IF WIN AND SLASH THEN
+                                CONST SLASH$ = "\"
+                            $ELSE
+                                CONST SLASH$ = "/"
+                            $END IF 
+                        $END IF
                 $END IF
                 
                 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
@@ -393,6 +412,14 @@ OPTION _EXPLICITARRAY
                             $LET TRUE = TRUE
                             CONST FALSE = 0 : CONST TRUE = NOT FALSE
                         $END IF
+                        
+                        $IF SLASH = UNDEFINED THEN
+                            $IF WIN AND SLASH THEN
+                                CONST SLASH$ = "\"
+                            $ELSE
+                                CONST SLASH$ = "/"
+                            $END IF 
+                        $END IF
                 $END IF
                 $IF GJ_LIB_DICT_INC_BI = UNDEFINED THEN
                         ''
@@ -457,11 +484,14 @@ OPTION _EXPLICITARRAY
                                 END TYPE
                         $END IF
                         
+                        $IF GJ_LIB_NL = UNDEFINED THEN
+                        $LET GJ_LIB_NL = 1
                         DIM SHARED GJ_LIB_NL AS STRING
                         $IF WIN THEN
                             GJ_LIB_NL$ = CHR$(13)
                         $ELSE
                             GJ_LIB_NL$ = CHR$(10)
+                        $END IF
                         $END IF
                 $END IF
                 $IF GJ_LIB_ANSI_INC_BI = UNDEFINED THEN
@@ -494,6 +524,14 @@ OPTION _EXPLICITARRAY
                                 $IF FALSE = UNDEFINED AND TRUE = UNDEFINED THEN
                                     $LET TRUE = TRUE
                                     CONST FALSE = 0 : CONST TRUE = NOT FALSE
+                                $END IF
+                                
+                                $IF SLASH = UNDEFINED THEN
+                                    $IF WIN AND SLASH THEN
+                                        CONST SLASH$ = "\"
+                                    $ELSE
+                                        CONST SLASH$ = "/"
+                                    $END IF 
                                 $END IF
                         $END IF
                         
@@ -627,6 +665,127 @@ OPTION _EXPLICITARRAY
                      x AS SINGLE
                      y AS SINGLE
                 END TYPE
+        $END IF
+        $IF GJ_LIB_CONSOLE_INC_BI = UNDEFINED THEN
+                ''
+                ' QB64_GJ_LIB
+                ' GRYMMJACK'S CONSOLE LIB
+                '
+                ' CONSOLE object with debugging.
+                '
+                ' USAGE:
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/CONSOLE/CONSOLE.BI' at the top of file
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/CONSOLE/CONSOLE.BM' at the bottom of file
+                '
+                ' @depends STRINGS/STRINGS.BI 
+                ' @author Rick Christy <grymmjack@gmail.com>
+                '
+                $LET GJ_LIB_CONSOLE_INC_BI = 1
+                $IF DEBUGGING = UNDEFINED THEN
+                    $LET DEBUGGING = TRUE
+                $END IF
+                $IF DEBUGGING = TRUE THEN
+                    $CONSOLE
+                    $ASSERTS:CONSOLE
+                    _CONSOLE ON
+                $END IF
+                
+                'Maps ANSI colors to CGA colors
+                DIM SHARED ANSI_COLOR(0 TO 15) AS INTEGER
+                ANSI_COLOR%(0)       = 0
+                ANSI_COLOR%(1)       = 4
+                ANSI_COLOR%(2)       = 2
+                ANSI_COLOR%(3)       = 6
+                ANSI_COLOR%(4)       = 1
+                ANSI_COLOR%(5)       = 5
+                ANSI_COLOR%(6)       = 3
+                ANSI_COLOR%(7)       = 7
+                ANSI_COLOR%(8)       = 0
+                ANSI_COLOR%(9)       = 4
+                ANSI_COLOR%(10)      = 2
+                ANSI_COLOR%(11)      = 6
+                ANSI_COLOR%(12)      = 1
+                ANSI_COLOR%(13)      = 5
+                ANSI_COLOR%(14)      = 3
+                ANSI_COLOR%(15)      = 7
+                CONST BLACK          = 0%
+                CONST BLUE           = 1%
+                CONST GREEN          = 2%
+                CONST CYAN           = 3%
+                CONST RED            = 4%
+                CONST MAGENTA        = 5%
+                CONST YELLOW         = 6%
+                CONST WHITE          = 7%
+                CONST BRIGHT_BLACK   = 8%
+                CONST BRIGHT_BLUE    = 9%
+                CONST BRIGHT_GREEN   = 10%
+                CONST BRIGHT_CYAN    = 11%
+                CONST BRIGHT_RED     = 12%
+                CONST BRIGHT_MAGENTA = 13%
+                CONST BRIGHT_YELLOW  = 14%
+                CONST BRIGHT_WHITE   = 15%
+                
+                $IF GJ_LIB_STRINGS_INC_BI = UNDEFINED THEN
+                        ''
+                        ' QB64_GJ_LIB
+                        ' GRYMMJACK'S STRINGS LIB
+                        '
+                        ' Some commonly used functions that I missed in QB64 coming from PHP
+                        '
+                        ' USAGE:
+                        '   Insert '$INCLUDE:'path_to_GJ_LIB/STRINGS/STRINGS.BI' at the top of file
+                        '   Insert '$INCLUDE:'path_to_GJ_LIB/STRINGS/STRINGS.BM' at the bottom of file
+                        '
+                        ' @author Rick Christy <grymmjack@gmail.com>
+                        ' @uses STRINGS.BM
+                        '
+                        $LET GJ_LIB_STRINGS_INC_BI = 1
+                        CONST GJ_LIB_MAX_STR_POSITIONS = 50
+                        
+                        DECLARE LIBRARY
+                             'is an alphabet letter(isalpha(c) or isdigit(c))
+                            FUNCTION GJ_LIB_isalnum% ALIAS "isalnum" (BYVAL c AS INTEGER)
+                            'is letter (isupper(c) or islower(c))
+                            FUNCTION GJ_LIB_isalpha% ALIAS "isalpha" (BYVAL c AS INTEGER)
+                            'is a decimal digit
+                            FUNCTION GJ_LIB_isdigit% ALIAS "isdigit" (BYVAL c AS INTEGER)
+                            'is a printing character other than space
+                            FUNCTION GJ_LIB_isgraph% ALIAS "isgraph" (BYVAL c AS INTEGER)
+                            'is a lower-case letter
+                            FUNCTION GJ_LIB_islower% ALIAS "islower" (BYVAL c AS INTEGER)
+                            'is printing character. ASCII: &H20 (" ") to &H7E (~)
+                            FUNCTION GJ_LIB_isprint% ALIAS "isprint" (BYVAL c AS INTEGER)
+                            'is printing character other than space, letter, digit
+                            FUNCTION GJ_LIB_ispunct% ALIAS "ispunct" (BYVAL c AS INTEGER)
+                            'is space, formfeed, newline, return, tab, vertical tab
+                            FUNCTION GJ_LIB_isspace% ALIAS "isspace" (BYVAL c AS INTEGER)
+                            'is only space or tab
+                            FUNCTION GJ_LIB_isblank% ALIAS "isblank" (BYVAL c AS INTEGER)
+                            'is upper-case letter
+                            FUNCTION GJ_LIB_isupper% ALIAS "isupper" (BYVAL c AS INTEGER)
+                            'is a hexdecimal digit character(0 thru 9 or A thru F)
+                            FUNCTION GJ_LIB_isxdigit% ALIAS "isxdigit" (BYVAL c AS INTEGER)
+                            'return lower-case equivalent
+                            FUNCTION GJ_LIB.tolower% ALIAS "tolower" (BYVAL c AS INTEGER)
+                            'return upper-case equivalent
+                            FUNCTION GJ_LIB.toupper% ALIAS "toupper" (BYVAL c AS INTEGER)
+                        END DECLARE
+                $END IF
+        $END IF
+        $IF GJ_LIB_MISC_INC_BI = UNDEFINED THEN
+                ''
+                ' QB64_GJ_LIB
+                ' GRYMMJACK'S MISC LIB
+                '
+                ' Miscellaneous helpful functions and subs that don't fit anywhere else :)
+                '
+                ' USAGE:
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/MISC/MISC.BI' at the top of file
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/MISC/MISC.BM' at the bottom of file
+                ' 
+                ' @author Rick Christy <grymmjack@gmail.com>
+                '
+                $LET GJ_LIB_MISC_INC_BI = 1
         $END IF
         ''
         ' GRYMMJACK'S LIB FOR QB64
@@ -16690,5 +16849,968 @@ OPTION _EXPLICITARRAY
                 FUNCTION VECT2D.degrees_to_radians!(degrees AS SINGLE)
                     VECT2D.degrees_to_radians! = _D2R(degrees)
                     ' Formula: degrees_to_radians! = degrees! * _PI / 180
+                END FUNCTION
+        $END IF
+        $IF GJ_LIB_CONSOLE_INC_BM = UNDEFINED THEN
+                ''
+                ' QB64_GJ_LIB
+                ' GRYMMJACK'S CONSOLE LIB
+                '
+                ' CONSOLE object with debugging.
+                '
+                ' USAGE:
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/CONSOLE/CONSOLE.BI' at the top of file
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/CONSOLE/CONSOLE.BM' at the bottom of file
+                ' 
+                ' @author Rick Christy <grymmjack@gmail.com>
+                '
+                $LET GJ_LIB_CONSOLE_INC_BM = 1
+                
+                ''
+                ' Log a boxed message to console if DEBUGGING
+                ' @param STRING msg message to send
+                ' @param INTEGER kolor% color to use
+                '
+                SUB console.box(msg$, kolor%)
+                    $IF DEBUGGING = TRUE THEN
+                        DIM AS STRING e, color_code, lines, intensity
+                        DIM AS INTEGER afg
+                        intensity$ = "0"
+                        e$ = CHR$(27)
+                        afg% = ANSI_COLOR%(kolor%)
+                        color_code$ = e$ + "["
+                        IF kolor% > 7 THEN intensity$ = "1"
+                        color_code$ = color_code$ + intensity$ + ";3"
+                        color_code$ = color_code$ + _TRIM$(STR$(afg%)) + "m"
+                        lines$ = "+" + STRING$(LEN(msg$)+2, "-") + "+"
+                        _ECHO color_code$ + lines$
+                        _ECHO "| " + msg$ + " |"
+                        _ECHO lines$ + e$ + "[0m"
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                
+                ''
+                ' Log a banner to console if DEBUGGING
+                ' @param STRING msg message to send
+                ' @param INTEGER kolor% color to use
+                '
+                SUB console.banner(msg$, kolor%)
+                    $IF DEBUGGING = TRUE THEN
+                        DIM AS STRING e, color_code, intensity
+                        DIM AS INTEGER afg
+                        intensity$ = "0"
+                        e$ = CHR$(27)
+                        afg% = ANSI_COLOR(kolor%)
+                        msg$ = STR.replace$(msg$, "\n", CHR$(10), -1)
+                        msg$ = STR.replace$(msg$, "\t", CHR$(9), -1)
+                        color_code$ = e$ + "["
+                        IF kolor% > 7 THEN intensity$ = "1"
+                        color_code$ = color_code$ + intensity$ + ";3"
+                        color_code$ = color_code$ + _TRIM$(STR$(afg%)) + "m"
+                        _ECHO color_code$ + msg$ + e$ + "[0m"
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                
+                ''
+                ' Log to console if DEBUGGING
+                ' @param STRING msg message to send
+                '
+                SUB console.log(msg$)
+                    $IF DEBUGGING = TRUE THEN
+                        _ECHO msg$
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                
+                ''
+                ' Log to console as info if DEBUGGING
+                ' @param STRING msg message to send
+                '
+                SUB console.info(msg$)
+                    $IF DEBUGGING = TRUE THEN
+                        DIM AS STRING e
+                        e$ = CHR$(27)
+                        _ECHO e$ + "[1;36m" + msg$ + e$ + "[0m"
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                
+                ''
+                ' Log to console as warning if DEBUGGING
+                ' @param STRING msg message to send
+                '
+                SUB console.warn(msg$)
+                    $IF DEBUGGING = TRUE THEN
+                        DIM AS STRING e
+                        e$ = CHR$(27)
+                        _ECHO e$ + "[1;33m" + msg$ + e$ + "[0m"
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                
+                ''
+                ' Log to console as error if DEBUGGING
+                ' @param STRING msg message to send
+                '
+                SUB console.error(msg$)
+                    $IF DEBUGGING = TRUE THEN
+                        DIM AS STRING e
+                        e$ = CHR$(27)
+                        _ECHO e$ + "[1;31m" + msg$ + e$ + "[0m"
+                    $END IF
+                    msg$ = ""
+                END SUB
+                
+                $IF GJ_LIB_STRINGS_INC_BM = UNDEFINED THEN
+                        ''
+                        ' GRYMMJACK'S STRINGS LIB
+                        '
+                        ' Some commonly used functions that I missed in QB64 coming from PHP
+                        ' 
+                        ' @author Rick Christy <grymmjack@gmail.com>
+                        ' @uses STRINGS.BI
+                        '
+                        $LET GJ_LIB_STRINGS_INC_BM = 1
+                        $LET DEBUGGING = 1
+                        
+                        
+                        
+                        ''
+                        ' Returns a string if n is true or false
+                        '
+                        ' @param INTEGER n% to check
+                        ' @param STRING if_false$ string
+                        ' @param STRING if_true$ string
+                        ' @return STRING representing true or false
+                        '
+                        FUNCTION STR.bool$(n%, if_true$, if_false$)
+                            IF n% = 0 THEN 
+                                STR.bool$ = if_false$
+                            ELSEIF n% = -1 THEN
+                                STR.bool$ = if_true$
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string is a sentence: ends in .!?
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_sentence%(s$)
+                            DIM last_char AS STRING
+                            last_char$ = RIGHT$(s$, 1)
+                            IF last_char$ = "." OR last_char$ = "!" OR last_char$ = "?" THEN
+                                STR.is_sentence% = -1
+                            ELSE
+                                STR.is_sentence% = 0
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string is truthy: not null or -1
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_truthy%(s$)
+                            IF s$ <> "" OR s$ = "-1" THEN 
+                                STR.is_truthy% = -1
+                                EXIT FUNCTION
+                            END IF
+                            STR.is_truthy% = 0
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string is falsy: null or 0
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_falsey%(s$)
+                            IF s$ = "" OR s$ = "0" THEN 
+                                STR.is_falsey% = -1
+                                EXIT FUNCTION
+                            END IF
+                            STR.is_falsey% = 0
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string is null
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_empty%(s$)
+                            IF s$ = "" THEN 
+                                STR.is_empty% = -1
+                                EXIT FUNCTION
+                            END IF
+                            STR.is_empty% = 0
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of space and tab characters
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_blank%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isblank(ASC(s$, i%)) = 0 THEN
+                                    STR.is_blank% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_blank% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of hexadecimal characters:
+                        ' ASCII 0-9 A-F
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_hexadecimal%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isxdigit(ASC(s$, i%)) = 0 THEN
+                                    STR.is_hexadecimal% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_hexadecimal% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of control characters:
+                        ' ASCII 0-31
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_control_chars%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF ASC(s$, i%) = 0 OR ASC(s$, i%) > 31 THEN
+                                    STR.is_control_chars% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_control_chars% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of punctuation characters:
+                        ' !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_punctuation%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_ispunct%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_punctuation% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_punctuation% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of graphic characters:
+                        ' it is either a number (0123456789), 
+                        ' an uppercase letter (ABCDEFGHIJKLMNOPQRSTUVWXYZ), 
+                        ' a lowercase letter (abcdefghijklmnopqrstuvwxyz), 
+                        ' or a punctuation character(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~), 
+                        ' or any graphical character specific to the current C locale.
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_graphical%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isgraph%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_graphical% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_graphical% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of printable characters:
+                        ' ASCII: &H20 (" ") to &H7E (~)
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_printable%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isprint%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_printable% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_printable% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of space characters:
+                        ' space, formfeed, newline, return, tab, vertical tab
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_white_space%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isspace%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_white_space% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_white_space% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of lower case characters
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_lower_case%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_islower%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_lower_case% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_lower_case% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of upper case characters
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_upper_case%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isupper%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_upper_case% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_upper_case% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of numbers
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_numeric%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isdigit%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_numeric% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_numeric% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of alphabetical characters
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_alpha%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isalpha%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_alpha% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_alpha% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Check if string consists purely of alphabet characters or numbers
+                        '
+                        ' @param STRING s$ to check
+                        ' @return INTEGER -1 if true, 0 if false
+                        '
+                        FUNCTION STR.is_alpha_numeric%(s$)
+                            DIM AS INTEGER i
+                            IF s$ = "" THEN EXIT FUNCTION
+                            i% = 1
+                            DO:
+                                IF GJ_LIB_isalnum%(ASC(s$, i%)) = 0 THEN
+                                    STR.is_alpha_numeric% = 0
+                                    EXIT FUNCTION
+                                END IF
+                                i% = i% + 1
+                            LOOP UNTIL i% = LEN(s$) + 1
+                            STR.is_alpha_numeric% = -1
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Implodes a string array into a string using delimiter as glue
+                        ' 
+                        ' @param STRING ARRAY arr$() to implode from
+                        ' @param STRING delim$ Delimiter to glue the array parts together with
+                        ' @return STRING of array parts glued together with delimiter
+                        '
+                        FUNCTION STR.implode$(arr$(), delim$)
+                            DIM AS STRING res
+                            DIM AS INTEGER lb, ub, i
+                            res$ = ""
+                            lb% = LBOUND(arr$) : ub% = UBOUND(arr$)
+                            FOR i% = lb% TO ub%
+                                IF i% + 1 <= ub% THEN
+                                    res$ = res$ + arr$(i) + delim$
+                                ELSE
+                                    res$ = res$ + arr$(i)
+                                END IF
+                            NEXT i%
+                            STR.implode$ = res$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Explodes a string into an array of strings using a delimiter
+                        '
+                        ' If the delimiter is not found, returns the target as dest$(0)
+                        ' 
+                        ' @param STRING target$ to explode
+                        ' @param STRING delim$ delimiter
+                        ' @param STRING ARRAY dest$() to explode into
+                        ' @param INTEGER numParts% the number of strings in the array
+                        '
+                        SUB STR.explode(target$, delim$, dest$(), numParts%)
+                            DIM AS INTEGER length, delimLen, numFound, i
+                            length% = LEN(target$) : delimLen% = LEN(delim$) : numFound% = 0
+                            DIM delimsPos(length%) AS INTEGER
+                            IF length% = 0 THEN EXIT SUB
+                        
+                            CALL STR.find_pos(target$, delim$, delimsPos%(), numFound%)
+                        
+                            IF numFound% <= 0 THEN
+                                numParts% = 0
+                                dest$(0)  = target$
+                            ELSE
+                                REDIM _PRESERVE delimsPos%(numFound% - 1)
+                                IF numFound% = 1 THEN
+                                    numParts% = 1
+                                    dest$(0)  = LEFT$(target$, delimsPos%(0) - delimLen%)
+                                    dest$(1)  = MID$(target$, delimsPos%(0) + delimLen%)
+                                ELSEIF numFound% > 1 THEN
+                                    dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
+                                    FOR i% = 1 TO numFound%
+                                        IF i% + 1 <= numFound% THEN
+                                            dest$(i%) = MID$( _
+                                                target$, _
+                                                delimsPos%(i% - 1) + delimLen%, _
+                                                delimsPos%(i%) - delimsPos%(i% - 1) - delimLen% _
+                                            )
+                                        END IF
+                                    NEXT i%
+                                    dest$(numFound%) = MID$( _
+                                        target$, delimsPos%(numFound% - 1) + delimLen% _
+                                    )
+                                    numParts% = numFound%
+                                END IF
+                            END IF
+                        END SUB
+                        
+                        
+                        ''
+                        ' Searches for strings inside of strings and fills array with found positions
+                        '
+                        ' @param STRING target$ to search
+                        ' @param STRING search$ for in target
+                        ' @param INTEGER ARRAY arrFound%() populate with positions search found
+                        ' @param INTEGER numFound% times search found a match
+                        '
+                        SUB STR.find_pos(target$, search$, arrFound%(), numFound%)
+                            DIM AS INTEGER length, found, x, i, ub, searchLen
+                            length% = LEN(target$) : found% = -1 : x% = 0: i% = 0
+                            ub% = UBOUND(arrFound%)
+                            searchLen% = LEN(search$)
+                            DO WHILE i% <= length%
+                                found% = INSTR(i%, target$, search$)
+                                IF found% > 0 AND x% <= ub% THEN
+                                    arrFound%(x%) = found%
+                                    i% = found% + searchLen%
+                                    x% = x% + 1
+                                ELSE
+                                    i% = i% + 1
+                                END IF
+                            LOOP
+                            numFound% = x%
+                        END SUB
+                        
+                        
+                        ''
+                        ' Insert a string into another string at position
+                        '
+                        ' @param STRING s$ to insert into
+                        ' @param STRING ins$ insert
+                        ' @param INTEGER p% position to insert
+                        ' @return STRING with insertion
+                        '
+                        FUNCTION STR.insert$(s$, ins$, p%)
+                            IF p% < LEN(s$) AND ins$ <> "" THEN
+                                IF p% = 0 THEN
+                                    STR.insert$ = ins$ + RIGHT$(s$, LEN(s$) + LEN(ins$) - 1)
+                                ELSE
+                                    STR.insert$ = LEFT$(s$, p%+1) + ins$ + RIGHT$(s$, LEN(s$) - p%-1)
+                                END IF
+                            ELSE 
+                                STR.insert$ = s$
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Remove a string from a string
+                        '
+                        ' @param STRING s$ to remove from
+                        ' @param STRING del$ to delete
+                        ' @param INTEGER count% times to remove
+                        ' @return STRING with del$ removed
+                        '
+                        FUNCTION STR.remove$(s$, del$, count%)
+                            DIM AS INTEGER p
+                            IF count% = -1 THEN
+                                DO 
+                                    p% = INSTR(s$, del$)
+                                    s$ = STR.del$(s$, del$)
+                                LOOP UNTIL p% = 0
+                            ELSE
+                                DO 
+                                    p% = INSTR(s$, del$)
+                                    s$ = STR.del$(s$, del$)
+                                    count% = count% - 1
+                                LOOP UNTIL p% = 0 OR count% = 0
+                            END IF
+                            STR.remove$ = s$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Delete a string from a string once (helper for STR.remove$)
+                        '
+                        ' @param STRING s$ to delete from
+                        ' @param STRING del$ to delete
+                        ' @return STRING with del$ deleted
+                        '
+                        FUNCTION STR.del$(s$, del$)
+                            DIM AS INTEGER i
+                            i% = INSTR(s$, del$)
+                            IF i% THEN 
+                                STR.del$ = LEFT$(s$, i%-1) + RIGHT$(s$, LEN(s$) - (i% + LEN(del$))+1) 
+                            ELSE 
+                                STR.del$ = s$
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Replaces a string with another string inside a string
+                        '
+                        ' @param STRING s$ to replace within
+                        ' @param STRING search$
+                        ' @param STRING rep$ string to replace search with if found
+                        ' @param INTEGER count% number of times to replace
+                        ' @return STRING with replacements
+                        '
+                        FUNCTION STR.replace$(s$, search$, rep$, count%)
+                            DIM AS INTEGER p
+                            IF count% = -1 THEN
+                                DO 
+                                    p% = INSTR(s$, search$)
+                                    s$ = STR.rep$(s$, search$, rep$)
+                                LOOP UNTIL p% = 0
+                            ELSE
+                                DO 
+                                    p% = INSTR(s$, search$)
+                                    s$ = STR.rep$(s$, search$, rep$)
+                                    count% = count% - 1
+                                LOOP UNTIL p% = 0 OR count% = 0
+                            END IF
+                            STR.replace$ = s$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Reverses a string
+                        ' 
+                        ' @param STRING s$ to reverse
+                        ' @return STRING reversed string
+                        '
+                        FUNCTION STR.reverse$(s$)
+                            DIM AS INTEGER i, l
+                            DIM AS STRING res
+                            res$ = ""
+                            l% = LEN(s$)
+                            IF l% = 0 THEN EXIT FUNCTION
+                            FOR i% = l% TO 1 STEP -1
+                                res$ = res$ + CHR$(ASC(s$, i%))
+                            NEXT i%
+                            STR.reverse$ = res$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Shuffles (randomizes) the characters in a string
+                        ' 
+                        ' @param STRING s$ string to reverse
+                        ' @return STRING shuffled string
+                        '
+                        FUNCTION STR.shuffle$(s$)
+                            DIM AS INTEGER r
+                            DIM AS STRING c, ls, rs, res
+                            IF LEN(s$) = 0 THEN EXIT FUNCTION
+                            RANDOMIZE TIMER
+                            DO
+                                r%   = INT(RND * LEN(s$) + 1) ' random pos in diminishing string
+                                c$   = MID$(s$, r%, 1)        ' random char at pos from diminishing string
+                                ls$  = MID$(s$, 1, r% - 1)    ' left side of diminishing string sans c$
+                                rs$  = MID$(s$, r% + 1)       ' right side of diminishing string sans c$
+                                s$   = ls$ + rs$              ' diminish the string (remove c$)
+                                res$ = res$ + c$              ' build the returned string
+                            LOOP UNTIL LEN(s$) = 0
+                            STR.shuffle$ = res$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Pads both sides of a string with num% chars
+                        '
+                        ' @param STRING s$ string to pad
+                        ' @param STRING char$ character to use for padding
+                        ' @param INTEGER num% number of characters to pad to
+                        ' @return STRING padded at the end
+                        FUNCTION STR.pad_both$(s$, char$, num%)
+                            STR.pad_both$ = STR.pad_end$(STR.pad_start$(s$, char$, num%), char$, num%)
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Pads the end of a string with num% chars
+                        '
+                        ' @param STRING s$ string to pad
+                        ' @param STRING char$ character to use for padding
+                        ' @param INTEGER num% number of characters to pad to
+                        ' @return STRING padded at the end
+                        FUNCTION STR.pad_end$(s$, char$, num%)
+                            STR.pad_end$ = s$ + STRING$(num%, char$)
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Repeats a string num times
+                        '
+                        ' @param STRING s$ string to repeat
+                        ' @param INTEGER num% number of times to repeat
+                        ' @return STRING repeated
+                        FUNCTION STR.repeat$(s$, num%)
+                            DIM i AS INTEGER
+                            DIM res AS STRING
+                            res$ = ""
+                            FOR i% = 1 TO num%
+                                res$ = res$ + s$
+                            NEXT i%
+                            STR.repeat$ = res$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Determines if a string starts with another string
+                        '
+                        ' @param STRING s$ string to check
+                        ' @param INTEGER chars$ chars to check if string starts with
+                        ' @return INTEGER -1 if starts with 0 if not
+                        FUNCTION STR.starts_with%(s$, chars$)
+                            STR.starts_with% = (LEFT$(s$, LEN(chars$)) = chars$)
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Determines if a string ends with another string
+                        '
+                        ' @param STRING s$ string to check
+                        ' @param INTEGER chars$ chars to check if string ends with
+                        ' @return INTEGER -1 if ends with 0 if not
+                        FUNCTION STR.ends_with%(s$, chars$)
+                            STR.ends_with% = (RIGHT$(s$, LEN(chars$)) = chars$)
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Pads the start of a string with num% chars
+                        '
+                        ' @param STRING s$ string to pad
+                        ' @param STRING char$ character to use for padding
+                        ' @param INTEGER num% number of characters to pad to
+                        ' @return STRING padded at the end
+                        FUNCTION STR.pad_start$(s$, char$, num%)
+                            STR.pad_start$ = STRING$(num%, char$) + s$
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Replaces a string with another string once (helper for STR.replace$)
+                        '
+                        ' @param STRING s$ to replace within
+                        ' @param STRING search$
+                        ' @param STRING rep$ string to replace search with if found
+                        ' @return STRING with replacement
+                        '
+                        FUNCTION STR.rep$(s$, search$, rep$)
+                            DIM AS INTEGER p
+                            p% = INSTR(s$, search$)
+                            IF p% THEN
+                                s$ = LEFT$(s$, p%-1) + RIGHT$(s$, LEN(s$) - p% - LEN(search$)+1)
+                                STR.rep$ = LEFT$(s$, p%-1) + rep$ + RIGHT$(s$, LEN(s$) - p%+1)
+                            ELSE 
+                                STR.rep$ = s$
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns part of a string from start pos. to end pos.
+                        ' NOTE: This is different than MID$ as MID$ specifies a start and a length,
+                        '       NOT an end position.
+                        '
+                        ' @param STRING s$ to slice from
+                        ' @param INTEGER startPos% to start slice from
+                        ' @param INTEGER endPos% to end slice from
+                        ' @return STRING of sliced portion of original stright
+                        '
+                        FUNCTION STR.slice_pos$(s$, startPos%, endPos%)
+                            IF startPos% <= 0 THEN
+                                startPos% = 1
+                            END IF
+                            IF endPos% > 0 THEN
+                                STR.slice_pos$ = MID$(s$, startPos%, endPos%-startPos%)
+                            ELSE
+                                STR.slice_pos$ = MID$(s$, startPos%)
+                            END IF
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed _UNSIGNED _BYTE as a string
+                        '
+                        ' @param _UNSIGNED _BYTE n~%% number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.ub$(n~%%)
+                            STR.ub$ = _TRIM$(STR$(n~%%))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed _UNSIGNED INTEGER as a string
+                        '
+                        ' @param _UNSIGNED INTEGER n~% number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.ui$(n~%)
+                            STR.ui$ = _TRIM$(STR$(n~%))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed _UNSIGNED LONG as a string
+                        '
+                        ' @param _UNSIGNED LONG n~& number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.ul$(n~&)
+                            STR.ul$ = _TRIM$(STR$(n~&))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed _BYTE as a string
+                        '
+                        ' @param _BYTE n~% number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.b$(n%%)
+                            STR.b$ = _TRIM$(STR$(n%%))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed INTEGER as a string
+                        '
+                        ' @param INTEGER n% number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.i$(n%)
+                            STR.i$ = _TRIM$(STR$(n%))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed LONG as a string
+                        '
+                        ' @param LONG n& number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.l$(n&)
+                            STR.l$ = _TRIM$(STR$(n&))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed SINGLE as a string
+                        '
+                        ' @param SINGLE n! number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.s$(n!)
+                            STR.s$ = _TRIM$(STR$(n!))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed DOUBLE as a string
+                        '
+                        ' @param DOUBLE n& number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.d$(n#)
+                            STR.d$ = _TRIM$(STR$(n#))
+                        END FUNCTION
+                        
+                        
+                        ''
+                        ' Returns a space trimmed _FLOAT as a string
+                        '
+                        ' @param _FLOAT n& number to return
+                        ' @return STRING space trimmed number
+                        '
+                        FUNCTION STR.f$(n##)
+                            STR.f$ = _TRIM$(STR$(n##))
+                        END FUNCTION
+                $END IF
+        $END IF
+        $IF GJ_LIB_MISC_INC_BM = UNDEFINED THEN
+                ''
+                ' QB64_GJ_LIB
+                ' GRYMMJACK'S MISC LIB
+                '
+                ' Miscellaneous helpful functions and subs that don't fit anywhere else :)
+                '
+                ' USAGE:
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/MISC/MISC.BI' at the top of file
+                '   Insert '$INCLUDE:'path_to_GJ_LIB/MISC/MISC.BM' at the bottom of file
+                ' 
+                ' @author Rick Christy <grymmjack@gmail.com>
+                '
+                $LET GJ_LIB_MISC_INC_BM = 1
+                
+                
+                ''
+                ' Returns a number rounded to a fixed number of decimal places
+                ' @param DOUBLE num Number to round
+                ' @param INTEGER places number of places to round to
+                ' @return DOUBLE rounded number
+                '
+                FUNCTION num_fix#(num#, places%)
+                    DIM AS DOUBLE multiplier
+                    DIM AS STRING mult_str
+                    mult_str$ = _TRIM$("1" + STRING$(places%, "0"))
+                    multiplier# = VAL(mult_str$)
+                    num_fix# = FIX(num# * multiplier# + SGN(num#) * .5) / multiplier#
+                END FUNCTION
+                
+                
+                ''
+                ' Clamps a INTEGER between a minimum and maximum range
+                ' @param INTEGER num number to clamp
+                ' @param INTEGER min minimum allowed
+                ' @param INTEGER max maximum allowed
+                ' @return INTEGER clamped number
+                '
+                FUNCTION clamp_int%(num%, min%, max%)
+                    IF num% > max% THEN num% = max%
+                    IF num% < min% THEN num% = min%
+                    clamp_int% = num%
                 END FUNCTION
         $END IF
