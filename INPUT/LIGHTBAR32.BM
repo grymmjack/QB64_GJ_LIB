@@ -12,27 +12,26 @@
 $LET GJ_LIB_INPUT_LIGHTBAR32_INC_BM = 1
 
 ''
-' Render a LIGHTBA32R menu using options$
+' Render a LIGHTBA32R menu
 ' @param LIGHTBAR32 menu UDT
-' @param STRING opts$ array of menu options
 ' @param LIGHTBAR_OPTIONS o array to hold LIGHTBAR_OPTIONS
 ' @return integer choice made (-1 if abort with ESC)
 '
-FUNCTION LIGHTBAR32%(menu AS LIGHTBAR32, opt$(), o() AS LIGHTBAR32_OPTION)
+FUNCTION LIGHTBAR32%(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION)
     DIM AS INTEGER row, col, sel, lb, ub
     DIM AS _UNSIGNED LONG  orig_fg, orig_bg
 
     ' Get lower and upper bounds of options array
-    lb% = LBOUND(opt$) : ub% = UBOUND(opt$)
+    lb% = LBOUND(o) : ub% = UBOUND(o)
 
     ' Capture initial state for cursor and colors
-    row%     = CSRLIN : col% = POS(0)       ' Store initial cursor position
+    row% = CSRLIN : col% = POS(0) ' Store initial cursor position
     orig_fg~& = LB_EGA(7) ' Store initial foreground color
     orig_bg~& = LB_EGA(0) ' Store initial background color
 
-    LIGHTBAR32.get_options menu, opt$(), o(), row%, col%, menu.opt_selected%
-    LIGHTBAR32.draw menu, opt$(), o(), menu.opt_selected%
-    sel% = LIGHTBAR32.get_choice%(menu, opt$(), o())
+    LIGHTBAR32.get_options menu, o(), row%, col%, menu.opt_selected%
+    LIGHTBAR32.draw menu, o(), menu.opt_selected%
+    sel% = LIGHTBAR32.get_choice%(menu, o())
 
     ' Restore original colors
     COLOR orig_fg~&, orig_bg~& 
@@ -51,33 +50,32 @@ END FUNCTION
 ''
 ' Get LIGHTBAR32 options as an array
 ' @param LIGHTBAR32 menu
-' @param STRING options$ array of string options
 ' @param LIGHTBAR_OPTIONS array of LIGHTBAR_OPTIONS
 ' @param INTEGER row% the original row cursor was on
 ' @param INTEGER col% the original column cursor was on
 ' @param INTEGER sel% the selected menu item
 '
-SUB LIGHTBAR32.get_options(menu AS LIGHTBAR32, options$(), o() AS LIGHTBAR32_OPTION, row%, col%, sel%)
+SUB LIGHTBAR32.get_options(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION, row%, col%, sel%)
     DIM AS INTEGER i, lb, ub, key_pos_s, key_pos_e
     DIM AS INTEGER cur_row, cur_col, w
     
     ' Get lower and upper bounds of options array
-    lb% = LBOUND(options$) : ub% = UBOUND(options$)
+    lb% = LBOUND(o) : ub% = UBOUND(o)
 
     w% = menu.max_width% ' Get the max width for horiz menu
     cur_row% = row% : cur_col% = col% ' Init current row and current col
 
     FOR i% = lb% to ub%
         ' Extract hot key start and end positions
-        key_pos_s% = INSTR(0, options$(i%), menu.delimeter$)
-        key_pos_e% = INSTR(key_pos_s%, options$(i%), menu.delimeter$)
+        key_pos_s% = INSTR(0, o(i%).txt, menu.delimeter$)
+        key_pos_e% = INSTR(key_pos_s%, o(i%).txt, menu.delimeter$)
 
         ' Extract left and right part of option without key or delimeter
-        o(i%).lft$ = MID$(options$(i%), 0, key_pos_s%)
-        o(i%).rgt$ = MID$(options$(i%), key_pos_s% + 3)
+        o(i%).lft$ = MID$(o(i%).txt, 0, key_pos_s%)
+        o(i%).rgt$ = MID$(o(i%).txt, key_pos_s% + 3)
 
         ' Capture hot key into arrays
-        o(i%).key$ = MID$(options$(i%), key_pos_s% + 1, 1)
+        o(i%).key$ = MID$(o(i%).txt, key_pos_s% + 1, 1)
 
         ' Capture visible option length
         o(i%).len% = LEN(o(i%).lft$ + o(i%).key$ + o(i%).rgt$)
@@ -109,16 +107,15 @@ END SUB
 ''
 ' Draws LIGHTBAR32 menu
 ' @param LIGHTBAR32 menu
-' @param STRING options$ array of string options
 ' @param LIGHTBAR_OPTIONS array of LIGHTBAR_OPTIONS
 ' @param INTEGER sel% which option is selected
 '
-SUB LIGHTBAR32.draw(menu AS LIGHTBAR32, options$(), o() AS LIGHTBAR32_OPTION, sel%)
+SUB LIGHTBAR32.draw(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION, sel%)
     DIM AS INTEGER i, lb, ub
     DIM AS _UNSIGNED LONG fg, bg, kf, kb
 
     ' Get lower and upper bounds of options array
-    lb% = LBOUND(options$) : ub% = UBOUND(options$)
+    lb% = LBOUND(o) : ub% = UBOUND(o)
 
     FOR i% = lb% TO ub% ' Walk the array of menu options
         LOCATE o(i%).row%, o(i%).col% ' Position the option
@@ -140,16 +137,15 @@ END SUB
 ''
 ' Get choice from user in LIGHTBAR menu
 ' @param LIGHTBAR32 menu
-' @param STRING options$ array of string options
 ' @param LIGHTBAR_OPTIONS array of LIGHTBAR_OPTIONS
 ' @return INTEGER choice user made (-1 = aborted)
 '
-FUNCTION LIGHTBAR32.get_choice%(menu AS LIGHTBAR32, options$(), o() AS LIGHTBAR32_OPTION)
+FUNCTION LIGHTBAR32.get_choice%(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION)
     DIM k AS STRING
     DIM AS INTEGER i, key_code, do_move, lb, ub, sel
 
     ' Get lower and upper bounds of options array
-    lb% = LBOUND(options$) : ub% = UBOUND(options$)
+    lb% = LBOUND(o) : ub% = UBOUND(o)
 
     ' Define key constants
     CONST KEY_ESC   = 27
@@ -200,9 +196,9 @@ FUNCTION LIGHTBAR32.get_choice%(menu AS LIGHTBAR32, options$(), o() AS LIGHTBAR3
             SELECT CASE do_move%
                 CASE 1: ' move
                     LIGHTBAR32.sound menu.use_sounds%, menu.snd_move_frq!, menu.snd_move_dur!, menu.snd_move_vol!
-                    LIGHTBAR32.draw menu, options$(), o(), sel%
+                    LIGHTBAR32.draw menu, o(), sel%
                 CASE 2: ' pick
-                    LIGHTBAR32.draw menu, options$(), o(), sel%
+                    LIGHTBAR32.draw menu, o(), sel%
                 CASE 3: ' abort
                     LIGHTBAR32.sound menu.use_sounds%, menu.snd_abrt_frq!, menu.snd_abrt_dur!, menu.snd_abrt_vol!
                     LIGHTBAR32.get_choice% = -1

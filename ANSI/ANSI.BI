@@ -19,9 +19,9 @@ $END IF
 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
 ' Default = FALSE
 $IF ANSI_DEBUGGING = UNDEFINED THEN
-    CONST ANSI_ESC=27
+    CONST ANSI.ESC=27
 $ELSE
-    CONST ANSI_ESC=32
+    CONST ANSI.ESC=32
 $END IF
 
 DIM SHARED GJ_LIB_ANSI_EMU AS INTEGER
@@ -30,21 +30,21 @@ GJ_LIB_ANSI_EMU = FALSE
 DIM SHARED GJ_LIB_ANSI_OUTPUT AS INTEGER
 GJ_LIB_ANSI_OUTPUT = TRUE
 
-DIM SHARED ansi_x%  ' Cursor x position
-DIM SHARED ansi_y%  ' Cursor y position
-ansi_x% = POS(0)
-ansi_y% = CSRLIN
-DIM SHARED save_x%  ' Cursor x position
-DIM SHARED save_y%  ' Cursor y position
-save_x% = POS(0)
-save_y% = CSRLIN
+DIM SHARED ANSI.x%         ' Cursor x position
+DIM SHARED ANSI.y%         ' Cursor y position
+ANSI.x% = POS(0)
+ANSI.y% = CSRLIN
+DIM SHARED ANSI.save_x%         ' Cursor x position
+DIM SHARED ANSI.save_y%         ' Cursor y position
+ANSI.save_x% = POS(0)
+ANSI.save_y% = CSRLIN
 
-DIM SHARED fg_color&        ' Foreground color
-DIM SHARED bg_color&        ' Background color
-DIM SHARED old_fg_color&    ' Old Foreground color
-DIM SHARED old_bg_color&    ' Old Background color
+DIM SHARED ANSI.fg_color&       ' Foreground color
+DIM SHARED ANSI.bg_color&       ' Background color
+DIM SHARED ANSI.old_fg_color&   ' Old Foreground color
+DIM SHARED ANSI.old_bg_color&   ' Old Background color
 
-fg_color&       = 7
-bg_color&       = 0
-old_fg_color&   = fg_color&
-old_bg_color&   = bg_color&
+ANSI.fg_color&       = 7
+ANSI.bg_color&       = 0
+ANSI.old_fg_color&   = ANSI.fg_color&
+ANSI.old_bg_color&   = ANSI.bg_color&

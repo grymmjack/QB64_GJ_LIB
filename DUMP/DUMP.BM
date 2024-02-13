@@ -33,7 +33,7 @@
 '
 ' DIM words$(2)
 ' words$(0) = "foo" : words$(1) = "bar" : words$(2) = "baz"
-' PRINT dump_string_array(words$(), "words")
+' PRINT DUMP.string_array(words$(), "words")
 ' 
 ' OUTPUT:
 ' 
@@ -50,20 +50,20 @@
 ' you want while staying in the spirit of DUMP LIB.
 ' 
 ' FUNCTION              NOTES
-' dump_bit_array$                     Returns string with a dump of an array of bits
-' dump_unsigned_bit_array$            Returns string with a dump of an array of unsigned bits
-' dump_byte_array$                    Returns string with a dump of an array of bytes
-' dump_unsigned_byte_array$           Returns string with a dump of an array of unsigned bytes
-' dump_unsigned_integer$              Returns string with a dump of an array of unsigned integers
-' dump_unsigned_byte_array_as_hex$    Returns string with a dump of an array of unsigned bytes as hex
-' dump_unsigned_byte_array_as_ascii$  Returns string with a dump of an array of unsigned bytes as hex and ASCII
-' dump_string$                        Includes handy output of the strings length.
-' dump_string_array$                  Works on 1 dimensional arrays only (right now).
-' dump_integer_array$                 Works on 1 dimensional arrays only (right now).
-' dump_single_array$                  Works on 1 dimensional arrays only (right now).
-' dump_long_array$                    Works on 1 dimensional arrays only (right now).
-' dump_double_array$                  Works on 1 dimensional arrays only (right now).
-' dump_dict$                          Dump a dictionary object and it's contents.
+' DUMP.bit_array$                     Returns string with a dump of an array of bits
+' DUMP.unsigned_bit_array$            Returns string with a dump of an array of unsigned bits
+' DUMP.byte_array$                    Returns string with a dump of an array of bytes
+' DUMP.unsigned_byte_array$           Returns string with a dump of an array of unsigned bytes
+' DUMP.unsigned_integer$              Returns string with a dump of an array of unsigned integers
+' DUMP.unsigned_byte_array_as_hex$    Returns string with a dump of an array of unsigned bytes as hex
+' DUMP.unsigned_byte_array_as_ascii$  Returns string with a dump of an array of unsigned bytes as hex and ASCII
+' DUMP.string$                        Includes handy output of the strings length.
+' DUMP.string_array$                  Works on 1 dimensional arrays only (right now).
+' DUMP.integer_array$                 Works on 1 dimensional arrays only (right now).
+' DUMP.single_array$                  Works on 1 dimensional arrays only (right now).
+' DUMP.long_array$                    Works on 1 dimensional arrays only (right now).
+' DUMP.double_array$                  Works on 1 dimensional arrays only (right now).
+' DUMP.dict$                          Dump a dictionary object and it's contents.
 '
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @depends DUMP.BI
@@ -77,199 +77,201 @@ $LET GJ_LIB_DUMP_INC_BM = 1
 ''
 ' Returns string with a dump of a string
 ' 
-' @param s$ String to dump
-' @param label$ Label to give the dump block
+' @param STRING s$ to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_string$ (s$, label$)
+FUNCTION DUMP.string$(s$, label$)
     DIM AS STRING l, r
     l$ = _TRIM$(STR$(LEN(s$)))
     r$ = GJ_LIB_NL$ + "STRING: " + label$ + "$ {" + GJ_LIB_NL$
     r$ = r$ + "  " + CHR$(34) + s$ + CHR$(34) + " [" + l$ + "]" + GJ_LIB_NL$
     r$ = r$ + "} "
-    dump_string$ = r$
+    DUMP.string$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of bits
 '
-' @param arr$() Array of bits to dump
-' @param label$ Label to give the dump block
+' @param _BIT ARRAY arr`() of bits to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_bit_array$ (arr`(), label$)
+FUNCTION DUMP.bit_array$(arr`(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
-    lb = LBOUND(arr`) : ub = UBOUND(arr`) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr`) : ub% = UBOUND(arr`) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + STR$(arr`(i))
+    FOR i% = lb% TO ub%
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + STR$(arr`(i%))
         r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
-    NEXT i
+    NEXT i%
     r$ = r$ + "}"
-    dump_bit_array$ = r$
+    DUMP.bit_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of unsigned bits
 '
-' @param arr$() Array of unsigned bits to dump
-' @param label$ Label to give the dump block
+' @param _UNSIGNED _BIT arr~`() of unsigned bits to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_unsigned_bit_array$ (arr~`(), label$)
+FUNCTION DUMP.unsigned_bit_array$(arr~`(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
-    lb = LBOUND(arr~`) : ub = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr~`) : ub% = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + STR$(arr~`(i))
+    FOR i% = lb% TO ub%
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + STR$(arr~`(i%))
         r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
-    NEXT i
+    NEXT i%
     r$ = r$ + "}"
-    dump_unsigned_bit_array$ = r$
+    DUMP.unsigned_bit_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of strings
 '
-' @param arr$() Array of strings to dump
-' @param label$ Label to give the dump block
+' @param STRING ARRAY arr$() of strings to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_string_array$ (arr$(), label$)
+FUNCTION DUMP.string_array$(arr$(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
-    lb = LBOUND(arr$) : ub = UBOUND(arr$) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr$) : ub% = UBOUND(arr$) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + CHR$(34) + arr$(i) + CHR$(34)
+    FOR i% = lb% TO ub%
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + CHR$(34) + arr$(i%) + CHR$(34)
         r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
-    NEXT i
+    NEXT i%
     r$ = r$ + "}"
-    dump_string_array$ = r$
+    DUMP.string_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of integers
 '
-' @param arr%() Array of integers to dump
-' @param label$ Label to give the dump block
+' @param INTEGER ARRAY arr%() of integers to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_integer_array$ (arr%(), label$)
+FUNCTION DUMP.integer_array$(arr%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r, num
-    lb = LBOUND(arr%) : ub = UBOUND(arr%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr%) : ub% = UBOUND(arr%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        num$ = _TRIM$(STR$(arr%(i)))
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
-    NEXT i
+    FOR i% = lb% TO ub%
+        num$ = _TRIM$(STR$(arr%(i%)))
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
+    NEXT i%
     r$ = r$ + "}"
-    dump_integer_array$ = r$
+    DUMP.integer_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of unsigned integers
 '
-' @param arr%() Array of unsigned integers to dump
-' @param label$ Label to give the dump block
+' @param _UNSIGNED INTEGER arr%() of unsigned integers to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_unsigned_integer_array$ (arr~%(), label$)
+FUNCTION DUMP.unsigned_integer_array$(arr~%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
-    lb = LBOUND(arr~%) : ub = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr~%) : ub% = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        num$ = _TRIM$(STR$(arr~%(i)))
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
-    NEXT i
+    FOR i% = lb% TO ub%
+        num$ = _TRIM$(STR$(arr~%(i%)))
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
+    NEXT i%
     r$ = r$ + "}"
-    dump_unsigned_integer_array$ = r$
+    DUMP.unsigned_integer_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns a string containing a dump of an array of singles
 '
-' @param arr!() Array of singles to dump
-' @param label$ Label to give the dump block
+' @param SINGLE ARRAY arr!() of singles to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_single_array$ (arr!(), label$)
+FUNCTION DUMP.single_array$(arr!(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
-    lb = LBOUND(arr!) : ub = UBOUND(arr!) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr!) : ub% = UBOUND(arr!) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "SINGLE ARRAY: " + label$ + "!(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        num$ = _TRIM$(STR$(arr!(i)))
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
-    NEXT i
+    FOR i% = lb% TO ub%
+        num$ = _TRIM$(STR$(arr!(i%)))
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
+    NEXT i%
     r$ = r$ + "}"
-    dump_single_array$ = r$
+    DUMP.single_array$ = r$
 END FUNCTION
 
 
 ''
 ' Dumps an array of longs
 '
-' @param arr&() Array of longs to dump
-' @param label$ Label to give the dump block
+' @param LONG ARRAY arr&() of longs to dump
+' @param STRING label$ to give the dump block
+' @return STRING dump block
 '
-FUNCTION dump_long_array$ (arr&(), label$)
+FUNCTION DUMP.long_array$(arr&(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
-    lb = LBOUND(arr&) : ub = UBOUND(arr&) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr&) : ub% = UBOUND(arr&) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "LONG ARRAY: " + label$ + "&(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        num$ = _TRIM$(STR$(arr&(i)))
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
-    NEXT i
+    FOR i% = lb% TO ub%
+        num$ = _TRIM$(STR$(arr&(i%)))
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
+    NEXT i%
     r$ = r$ + "}"
-    dump_long_array$ = r$
+    DUMP.long_array$ = r$
 END FUNCTION
 
 
 ''
 ' Dumps an array of doubles
 '
-' @param arr#() Array of doubles to dump
-' @param label$ Label to give the dump block
+' @param DOUBLE ARRAY arr#() of doubles to dump
+' @param STRING label$ to give the dump block
+' @return STRING dump block
 '
-FUNCTION dump_double_array$ (arr#(), label$)
+FUNCTION DUMP.double_array$(arr#(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
-    lb = LBOUND(arr#) : ub = UBOUND(arr#) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr#) : ub% = UBOUND(arr#) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "DOUBLE ARRAY: " + label$ + "#(" + t$ + ") {" + GJ_LIB_NL$
-    FOR i = lb TO ub
-        num$ = _TRIM$(STR$(arr#(i)))
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + "): " + num$ + GJ_LIB_NL$
-    NEXT i
+    FOR i% = lb% TO ub%
+        num$ = _TRIM$(STR$(arr#(i%)))
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
+    NEXT i%
     r$ = r$ + "}"
-    dump_double_array$ = r$
+    DUMP.double_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of bytes
 '
-' @param arr%%() Array of bytes to dump
-' @param label$ Label to give the dump block
+' @param _BYTE ARRAY arr%%() of bytes to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_byte_array$ (arr%%(), label$)
+FUNCTION DUMP.byte_array$(arr%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si
-    lb = LBOUND(arr%%) : ub = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr%%) : ub% = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {"
-    FOR i% = lb TO ub
+    FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
         num$ = _TRIM$(STR$(arr%%(i%)))
@@ -295,23 +297,23 @@ FUNCTION dump_byte_array$ (arr%%(), label$)
         r$ = r$ + num$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "}"
-    dump_byte_array$ = r$
+    DUMP.byte_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of unsigned bytes
 '
-' @param arr~%%() Array of unsigned bytes to dump
-' @param label$ Label to give the dump block
+' @param _UNSIGNED _BYTE ARRAY arr~%%() of unsigned bytes to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
+FUNCTION DUMP.unsigned_byte_array$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si
-    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
-    FOR i% = lb TO ub
+    FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
         num$ = _TRIM$(STR$(arr~%%(i%)))
@@ -327,23 +329,23 @@ FUNCTION dump_unsigned_byte_array$ (arr~%%(), label$)
         r$ = r$ + num$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "}"
-    dump_unsigned_byte_array$ = r$
+    DUMP.unsigned_byte_array$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of unsigned bytes as hex
 '
-' @param arr~%%() Array of unsigned bytes to dump
-' @param label$ Label to give the dump block
+' @param _UNSIGNED _BYTE ARRAY arr~%%() of unsigned bytes to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_unsigned_byte_array_as_hex$ (arr~%%(), label$)
+FUNCTION DUMP.unsigned_byte_array_as_hex$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si, h
-    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
-    FOR i% = lb TO ub
+    FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
         h$ = HEX$(arr~%%(i%))
@@ -356,25 +358,25 @@ FUNCTION dump_unsigned_byte_array_as_hex$ (arr~%%(), label$)
         r$ = r$ + h$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "}"
-    dump_unsigned_byte_array_as_hex$ = r$
+    DUMP.unsigned_byte_array_as_hex$ = r$
 END FUNCTION
 
 
 ''
 ' Returns string with a dump of an array of unsigned bytes as ascii
 '
-' @param arr~%%() Array of unsigned bytes to dump
-' @param label$ Label to give the dump block
+' @param _UNSIGNED _BYTE ARRAY arr~%%() of unsigned bytes to dump
+' @param STRING label$ to give the dump block
 ' @return STRING dump block
 '
-FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
+FUNCTION DUMP.unsigned_byte_array_as_ascii$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si, h, c
-    lb = LBOUND(arr~%%) : ub = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
-    FOR i% = lb TO ub
+    FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
-        DO WHILE LEN(si$) < LEN(STR$(ub))-1
+        DO WHILE LEN(si$) < LEN(STR$(ub%))-1
             si$ = "0" + si$
         LOOP
         h$ = HEX$(arr~%%(i%))
@@ -387,9 +389,9 @@ FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
         r$ = r$ + h$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "ASCII:"
-    FOR i% = lb TO ub
+    FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
-        DO WHILE LEN(si$) < LEN(STR$(ub))-1
+        DO WHILE LEN(si$) < LEN(STR$(ub%))-1
             si$ = "0" + si$
         LOOP
         IF arr~%%(i%) < 33 OR arr~%%(i%) > 254 THEN
@@ -404,28 +406,29 @@ FUNCTION dump_unsigned_byte_array_as_ascii$ (arr~%%(), label$)
         r$ = r$ + c$ + " "
     NEXT i%
     r$ = r$ + GJ_LIB_NL$ + "}"
-    dump_unsigned_byte_array_as_ascii$ = r$
+    DUMP.unsigned_byte_array_as_ascii$ = r$
 END FUNCTION
 
 
 ''
 ' Dumps a dictionary object and its contents
 '
-' @param dict$() Dictionary object to dump
-' @param label$ Label to give the dump block
+' @param DICTIONARY d() object to dump
+' @param STRING label$ to give the dump block
+' @return STRING dump block
 '
-FUNCTION dump_dict$ (dict() AS Dict, label$)
+FUNCTION DUMP.dict$(d() AS DICTIONARY, label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, q, skey, sval
-    lb = LBOUND(dict) : ub = UBOUND(dict) : t$ = _TRIM$(STR$(ub - lb))
+    lb% = LBOUND(d) : ub% = UBOUND(d) : t$ = _TRIM$(STR$(ub% - lb%))
     r$ = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
     q$ = CHR$(34)
-    FOR i = lb TO ub
-        skey$ = dict(i).key
-        sval$ = dict(i).val
-        r$ = r$ + "  (" + _TRIM$(STR$(i)) + ") " + q$ + skey$ + q$
+    FOR i% = lb% TO ub%
+        skey$ = d(i%).key$
+        sval$ = d(i%).val$
+        r$ = r$ + "  (" + _TRIM$(STR$(i%)) + ") " + q$ + skey$ + q$
         r$ = r$ + ": " + q$ + sval$ + q$ + GJ_LIB_NL$
-    NEXT i
+    NEXT i%
     r$ = r$ + "}"
-    dump_dict$ = r$
+    DUMP.dict$ = r$
 END FUNCTION

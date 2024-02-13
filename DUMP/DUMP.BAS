@@ -17,6 +17,8 @@ $IF GJ_LIB_DUMP_INC_BI = UNDEFINED THEN
 $END IF
 '$DYNAMIC
 
+OPTION _EXPLICIT
+OPTION _EXPLICITARRAY
 
 
 _TITLE "QB64_GJ_LIB DUMP LIB TESTS"
@@ -57,7 +59,7 @@ dblArray#(1) = 2863864865866868088.2863864865866868088
 dblArray#(2) = 3864865866868088286.3864865866868088286
 dblArray#(3) = 4865866868088286386.4865866868088286386
 
-DIM SHARED myDict(5) AS Dict
+DIM SHARED myDict(5) AS DICTIONARY
 DIM keys$(5)
 DIM vals$(5)
 keys$(0) = "bilbo"
@@ -72,15 +74,15 @@ vals$(2) = "biggins"
 vals$(3) = "boggins"
 vals$(4) = "bebbins"
 vals$(5) = "zobbins"
-dict_populate myDict(), keys$(), vals$()
+CALL DICT.populate(myDict(), keys$(), vals$())
 
-PRINT dump_string$(s$, "s")
-PRINT dump_string_array$(strArray$(), "strArray")
-PRINT dump_integer_array$(intArray%(), "intArray")
-PRINT dump_single_array$(singArray!(), "singArray")
-PRINT dump_long_array$(longArray&(), "longArray")
-PRINT dump_double_array$(dblArray#(), "dblArray")
-PRINT dump_dict$(myDict(), "myDict");
+PRINT DUMP.string$(s$, "s")
+PRINT DUMP.string_array$(strArray$(), "strArray")
+PRINT DUMP.integer_array$(intArray%(), "intArray")
+PRINT DUMP.single_array$(singArray!(), "singArray")
+PRINT DUMP.long_array$(longArray&(), "longArray")
+PRINT DUMP.double_array$(dblArray#(), "dblArray")
+PRINT DUMP.dict$(myDict(), "myDict");
 
 
 

@@ -14,6 +14,7 @@ in it's current state.
 | LIBRARY | PURPOSE | NOTES |
 |---------|---------|------|
 | [ANSI](ANSI/README.md) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
+| [ARR](ARR/README.md) | ARRay Library | A high level library for working with arrays of all types in QB64 |
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
 | [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
@@ -22,6 +23,8 @@ in it's current state.
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 | [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |
 | [ASEPRITE](ASEPRITE/README.md) | Adds ASEPRITE support to QB64 | See https://www.aseprite.org |
+| [CONSOLE](CONSOLE/README.md) | CONSOLE object with debugging. |
+| [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
 
 
 
@@ -114,3 +117,4 @@ things. I'll try to keep backwards compatibility though.
 - More ANSI stuff (file loading / displaying / ANSI music?)
 - Color stuff (palette cycling / `dump_rgb`)
 - PETSCII library
+

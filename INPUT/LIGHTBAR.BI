@@ -39,6 +39,7 @@ END TYPE
 
 ' UDT for option data
 TYPE LIGHTBAR_OPTION
+    txt AS STRING  ' Option raw string
     row AS INTEGER ' Option row
     col AS INTEGER ' Option column
     lft AS STRING  ' Option left side text

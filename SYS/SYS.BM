@@ -19,9 +19,9 @@ $LET GJ_LIB_SYS_INC_BM = 1
 '
 ' ex: open_url_in_browser "https://youtube.com/grymmjack"
 '
-' @param url$ URL to open (any protocol just passes through)
+' @param STRING url$ to open (any protocol just passes through)
 '
-SUB open_url_in_browser (url$)
+SUB open_url_in_browser(url$)
     DIM AS STRING cmd
     DIM AS INTEGER ret
     $IF WINDOWS THEN
@@ -40,7 +40,7 @@ END SUB
 '
 ' @return STRING of system information
 '
-FUNCTION sys_info$ ()
+FUNCTION sys_info$()
     DIM AS STRING sout, nl
     nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
     sout$ = ""
@@ -80,7 +80,7 @@ END FUNCTION
 '
 ' @return STRING of devices and button information
 '
-FUNCTION device_info$ ()
+FUNCTION device_info$()
     DIM AS STRING sout, nl, device_name, snum_buttons
     DIM AS INTEGER i, num_buttons, device_count
     nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
