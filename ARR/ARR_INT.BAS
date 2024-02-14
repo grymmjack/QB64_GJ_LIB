@@ -1,4 +1,5 @@
 '$DYNAMIC
+$INCLUDEONCE
 
 ''
 ' Slice an array from source to destination starting at index and count slices

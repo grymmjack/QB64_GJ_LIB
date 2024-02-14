@@ -11,6 +11,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BM
 '
+$INCLUDEONCE
 
 ' DICTIONARY type consists of keys and values and is intended for array use
 TYPE DICTIONARY

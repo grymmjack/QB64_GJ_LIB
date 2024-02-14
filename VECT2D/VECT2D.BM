@@ -12,8 +12,7 @@
 ' @author Evan Shortiss <https://github.com/evanshortiss/vector2d>
 ' @support William Barnes
 '
-$LET GJ_LIB_VECT2D_INC_BM = 1
-
+$INCLUDEONCE
 
 ''
 ' Sets both x and y axes of the vector

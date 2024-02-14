@@ -12,7 +12,7 @@
 ' @author Evan Shortiss <https://github.com/evanshortiss/vector2d>
 ' @support William Barnes
 '
-$LET GJ_LIB_VECT2D_INC_BI = 1
+$INCLUDEONCE
 
 TYPE VECT2D
      x AS SINGLE

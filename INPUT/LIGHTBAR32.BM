@@ -9,7 +9,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses LIGHTBAR32.BI
 '
-$LET GJ_LIB_INPUT_LIGHTBAR32_INC_BM = 1
+$INCLUDEONCE
 
 ''
 ' Render a LIGHTBA32R menu

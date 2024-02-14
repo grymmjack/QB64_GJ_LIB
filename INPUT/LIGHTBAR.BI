@@ -9,7 +9,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses LIGHTBAR.BM
 '
-$LET GJ_LIB_INPUT_LIGHTBAR_INC_BI = 1
+$INCLUDEONCE
 
 ' LIGHTBAR configuration UDT
 TYPE LIGHTBAR

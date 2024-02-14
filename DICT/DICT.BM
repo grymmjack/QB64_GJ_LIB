@@ -11,6 +11,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BI
 '
+$INCLUDEONCE
 '$INCLUDE:'DICT.BI'
 
 

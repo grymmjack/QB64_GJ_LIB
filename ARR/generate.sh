@@ -3,7 +3,7 @@
 # generate was used on MacOS - so gnu-sed is needed on MacOS:
 # brew install gnu-sed
 # on linux, just replace $SED with sed
-SED=sed
+SED=gsed
 
 TYPES=(
     BYTE

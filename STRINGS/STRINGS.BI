@@ -11,7 +11,8 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BM
 '
-$LET GJ_LIB_STRINGS_INC_BI = 1
+$INCLUDEONCE
+
 CONST GJ_LIB_MAX_STR_POSITIONS = 50
 
 DECLARE LIBRARY

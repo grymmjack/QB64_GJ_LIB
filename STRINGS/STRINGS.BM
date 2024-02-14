@@ -6,10 +6,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses STRINGS.BI
 '
-$LET GJ_LIB_STRINGS_INC_BM = 1
-$LET DEBUGGING = 1
-
-
+$INCLUDEONCE
 
 ''
 ' Returns a string if n is true or false

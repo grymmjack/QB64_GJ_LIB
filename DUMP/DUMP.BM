@@ -70,6 +70,7 @@
 ' @see [0] https://www.merriam-webster.com/dictionary/dump
 ' @see [1] https://www.php.net/manual/en/function.print-r.php
 '
+$INCLUDEONCE
 
 ''
 ' Returns string with a dump of a string

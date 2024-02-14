@@ -11,6 +11,7 @@
 ' @depends STRINGS/STRINGS.BI 
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$INCLUDEONCE
 $IF DEBUGGING = UNDEFINED THEN
     $LET DEBUGGING = TRUE
 $END IF

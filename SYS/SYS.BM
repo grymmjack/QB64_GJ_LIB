@@ -10,9 +10,7 @@
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$LET GJ_LIB_SYS_INC_BM = 1
-
-
+$INCLUDEONCE
 
 ''
 ' Opens a URL in the default web browser

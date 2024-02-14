@@ -9,7 +9,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses LIGHTBAR.BI
 '
-$LET GJ_LIB_INPUT_LIGHTBAR_INC_BM = 1
+$INCLUDEONCE
 
 ''
 ' Render a LIGHTBAR menu

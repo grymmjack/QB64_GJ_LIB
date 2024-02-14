@@ -11,6 +11,7 @@
 ' @see https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
 ' @author Rick Christy <grymmjack@gmail.com>
 '
+$INCLUDEONCE
 
 TYPE ASEPRITE_IMAGE_HEADER
 ' A 128-byte header (same as FLC/FLI header, but with other magic number):

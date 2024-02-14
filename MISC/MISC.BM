@@ -10,7 +10,7 @@
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$LET GJ_LIB_MISC_INC_BM = 1
+$INCLUDEONCE
 
 
 ''

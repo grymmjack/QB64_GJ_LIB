@@ -15,9 +15,7 @@
 ' @uses ANSI/ANSI.BM
 ' @uses STRINGS/STRINGS.BM
 '
-$LET GJ_LIB_PIPEPRINT_INC_BM = 1
-
-
+$INCLUDEONCE
 
 ''
 ' Parses pipe codes and returns ANSI (can emulate ANSI via QB)
