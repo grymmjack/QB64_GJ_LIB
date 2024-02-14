@@ -1,7 +1,7 @@
 # QB64_GJ_LIB
 ## GRYMMJACK'S QB64 LIBRARY
 
-
+# REQUIRES QB64-PE V3.12+
 
 ### WHAT IS THIS?
 > This is a library of QB64 code which I've created to fill in some "holes" that I
