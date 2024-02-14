@@ -10,11 +10,8 @@
 ' @uses _GJ_LIB_COMMON.BI
 ' @uses ANSI.BM
 '
-$LET GJ_LIB_ANSI_INC_BI = 1
-
-$IF GJ_LIB_INC_COMMON_BI = UNDEFINED THEN
+$INCLUDEONCE
 '$INCLUDE:'../_GJ_LIB_COMMON.BI'
-$END IF
 
 ' Emulate ANSI functionality using QB internals while outputing ANSI codes?
 ' Default = FALSE

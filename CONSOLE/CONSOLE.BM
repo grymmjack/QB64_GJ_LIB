@@ -10,7 +10,6 @@
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$LET GJ_LIB_CONSOLE_INC_BM = 1
 
 ''
 ' Log a boxed message to console if DEBUGGING
@@ -114,6 +113,4 @@ SUB console.error(msg$)
     msg$ = ""
 END SUB
 
-$IF GJ_LIB_STRINGS_INC_BM = UNDEFINED THEN
 '$INCLUDE:'../STRINGS/STRINGS.BM'
-$END IF

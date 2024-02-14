@@ -70,9 +70,6 @@
 ' @see [0] https://www.merriam-webster.com/dictionary/dump
 ' @see [1] https://www.php.net/manual/en/function.print-r.php
 '
-$LET GJ_LIB_DUMP_INC_BM = 1
-
-
 
 ''
 ' Returns string with a dump of a string

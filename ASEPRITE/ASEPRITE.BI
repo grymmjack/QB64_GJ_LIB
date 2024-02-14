@@ -11,14 +11,6 @@
 ' @see https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$LET GJ_LIB_ASEPRITE_INC_BI = 1
-
-
-
-DECLARE SUB load_aseprite (img_path$)
-DECLARE FUNCTION get_aseprite_info$ (img_path$)
-
-
 
 TYPE ASEPRITE_IMAGE_HEADER
 ' A 128-byte header (same as FLC/FLI header, but with other magic number):

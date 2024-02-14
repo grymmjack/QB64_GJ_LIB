@@ -11,9 +11,6 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 ' @uses DICT.BM
 '
-$LET GJ_LIB_DICT_INC_BI = 1
-
-
 
 ' DICTIONARY type consists of keys and values and is intended for array use
 TYPE DICTIONARY

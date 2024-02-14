@@ -13,13 +13,13 @@
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
 '$INCLUDE:'../_GJ_LIB.BI'
 $END IF
+'$INCLUDE:'CONSOLE.BI'
 
 _TITLE "QB64_GJ_LIB CONSOLE OBJECT EXAMPLE"
 
 PRINT "This example outputs only this message to the program window."
 PRINT "To see the purpose and output look at the terminal window."
 
-'$INCLUDE:'CONSOLE.BI'
 console.log "This is a console.log message."
 
 'If you are used to using console.log() you might want to use CALL to use ()'s

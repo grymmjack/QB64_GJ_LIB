@@ -10,9 +10,6 @@
 ' 
 ' @author Rick Christy <grymmjack@gmail.com>
 '
-$LET GJ_LIB_ASEPRITE_INC_BM = 1
-
-
 
 ''
 ' Loads an ASEPRITE image into memory
