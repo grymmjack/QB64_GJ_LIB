@@ -19,3 +19,13 @@ $IF SLASH = UNDEFINED THEN
         CONST SLASH$ = "/"
     $END IF 
 $END IF
+
+$IF GJ_LIB_NL = UNDEFINED THEN
+    $LET GJ_LIB_NL = 1
+    DIM SHARED GJ_LIB_NL AS STRING
+    $IF WIN THEN
+        GJ_LIB_NL$ = CHR$(13)
+    $ELSE
+        GJ_LIB_NL$ = CHR$(10)
+    $END IF
+$END IF
