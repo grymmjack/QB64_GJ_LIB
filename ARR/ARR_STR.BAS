@@ -556,10 +556,9 @@ END SUB
 ' @param STRING ARRAY dest_arr$() array to store sorted in
 '
 SUB ARR_STR.sort(source_arr$(), dest_arr$())
-    DIM AS LONG lb, ub, count
+    DIM AS LONG lb, ub
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    count& = ub& - lb&
-    REDIM dest_arr(0 TO count&) AS STRING
+    REDIM dest_arr(lb& TO ub&) AS STRING
     CALL ARR_STR.copy(source_arr$(), dest_arr$())
     CALL ARR_STR.quicksort(dest_arr$(), lb&, ub&, 0)
 END SUB
@@ -575,7 +574,7 @@ SUB ARR_STR.rsort(source_arr$(), dest_arr$())
     DIM AS LONG lb, ub, count
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     count& = ub& - lb&
-    REDIM dest_arr(0 TO count&) AS STRING
+    REDIM dest_arr(lb& TO ub&) AS STRING
     CALL ARR_STR.copy(source_arr$(), dest_arr$())
     CALL ARR_STR.quicksort(dest_arr$(), lb&, ub&, 1)
 END SUB
@@ -598,7 +597,7 @@ SUB ARR_STR.quicksort(arr$(), start%, finish%, order%)
     'first, partition the array
     pivot% = start%
     pivotvalue$ = arr$(pivot%)
-    FOR i& = start% + 1 TO finish%
+    FOR i& = start% TO finish%
         IF order% = 0 THEN ' ascending order
             IF arr$(i&) < pivotvalue$ THEN
                 arr$(pivot%) = arr$(i&)

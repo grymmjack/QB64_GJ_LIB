@@ -145,7 +145,7 @@ FUNCTION DUMP.string_array$(arr$(), label$)
     r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + CHR$(34) + arr$(i%) + CHR$(34)
-        r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
+        r$ = r$ + " [" + _TRIM$(STR$(LEN(arr$(i%)))) + "]" + GJ_LIB_NL$
     NEXT i%
     r$ = r$ + "}"
     DUMP.string_array$ = r$
