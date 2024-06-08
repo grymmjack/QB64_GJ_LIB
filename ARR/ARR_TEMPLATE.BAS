@@ -827,7 +827,7 @@ END SUB
 ' @param {Q} ARRAY source_arr{SY}() array to combine
 ' @param {Q} ARRAY dest_arr{SY}() array to store combined result
 '
-SUB ARR_STR.union(source_arr{SY}(), dest_arr{SY}())
+SUB ARR_{UT}.union(source_arr{SY}(), dest_arr{SY}())
     's = source, d = dest, n = new
         'lb = lower bounds, ub = upper bounds
         't = total elements
@@ -846,7 +846,7 @@ SUB ARR_STR.union(source_arr{SY}(), dest_arr{SY}())
     n_lb& = d_lb&
     n_ub& = d_ub& + s_t& + 1
     
-    REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS STRING
+    REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS {Q}
     FOR i& = s_lb& TO s_ub&
         n& = d_ub& + 1 + i& - s_lb&
         dest_arr{SY}(n&) = source_arr{SY}(i&)

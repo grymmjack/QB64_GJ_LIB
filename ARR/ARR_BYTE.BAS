@@ -818,3 +818,37 @@ SUB ARR_BYTE.quicksort(arr%%(), start%, finish%, order%)
         CALL ARR_BYTE.quicksort(arr%%(), pivot% + 1, finish%, order%)
     END IF
 END SUB
+
+
+
+''
+' Combine two arrays - requires both array indexes are serial with no gaps
+' 
+' @param _BYTE ARRAY source_arr%%() array to combine
+' @param _BYTE ARRAY dest_arr%%() array to store combined result
+'
+SUB ARR_BYTE.union(source_arr%%(), dest_arr%%())
+    's = source, d = dest, n = new
+        'lb = lower bounds, ub = upper bounds
+        't = total elements
+    DIM AS LONG s_ub, s_lb, s_t
+    DIM AS LONG d_ub, d_lb, d_t
+    DIM AS LONG n_lb, n_ub, n_t
+    DIM AS LONG i, n
+
+    s_lb& = LBOUND(source_arr%%)
+    s_ub& = UBOUND(source_arr%%)
+    d_lb& = LBOUND(dest_arr%%)
+    d_ub& = UBOUND(dest_arr%%)
+    s_t&  = (s_ub& - s_lb&)
+    d_t&  = (d_ub& - d_lb&)
+    n_t&  = s_t& + d_t&
+    n_lb& = d_lb&
+    n_ub& = d_ub& + s_t& + 1
+    
+    REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS _BYTE
+    FOR i& = s_lb& TO s_ub&
+        n& = d_ub& + 1 + i& - s_lb&
+        dest_arr%%(n&) = source_arr%%(i&)
+    NEXT i&
+END SUB
