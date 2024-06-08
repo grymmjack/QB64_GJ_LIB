@@ -818,3 +818,21 @@ SUB ARR_{UT}.quicksort(arr{SY}(), start%, finish%, order%)
         CALL ARR_{UT}.quicksort(arr{SY}(), pivot% + 1, finish%, order%)
     END IF
 END SUB
+
+
+''
+' Combine two arrays - requires both array indexes are serial with no gaps
+' 
+' @param {Q} ARRAY source_arr{SY}() array to combine
+' @param {Q} ARRAY dest_arr{SY}() array to store combined result
+'
+SUB ARR_STR.union(source_arr{SY}(), dest_arr{SY}())
+    DIM AS LONG s_ub, s_lb, d_ub, d_lb, i, n_ub
+    s_lb& = LBOUND(source_arr{SY}) : s_ub& = UBOUND(source_arr{SY})
+    d_lb& = LBOUND(dest_arr{SY}) : d_ub& = UBOUND(dest_arr{SY})
+    n_ub& = (s_ub& - s_lb&) + (d_ub& - d_lb&)
+    REDIM dest_arr(d_lb& TO n_ub&) AS STRING
+    FOR i& = s_ub& TO s_lb& STEP -1
+        dest_arr{SY}(nub&-i&) = source_arr{SY}(i&)
+    NEXT i&
+END SUB

@@ -623,3 +623,21 @@ SUB ARR_STR.quicksort(arr$(), start%, finish%, order%)
         CALL ARR_STR.quicksort(arr$(), pivot% + 1, finish%, order%)
     END IF
 END SUB
+
+
+''
+' Combine two arrays - requires both array indexes are serial with no gaps
+' 
+' @param STRING ARRAY source_arr$() array to combine
+' @param STRING ARRAY dest_arr$() array to store combined result
+'
+SUB ARR_STR.union(source_arr$(), dest_arr$())
+    DIM AS LONG s_ub, s_lb, d_ub, d_lb, i, n_ub
+    s_lb& = LBOUND(source_arr$) : s_ub& = UBOUND(source_arr$)
+    d_lb& = LBOUND(dest_arr$) : d_ub& = UBOUND(dest_arr$)
+    n_ub& = (s_ub& - s_lb&) + (d_ub& - d_lb&)
+    REDIM dest_arr(d_lb& TO n_ub&) AS STRING
+    FOR i& = s_ub& TO s_lb& STEP -1
+        dest_arr$(nub&-i&) = source_arr$(i&)
+    NEXT i&
+END SUB
