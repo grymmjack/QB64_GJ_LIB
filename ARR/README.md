@@ -78,6 +78,7 @@ A bunch of very handy stuff for arrays spanning all QB64 types.
 | `.between` | Return elements between a start and end index in an array |
 | `.sort` | Sort elements of an array in ascending order |
 | `.rsort` | Sort elements of an array in desscending order |
+| `.union` | Combine two arrays - requires both array indexes are serial with no gaps |
 
 ### SUBS AND FUNCTIONS FOR STRING TYPE:
 | SUB / FUNCTION | NOTES |
