@@ -51,6 +51,29 @@
             }
         },
         {
+            "label": "HELP: OLD QB64 Wiki",
+            "command": "OpenWebPage",
+            "type": "shell",
+            "linux": {
+                "command": "setsid xdg-open https://qb64forum.alephc.xyz/index.php",
+            },
+            "osx": {
+                "command": "open https://qb64forum.alephc.xyz/index.php",
+            },
+            "windows": {
+                "command": "start https://qb64forum.alephc.xyz/index.php",
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false,
+                "close": true
+            }
+        },
+        {
             "label": "EXECUTE: Run",
             "dependsOn": "BUILD: Compile",
             "type": "shell",
@@ -281,8 +304,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
-                "close": true
+                "clear": false
             },
             "group": {
                 "kind": "none"
@@ -315,8 +337,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
-                "close": true
+                "clear": false
             },
             "group": {
                 "kind": "none"
@@ -347,8 +368,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
-                "close": true
+                "clear": false
             },
             "group": {
                 "kind": "none"
@@ -381,8 +401,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
-                "close": true
+                "clear": false
             },
             "group": {
                 "kind": "none"
@@ -415,8 +434,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
-                "close": true
+                "clear": false
             },
             "group": {
                 "kind": "none"
@@ -427,17 +445,18 @@
             "dependsOn": "BUILD: Remove",
             "type": "shell",
             "windows": {
-                "command": "${config:qb64.compilerPath}",
+                "command": "${config:qb64pe.compilerPath}",
                 "args": [
                     "-w",
                     "-x",
+                    "-f:MaxCompilerProcesses=8",
                     "${fileDirname}\\${fileBasename}",
                     "-o",
                     "${fileDirname}\\${fileBasenameNoExtension}.exe"
                 ]
             },
             "osx": {
-                "command": "${config:qb64.compilerPath}",
+                "command": "${config:qb64pe.compilerPath}",
                 "args": [
                     "-w",
                     "-x",
@@ -447,7 +466,7 @@
                 ]
             },
             "linux": {
-                "command": "${config:qb64.compilerPath}",
+                "command": "${config:qb64pe.compilerPath}",
                 "args": [
                     "-w",
                     "-x",
