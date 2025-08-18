@@ -15,6 +15,7 @@ in it's current state.
 |---------|---------|------|
 | [ANSI](ANSI/README.md) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
 | [ARR](ARR/README.md) | ARRay Library | A high level library for working with arrays of all types in QB64 |
+| [BBX](BBX/README.md) | Bounding BoX Library | Reusable bounding box with position, resize, keyboard and mouse control | 
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
 | [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
