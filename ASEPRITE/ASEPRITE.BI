@@ -15,7 +15,7 @@ $INCLUDEONCE
 
 ' DEBUG CONTROL
 ' Set to 1 to enable debug output, 0 to disable
-CONST ASEPRITE_DEBUG_MODE = 0
+CONST ASEPRITE_DEBUG_MODE = 1
 
 ' Compression support provided by QB64PE built-in _INFLATE$ function
 ' No external libraries required!
@@ -687,6 +687,20 @@ TYPE ASEPRITE_LAYER_INFO
     is_background   AS _BYTE                 ' 1 if background layer
 END TYPE
 
+' Cel information structure for layer compositing
+TYPE ASEPRITE_CEL_INFO
+    layer_index     AS INTEGER               ' Which layer this cel belongs to
+    x_position      AS INTEGER               ' X position in sprite
+    y_position      AS INTEGER               ' Y position in sprite
+    width           AS INTEGER               ' Cel width
+    height          AS INTEGER               ' Cel height
+    opacity         AS _UNSIGNED _BYTE       ' Cel opacity (0-255)
+    cel_type        AS _UNSIGNED INTEGER     ' Type of cel (raw, compressed, etc.)
+    z_index         AS INTEGER               ' Z-index for layer ordering
+    has_data        AS _BYTE                 ' 1 if cel has pixel data
+    image_handle    AS LONG                  ' QB64PE image handle for this cel
+END TYPE
+
 ' Frame information structure
 TYPE ASEPRITE_FRAME_INFO
     frame_index     AS INTEGER               ' Frame number (0-based)
@@ -731,6 +745,7 @@ DECLARE FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer
 DECLARE FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
 DECLARE SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
 DECLARE SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS SINGLE, center_display AS INTEGER)
+DECLARE FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
 
 
 'NUMBERS

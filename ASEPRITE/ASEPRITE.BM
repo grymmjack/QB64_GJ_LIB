@@ -278,6 +278,73 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
 END FUNCTION
 
 ''
+' Creates a composite QB64PE image from Aseprite with all layers merged
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @return LONG QB64PE image handle (0 if failed)
+'
+FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
+    DIM composite_handle AS LONG
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixel_color AS _UNSIGNED LONG
+    
+    IF aseprite_img.is_valid = 0 THEN
+        create_composite_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Create a new 32-bit image with the Aseprite dimensions
+    IF aseprite_img.header.width <= 0 OR aseprite_img.header.height <= 0 THEN
+        create_composite_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
+    
+    composite_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
+    
+    IF composite_handle = -1 OR composite_handle = 0 THEN
+        create_composite_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Clear composite image with transparent background
+    _DEST composite_handle
+    CLS , _RGBA32(0, 0, 0, 0)
+    _DEST 0
+    
+    ' Try to load and composite all layers from the file
+    IF load_aseprite_composite_layers%(aseprite_img, composite_handle) THEN
+        ' Success - composite image created
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "Composite layers loaded successfully"
+    ELSE
+        ' Fall back to single layer loading
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "Composite loading failed, falling back to single layer"
+        IF load_aseprite_pixels%(aseprite_img, composite_handle) THEN
+            ' Success with single layer
+            IF ASEPRITE_DEBUG_MODE THEN PRINT "Single layer fallback successful"
+        ELSE
+            ' Final fallback to placeholder pattern
+            IF ASEPRITE_DEBUG_MODE THEN PRINT "All loading failed, using placeholder"
+            DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+            _DEST composite_handle
+            FOR y = 0 TO aseprite_img.header.height - 1
+                FOR x = 0 TO aseprite_img.header.width - 1
+                    IF aseprite_img.header.width > 0 AND aseprite_img.header.height > 0 THEN
+                        r = (x * 255) \ aseprite_img.header.width
+                        g = (y * 255) \ aseprite_img.header.height
+                        b = ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height)
+                        pixel_color = _RGB32(r, g, b)
+                        PSET (x, y), pixel_color
+                    END IF
+                NEXT x
+            NEXT y
+            _DEST 0
+        END IF
+    END IF
+    
+    create_composite_image_from_aseprite& = composite_handle
+END FUNCTION
+
+''
 ' Displays an Aseprite image in a graphics window
 '
 ' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
@@ -563,8 +630,12 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
     DIM index_val AS _UNSIGNED _BYTE
     DIM pixel_color AS _UNSIGNED LONG
     DIM old_dest AS LONG
+    DIM use_cel_position AS INTEGER
     
     load_raw_pixel_data% = 0 ' Default to failure
+    
+    ' Determine if we should use cel positioning or direct pixel positioning
+    use_cel_position = NOT (_WIDTH(target_image) = width AND _HEIGHT(target_image) = height)
     
     ' Set destination to our target image
     old_dest = _DEST
@@ -581,7 +652,14 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                     GET #file_handle, , a
                     
                     pixel_color = _RGBA32(r, g, b, a)
-                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ' Handle positioning based on target image size
+                    IF use_cel_position THEN
+                        ' Composite image - use cel position offset
+                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ELSE
+                        ' Individual cel image - direct positioning
+                        PSET (x, y), pixel_color
+                    END IF
                 NEXT x
             NEXT y
             load_raw_pixel_data% = -1 ' Success
@@ -593,7 +671,12 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                     GET #file_handle, , gray_alpha
                     
                     pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
-                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ' Handle positioning based on target image size
+                    IF use_cel_position THEN
+                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ELSE
+                        PSET (x, y), pixel_color
+                    END IF
                 NEXT x
             NEXT y
             load_raw_pixel_data% = -1 ' Success
@@ -605,9 +688,14 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                 FOR x = 0 TO width - 1
                     GET #file_handle, , index_val
                     
-                    ' Simple mapping: index as grayscale value
-                    pixel_color = _RGB32(index_val, index_val, index_val)
-                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ' Use the palette lookup function
+                    pixel_color = get_indexed_color(index_val)
+                    ' Handle positioning based on target image size
+                    IF use_cel_position THEN
+                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                    ELSE
+                        PSET (x, y), pixel_color
+                    END IF
                 NEXT x
             NEXT y
             load_raw_pixel_data% = -1 ' Success
@@ -774,7 +862,15 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
                         a = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(r, g, b, a)
-                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        ' For individual cel images, position at (x,y) directly
+                        ' For composite images, use cel_chunk position offset
+                        IF _WIDTH(target_image) = width AND _HEIGHT(target_image) = height THEN
+                            ' Individual cel image - direct positioning
+                            PSET (x, y), pixel_color
+                        ELSE
+                            ' Composite image - use cel position offset
+                            PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        END IF
                     END IF
                 NEXT x
             NEXT y
@@ -787,7 +883,12 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
                         gray_alpha = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
-                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        ' Handle positioning based on target image size
+                        IF _WIDTH(target_image) = width AND _HEIGHT(target_image) = height THEN
+                            PSET (x, y), pixel_color
+                        ELSE
+                            PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        END IF
                     END IF
                 NEXT x
             NEXT y
@@ -800,7 +901,12 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
                         
                         ' Map index to a color - for testing, use a simple palette
                         pixel_color = get_indexed_color(index_val)
-                        PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        ' Handle positioning based on target image size
+                        IF _WIDTH(target_image) = width AND _HEIGHT(target_image) = height THEN
+                            PSET (x, y), pixel_color
+                        ELSE
+                            PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                        END IF
                     END IF
                 NEXT x
             NEXT y
@@ -844,6 +950,271 @@ FUNCTION get_indexed_color& (index_val AS _UNSIGNED _BYTE)
             ' For other values, create a gradient
             get_indexed_color& = _RGB32(index_val, index_val, index_val)
     END SELECT
+END FUNCTION
+
+''
+' Loads and composites all layers from ASEPRITE file into a single image
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @param target_image Handle to QB64PE image to load composite into
+' @return -1 if successful, 0 if failed
+'
+FUNCTION load_aseprite_composite_layers% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
+    DIM file_handle AS INTEGER
+    DIM file_pos AS LONG
+    DIM frame_num AS INTEGER
+    DIM chunk_num AS LONG
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM layer_chunk AS ASEPRITE_LAYER_CHUNK
+    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
+    DIM cel_width AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
+    DIM layer_name AS STRING
+    DIM num_chunks AS LONG
+    DIM layers_found AS INTEGER
+    DIM cels_found AS INTEGER
+    DIM temp_image AS LONG
+    DIM old_dest AS LONG
+    
+    ' Arrays to store layer and cel information
+    DIM layer_names$(100)          ' Store layer names (max 100 layers)
+    DIM layer_flags(100) AS _UNSIGNED INTEGER
+    DIM layer_opacity(100) AS _UNSIGNED _BYTE
+    DIM layer_blend_mode(100) AS _UNSIGNED INTEGER
+    DIM layer_visible(100) AS INTEGER
+    DIM cel_layers(200) AS INTEGER ' Store which layer each cel belongs to (max 200 cels)
+    DIM cel_images(200) AS LONG    ' Store image handles for each cel
+    DIM cel_x_pos(200) AS INTEGER
+    DIM cel_y_pos(200) AS INTEGER
+    DIM cel_opacity_val(200) AS _UNSIGNED _BYTE
+    DIM cel_z_index(200) AS INTEGER
+    
+    load_aseprite_composite_layers% = 0 ' Default to failure
+    
+    IF ASEPRITE_DEBUG_MODE THEN PRINT "Starting composite layer loading..."
+    
+    IF aseprite_img.is_valid = 0 THEN 
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "Error: Invalid ASEPRITE image"
+        EXIT FUNCTION
+    END IF
+    
+    ' Initialize arrays
+    FOR chunk_num = 0 TO 100
+        layer_visible(chunk_num) = 1 ' Default to visible
+        layer_opacity(chunk_num) = 255 ' Default to fully opaque
+    NEXT chunk_num
+    
+    ' Open file for binary reading
+    file_handle = FREEFILE
+    OPEN aseprite_img.file_path FOR BINARY AS #file_handle
+    
+    IF ASEPRITE_DEBUG_MODE THEN PRINT "File opened successfully, file handle:", file_handle
+    
+    ' Skip the header (128 bytes) to get to frame data
+    file_pos = 129 ' Start after header
+    
+    ' Read the first frame only for now
+    IF aseprite_img.header.num_frames > 0 THEN
+        ' Position at first frame
+        SEEK #file_handle, file_pos
+        
+        ' Read frame header
+        GET #file_handle, , frame_header
+        
+        ' Validate frame magic number
+        IF frame_header.magic_number <> ASEPRITE_FRAME_MAGIC THEN
+            CLOSE #file_handle
+            EXIT FUNCTION
+        END IF
+        
+        ' Determine number of chunks to process
+        IF frame_header.new_chunks > 0 THEN
+            num_chunks = frame_header.new_chunks
+        ELSE
+            num_chunks = frame_header.old_chunks
+        END IF
+        
+        IF ASEPRITE_DEBUG_MODE THEN
+            PRINT "Composite loading: Processing", num_chunks, "chunks"
+        END IF
+        
+        ' First pass: Load layer information
+        FOR chunk_num = 1 TO num_chunks
+            ' Read chunk header
+            GET #file_handle, , chunk_header
+            
+            IF ASEPRITE_DEBUG_MODE THEN
+                PRINT "Chunk", chunk_num, "type: 0x" + HEX$(chunk_header.chunk_type)
+            END IF
+            
+            ' Check if this is a LAYER chunk
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_LAYER THEN
+                layers_found = layers_found + 1
+                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> LAYER chunk found! Layer #", layers_found
+                
+                ' Read layer chunk data
+                GET #file_handle, , layer_chunk
+                
+                ' Read layer name (string format: WORD length + UTF-8 data)
+                DIM name_length AS _UNSIGNED INTEGER
+                GET #file_handle, , name_length
+                IF name_length > 0 AND name_length < 1000 THEN
+                    layer_name = SPACE$(name_length)
+                    GET #file_handle, , layer_name
+                ELSE
+                    layer_name = "Layer" + STR$(layers_found)
+                END IF
+                
+                ' Store layer information
+                layer_names$(layers_found) = layer_name
+                layer_flags(layers_found) = layer_chunk.flags
+                layer_opacity(layers_found) = layer_chunk.opacity
+                layer_blend_mode(layers_found) = layer_chunk.blend_mode
+                layer_visible(layers_found) = (layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE) <> 0
+                
+                IF ASEPRITE_DEBUG_MODE THEN
+                    PRINT "    Name:", layer_name
+                    PRINT "    Visible:", layer_visible(layers_found)
+                    PRINT "    Opacity:", layer_opacity(layers_found)
+                END IF
+                
+            ELSE
+                ' Skip non-layer chunks for now
+                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
+            END IF
+        NEXT chunk_num
+        
+        ' Reset to beginning of frame chunks for second pass
+        SEEK #file_handle, file_pos + 16 ' After frame header
+        
+        ' Second pass: Load cels and create individual layer images
+        FOR chunk_num = 1 TO num_chunks
+            ' Read chunk header
+            GET #file_handle, , chunk_header
+            
+            ' Check if this is a CEL chunk
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
+                cels_found = cels_found + 1
+                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> CEL chunk found! Cel #", cels_found
+                
+                ' Read CEL chunk data
+                GET #file_handle, , cel_chunk
+                
+                ' Store cel information
+                cel_layers(cels_found) = cel_chunk.layer_index + 1 ' Convert to 1-based
+                cel_x_pos(cels_found) = cel_chunk.x_position
+                cel_y_pos(cels_found) = cel_chunk.y_position
+                cel_opacity_val(cels_found) = cel_chunk.opacity
+                cel_z_index(cels_found) = cel_chunk.z_index
+                
+                IF ASEPRITE_DEBUG_MODE THEN
+                    PRINT "    Layer index:", cel_chunk.layer_index
+                    PRINT "    Position: (", cel_chunk.x_position, ",", cel_chunk.y_position, ")"
+                    PRINT "    Opacity:", cel_chunk.opacity
+                    PRINT "    CEL type:", cel_chunk.cel_type
+                END IF
+                
+                ' Check CEL type and create image for this cel
+                SELECT CASE cel_chunk.cel_type
+                    CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2)
+                        ' Read width and height for compressed image  
+                        GET #file_handle, , cel_width
+                        GET #file_handle, , cel_height
+                        
+                        ' Create individual image for this cel
+                        temp_image = _NEWIMAGE(cel_width, cel_height, 32)
+                        cel_images(cels_found) = temp_image
+                        
+                        ' Clear with transparent background
+                        old_dest = _DEST
+                        _DEST temp_image
+                        CLS , _RGBA32(0, 0, 0, 0)
+                        _DEST old_dest
+                        
+                        ' Load compressed pixel data into cel image
+                        IF load_compressed_pixel_data%(file_handle, temp_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Cel image loaded successfully"
+                        ELSE
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Failed to load cel image"
+                        END IF
+                        
+                    CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image data (type 0)
+                        ' Read width and height for raw image
+                        GET #file_handle, , cel_width
+                        GET #file_handle, , cel_height
+                        
+                        ' Create individual image for this cel
+                        temp_image = _NEWIMAGE(cel_width, cel_height, 32)
+                        cel_images(cels_found) = temp_image
+                        
+                        ' Clear with transparent background
+                        old_dest = _DEST
+                        _DEST temp_image
+                        CLS , _RGBA32(0, 0, 0, 0)
+                        _DEST old_dest
+                        
+                        ' Load raw pixel data into cel image
+                        IF load_raw_pixel_data%(file_handle, temp_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Raw cel image loaded successfully"
+                        ELSE
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Failed to load raw cel image"
+                        END IF
+                        
+                    CASE ELSE
+                        ' Skip unsupported cel types
+                        cel_images(cels_found) = 0
+                        SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6 - LEN(cel_chunk))
+                END SELECT
+                
+            ELSE
+                ' Skip non-CEL chunks
+                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
+            END IF
+        NEXT chunk_num
+    END IF
+    
+    CLOSE #file_handle
+    
+    IF ASEPRITE_DEBUG_MODE THEN
+        PRINT "Found", layers_found, "layers and", cels_found, "cels"
+    END IF
+    
+    ' Third pass: Composite all layers in correct order
+    old_dest = _DEST
+    _DEST target_image
+    
+    ' Clear composite with transparent background
+    CLS , _RGBA32(0, 0, 0, 0)
+    
+    ' Composite cels in layer order (bottom to top)
+    FOR chunk_num = 1 TO cels_found
+        DIM layer_idx AS INTEGER
+        layer_idx = cel_layers(chunk_num)
+        
+        ' Check if layer is visible and cel has an image
+        IF layer_idx > 0 AND layer_idx <= layers_found AND layer_visible(layer_idx) AND cel_images(chunk_num) <> 0 THEN
+            IF ASEPRITE_DEBUG_MODE THEN
+                PRINT "Compositing cel", chunk_num, "from layer", layer_idx, "(", layer_names$(layer_idx), ")"
+            END IF
+            
+            ' Simple alpha blending (could be enhanced with proper blend modes)
+            DIM cel_alpha AS SINGLE
+            cel_alpha = (cel_opacity_val(chunk_num) / 255.0) * (layer_opacity(layer_idx) / 255.0)
+            
+            ' Use _PUTIMAGE with alpha blending
+            _PUTIMAGE (cel_x_pos(chunk_num), cel_y_pos(chunk_num)), cel_images(chunk_num)
+            
+            ' Free the cel image to save memory
+            _FREEIMAGE cel_images(chunk_num)
+            cel_images(chunk_num) = 0
+        END IF
+    NEXT chunk_num
+    
+    _DEST old_dest
+    
+    ' If we found and composited any layers, consider it a success
+    IF cels_found > 0 THEN load_aseprite_composite_layers% = -1
+    
 END FUNCTION
 
 ' ASEPRITE.BM uses QB64PE built-in _INFLATE$ for compression support

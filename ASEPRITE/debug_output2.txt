@@ -1,0 +1,11 @@
+=== ASEPRITE COMPOSITE LAYER TEST ===
+Testing DJ Trapezoid.aseprite with multiple layers
+
+Loading ASEPRITE file...
+File loaded. Valid:  1 
+File size:  2567  bytes
+Dimensions:  32 x 32 
+Color depth:  32  bpp
+Number of frames:  1 
+
+Creating composite image with all layers...
