@@ -1,63 +1,122 @@
-'$INCLUDE:'ASEPRITE.BI'
+''
+' Manual Layer Compositor Test
+' Places each layer at exact position without stretching
+'
+$CONSOLE
 
-' Final comprehensive composite test
-' This will manually extract and position all CEL data to create the proper composite
-PRINT "=== COMPREHENSIVE MANUAL COMPOSITE TEST ==="
+'$INCLUDE:'ASEPRITE.BI'
 
 DIM filename AS STRING
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
-' Create a 32x32 composite with white background
-DIM final_composite AS LONG
-final_composite = _NEWIMAGE(32, 32, 32)
-_DEST final_composite
-CLS , _RGB32(255, 255, 255)
+PRINT "=== MANUAL LAYER COMPOSITOR TEST ==="
+PRINT "Creating composite manually to avoid stretching issues"
+PRINT "Loading file: "; filename
+PRINT
 
-PRINT "Creating manual composite from all CEL data..."
+' Load the ASEPRITE file structure
+DIM aseprite_img AS ASEPRITE_IMAGE
+CALL load_aseprite_image(filename, aseprite_img)
 
-' Use the working load_compressed_pixel_data_for_layer function
-' Extract layer 0 (background) first
-DIM layer0_img AS LONG
-layer0_img = load_specific_layer_image_enhanced&(filename, 0, 0)
-IF layer0_img <> -1 AND layer0_img <> 0 THEN
-    _PUTIMAGE (0, 0), layer0_img, final_composite
-    _FREEIMAGE layer0_img
-    PRINT "Added background layer 0"
+IF NOT aseprite_img.is_valid THEN
+    PRINT "ERROR: Failed to load ASEPRITE file"
+    SYSTEM
 END IF
 
-' Now add the pumpkin head from the specific layers we know exist
-' Based on our previous debug, layer 7 had the most data (695 bytes)
-DIM pumpkin_layer AS LONG
-pumpkin_layer = load_specific_layer_image_enhanced&(filename, 7, 0)
-IF pumpkin_layer <> -1 AND pumpkin_layer <> 0 THEN
-    _PUTIMAGE (0, 0), pumpkin_layer, final_composite
-    _FREEIMAGE pumpkin_layer
-    PRINT "Added pumpkin layer 7"
-END IF
+PRINT "File loaded successfully!"
+PRINT "Sprite dimensions: "; aseprite_img.header.width; "x"; aseprite_img.header.height
+PRINT
 
-' Add all other visible layers
-DIM layer_nums(1 TO 8) AS INTEGER
-layer_nums(1) = 1: layer_nums(2) = 2: layer_nums(3) = 3: layer_nums(4) = 4
-layer_nums(5) = 5: layer_nums(6) = 6: layer_nums(7) = 8: layer_nums(8) = 9
+' Create a manual composite image (32x32 based on sprite dimensions)
+DIM composite AS LONG
+composite = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
+_DEST composite
+CLS , _RGB32(255, 255, 255) ' White background
 
-DIM i AS INTEGER
-FOR i = 1 TO 8
+' Now manually place each layer without any scaling
+DIM layer_index AS INTEGER
+DIM layer_count AS INTEGER
+layer_count = 0
+
+FOR layer_index = 0 TO 20  ' Try up to 20 layers
+    
+    ' Get the actual layer image data (unscaled)
     DIM layer_img AS LONG
-    layer_img = load_specific_layer_image_enhanced&(filename, layer_nums(i), 0)
-    IF layer_img <> -1 AND layer_img <> 0 THEN
-        _PUTIMAGE (0, 0), layer_img, final_composite
+    layer_img = load_specific_layer_image&(aseprite_img, layer_index)
+    
+    IF layer_img <> -1 THEN
+        layer_count = layer_count + 1
+        ' Get the CEL position for this layer
+        DIM cel_x AS INTEGER, cel_y AS INTEGER
+        CALL get_cel_position_from_loaded_data(aseprite_img, layer_index, 0, cel_x, cel_y)
+        
+        ' Get actual layer dimensions (should be ≤ 32x32)
+        DIM layer_w AS INTEGER, layer_h AS INTEGER
+        layer_w = _WIDTH(layer_img)
+        layer_h = _HEIGHT(layer_img)
+        
+        PRINT "Layer "; layer_index; ": Position ("; cel_x; ","; cel_y; ") Size "; layer_w; "x"; layer_h
+        
+        ' Place the layer at its exact position WITHOUT SCALING
+        ' Use source coordinates to ensure we don't stretch
+        _PUTIMAGE (cel_x, cel_y)-(cel_x + layer_w - 1, cel_y + layer_h - 1), layer_img, composite, (0, 0)-(layer_w - 1, layer_h - 1)
+        
         _FREEIMAGE layer_img
-        PRINT "Added layer"; layer_nums(i)
+    ELSE
+        IF layer_index > 15 THEN EXIT FOR  ' Stop if we've gone beyond reasonable layer count
     END IF
-NEXT i
+NEXT layer_index
 
 _DEST 0
-_SAVEIMAGE "manual_comprehensive_composite.png", final_composite
-_FREEIMAGE final_composite
 
-PRINT ""
-PRINT "Manual comprehensive composite saved as: manual_comprehensive_composite.png"
-PRINT "This should show the complete pumpkin head character!"
+PRINT
+PRINT "Manual composite created!"
+PRINT "Found "; layer_count; " valid layers"
+PRINT "Final composite size: "; _WIDTH(composite); "x"; _HEIGHT(composite)
+
+' Set up graphics display
+SCREEN _NEWIMAGE(800, 600, 32)
+_TITLE "Manual Layer Compositor Test - No Stretching"
+CLS , _RGB32(64, 64, 64)
+
+' Display the composite at large scale for visibility
+DIM scale AS SINGLE
+scale = 15.0
+
+_PRINTSTRING (50, 20), "Manual Composite (No Stretching):"
+_PRINTSTRING (50, 40), "Each layer placed at exact position and size"
+
+' Display at exact pixel mapping (no interpolation)
+_PUTIMAGE (50, 70)-(50 + _WIDTH(composite) * scale - 1, 70 + _HEIGHT(composite) * scale - 1), composite
+
+' Add border to show exact boundaries
+LINE (48, 68)-(52 + _WIDTH(composite) * scale, 72 + _HEIGHT(composite) * scale), _RGB32(255, 255, 0), B
+
+_PRINTSTRING (50, 70 + _HEIGHT(composite) * scale + 20), "Scale: " + STR$(scale) + "x for visibility"
+_PRINTSTRING (50, 70 + _HEIGHT(composite) * scale + 40), "Yellow border shows exact 32x32 boundaries"
+
+COLOR _RGB32(0, 255, 0)
+_PRINTSTRING (50, 70 + _HEIGHT(composite) * scale + 70), "This should show the complete character without stretching"
+_PRINTSTRING (50, 70 + _HEIGHT(composite) * scale + 90), "Each layer maintains its original pixel dimensions"
+
+COLOR _RGB32(255, 255, 255)
+_PRINTSTRING (50, 70 + _HEIGHT(composite) * scale + 120), "Press any key to save and continue..."
+
+_DISPLAY
+SLEEP
+
+' Save the manual composite
+_SAVEIMAGE "manual_composite_no_stretch.png", composite
+PRINT
+PRINT "Saved: manual_composite_no_stretch.png"
+
+' Clean up
+_FREEIMAGE composite
+
+PRINT
+PRINT "Manual compositor test complete!"
+PRINT "If this looks correct, then the issue is in the"
+PRINT "z-index composite functions stretching layers."
 
 SYSTEM
 
