@@ -1,0 +1,271 @@
+''
+' ZLIB.BM - ZLIB Decompression Implementation for QB64PE
+'
+' Basic ZLIB/DEFLATE decompression for Aseprite compressed CEL data
+' Implements a subset of RFC 1950 (ZLIB) and RFC 1951 (DEFLATE)
+'
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$INCLUDEONCE
+
+''
+' Decompresses ZLIB-compressed data
+'
+' @param compressed_data$ The ZLIB-compressed input data
+' @return string The decompressed data (empty string on error)
+'
+FUNCTION zlib_decompress$ (compressed_data$)
+    DIM header AS ZLIB_HEADER
+    DIM deflate_data$
+    DIM result$
+    
+    zlib_decompress$ = "" ' Default to empty (error)
+    
+    ' Minimum ZLIB data size is 6 bytes (2 header + 4 checksum)
+    IF LEN(compressed_data$) < 6 THEN EXIT FUNCTION
+    
+    ' Parse ZLIB header (first 2 bytes)
+    IF NOT zlib_parse_header%(compressed_data$, header) THEN EXIT FUNCTION
+    
+    ' Extract DEFLATE data (skip header, stop before 4-byte checksum)
+    deflate_data$ = MID$(compressed_data$, 3, LEN(compressed_data$) - 6)
+    
+    ' Decompress DEFLATE data
+    result$ = deflate_decompress$(deflate_data$)
+    
+    ' TODO: Verify Adler-32 checksum in last 4 bytes
+    ' For now, just return the result
+    zlib_decompress$ = result$
+END FUNCTION
+
+''
+' Parses ZLIB header and validates format
+'
+' @param data_input$ Input data starting with ZLIB header
+' @param header ZLIB_HEADER structure to populate
+' @return -1 if valid, 0 if invalid
+'
+FUNCTION zlib_parse_header% (data_input$, header AS ZLIB_HEADER)
+    DIM cmf AS _UNSIGNED _BYTE, flg AS _UNSIGNED _BYTE
+    DIM check_value AS INTEGER
+    
+    zlib_parse_header% = 0 ' Default to invalid
+    
+    IF LEN(data_input$) < 2 THEN EXIT FUNCTION
+    
+    ' Read CMF (Compression Method and Flags)
+    cmf = ASC(data_input$, 1)
+    header.compression_method = cmf AND 15        ' Low 4 bits
+    header.compression_info = (cmf AND 240) \ 16  ' High 4 bits
+    
+    ' Read FLG (Flags)
+    flg = ASC(data_input$, 2)
+    header.fcheck = flg AND 31        ' Low 5 bits
+    header.fdict = (flg AND 32) \ 32  ' Bit 5
+    header.flevel = (flg AND 192) \ 64 ' Bits 6-7
+    
+    ' Validate compression method (must be DEFLATE)
+    IF header.compression_method <> ZLIB_CM_DEFLATE THEN EXIT FUNCTION
+    
+    ' Validate compression info (window size = 2^(8+CI), must be <= 15)
+    IF header.compression_info > 7 THEN EXIT FUNCTION
+    
+    ' Validate FCHECK (CMF*256 + FLG must be multiple of 31)
+    check_value = cmf * 256 + flg
+    IF (check_value MOD 31) <> 0 THEN EXIT FUNCTION
+    
+    ' We don't support preset dictionaries
+    IF header.fdict <> 0 THEN EXIT FUNCTION
+    
+    zlib_parse_header% = -1 ' Valid
+END FUNCTION
+
+''
+' Decompresses DEFLATE data (RFC 1951)
+'
+' @param deflate_data$ The DEFLATE-compressed data
+' @return string The decompressed data
+'
+FUNCTION deflate_decompress$ (deflate_data$)
+    DIM state AS DEFLATE_STATE
+    DIM success AS INTEGER
+    
+    deflate_decompress$ = "" ' Default to empty
+    
+    ' Initialize state
+    state.input_data = deflate_data$
+    state.input_pos = 1
+    state.input_bits = 0
+    state.input_bitlen = 0
+    state.output_data = ""
+    state.output_pos = 0
+    state.is_final = 0
+    
+    ' Process blocks until final block
+    DO
+        success = deflate_process_block%(state)
+        IF NOT success THEN EXIT FUNCTION
+    LOOP UNTIL state.is_final
+    
+    deflate_decompress$ = state.output_data
+END FUNCTION
+
+''
+' Reads specified number of bits from input stream
+'
+' @param state DEFLATE_STATE with input stream
+' @param num_bits Number of bits to read (1-16)
+' @return Integer value of bits read (-1 on error)
+'
+FUNCTION deflate_read_bits% (state AS DEFLATE_STATE, num_bits AS INTEGER)
+    DIM result AS INTEGER
+    DIM byte_val AS _UNSIGNED _BYTE
+    
+    deflate_read_bits% = -1 ' Default to error
+    
+    IF num_bits < 1 OR num_bits > 16 THEN EXIT FUNCTION
+    
+    ' Ensure we have enough bits in buffer
+    WHILE state.input_bitlen < num_bits
+        IF state.input_pos > LEN(state.input_data) THEN EXIT FUNCTION
+        
+        byte_val = ASC(state.input_data, state.input_pos)
+        state.input_bits = state.input_bits OR (byte_val * (2 ^ state.input_bitlen))
+        state.input_bitlen = state.input_bitlen + 8
+        state.input_pos = state.input_pos + 1
+    WEND
+    
+    ' Extract the requested bits
+    result = state.input_bits AND ((2 ^ num_bits) - 1)
+    state.input_bits = state.input_bits \ (2 ^ num_bits)
+    state.input_bitlen = state.input_bitlen - num_bits
+    
+    deflate_read_bits% = result
+END FUNCTION
+
+''
+' Processes one DEFLATE block
+'
+' @param state DEFLATE_STATE structure
+' @return -1 if successful, 0 if error
+'
+FUNCTION deflate_process_block% (state AS DEFLATE_STATE)
+    DIM bfinal AS INTEGER, btype AS INTEGER
+    DIM block_len AS INTEGER, block_nlen AS INTEGER
+    DIM i AS INTEGER
+    DIM byte_val AS _UNSIGNED _BYTE
+    
+    deflate_process_block% = 0 ' Default to error
+    
+    ' Read block header (3 bits total)
+    bfinal = deflate_read_bits%(state, 1)  ' BFINAL: 1 bit
+    IF bfinal = -1 THEN EXIT FUNCTION
+    state.is_final = (bfinal = 1)
+    
+    btype = deflate_read_bits%(state, 2)   ' BTYPE: 2 bits  
+    IF btype = -1 THEN EXIT FUNCTION
+    state.block_type = btype
+    
+    SELECT CASE btype
+        CASE DEFLATE_BTYPE_NONE ' No compression (stored block)
+            ' Skip any remaining bits in current byte
+            state.input_bits = 0
+            state.input_bitlen = 0
+            
+            ' Read LEN (2 bytes, little-endian)
+            IF state.input_pos + 3 > LEN(state.input_data) THEN EXIT FUNCTION
+            block_len = ASC(state.input_data, state.input_pos) + ASC(state.input_data, state.input_pos + 1) * 256
+            state.input_pos = state.input_pos + 2
+            
+            ' Read NLEN (2 bytes, little-endian) 
+            block_nlen = ASC(state.input_data, state.input_pos) + ASC(state.input_data, state.input_pos + 1) * 256
+            state.input_pos = state.input_pos + 2
+            
+            ' Verify NLEN is one's complement of LEN
+            IF (block_len XOR block_nlen) <> 65535 THEN EXIT FUNCTION
+            
+            ' Copy LEN bytes directly to output
+            IF state.input_pos + block_len - 1 > LEN(state.input_data) THEN EXIT FUNCTION
+            state.output_data = state.output_data + MID$(state.input_data, state.input_pos, block_len)
+            state.input_pos = state.input_pos + block_len
+            
+        CASE DEFLATE_BTYPE_FIXED ' Fixed Huffman codes
+            ' TODO: Implement fixed Huffman decompression
+            ' This is complex and requires Huffman tree implementation
+            ' For now, return error
+            EXIT FUNCTION
+            
+        CASE DEFLATE_BTYPE_DYNAMIC ' Dynamic Huffman codes  
+            ' TODO: Implement dynamic Huffman decompression
+            ' This is even more complex
+            ' For now, return error
+            EXIT FUNCTION
+            
+        CASE DEFLATE_BTYPE_RESERVED ' Reserved (error)
+            EXIT FUNCTION
+            
+    END SELECT
+    
+    deflate_process_block% = -1 ' Success
+END FUNCTION
+
+''
+' Simple ZLIB decompression for uncompressed (stored) blocks only
+' This handles the most basic case where DEFLATE uses no compression
+'
+' @param compressed_data$ ZLIB-compressed data
+' @return string Decompressed data (empty on error)
+'
+FUNCTION zlib_decompress_simple$ (compressed_data$)
+    DIM header AS ZLIB_HEADER
+    DIM deflate_data$
+    DIM file_pos AS LONG
+    DIM bfinal AS INTEGER, btype AS INTEGER
+    DIM block_len AS INTEGER, block_nlen AS INTEGER
+    DIM result$
+    
+    zlib_decompress_simple$ = ""
+    
+    ' Parse header
+    IF NOT zlib_parse_header%(compressed_data$, header) THEN EXIT FUNCTION
+    
+    ' Extract DEFLATE data  
+    deflate_data$ = MID$(compressed_data$, 3, LEN(compressed_data$) - 6)
+    file_pos = 1
+    
+    ' Simple processing for uncompressed blocks only
+    DO
+        IF file_pos > LEN(deflate_data$) THEN EXIT FUNCTION
+        
+        ' Read block header bits manually (simplified)
+        DIM header_byte AS _UNSIGNED _BYTE
+        header_byte = ASC(deflate_data$, file_pos)
+        file_pos = file_pos + 1
+        
+        bfinal = header_byte AND 1
+        btype = (header_byte AND 6) \ 2
+        
+        IF btype <> DEFLATE_BTYPE_NONE THEN
+            ' Only handle uncompressed blocks for now
+            EXIT FUNCTION
+        END IF
+        
+        ' Read length
+        IF file_pos + 3 > LEN(deflate_data$) THEN EXIT FUNCTION
+        block_len = ASC(deflate_data$, file_pos) + ASC(deflate_data$, file_pos + 1) * 256
+        file_pos = file_pos + 2
+        block_nlen = ASC(deflate_data$, file_pos) + ASC(deflate_data$, file_pos + 1) * 256
+        file_pos = file_pos + 2
+        
+        ' Verify
+        IF (block_len XOR block_nlen) <> 65535 THEN EXIT FUNCTION
+        
+        ' Copy data
+        IF file_pos + block_len - 1 > LEN(deflate_data$) THEN EXIT FUNCTION
+        result$ = result$ + MID$(deflate_data$, file_pos, block_len)
+        file_pos = file_pos + block_len
+        
+    LOOP UNTIL bfinal = 1
+    
+    zlib_decompress_simple$ = result$
+END FUNCTION

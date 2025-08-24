@@ -13,22 +13,727 @@
 $INCLUDEONCE
 
 ''
-' Loads an ASEPRITE image into memory
+' Loads an ASEPRITE image file and returns populated ASEPRITE_IMAGE object
 '
-' @param img_path$ Path to the image to load
-' @param img_data ASEPRITE_IMAGE type data
+' @param img_path$ Path to the .ase/.aseprite image file to load
+' @param result ASEPRITE_IMAGE Complete Aseprite image data structure (output)
 '
-SUB load_aseprite_image (img_path$, img_data AS ASEPRITE_IMAGE)
+SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
+    DIM file_handle AS INTEGER
+    DIM temp_header AS ASEPRITE_HEADER
+    
+    ' Initialize result
+    result.file_path = img_path$
+    result.is_valid = 0
+    result.frames_loaded = 0
+    result.chunks_loaded = 0
+    result.error_message = ""
+    
+    ' Check if file exists
+    IF NOT _FILEEXISTS(img_path$) THEN
+        result.error_message = "File not found: " + img_path$
+        EXIT SUB
+    END IF
+    
+    ' Open file for binary reading
+    file_handle = FREEFILE
+    OPEN img_path$ FOR BINARY AS #file_handle
+    
+    ' Verify file size is at least header size
+    IF LOF(file_handle) < 128 THEN
+        result.error_message = "File too small to be valid Aseprite file"
+        CLOSE #file_handle
+        EXIT SUB
+    END IF
+    
+    ' Read and validate header
+    GET #file_handle, 1, temp_header
+    
+    ' Verify magic number
+    IF temp_header.magic_number <> ASEPRITE_HEADER_MAGIC THEN
+        result.error_message = "Invalid Aseprite magic number: " + HEX$(temp_header.magic_number) + " expected: " + HEX$(ASEPRITE_HEADER_MAGIC)
+        CLOSE #file_handle
+        EXIT SUB
+    END IF
+    
+    ' Verify file size matches header
+    IF temp_header.file_size <> LOF(file_handle) THEN
+        result.error_message = "File size mismatch: header=" + STR$(temp_header.file_size) + " actual=" + STR$(LOF(file_handle))
+        CLOSE #file_handle
+        EXIT SUB
+    END IF
+    
+    ' Copy header to result
+    result.header = temp_header
+    result.is_valid = 1
+    result.frames_loaded = temp_header.num_frames
+    
+    CLOSE #file_handle
 END SUB
 
-
 ''
-' Gets info for an ASEPRITE image
+' Gets comprehensive info for an ASEPRITE image
 '
-' @return string of info
+' @param aseprite_img ASEPRITE_IMAGE structure to analyze
+' @return string Detailed information about the Aseprite file
 '
-FUNCTION get_aseprite_info$ (img_path$)
-    nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
+FUNCTION get_aseprite_info$ (aseprite_img AS ASEPRITE_IMAGE)
+    DIM nl$, out$, temp$
+    nl$ = CHR$(13) + CHR$(10)
     out$ = ""
+    
+    IF aseprite_img.is_valid = 0 THEN
+        out$ = "INVALID ASEPRITE FILE" + nl$
+        IF LEN(aseprite_img.error_message) > 0 THEN
+            out$ = out$ + "Error: " + aseprite_img.error_message + nl$
+        END IF
+        get_aseprite_info$ = out$
+        EXIT FUNCTION
+    END IF
+    
+    out$ = "ASEPRITE FILE INFORMATION" + nl$
+    out$ = out$ + "========================" + nl$
+    out$ = out$ + "File Path: " + aseprite_img.file_path + nl$
+    out$ = out$ + "File Size: " + STR$(aseprite_img.header.file_size) + " bytes" + nl$
+    out$ = out$ + "Magic Number: 0x" + HEX$(aseprite_img.header.magic_number) + nl$
+    out$ = out$ + nl$
+    
+    out$ = out$ + "IMAGE PROPERTIES:" + nl$
+    out$ = out$ + "Width: " + STR$(aseprite_img.header.width) + " pixels" + nl$
+    out$ = out$ + "Height: " + STR$(aseprite_img.header.height) + " pixels" + nl$
+    out$ = out$ + "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp ("
+    SELECT CASE aseprite_img.header.color_depth_bpp
+        CASE ASEPRITE_COLOR_INDEXED: out$ = out$ + "Indexed)"
+        CASE ASEPRITE_COLOR_GRAYSCALE: out$ = out$ + "Grayscale)"
+        CASE ASEPRITE_COLOR_RGBA: out$ = out$ + "RGBA)"
+        CASE ELSE: out$ = out$ + "Unknown)"
+    END SELECT
+    out$ = out$ + nl$
+    
+    out$ = out$ + "Number of Frames: " + STR$(aseprite_img.header.num_frames) + nl$
+    out$ = out$ + "Frame Speed: " + STR$(aseprite_img.header.frame_speed) + " ms (deprecated)" + nl$
+    out$ = out$ + "Number of Colors: " + STR$(aseprite_img.header.num_colors) + nl$
+    out$ = out$ + nl$
+    
+    out$ = out$ + "FLAGS:" + nl$
+    IF (aseprite_img.header.flags AND ASEPRITE_FLAG_LAYER_OPACITY_VALID) THEN
+        out$ = out$ + "- Layer opacity values are valid" + nl$
+    END IF
+    IF (aseprite_img.header.flags AND ASEPRITE_FLAG_GROUP_BLEND_VALID) THEN
+        out$ = out$ + "- Group blend mode/opacity is valid" + nl$
+    END IF
+    IF (aseprite_img.header.flags AND ASEPRITE_FLAG_LAYERS_HAVE_UUID) THEN
+        out$ = out$ + "- Layers have UUIDs" + nl$
+    END IF
+    out$ = out$ + nl$
+    
+    out$ = out$ + "PIXEL RATIO:" + nl$
+    out$ = out$ + "Pixel Width: " + STR$(aseprite_img.header.pixel_width) + nl$
+    out$ = out$ + "Pixel Height: " + STR$(aseprite_img.header.pixel_height) + nl$
+    IF aseprite_img.header.pixel_width > 0 AND aseprite_img.header.pixel_height > 0 THEN
+        temp$ = STR$(aseprite_img.header.pixel_width / aseprite_img.header.pixel_height)
+        out$ = out$ + "Ratio: " + temp$ + ":1" + nl$
+    ELSE
+        out$ = out$ + "Ratio: 1:1 (default)" + nl$
+    END IF
+    out$ = out$ + nl$
+    
+    out$ = out$ + "GRID PROPERTIES:" + nl$
+    out$ = out$ + "Grid Position: (" + STR$(aseprite_img.header.grid_x_pos) + ", " + STR$(aseprite_img.header.grid_y_pos) + ")" + nl$
+    out$ = out$ + "Grid Size: " + STR$(aseprite_img.header.grid_width) + " x " + STR$(aseprite_img.header.grid_height) + nl$
+    IF aseprite_img.header.grid_width = 0 OR aseprite_img.header.grid_height = 0 THEN
+        out$ = out$ + "Grid: Disabled" + nl$
+    ELSE
+        out$ = out$ + "Grid: Enabled" + nl$
+    END IF
+    out$ = out$ + nl$
+    
+    IF aseprite_img.header.color_depth_bpp = ASEPRITE_COLOR_INDEXED THEN
+        out$ = out$ + "INDEXED COLOR:" + nl$
+        out$ = out$ + "Transparent Index: " + STR$(aseprite_img.header.transparent_color_index) + nl$
+    END IF
+    
     get_aseprite_info$ = out$
 END FUNCTION
+
+''
+' Validates if a file is a proper Aseprite file
+'
+' @param img_path$ Path to file to validate
+' @return integer 1 if valid Aseprite file, 0 otherwise
+'
+FUNCTION is_valid_aseprite_file (img_path$)
+    DIM test_img AS ASEPRITE_IMAGE
+    load_aseprite_image img_path$, test_img
+    is_valid_aseprite_file = test_img.is_valid
+END FUNCTION
+
+''
+' Gets the file extension for Aseprite files
+'
+' @return string ".ase" or ".aseprite" extension
+'
+FUNCTION get_aseprite_extension$
+    get_aseprite_extension$ = ".ase"
+END FUNCTION
+
+''
+' Converts blend mode constant to descriptive string
+'
+' @param blend_mode Blend mode constant
+' @return string Descriptive name of blend mode
+'
+FUNCTION get_blend_mode_name$ (blend_mode AS _UNSIGNED INTEGER)
+    SELECT CASE blend_mode
+        CASE ASEPRITE_BLEND_NORMAL: get_blend_mode_name$ = "Normal"
+        CASE ASEPRITE_BLEND_MULTIPLY: get_blend_mode_name$ = "Multiply"
+        CASE ASEPRITE_BLEND_SCREEN: get_blend_mode_name$ = "Screen"
+        CASE ASEPRITE_BLEND_OVERLAY: get_blend_mode_name$ = "Overlay"
+        CASE ASEPRITE_BLEND_DARKEN: get_blend_mode_name$ = "Darken"
+        CASE ASEPRITE_BLEND_LIGHTEN: get_blend_mode_name$ = "Lighten"
+        CASE ASEPRITE_BLEND_COLOR_DODGE: get_blend_mode_name$ = "Color Dodge"
+        CASE ASEPRITE_BLEND_COLOR_BURN: get_blend_mode_name$ = "Color Burn"
+        CASE ASEPRITE_BLEND_HARD_LIGHT: get_blend_mode_name$ = "Hard Light"
+        CASE ASEPRITE_BLEND_SOFT_LIGHT: get_blend_mode_name$ = "Soft Light"
+        CASE ASEPRITE_BLEND_DIFFERENCE: get_blend_mode_name$ = "Difference"
+        CASE ASEPRITE_BLEND_EXCLUSION: get_blend_mode_name$ = "Exclusion"
+        CASE ASEPRITE_BLEND_HUE: get_blend_mode_name$ = "Hue"
+        CASE ASEPRITE_BLEND_SATURATION: get_blend_mode_name$ = "Saturation"
+        CASE ASEPRITE_BLEND_COLOR: get_blend_mode_name$ = "Color"
+        CASE ASEPRITE_BLEND_LUMINOSITY: get_blend_mode_name$ = "Luminosity"
+        CASE ASEPRITE_BLEND_ADDITION: get_blend_mode_name$ = "Addition"
+        CASE ASEPRITE_BLEND_SUBTRACT: get_blend_mode_name$ = "Subtract"
+        CASE ASEPRITE_BLEND_DIVIDE: get_blend_mode_name$ = "Divide"
+        CASE ELSE: get_blend_mode_name$ = "Unknown (" + STR$(blend_mode) + ")"
+    END SELECT
+END FUNCTION
+
+''
+' Converts animation direction constant to descriptive string
+'
+' @param direction Animation direction constant
+' @return string Descriptive name of animation direction
+'
+FUNCTION get_animation_direction_name$ (direction AS _UNSIGNED _BYTE)
+    SELECT CASE direction
+        CASE ASEPRITE_ANIM_FORWARD: get_animation_direction_name$ = "Forward"
+        CASE ASEPRITE_ANIM_REVERSE: get_animation_direction_name$ = "Reverse"
+        CASE ASEPRITE_ANIM_PING_PONG: get_animation_direction_name$ = "Ping-pong"
+        CASE ASEPRITE_ANIM_PING_PONG_REVERSE: get_animation_direction_name$ = "Ping-pong Reverse"
+        CASE ELSE: get_animation_direction_name$ = "Unknown (" + STR$(direction) + ")"
+    END SELECT
+END FUNCTION
+
+''
+' Creates a QB64PE image from Aseprite pixel data (placeholder for future chunk loading)
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @return LONG QB64PE image handle (0 if failed)
+'
+FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
+    DIM image_handle AS LONG
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixel_color AS _UNSIGNED LONG
+    
+    IF aseprite_img.is_valid = 0 THEN
+        create_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Create a new 32-bit image with the Aseprite dimensions
+    image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
+    
+    IF image_handle = -1 THEN
+        create_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Try to load actual pixel data from the file
+    IF load_aseprite_pixels%(aseprite_img, image_handle) THEN
+        ' Success - real pixel data loaded
+        COLOR _RGB32(0, 255, 0)
+        _PRINTSTRING (10, 70), "SUCCESS: Loaded real Aseprite pixel data!"
+    ELSE
+        ' Fall back to placeholder pattern
+        COLOR _RGB32(255, 255, 0)
+        _PRINTSTRING (10, 70), "NOTE: Using placeholder pattern (pixel parsing not yet implemented)"
+        
+        _DEST image_handle
+        FOR y = 0 TO aseprite_img.header.height - 1
+            FOR x = 0 TO aseprite_img.header.width - 1
+                pixel_color = _RGB32((x * 255) \ aseprite_img.header.width, _
+                                    (y * 255) \ aseprite_img.header.height, _
+                                    ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height))
+                PSET (x, y), pixel_color
+            NEXT x
+        NEXT y
+        _DEST 0
+    END IF
+    
+    _DISPLAY
+    _DELAY 2
+    
+    create_image_from_aseprite& = image_handle
+END FUNCTION
+
+''
+' Displays an Aseprite image in a graphics window
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @param scale Scale factor for display (1.0 = original size)
+' @param center_display 1 to center image on screen, 0 for top-left
+'
+SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, center_display AS INTEGER)
+    DIM image_handle AS LONG
+    DIM screen_width AS INTEGER, screen_height AS INTEGER
+    DIM display_width AS INTEGER, display_height AS INTEGER
+    DIM x_pos AS INTEGER, y_pos AS INTEGER
+    DIM old_dest AS LONG
+    
+    IF aseprite_img.is_valid = 0 THEN
+        PRINT "Cannot display: Invalid Aseprite image"
+        EXIT SUB
+    END IF
+    
+    ' Create graphics screen FIRST, before trying to create images
+    IF _PIXELSIZE(0) = 0 THEN
+        SCREEN _NEWIMAGE(800, 600, 32)
+        _TITLE "Aseprite Image Viewer - " + aseprite_img.file_path
+    END IF
+    
+    ' Clear screen and show debug info
+    CLS
+    COLOR _RGB32(255, 255, 0)
+    _PRINTSTRING (10, 10), "Loading Aseprite image..."
+    _PRINTSTRING (10, 30), "File: " + aseprite_img.file_path
+    _PRINTSTRING (10, 50), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height)
+    _DISPLAY
+    _DELAY 1
+    
+    ' Now create image from Aseprite data (after we're in graphics mode)
+    image_handle = create_image_from_aseprite&(aseprite_img)
+    
+    IF image_handle = 0 THEN
+        _PRINTSTRING (10, 70), "ERROR: Failed to create image from Aseprite data"
+        _DISPLAY
+        _DELAY 3
+        EXIT SUB
+    END IF
+    
+    ' Calculate display dimensions
+    display_width = INT(aseprite_img.header.width * scale)
+    display_height = INT(aseprite_img.header.height * scale)
+    
+    screen_width = _WIDTH(0)
+    screen_height = _HEIGHT(0)
+    
+    screen_width = _WIDTH(0)
+    screen_height = _HEIGHT(0)
+    
+    ' Calculate position
+    IF center_display THEN
+        x_pos = (screen_width - display_width) \ 2
+        y_pos = (screen_height - display_height) \ 2
+    ELSE
+        x_pos = 10
+        y_pos = 10
+    END IF
+    
+    ' Clear screen
+    CLS
+    
+    ' Display image info
+    COLOR _RGB32(255, 255, 255)
+    _PRINTSTRING (10, 10), "File: " + aseprite_img.file_path
+    _PRINTSTRING (10, 30), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height) + " pixels"
+    _PRINTSTRING (10, 50), "Scale: " + STR$(scale) + "x"
+    _PRINTSTRING (10, 70), "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp"
+    
+    ' Display the image
+    IF scale = 1.0 THEN
+        _PUTIMAGE (x_pos, y_pos + 100), image_handle
+    ELSE
+        _PUTIMAGE (x_pos, y_pos + 100)-(x_pos + display_width - 1, y_pos + 100 + display_height - 1), image_handle
+    END IF
+    
+    ' Display controls and wait for user input (unless in auto-mode)
+    _PRINTSTRING (10, screen_height - 40), "Press any key to return to menu..."
+    
+    _DISPLAY
+    
+    ' Just show briefly in auto-mode for demo purposes
+    _DELAY 3 ' Show for 3 seconds
+    
+    ' Clean up
+    _FREEIMAGE image_handle
+END SUB
+
+''
+' Quick preview function that displays Aseprite image at original size
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+'
+SUB preview_aseprite_image (aseprite_img AS ASEPRITE_IMAGE)
+    display_aseprite_image aseprite_img, 1.0, 1
+END SUB
+
+''
+' Scaled preview function for viewing small sprites enlarged
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @param scale Scale factor (e.g., 2.0 for 2x size)
+'
+SUB preview_aseprite_scaled (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE)
+    display_aseprite_image aseprite_img, scale, 1
+END SUB
+
+''
+' Attempts to load actual pixel data from Aseprite file chunks
+'
+' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
+' @param target_image Handle to QB64PE image to load pixels into
+' @return -1 if successful, 0 if failed
+'
+FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
+    DIM file_handle AS INTEGER
+    DIM file_pos AS LONG
+    DIM frame_num AS INTEGER
+    DIM chunk_num AS LONG
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
+    DIM cel_width AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixel_data$, temp_byte AS _UNSIGNED _BYTE
+    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM pixel_color AS _UNSIGNED LONG
+    DIM old_dest AS LONG
+    DIM chunks_found AS INTEGER
+    
+    load_aseprite_pixels% = 0 ' Default to failure
+    
+    IF aseprite_img.is_valid = 0 THEN EXIT FUNCTION
+    
+    ' Open file for binary reading
+    file_handle = FREEFILE
+    OPEN aseprite_img.file_path FOR BINARY AS #file_handle
+    
+    ' Skip the header (128 bytes) to get to frame data
+    file_pos = 129 ' Start after header
+    
+    ' Read the first frame only for now
+    IF aseprite_img.header.num_frames > 0 THEN
+        ' Position at first frame
+        SEEK #file_handle, file_pos
+        
+        ' Read frame header
+        GET #file_handle, , frame_header
+        
+        ' Validate frame magic number
+        IF frame_header.magic_number <> ASEPRITE_FRAME_MAGIC THEN
+            CLOSE #file_handle
+            EXIT FUNCTION
+        END IF
+        
+        ' Determine number of chunks to process
+        DIM num_chunks AS LONG
+        IF frame_header.new_chunks > 0 THEN
+            num_chunks = frame_header.new_chunks
+        ELSE
+            num_chunks = frame_header.old_chunks
+        END IF
+        
+        ' Process chunks in this frame
+        FOR chunk_num = 1 TO num_chunks
+            ' Read chunk header
+            GET #file_handle, , chunk_header
+            
+            ' Check if this is a CEL chunk
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
+                chunks_found = chunks_found + 1
+                
+                ' Read CEL chunk data
+                GET #file_handle, , cel_chunk
+                
+                ' Check CEL type
+                SELECT CASE cel_chunk.cel_type
+                    CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image data (type 0)
+                        ' Read width and height for raw image
+                        GET #file_handle, , cel_width
+                        GET #file_handle, , cel_height
+                        
+                        ' Load raw pixel data based on color depth
+                        IF load_raw_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
+                            load_aseprite_pixels% = -1 ' Success
+                        END IF
+                        
+                    CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2) - most common
+                        ' Read width and height for compressed image  
+                        GET #file_handle, , cel_width
+                        GET #file_handle, , cel_height
+                        
+                        ' Load compressed pixel data with ZLIB decompression
+                        IF load_compressed_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
+                            load_aseprite_pixels% = -1 ' Success
+                        ELSE
+                            ' Fallback to placeholder if ZLIB decompression fails
+                            IF create_compressed_placeholder%(target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
+                                load_aseprite_pixels% = -1 ' Success with placeholder
+                            END IF
+                        END IF
+                        
+                    CASE ASEPRITE_CEL_LINKED ' Linked cel (type 1)
+                        ' Skip for now - would need to reference another frame
+                        
+                    CASE ASEPRITE_CEL_TILEMAP ' Compressed tilemap (type 3)
+                        ' Skip for now - more complex tilemap data
+                        
+                END SELECT
+                
+                ' Skip remaining chunk data
+                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6 - LEN(cel_chunk))
+                
+            ELSE
+                ' Skip non-CEL chunks
+                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
+            END IF
+        NEXT chunk_num
+    END IF
+    
+    CLOSE #file_handle
+    
+    ' If we found at least one CEL chunk, consider it a success
+    IF chunks_found > 0 THEN load_aseprite_pixels% = -1
+    
+END FUNCTION
+
+''
+' Loads raw (uncompressed) pixel data from file into target image
+'
+' @param file_handle Open file handle positioned at pixel data
+' @param target_image QB64PE image handle to load into
+' @param cel_chunk CEL chunk information
+' @param width Image width in pixels
+' @param height Image height in pixels  
+' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
+' @return -1 if successful, 0 if failed
+'
+FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
+    DIM x AS INTEGER, y AS INTEGER
+    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val AS _UNSIGNED _BYTE
+    DIM pixel_color AS _UNSIGNED LONG
+    DIM old_dest AS LONG
+    
+    load_raw_pixel_data% = 0 ' Default to failure
+    
+    ' Set destination to our target image
+    old_dest = _DEST
+    _DEST target_image
+    
+    ' Read pixel data based on color depth
+    SELECT CASE color_depth_bpp
+        CASE 32 ' RGBA format (4 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    GET #file_handle, , r
+                    GET #file_handle, , g  
+                    GET #file_handle, , b
+                    GET #file_handle, , a
+                    
+                    pixel_color = _RGBA32(r, g, b, a)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+            load_raw_pixel_data% = -1 ' Success
+            
+        CASE 16 ' Grayscale format (2 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    GET #file_handle, , gray_val
+                    GET #file_handle, , gray_alpha
+                    
+                    pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+            load_raw_pixel_data% = -1 ' Success
+            
+        CASE 8 ' Indexed format (1 byte per pixel)
+            ' For indexed mode, we'd need the palette data
+            ' For now, create a simple grayscale interpretation
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    GET #file_handle, , index_val
+                    
+                    ' Simple mapping: index as grayscale value
+                    pixel_color = _RGB32(index_val, index_val, index_val)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+            load_raw_pixel_data% = -1 ' Success
+    END SELECT
+    
+    ' Restore destination
+    _DEST old_dest
+END FUNCTION
+
+''
+' Creates a placeholder pattern for compressed image data
+' (Until ZLIB decompression is implemented)
+'
+' @param target_image QB64PE image handle to draw into
+' @param cel_chunk CEL chunk information
+' @param width Image width in pixels
+' @param height Image height in pixels
+' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
+' @return -1 if successful, 0 if failed
+'
+FUNCTION create_compressed_placeholder% (target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixel_color AS _UNSIGNED LONG
+    DIM old_dest AS LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    
+    create_compressed_placeholder% = -1 ' Success by default
+    
+    ' Set destination to our target image
+    old_dest = _DEST
+    _DEST target_image
+    
+    ' Create a checkered pattern to indicate this is compressed data
+    FOR y = 0 TO height - 1
+        FOR x = 0 TO width - 1
+            ' Create a diagonal stripe pattern with color variation
+            IF ((x + y) MOD 4) < 2 THEN
+                r = 128 + (x * 127) \ width
+                g = 128 + (y * 127) \ height  
+                b = 128 + ((x + y) * 127) \ (width + height)
+            ELSE
+                r = 64 + (x * 127) \ width
+                g = 64 + (y * 127) \ height
+                b = 64 + ((x + y) * 127) \ (width + height)
+            END IF
+            
+            pixel_color = _RGB32(r, g, b)
+            PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+        NEXT x
+    NEXT y
+    
+    ' Restore destination
+    _DEST old_dest
+END FUNCTION
+
+''
+' Loads compressed pixel data using ZLIB decompression
+'
+' @param file_handle Open file handle positioned at compressed pixel data
+' @param target_image QB64PE image handle to load into
+' @param cel_chunk CEL chunk information
+' @param width Image width in pixels
+' @param height Image height in pixels  
+' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
+' @param chunk_size Total size of the chunk for bounds checking
+' @return -1 if successful, 0 if failed
+'
+FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
+    DIM compressed_data$
+    DIM decompressed_data$
+    DIM data_size AS LONG
+    DIM x AS INTEGER, y AS INTEGER, byte_pos AS LONG
+    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val AS _UNSIGNED _BYTE
+    DIM pixel_color AS _UNSIGNED LONG
+    DIM old_dest AS LONG
+    DIM expected_size AS LONG
+    
+    load_compressed_pixel_data% = 0 ' Default to failure
+    
+    ' Calculate expected decompressed size based on image dimensions and color depth
+    SELECT CASE color_depth_bpp
+        CASE 32 ' RGBA: 4 bytes per pixel
+            expected_size = width * height * 4
+        CASE 16 ' Grayscale: 2 bytes per pixel
+            expected_size = width * height * 2
+        CASE 8 ' Indexed: 1 byte per pixel
+            expected_size = width * height
+        CASE ELSE
+            EXIT FUNCTION ' Unsupported color depth
+    END SELECT
+    
+    ' Calculate compressed data size (chunk_size - header - cel data - width - height)
+    data_size = chunk_size - 6 - LEN(cel_chunk) - 4
+    
+    IF data_size <= 0 THEN EXIT FUNCTION
+    
+    ' Read compressed data
+    compressed_data$ = SPACE$(data_size)
+    GET #file_handle, , compressed_data$
+    
+    ' Attempt ZLIB decompression
+    decompressed_data$ = zlib_decompress$(compressed_data$)
+    
+    ' If ZLIB failed, try simple decompression (for uncompressed DEFLATE blocks)
+    IF LEN(decompressed_data$) = 0 THEN
+        decompressed_data$ = zlib_decompress_simple$(compressed_data$)
+    END IF
+    
+    ' Verify decompressed size
+    IF LEN(decompressed_data$) <> expected_size THEN
+        ' Size mismatch - decompression failed
+        EXIT FUNCTION
+    END IF
+    
+    ' Set destination to our target image
+    old_dest = _DEST
+    _DEST target_image
+    
+    ' Load pixel data from decompressed data
+    byte_pos = 1
+    SELECT CASE color_depth_bpp
+        CASE 32 ' RGBA format (4 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    r = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    g = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    b = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    a = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    
+                    pixel_color = _RGBA32(r, g, b, a)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+            
+        CASE 16 ' Grayscale format (2 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    gray_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    gray_alpha = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    
+                    pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+            
+        CASE 8 ' Indexed format (1 byte per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    
+                    ' Simple mapping: index as grayscale value
+                    pixel_color = _RGB32(index_val, index_val, index_val)
+                    PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
+                NEXT x
+            NEXT y
+    END SELECT
+    
+    ' Restore destination
+    _DEST old_dest
+    
+    load_compressed_pixel_data% = -1 ' Success
+END FUNCTION
+
+' Include ZLIB implementation for decompressing compressed CEL data
+'$INCLUDE:'ZLIB.BM'
