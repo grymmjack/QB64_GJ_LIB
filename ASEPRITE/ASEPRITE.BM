@@ -274,9 +274,6 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
         _DEST 0
     END IF
     
-    _DISPLAY
-    _DELAY 2
-    
     create_image_from_aseprite& = image_handle
 END FUNCTION
 
@@ -307,20 +304,24 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     
     ' Clear screen and show debug info
     CLS
-    COLOR _RGB32(255, 255, 0)
-    _PRINTSTRING (10, 10), "Loading Aseprite image..."
-    _PRINTSTRING (10, 30), "File: " + aseprite_img.file_path
-    _PRINTSTRING (10, 50), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height)
-    _DISPLAY
-    _DELAY 1
+    IF ASEPRITE_DEBUG_MODE THEN
+        COLOR _RGB32(255, 255, 0)
+        _PRINTSTRING (10, 10), "Loading Aseprite image..."
+        _PRINTSTRING (10, 30), "File: " + aseprite_img.file_path
+        _PRINTSTRING (10, 50), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height)
+        _DISPLAY
+        _DELAY 1
+    END IF
     
     ' Now create image from Aseprite data (after we're in graphics mode)
     image_handle = create_image_from_aseprite&(aseprite_img)
     
     IF image_handle = 0 THEN
-        _PRINTSTRING (10, 70), "ERROR: Failed to create image from Aseprite data"
-        _DISPLAY
-        _DELAY 3
+        IF ASEPRITE_DEBUG_MODE THEN
+            _PRINTSTRING (10, 70), "ERROR: Failed to create image from Aseprite data"
+            _DISPLAY
+            _DELAY 3
+        END IF
         EXIT SUB
     END IF
     
@@ -347,11 +348,13 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     CLS
     
     ' Display image info
-    COLOR _RGB32(255, 255, 255)
-    _PRINTSTRING (10, 10), "File: " + aseprite_img.file_path
-    _PRINTSTRING (10, 30), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height) + " pixels"
-    _PRINTSTRING (10, 50), "Scale: " + STR$(scale) + "x"
-    _PRINTSTRING (10, 70), "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp"
+    IF ASEPRITE_DEBUG_MODE THEN
+        COLOR _RGB32(255, 255, 255)
+        _PRINTSTRING (10, 10), "File: " + aseprite_img.file_path
+        _PRINTSTRING (10, 30), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height) + " pixels"
+        _PRINTSTRING (10, 50), "Scale: " + STR$(scale) + "x"
+        _PRINTSTRING (10, 70), "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp"
+    END IF
     
     ' Display the image
     IF scale = 1.0 THEN
@@ -361,12 +364,13 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     END IF
     
     ' Display controls and wait for user input (unless in auto-mode)
-    _PRINTSTRING (10, screen_height - 40), "Aseprite graphics display - Auto-closing in 3 seconds..."
-    
-    _DISPLAY
-    
-    ' Just show briefly in auto-mode for demo purposes
-    _DELAY 3 ' Show for 3 seconds
+    IF ASEPRITE_DEBUG_MODE THEN
+        _PRINTSTRING (10, screen_height - 40), "Aseprite graphics display - Auto-closing in 3 seconds..."
+        _DISPLAY
+        _DELAY 3 ' Show for 3 seconds
+    ELSE
+        _DISPLAY
+    END IF
     
     ' Clean up
     _FREEIMAGE image_handle
@@ -452,70 +456,74 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
             ' Read chunk header
             GET #file_handle, , chunk_header
             
-            PRINT "Processing chunk", chunk_num, "of", num_chunks
-            PRINT "  Chunk type: 0x" + HEX$(chunk_header.chunk_type)
-            PRINT "  Chunk size:", chunk_header.chunk_size
+            IF ASEPRITE_DEBUG_MODE THEN
+                PRINT "Processing chunk", chunk_num, "of", num_chunks
+                PRINT "  Chunk type: 0x" + HEX$(chunk_header.chunk_type)
+                PRINT "  Chunk size:", chunk_header.chunk_size
+            END IF
             
             ' Check if this is a CEL chunk
             IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
                 chunks_found = chunks_found + 1
-                PRINT "  -> CEL chunk found!"
+                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> CEL chunk found!"
                 
                 ' Read CEL chunk data
                 GET #file_handle, , cel_chunk
                 
-                PRINT "    Layer index:", cel_chunk.layer_index
-                PRINT "    Position: (", cel_chunk.x_position, ",", cel_chunk.y_position, ")"
-                PRINT "    Opacity:", cel_chunk.opacity
-                PRINT "    CEL type:", cel_chunk.cel_type
+                IF ASEPRITE_DEBUG_MODE THEN
+                    PRINT "    Layer index:", cel_chunk.layer_index
+                    PRINT "    Position: (", cel_chunk.x_position, ",", cel_chunk.y_position, ")"
+                    PRINT "    Opacity:", cel_chunk.opacity
+                    PRINT "    CEL type:", cel_chunk.cel_type
+                END IF
                 
                 ' Check CEL type
                 SELECT CASE cel_chunk.cel_type
                     CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image data (type 0)
-                        PRINT "    -> Processing RAW image data"
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Processing RAW image data"
                         ' Read width and height for raw image
                         GET #file_handle, , cel_width
                         GET #file_handle, , cel_height
-                        PRINT "    Dimensions:", cel_width, "x", cel_height
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    Dimensions:", cel_width, "x", cel_height
                         
                         ' Load raw pixel data based on color depth
                         IF load_raw_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
-                            PRINT "    Raw pixel data loaded successfully"
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Raw pixel data loaded successfully"
                             load_aseprite_pixels% = -1 ' Success
                         ELSE
-                            PRINT "    Failed to load raw pixel data"
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Failed to load raw pixel data"
                         END IF
                         
                     CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2) - most common
-                        PRINT "    -> Processing COMPRESSED image data"
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Processing COMPRESSED image data"
                         ' Read width and height for compressed image  
                         GET #file_handle, , cel_width
                         GET #file_handle, , cel_height
-                        PRINT "    Dimensions:", cel_width, "x", cel_height
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    Dimensions:", cel_width, "x", cel_height
                         
                         ' Load compressed pixel data with QB64PE built-in decompression
                         IF load_compressed_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
-                            PRINT "    Compressed pixel data loaded successfully"
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Compressed pixel data loaded successfully"
                             load_aseprite_pixels% = -1 ' Success
                         ELSE
-                            PRINT "    Compressed decompression failed, using placeholder"
+                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Compressed decompression failed, using placeholder"
                             ' Fallback to placeholder if decompression fails
                             IF create_compressed_placeholder%(target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
-                                PRINT "    Placeholder created"
+                                IF ASEPRITE_DEBUG_MODE THEN PRINT "    Placeholder created"
                                 load_aseprite_pixels% = -1 ' Success with placeholder
                             END IF
                         END IF
                         
                     CASE ASEPRITE_CEL_LINKED ' Linked cel (type 1)
-                        PRINT "    -> LINKED CEL (not implemented)"
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> LINKED CEL (not implemented)"
                         ' Skip for now - would need to reference another frame
                         
                     CASE ASEPRITE_CEL_TILEMAP ' Compressed tilemap (type 3)
-                        PRINT "    -> TILEMAP CEL (not implemented)"
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> TILEMAP CEL (not implemented)"
                         ' Skip for now - more complex tilemap data
                         
                     CASE ELSE
-                        PRINT "    -> Unknown CEL type:", cel_chunk.cel_type
+                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Unknown CEL type:", cel_chunk.cel_type
                         
                 END SELECT
                 
@@ -523,7 +531,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                 SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6 - LEN(cel_chunk))
                 
             ELSE
-                PRINT "  -> Skipping chunk type: 0x" + HEX$(chunk_header.chunk_type)
+                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> Skipping chunk type: 0x" + HEX$(chunk_header.chunk_type)
                 ' Skip non-CEL chunks
                 SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
             END IF
@@ -703,7 +711,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     data_size = chunk_size - 20 ' Header size for compressed cel chunk
     
     IF data_size <= 0 THEN
-        PRINT "Error: Invalid compressed data size:", data_size
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "Error: Invalid compressed data size:", data_size
         EXIT FUNCTION
     END IF
     
@@ -715,9 +723,11 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     GET #file_handle, , compressed_data$
     
     ' Debug information
-    PRINT "Compressed data size:", data_size
-    PRINT "Expected decompressed size:", expected_size
-    PRINT "File position:", current_pos
+    IF ASEPRITE_DEBUG_MODE THEN
+        PRINT "Compressed data size:", data_size
+        PRINT "Expected decompressed size:", expected_size
+        PRINT "File position:", current_pos
+    END IF
     
     ' Try different decompression approaches
     decompressed_data$ = ""
@@ -725,21 +735,21 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' QB64PE built-in compression decompression
     decompressed_data$ = _INFLATE$(compressed_data$)
     IF LEN(decompressed_data$) > 0 THEN
-        PRINT "QB64PE _INFLATE$ decompression successful:", LEN(decompressed_data$), "bytes"
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "QB64PE _INFLATE$ decompression successful:", LEN(decompressed_data$), "bytes"
     ELSE
-        PRINT "QB64PE _INFLATE$ decompression failed"
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "QB64PE _INFLATE$ decompression failed"
         ' Note: _INFLATE$ should handle all DEFLATE variants (Dynamic Huffman, Fixed Huffman, Stored blocks)
         ' If this fails, the compressed data may be corrupted or use an unsupported format
     END IF
     
     ' Check if we got the expected size
     IF LEN(decompressed_data$) <> expected_size THEN
-        PRINT "Size mismatch! Got:", LEN(decompressed_data$), "Expected:", expected_size
+        IF ASEPRITE_DEBUG_MODE THEN PRINT "Size mismatch! Got:", LEN(decompressed_data$), "Expected:", expected_size
         ' Try to work with what we have if it's close
         IF LEN(decompressed_data$) < expected_size THEN
             ' Pad with zeros if too small
             decompressed_data$ = decompressed_data$ + STRING$(expected_size - LEN(decompressed_data$), CHR$(0))
-            PRINT "Padded to expected size"
+            IF ASEPRITE_DEBUG_MODE THEN PRINT "Padded to expected size"
         ELSE
             ' Truncate if too large
             decompressed_data$ = LEFT$(decompressed_data$, expected_size)
@@ -799,7 +809,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' Restore destination
     _DEST old_dest
     
-    PRINT "Pixel loading completed successfully"
+    IF ASEPRITE_DEBUG_MODE THEN PRINT "Pixel loading completed successfully"
     load_compressed_pixel_data% = -1 ' Success
 END FUNCTION
 

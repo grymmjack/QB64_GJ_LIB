@@ -13,6 +13,10 @@
 '
 $INCLUDEONCE
 
+' DEBUG CONTROL
+' Set to 1 to enable debug output, 0 to disable
+CONST ASEPRITE_DEBUG_MODE = 0
+
 ' Compression support provided by QB64PE built-in _INFLATE$ function
 ' No external libraries required!
 
