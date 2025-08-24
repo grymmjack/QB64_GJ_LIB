@@ -674,6 +674,12 @@ TYPE ASEPRITE_IMAGE
     file_path       AS STRING                ' Path to the .ase/.aseprite file
     is_valid        AS _BYTE                 ' 1 if successfully loaded, 0 otherwise
     error_message   AS STRING                ' Error message if loading failed
+    ' Enhanced metadata for introspection (populated during loading)
+    layer_count     AS INTEGER               ' Number of layers found in file
+    frame_count     AS INTEGER               ' Number of frames found in file  
+    cel_count       AS INTEGER               ' Total number of cels found
+    tag_count       AS INTEGER               ' Number of animation tags found
+    palette_chunks  AS INTEGER               ' Number of palette chunks found
     ' Note: Frame and chunk data are handled separately via arrays/collections
 END TYPE
 
@@ -747,6 +753,16 @@ END TYPE
 ' Function declarations for basic and enhanced layer support
 DECLARE SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
 DECLARE SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
+
+' Basic ASEPRITE_IMAGE metadata functions (work with simple type)
+DECLARE FUNCTION get_aseprite_layer_count% (aseprite_img AS ASEPRITE_IMAGE)
+DECLARE FUNCTION get_aseprite_frame_count% (aseprite_img AS ASEPRITE_IMAGE) 
+DECLARE FUNCTION get_aseprite_cel_count% (aseprite_img AS ASEPRITE_IMAGE)
+DECLARE FUNCTION get_aseprite_tag_count% (aseprite_img AS ASEPRITE_IMAGE)
+DECLARE FUNCTION is_valid_layer_index% (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER)
+DECLARE FUNCTION is_valid_frame_index% (aseprite_img AS ASEPRITE_IMAGE, frame_index AS INTEGER)
+
+' Enhanced parsing and analysis functions  
 DECLARE FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
 DECLARE FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
 DECLARE SUB init_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)

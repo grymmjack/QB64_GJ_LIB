@@ -21,13 +21,30 @@ $INCLUDEONCE
 SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     DIM file_handle AS INTEGER
     DIM temp_header AS ASEPRITE_HEADER
+    DIM i AS INTEGER
+    DIM j AS INTEGER
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM frame_start_pos AS LONG
+    DIM chunk_start_pos AS LONG
+    DIM chunk_end_pos AS LONG
+    DIM actual_chunks AS LONG
+    DIM layer_name_len AS INTEGER
+    DIM layer_name AS STRING
+    DIM cel_width AS INTEGER
+    DIM cel_height AS INTEGER
     
-    ' Initialize result
+    ' Initialize result with enhanced metadata
     result.file_path = img_path$
     result.is_valid = 0
     result.frames_loaded = 0
     result.chunks_loaded = 0
     result.error_message = ""
+    result.layer_count = 0
+    result.frame_count = 0
+    result.cel_count = 0
+    result.tag_count = 0
+    result.palette_chunks = 0
     
     ' Check if file exists
     IF NOT _FILEEXISTS(img_path$) THEN
@@ -65,8 +82,82 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     
     ' Copy header to result
     result.header = temp_header
+    result.frame_count = temp_header.num_frames
+    
+    ' Enhanced parsing: Count layers, cels, and other chunks by analyzing frames
+    FOR i = 1 TO temp_header.num_frames
+        frame_start_pos = SEEK(file_handle)
+        
+        ' Read frame header
+        GET #file_handle, , frame_header
+        
+        ' Validate frame magic number
+        IF frame_header.magic_number <> ASEPRITE_FRAME_MAGIC THEN
+            IF ASEPRITE_DEBUG_MODE THEN
+                PRINT "WARNING: Invalid frame magic number in frame " + STR$(i)
+            END IF
+        END IF
+        
+        ' Determine chunk count (use new field if available, otherwise old field)
+        actual_chunks = frame_header.new_chunks
+        IF actual_chunks = 0 THEN actual_chunks = frame_header.old_chunks
+        
+        result.chunks_loaded = result.chunks_loaded + actual_chunks
+        
+        ' Analyze chunks in this frame
+        FOR j = 1 TO actual_chunks
+            chunk_start_pos = SEEK(file_handle)
+            GET #file_handle, , chunk_header
+            
+            ' Count chunks by type
+            SELECT CASE chunk_header.chunk_type
+                CASE ASEPRITE_CHUNK_LAYER
+                    result.layer_count = result.layer_count + 1
+                    ' Skip over layer chunk data to continue counting
+                    DIM temp_layer_chunk AS ASEPRITE_LAYER_CHUNK
+                    GET #file_handle, , temp_layer_chunk
+                    GET #file_handle, , layer_name_len
+                    SEEK #file_handle, SEEK(file_handle) + layer_name_len
+                    
+                CASE ASEPRITE_CHUNK_CEL
+                    result.cel_count = result.cel_count + 1
+                    ' Skip over cel chunk data
+                    
+                CASE ASEPRITE_CHUNK_TAGS
+                    ' Count animation tags
+                    DIM temp_num_tags AS INTEGER
+                    GET #file_handle, , temp_num_tags
+                    result.tag_count = temp_num_tags
+                    
+                CASE ASEPRITE_CHUNK_PALETTE, ASEPRITE_CHUNK_OLD_PAL_0004, ASEPRITE_CHUNK_OLD_PAL_0011
+                    result.palette_chunks = result.palette_chunks + 1
+                    
+            END SELECT
+            
+            ' Skip to end of chunk
+            chunk_end_pos = chunk_start_pos + chunk_header.chunk_size
+            SEEK #file_handle, chunk_end_pos
+        NEXT j
+        
+        ' Verify frame size and skip to next frame
+        DIM expected_frame_end AS LONG
+        expected_frame_end = frame_start_pos + frame_header.num_bytes
+        SEEK #file_handle, expected_frame_end
+    NEXT i
+    
+    ' Mark as successfully loaded
     result.is_valid = 1
     result.frames_loaded = temp_header.num_frames
+    
+    IF ASEPRITE_DEBUG_MODE THEN
+        PRINT "ASEPRITE: Loaded " + img_path$
+        PRINT "  Layers: " + STR$(result.layer_count)
+        PRINT "  Frames: " + STR$(result.frame_count) 
+        PRINT "  Cels: " + STR$(result.cel_count)
+        PRINT "  Tags: " + STR$(result.tag_count)
+        PRINT "  Palette chunks: " + STR$(result.palette_chunks)
+        PRINT "  Total chunks: " + STR$(result.chunks_loaded)
+    END IF
     
     CLOSE #file_handle
 END SUB
@@ -1258,6 +1349,117 @@ SUB set_aseprite_frame (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS 
         enhanced_img.animation.elapsed_time = 0
     END IF
 END SUB
+
+
+''
+' Gets the number of layers from basic ASEPRITE_IMAGE structure
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure  
+' @return INTEGER Number of layers found during loading
+' @example
+'   layer_count = get_aseprite_layer_count(my_image)
+'   FOR i = 0 TO layer_count - 1
+'       ' Process each layer
+'   NEXT i
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION get_aseprite_layer_count% (aseprite_img AS ASEPRITE_IMAGE)
+    get_aseprite_layer_count% = aseprite_img.layer_count
+END FUNCTION
+
+
+''
+' Gets the number of frames from basic ASEPRITE_IMAGE structure
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure
+' @return INTEGER Number of frames found during loading
+' @example
+'   frame_count = get_aseprite_frame_count(my_image)
+'   PRINT "Animation has"; frame_count; "frames"
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION get_aseprite_frame_count% (aseprite_img AS ASEPRITE_IMAGE)
+    get_aseprite_frame_count% = aseprite_img.frame_count
+END FUNCTION
+
+
+''
+' Gets the total number of cels from basic ASEPRITE_IMAGE structure
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure
+' @return INTEGER Total number of cels found during loading
+' @example
+'   cel_count = get_aseprite_cel_count(my_image)
+'   PRINT "File contains"; cel_count; "cels total"
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION get_aseprite_cel_count% (aseprite_img AS ASEPRITE_IMAGE)
+    get_aseprite_cel_count% = aseprite_img.cel_count
+END FUNCTION
+
+
+''
+' Gets the number of animation tags from basic ASEPRITE_IMAGE structure
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure
+' @return INTEGER Number of animation tags found during loading
+' @example
+'   tag_count = get_aseprite_tag_count(my_image)
+'   IF tag_count > 0 THEN PRINT "Has animation tags"
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION get_aseprite_tag_count% (aseprite_img AS ASEPRITE_IMAGE)
+    get_aseprite_tag_count% = aseprite_img.tag_count
+END FUNCTION
+
+
+''
+' Validates if a layer index is within valid range
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure
+' @param layer_index Layer index to validate (0-based)
+' @return INTEGER 1 if valid, 0 if invalid
+' @example
+'   IF is_valid_layer_index(my_image, layer_idx) THEN
+'       ' Safe to use layer_idx
+'   END IF
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION is_valid_layer_index% (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER)
+    IF layer_index >= 0 AND layer_index < aseprite_img.layer_count THEN
+        is_valid_layer_index% = 1
+    ELSE
+        is_valid_layer_index% = 0
+    END IF
+END FUNCTION
+
+
+''
+' Validates if a frame index is within valid range
+'
+' @param aseprite_img Basic ASEPRITE_IMAGE structure
+' @param frame_index Frame index to validate (0-based)  
+' @return INTEGER 1 if valid, 0 if invalid
+' @example
+'   IF is_valid_frame_index(my_image, frame_idx) THEN
+'       ' Safe to use frame_idx
+'   END IF
+' @version 1.0
+' @author grymmjack
+''
+FUNCTION is_valid_frame_index% (aseprite_img AS ASEPRITE_IMAGE, frame_index AS INTEGER)
+    IF frame_index >= 0 AND frame_index < aseprite_img.frame_count THEN
+        is_valid_frame_index% = 1
+    ELSE
+        is_valid_frame_index% = 0
+    END IF
+END FUNCTION
+
 
 ''
 ' Gets the number of layers in the image
