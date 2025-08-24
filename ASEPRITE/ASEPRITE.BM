@@ -2179,6 +2179,61 @@ END SUB
 
 
 ''
+' Creates a simple composite image from an already-loaded ASEPRITE_IMAGE
+' This implementation composites each layer in file order using
+' `load_specific_layer_image&` (which returns a full-size image with
+' pixels already placed at their CEL positions). This is a simpler
+' fallback compositor (no z-index sorting) and is intended as a
+' stable, low-risk implementation for library use.
+'
+' @param aseprite_img ASEPRITE_IMAGE structure (must be loaded via load_aseprite_image)
+' @return LONG Image handle for composite, or -1 on failure
+''
+FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
+    DIM i AS INTEGER
+    DIM layer_img AS LONG
+    DIM composite_img AS LONG
+    DIM width AS INTEGER, height AS INTEGER
+
+    create_composite_image_from_aseprite& = -1
+
+    IF aseprite_img.is_valid = 0 THEN EXIT FUNCTION
+
+    width = aseprite_img.header.width
+    height = aseprite_img.header.height
+
+    IF width <= 0 OR height <= 0 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: invalid dimensions"
+        EXIT FUNCTION
+    END IF
+
+    composite_img = _NEWIMAGE(width, height, 32)
+    IF composite_img = -1 OR composite_img = 0 THEN EXIT FUNCTION
+
+    ' Initialize with transparent background
+    DIM old_dest AS LONG
+    old_dest = _DEST
+    _DEST composite_img
+    CLS , _RGBA32(0, 0, 0, 0)
+    _DEST old_dest
+
+    ' Composite each layer in file order
+    FOR i = 0 TO aseprite_img.layer_count - 1
+        layer_img = load_specific_layer_image&(aseprite_img, i)
+        IF layer_img <> 0 THEN
+            ' layer_img uses CEL positions internally, so put at 0,0
+            _PUTIMAGE (0, 0), layer_img, composite_img
+            _FREEIMAGE layer_img
+        ELSE
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: no data for layer " + STR$(i)
+        END IF
+    NEXT i
+
+    create_composite_image_from_aseprite& = composite_img
+END FUNCTION
+
+
+''
 ' Creates a composite image with all layers on a colored background
 '
 ' @param filename Path to ASEPRITE file
