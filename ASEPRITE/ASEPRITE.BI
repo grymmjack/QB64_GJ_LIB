@@ -13,9 +13,11 @@
 '
 $INCLUDEONCE
 
+$CONSOLE
+
 ' DEBUG CONTROL
 ' Set to 1 to enable debug output, 0 to disable
-CONST ASEPRITE_DEBUG_MODE = 0
+CONST ASEPRITE_DEBUG_MODE = 1 ' Set to 1 for detailed debugging output
 
 ' Compression support provided by QB64PE built-in _INFLATE$ function
 ' No external libraries required!
@@ -725,13 +727,16 @@ TYPE ASEPRITE_ENHANCED_IMAGE
     base_image      AS ASEPRITE_IMAGE        ' Base image data
     num_layers      AS INTEGER               ' Number of layers found
     layer_info      AS STRING                ' Serialized layer information
+    layer_visibility AS STRING              ' Layer visibility states (1 byte per layer)
     num_frames      AS INTEGER               ' Number of animation frames
     frame_info      AS STRING                ' Serialized frame information  
     animation       AS ASEPRITE_ANIMATION_INFO ' Animation state
     current_display AS LONG                  ' Current composite image handle
+    needs_update    AS _BYTE                 ' 1 if composite needs regeneration
 END TYPE
 
-' Function declarations for layer and animation support
+' Function declarations for basic and enhanced layer support
+DECLARE SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
 DECLARE SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
 DECLARE FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
 DECLARE FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
@@ -744,6 +749,11 @@ DECLARE FUNCTION get_layer_count% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
 DECLARE FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
 DECLARE FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
 DECLARE SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
+DECLARE SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_layer_index AS INTEGER)
+DECLARE FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_index AS INTEGER, frame_index AS INTEGER)
+DECLARE FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS STRING, layer_index AS INTEGER, frame AS INTEGER)
+DECLARE FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
 DECLARE SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS SINGLE, center_display AS INTEGER)
 DECLARE FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
 

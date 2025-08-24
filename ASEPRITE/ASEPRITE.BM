@@ -292,7 +292,7 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     DIM old_dest AS LONG
     
     IF aseprite_img.is_valid = 0 THEN
-        PRINT "Cannot display: Invalid Aseprite image"
+        _ECHO "Cannot display: Invalid Aseprite image"
         EXIT SUB
     END IF
     
@@ -457,73 +457,73 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
             GET #file_handle, , chunk_header
             
             IF ASEPRITE_DEBUG_MODE THEN
-                PRINT "Processing chunk", chunk_num, "of", num_chunks
-                PRINT "  Chunk type: 0x" + HEX$(chunk_header.chunk_type)
-                PRINT "  Chunk size:", chunk_header.chunk_size
+                _ECHO "Processing chunk" + STR$(chunk_num) + " of" + STR$(num_chunks)
+                _ECHO "  Chunk type: 0x" + HEX$(chunk_header.chunk_type)
+                _ECHO "  Chunk size:" + STR$(chunk_header.chunk_size)
             END IF
             
             ' Check if this is a CEL chunk
             IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
                 chunks_found = chunks_found + 1
-                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> CEL chunk found!"
+                IF ASEPRITE_DEBUG_MODE THEN _ECHO "  -> CEL chunk found!"
                 
                 ' Read CEL chunk data
                 GET #file_handle, , cel_chunk
                 
                 IF ASEPRITE_DEBUG_MODE THEN
-                    PRINT "    Layer index:", cel_chunk.layer_index
-                    PRINT "    Position: (", cel_chunk.x_position, ",", cel_chunk.y_position, ")"
-                    PRINT "    Opacity:", cel_chunk.opacity
-                    PRINT "    CEL type:", cel_chunk.cel_type
+                    _ECHO "    Layer index:" + STR$(cel_chunk.layer_index)
+                    _ECHO "    Position: (" + STR$(cel_chunk.x_position) + "," + STR$(cel_chunk.y_position) + ")"
+                    _ECHO "    Opacity:" + STR$(cel_chunk.opacity)
+                    _ECHO "    CEL type:" + STR$(cel_chunk.cel_type)
                 END IF
                 
                 ' Check CEL type
                 SELECT CASE cel_chunk.cel_type
                     CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image data (type 0)
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Processing RAW image data"
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> Processing RAW image data"
                         ' Read width and height for raw image
                         GET #file_handle, , cel_width
                         GET #file_handle, , cel_height
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    Dimensions:", cel_width, "x", cel_height
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Dimensions:" + STR$(cel_width) + "x" + STR$(cel_height)
                         
                         ' Load raw pixel data based on color depth
                         IF load_raw_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
-                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Raw pixel data loaded successfully"
+                            IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Raw pixel data loaded successfully"
                             load_aseprite_pixels% = -1 ' Success
                         ELSE
-                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Failed to load raw pixel data"
+                            IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Failed to load raw pixel data"
                         END IF
                         
                     CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2) - most common
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Processing COMPRESSED image data"
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> Processing COMPRESSED image data"
                         ' Read width and height for compressed image  
                         GET #file_handle, , cel_width
                         GET #file_handle, , cel_height
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    Dimensions:", cel_width, "x", cel_height
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Dimensions: " + STR$(cel_width) + " x " + STR$(cel_height)
                         
                         ' Load compressed pixel data with QB64PE built-in decompression
                         IF load_compressed_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
-                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Compressed pixel data loaded successfully"
+                            IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Compressed pixel data loaded successfully"
                             load_aseprite_pixels% = -1 ' Success
                         ELSE
-                            IF ASEPRITE_DEBUG_MODE THEN PRINT "    Compressed decompression failed, using placeholder"
+                            IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Compressed decompression failed, using placeholder"
                             ' Fallback to placeholder if decompression fails
                             IF create_compressed_placeholder%(target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
-                                IF ASEPRITE_DEBUG_MODE THEN PRINT "    Placeholder created"
+                                IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Placeholder created"
                                 load_aseprite_pixels% = -1 ' Success with placeholder
                             END IF
                         END IF
                         
                     CASE ASEPRITE_CEL_LINKED ' Linked cel (type 1)
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> LINKED CEL (not implemented)"
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> LINKED CEL (not implemented)"
                         ' Skip for now - would need to reference another frame
                         
                     CASE ASEPRITE_CEL_TILEMAP ' Compressed tilemap (type 3)
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> TILEMAP CEL (not implemented)"
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> TILEMAP CEL (not implemented)"
                         ' Skip for now - more complex tilemap data
                         
                     CASE ELSE
-                        IF ASEPRITE_DEBUG_MODE THEN PRINT "    -> Unknown CEL type:", cel_chunk.cel_type
+                        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> Unknown CEL type: " + STR$(cel_chunk.cel_type)
                         
                 END SELECT
                 
@@ -531,7 +531,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                 SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6 - LEN(cel_chunk))
                 
             ELSE
-                IF ASEPRITE_DEBUG_MODE THEN PRINT "  -> Skipping chunk type: 0x" + HEX$(chunk_header.chunk_type)
+                IF ASEPRITE_DEBUG_MODE THEN _ECHO "  -> Skipping chunk type: 0x" + HEX$(chunk_header.chunk_type)
                 ' Skip non-CEL chunks
                 SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
             END IF
@@ -711,7 +711,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     data_size = chunk_size - 20 ' Header size for compressed cel chunk
     
     IF data_size <= 0 THEN
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "Error: Invalid compressed data size:", data_size
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
         EXIT FUNCTION
     END IF
     
@@ -724,9 +724,9 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     
     ' Debug information
     IF ASEPRITE_DEBUG_MODE THEN
-        PRINT "Compressed data size:", data_size
-        PRINT "Expected decompressed size:", expected_size
-        PRINT "File position:", current_pos
+        _ECHO "Compressed data size: " + STR$(data_size)
+        _ECHO "Expected decompressed size: " + STR$(expected_size)
+        _ECHO "File position: " + STR$(current_pos)
     END IF
     
     ' Try different decompression approaches
@@ -735,25 +735,25 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' QB64PE built-in compression decompression
     decompressed_data$ = _INFLATE$(compressed_data$)
     IF LEN(decompressed_data$) > 0 THEN
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "QB64PE _INFLATE$ decompression successful:", LEN(decompressed_data$), "bytes"
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "QB64PE _INFLATE$ decompression successful: " + STR$(LEN(decompressed_data$)) + " bytes"
     ELSE
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "QB64PE _INFLATE$ decompression failed"
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "QB64PE _INFLATE$ decompression failed"
         ' Note: _INFLATE$ should handle all DEFLATE variants (Dynamic Huffman, Fixed Huffman, Stored blocks)
         ' If this fails, the compressed data may be corrupted or use an unsupported format
     END IF
     
     ' Check if we got the expected size
     IF LEN(decompressed_data$) <> expected_size THEN
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "Size mismatch! Got:", LEN(decompressed_data$), "Expected:", expected_size
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Size mismatch! Got: " + STR$(LEN(decompressed_data$)) + " Expected: " + STR$(expected_size)
         ' Try to work with what we have if it's close
         IF LEN(decompressed_data$) < expected_size THEN
             ' Pad with zeros if too small
             decompressed_data$ = decompressed_data$ + STRING$(expected_size - LEN(decompressed_data$), CHR$(0))
-            IF ASEPRITE_DEBUG_MODE THEN PRINT "Padded to expected size"
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "Padded to expected size"
         ELSE
             ' Truncate if too large
             decompressed_data$ = LEFT$(decompressed_data$, expected_size)
-            PRINT "Truncated to expected size"
+            _ECHO "Truncated to expected size"
         END IF
     END IF
     
@@ -809,8 +809,147 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' Restore destination
     _DEST old_dest
     
-    IF ASEPRITE_DEBUG_MODE THEN PRINT "Pixel loading completed successfully"
+    IF ASEPRITE_DEBUG_MODE THEN _ECHO "Pixel loading completed successfully"
     load_compressed_pixel_data% = -1 ' Success
+END FUNCTION
+
+''
+' Load compressed pixel data specifically for layer extraction (positions at 0,0)
+'
+FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
+    DIM compressed_data$
+    DIM decompressed_data$
+    DIM data_size AS LONG
+    DIM x AS INTEGER, y AS INTEGER, byte_pos AS LONG
+    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val AS _UNSIGNED _BYTE
+    DIM pixel_color AS _UNSIGNED LONG
+    DIM old_dest AS LONG
+    DIM expected_size AS LONG
+    DIM bytes_per_pixel AS INTEGER
+    DIM current_pos AS LONG
+    
+    load_compressed_pixel_data_for_layer% = 0 ' Default to failure
+    
+    ' Calculate bytes per pixel and expected decompressed size
+    SELECT CASE color_depth_bpp
+        CASE 32 ' RGBA: 4 bytes per pixel
+            bytes_per_pixel = 4
+            expected_size = width * height * 4
+        CASE 16 ' Grayscale: 2 bytes per pixel
+            bytes_per_pixel = 2
+            expected_size = width * height * 2
+        CASE 8 ' Indexed: 1 byte per pixel
+            bytes_per_pixel = 1
+            expected_size = width * height
+        CASE ELSE
+            EXIT FUNCTION ' Unsupported color depth
+    END SELECT
+    
+    ' Calculate compressed data size
+    data_size = chunk_size - 20 ' Header size for compressed cel chunk
+    
+    IF data_size <= 0 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
+        EXIT FUNCTION
+    END IF
+    
+    ' Store current file position for debugging
+    current_pos = SEEK(file_handle)
+    
+    ' Read compressed data
+    compressed_data$ = SPACE$(data_size)
+    GET #file_handle, , compressed_data$
+    
+    ' Debug information
+    IF ASEPRITE_DEBUG_MODE THEN
+        _ECHO "Compressed data size: " + STR$(data_size)
+        _ECHO "Expected decompressed size: " + STR$(expected_size)
+        _ECHO "File position: " + STR$(current_pos)
+    END IF
+    
+    ' QB64PE built-in compression decompression
+    decompressed_data$ = _INFLATE$(compressed_data$)
+    IF LEN(decompressed_data$) > 0 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "QB64PE _INFLATE$ decompression successful: " + STR$(LEN(decompressed_data$)) + " bytes"
+    ELSE
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "QB64PE _INFLATE$ decompression failed"
+        EXIT FUNCTION
+    END IF
+    
+    ' Check if we got the expected size
+    IF LEN(decompressed_data$) <> expected_size THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Size mismatch! Got: " + STR$(LEN(decompressed_data$)) + " Expected: " + STR$(expected_size)
+        ' Try to work with what we have if it's close
+        IF LEN(decompressed_data$) < expected_size THEN
+            ' Pad with zeros if too small
+            decompressed_data$ = decompressed_data$ + STRING$(expected_size - LEN(decompressed_data$), CHR$(0))
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "Padded to expected size"
+        ELSE
+            ' Truncate if too large
+            decompressed_data$ = LEFT$(decompressed_data$, expected_size)
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "Truncated to expected size"
+        END IF
+    END IF
+    
+    ' Set destination to our target image
+    old_dest = _DEST
+    _DEST target_image
+    
+    ' Load pixel data from decompressed data - POSITIONED AT (0,0) FOR LAYER EXTRACTION
+    byte_pos = 1
+    SELECT CASE color_depth_bpp
+        CASE 32 ' RGBA format (4 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    IF byte_pos + 3 <= LEN(decompressed_data$) THEN
+                        r = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        g = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        b = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        a = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        
+                        pixel_color = _RGBA32(r, g, b, a)
+                        ' For layer extraction, position at (0,0) instead of CEL position
+                        PSET (x, y), pixel_color
+                    END IF
+                NEXT x
+            NEXT y
+            
+        CASE 16 ' Grayscale format (2 bytes per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    IF byte_pos + 1 <= LEN(decompressed_data$) THEN
+                        gray_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        gray_alpha = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        
+                        pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
+                        ' For layer extraction, position at (0,0) instead of CEL position
+                        PSET (x, y), pixel_color
+                    END IF
+                NEXT x
+            NEXT y
+            
+        CASE 8 ' Indexed format (1 byte per pixel)
+            FOR y = 0 TO height - 1
+                FOR x = 0 TO width - 1
+                    IF byte_pos <= LEN(decompressed_data$) THEN
+                        index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                        
+                        ' Map index to a color - for testing, use a simple palette
+                        pixel_color = get_indexed_color(index_val)
+                        ' For layer extraction, position at (0,0) instead of CEL position
+                        PSET (x, y), pixel_color
+                    END IF
+                NEXT x
+            NEXT y
+    END SELECT
+    
+    ' Restore destination
+    _DEST old_dest
+    
+    IF ASEPRITE_DEBUG_MODE THEN _ECHO "Pixel loading completed successfully"
+    load_compressed_pixel_data_for_layer% = -1 ' Success
 END FUNCTION
 
 ''
@@ -867,8 +1006,10 @@ SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
     result.num_layers = 0
     result.num_frames = 0
     result.layer_info = ""
+    result.layer_visibility = ""
     result.frame_info = ""
     result.current_display = 0
+    result.needs_update = 1
     
     ' Load base image first
     load_aseprite_image file_path$, result.base_image
@@ -880,12 +1021,27 @@ SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
     OPEN file_path$ FOR BINARY AS #file_handle
     
     ' Parse layers and frames
-    IF parse_layer_chunks%(file_handle, result) AND parse_frame_chunks%(file_handle, result) THEN
+    DIM layer_result AS INTEGER
+    DIM frame_result AS INTEGER
+    layer_result = parse_layer_chunks%(file_handle, result)
+    frame_result = parse_frame_chunks%(file_handle, result)
+    
+    IF layer_result AND frame_result THEN
         ' Initialize animation system
         init_aseprite_animation result
         
         ' Create initial composite display
         result.current_display = _NEWIMAGE(result.base_image.header.width, result.base_image.header.height, 32)
+        
+        ' Update composite image
+        update_composite_image result
+    ELSE
+        ' Debug: show what failed
+        IF _CONSOLE THEN
+            _DEST _CONSOLE
+            _ECHO "Debug: Layer parsing result: " + STR$(layer_result) + " Frame parsing result: " + STR$(frame_result)
+            _DEST 0
+        END IF
     END IF
     
     CLOSE #file_handle
@@ -957,6 +1113,14 @@ FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
             
             ' Store layer info (simplified serialization)
             enhanced_img.layer_info = enhanced_img.layer_info + layer_name + CHR$(0)
+            
+            ' Store original visibility state
+            IF (layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE) <> 0 THEN
+                enhanced_img.layer_visibility = enhanced_img.layer_visibility + CHR$(1)
+            ELSE
+                enhanced_img.layer_visibility = enhanced_img.layer_visibility + CHR$(0)
+            END IF
+            
             enhanced_img.num_layers = enhanced_img.num_layers + 1
             
         ELSE
@@ -1115,15 +1279,38 @@ END FUNCTION
 FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
     DIM layer_names() AS STRING
     DIM name_count AS INTEGER
+    DIM current_name AS STRING
+    DIM search_pos AS INTEGER
+    DIM start_pos AS INTEGER
+    DIM i AS INTEGER
     
-    ' Parse layer names from serialized string (simplified)
-    IF LEN(enhanced_img.layer_info) > 0 THEN
-        ' Split by CHR$(0) - simplified implementation
-        IF layer_index < enhanced_img.num_layers THEN
-            get_layer_name$ = "Layer " + STR$(layer_index + 1)
-        ELSE
-            get_layer_name$ = ""
-        END IF
+    ' Parse layer names from serialized string 
+    IF LEN(enhanced_img.layer_info) > 0 AND layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
+        ' Split by CHR$(0) to extract individual layer names
+        start_pos = 1
+        i = 0
+        
+        DO WHILE start_pos <= LEN(enhanced_img.layer_info) AND i <= layer_index
+            ' Find next separator
+            search_pos = INSTR(start_pos, enhanced_img.layer_info, CHR$(0))
+            IF search_pos = 0 THEN search_pos = LEN(enhanced_img.layer_info) + 1
+            
+            ' Extract current name
+            current_name = MID$(enhanced_img.layer_info, start_pos, search_pos - start_pos)
+            
+            ' If this is the layer we want, return it
+            IF i = layer_index THEN
+                get_layer_name$ = current_name
+                EXIT FUNCTION
+            END IF
+            
+            ' Move to next name
+            start_pos = search_pos + 1
+            i = i + 1
+        LOOP
+        
+        ' If we get here, layer not found
+        get_layer_name$ = "Layer " + STR$(layer_index + 1)
     ELSE
         get_layer_name$ = ""
     END IF
@@ -1137,11 +1324,23 @@ END FUNCTION
 ' @return -1 if visible, 0 if hidden
 '
 FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
-    ' Simplified implementation - assume all layers visible for now
-    IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
-        is_layer_visible% = -1
-    ELSE
+    ' Check if layer index is valid
+    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN
         is_layer_visible% = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Check visibility from stored visibility string
+    IF LEN(enhanced_img.layer_visibility) > layer_index THEN
+        ' Return -1 if visible (non-zero), 0 if hidden
+        IF ASC(MID$(enhanced_img.layer_visibility, layer_index + 1, 1)) <> 0 THEN
+            is_layer_visible% = -1
+        ELSE
+            is_layer_visible% = 0
+        END IF
+    ELSE
+        ' Default to visible if visibility data not available
+        is_layer_visible% = -1
     END IF
 END FUNCTION
 
@@ -1153,9 +1352,442 @@ END FUNCTION
 ' @param visible -1 for visible, 0 for hidden
 '
 SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
-    ' TODO: Implement layer visibility control
-    ' For now, this is a placeholder
+    ' Validate layer index
+    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN EXIT SUB
+    IF LEN(enhanced_img.layer_visibility) < enhanced_img.num_layers THEN EXIT SUB
+    
+    ' Check if visibility is already set to the desired state
+    DIM current_visibility AS INTEGER
+    current_visibility = ASC(MID$(enhanced_img.layer_visibility, layer_index + 1, 1))
+    
+    ' Set visibility flag (1 = visible, 0 = hidden)
+    DIM visibility_char AS STRING
+    IF visible <> 0 THEN
+        visibility_char = CHR$(1)
+        IF current_visibility <> 0 THEN EXIT SUB ' Already visible
+    ELSE
+        visibility_char = CHR$(0)
+        IF current_visibility = 0 THEN EXIT SUB ' Already hidden
+    END IF
+    
+    ' Update the visibility string at the specified layer index
+    MID$(enhanced_img.layer_visibility, layer_index + 1, 1) = visibility_char
+    
+    ' Mark composite image as needing update and update it
+    enhanced_img.needs_update = 1
+    update_composite_image enhanced_img
 END SUB
+
+''
+' Updates the composite image based on current layer visibility
+'
+' @param enhanced_img Enhanced image structure
+'
+SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+    DIM oldDest AS LONG
+    DIM temp_image AS LONG
+    DIM i AS INTEGER
+    DIM visible_count AS INTEGER
+    DIM target_layer_index AS INTEGER
+    
+    ' Only update if needed
+    IF enhanced_img.needs_update = 0 THEN EXIT SUB
+    
+    ' Clear the composite image first
+    IF enhanced_img.current_display <> 0 THEN
+        oldDest = _DEST
+        _DEST enhanced_img.current_display
+        CLS , _RGBA32(0, 0, 0, 0)  ' Clear with transparent background
+        _DEST oldDest
+    END IF
+    
+    ' Count visible layers and find the target layer
+    visible_count = 0
+    target_layer_index = -1
+    FOR i = 0 TO enhanced_img.num_layers - 1
+        IF is_layer_visible%(enhanced_img, i) THEN
+            visible_count = visible_count + 1
+            target_layer_index = i
+        END IF
+    NEXT i
+    
+    IF visible_count = 1 AND target_layer_index >= 0 THEN
+        ' Only one layer is visible - try to load that specific layer's pixel data
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Attempting to load specific layer data for layer " + STR$(target_layer_index)
+        temp_image = load_specific_layer_image&(enhanced_img.base_image, target_layer_index)
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: load_specific_layer_image returned handle: " + STR$(temp_image)
+        
+        IF temp_image <> 0 AND enhanced_img.current_display <> 0 THEN
+            ' Successfully loaded the specific layer data
+            oldDest = _DEST
+            _DEST enhanced_img.current_display
+            _PUTIMAGE (0, 0), temp_image
+            _DEST oldDest
+            
+            _FREEIMAGE temp_image
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Loaded actual pixel data for layer " + STR$(target_layer_index) + " (" + get_layer_name$(enhanced_img, target_layer_index) + ")"
+        ELSE
+            ' Layer has no pixel data - create transparent image
+            IF enhanced_img.current_display <> 0 THEN
+                oldDest = _DEST
+                _DEST enhanced_img.current_display
+                
+                ' Clear with transparent pixels (empty layer)
+                CLS , _RGBA32(0, 0, 0, 0)  ' Fully transparent
+                
+                _DEST oldDest
+                IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Created transparent image for empty layer " + STR$(target_layer_index)
+            END IF
+        END IF
+    ELSE
+        ' Multiple layers visible - load the complete merged image
+        temp_image = create_image_from_aseprite&(enhanced_img.base_image)
+        
+        IF temp_image <> 0 AND enhanced_img.current_display <> 0 THEN
+            oldDest = _DEST
+            _DEST enhanced_img.current_display
+            _PUTIMAGE (0, 0), temp_image
+            _DEST oldDest
+            
+            _FREEIMAGE temp_image
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Composite updated with merged image data (" + STR$(visible_count) + " visible layers)"
+        END IF
+    END IF
+    
+    ' Mark as updated
+    enhanced_img.needs_update = 0
+END SUB
+
+
+
+''
+' Load pixel data from only a specific layer
+'
+' @param aseprite_img AS ASEPRITE_IMAGE The base ASEPRITE image data
+' @param target_layer_index AS INTEGER The layer index to load (0-based)
+' @return LONG Image handle containing only the specified layer's pixel data, or 0 on failure
+''
+FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_layer_index AS INTEGER)
+    DIM file_handle AS INTEGER
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
+    DIM image_handle AS LONG
+    DIM chunks_found AS INTEGER
+    DIM frame_num AS INTEGER
+    DIM chunk_num AS INTEGER
+    DIM num_chunks AS INTEGER
+    DIM cel_width AS _UNSIGNED INTEGER
+    DIM cel_height AS _UNSIGNED INTEGER
+    DIM chunk_start_pos AS LONG
+    DIM next_chunk_pos AS LONG
+    
+    IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Starting load_specific_layer_image for layer " + STR$(target_layer_index)
+    
+    load_specific_layer_image& = 0 ' Default to failure
+    
+    ' Create image to hold the layer data
+    image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
+    IF image_handle = -1 OR image_handle = 0 THEN EXIT FUNCTION
+    
+    ' Clear with transparent background
+    DIM old_dest AS LONG
+    old_dest = _DEST
+    _DEST image_handle
+    CLS , _RGBA32(0, 0, 0, 0)
+    _DEST old_dest
+    
+    ' Open file for reading
+    file_handle = FREEFILE
+    OPEN aseprite_img.file_path FOR BINARY AS #file_handle
+    
+    ' Skip to frame data (after main header)
+    SEEK #file_handle, 129 ' ASEPRITE_HEADER_SIZE + 1
+    
+    chunks_found = 0
+    
+    ' Process ALL frames to find CEL data for the target layer
+    DIM frame_start_pos AS LONG
+    frame_start_pos = 129 ' Start after main header
+    
+    FOR frame_num = 0 TO aseprite_img.header.num_frames - 1
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Searching frame " + STR$(frame_num) + " for layer " + STR$(target_layer_index)
+        
+        ' Position at start of this frame
+        SEEK #file_handle, frame_start_pos
+        
+        ' Read frame header
+        GET #file_handle, , frame_header
+        
+        ' Determine number of chunks
+        IF frame_header.magic_number = ASEPRITE_FRAME_MAGIC THEN
+            IF frame_header.new_chunks > 0 THEN
+                num_chunks = frame_header.new_chunks
+            ELSE
+                num_chunks = frame_header.old_chunks
+            END IF
+        ELSE
+            num_chunks = frame_header.old_chunks
+        END IF
+        
+        ' Process chunks in this frame
+        FOR chunk_num = 1 TO num_chunks
+            ' Store current position before reading chunk header
+            chunk_start_pos = SEEK(file_handle)
+            
+            ' Read chunk header
+            GET #file_handle, , chunk_header
+            
+            ' Calculate where the next chunk should start
+            next_chunk_pos = chunk_start_pos + chunk_header.chunk_size
+            
+            ' Check if this is a CEL chunk
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
+                ' Read CEL chunk data
+                GET #file_handle, , cel_chunk
+                
+                ' Only process if this CEL belongs to our target layer
+                IF cel_chunk.layer_index = target_layer_index THEN
+                    chunks_found = chunks_found + 1
+                    IF ASEPRITE_DEBUG_MODE THEN 
+                        _ECHO "    *** FOUND TARGET LAYER CEL ***"
+                        _ECHO "    Layer index: " + STR$(cel_chunk.layer_index) + " (target: " + STR$(target_layer_index) + ")"
+                        _ECHO "    CEL position: (" + STR$(cel_chunk.x_position) + "," + STR$(cel_chunk.y_position) + ")"
+                        _ECHO "    CEL type: " + STR$(cel_chunk.cel_type)
+                        _ECHO "    Opacity: " + STR$(cel_chunk.opacity)
+                    END IF
+                    
+                    ' Check CEL type and load pixel data
+                    SELECT CASE cel_chunk.cel_type
+                        CASE ASEPRITE_CEL_RAW ' Raw image (type 0)
+                            cel_width = 0: cel_height = 0
+                            GET #file_handle, , cel_width
+                            GET #file_handle, , cel_height
+                            
+                            IF load_raw_pixel_data%(file_handle, image_handle, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
+                                IF ASEPRITE_DEBUG_MODE THEN _ECHO "      Raw pixel data loaded for layer " + STR$(target_layer_index)
+                            END IF
+                            
+                        CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2)
+                            cel_width = 0: cel_height = 0
+                            GET #file_handle, , cel_width
+                            GET #file_handle, , cel_height
+                            
+                            IF load_compressed_pixel_data%(file_handle, image_handle, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
+                                IF ASEPRITE_DEBUG_MODE THEN _ECHO "      Compressed pixel data loaded for layer " + STR$(target_layer_index)
+                            END IF
+                            
+                        CASE ELSE
+                            ' Skip unsupported CEL types
+                            SEEK #file_handle, next_chunk_pos
+                    END SELECT
+                ELSE
+                    ' Skip this CEL chunk - it's not our target layer
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping CEL for layer " + STR$(cel_chunk.layer_index) + " (want " + STR$(target_layer_index) + ")"
+                    SEEK #file_handle, next_chunk_pos
+                END IF
+            ELSE
+                ' Skip non-CEL chunks
+                IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping non-CEL chunk type: 0x" + HEX$(chunk_header.chunk_type)
+                SEEK #file_handle, next_chunk_pos
+            END IF
+        NEXT chunk_num
+        
+        ' Move to next frame position
+        frame_start_pos = frame_start_pos + frame_header.num_bytes
+        
+    NEXT frame_num
+    
+    CLOSE #file_handle
+    
+    IF chunks_found > 0 THEN
+        load_specific_layer_image& = image_handle
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Successfully loaded " + STR$(chunks_found) + " CEL chunks for layer " + STR$(target_layer_index)
+    ELSE
+        _FREEIMAGE image_handle
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: No CEL chunks found for layer " + STR$(target_layer_index)
+    END IF
+END FUNCTION
+
+''
+' Enhanced layer extraction function that takes filename, layer index, and frame
+' This is the working version with the variable scope fix
+'
+FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_index AS INTEGER, frame_index AS INTEGER)
+    ' Load the base ASEPRITE image first
+    DIM aseprite_img AS ASEPRITE_IMAGE
+    load_aseprite_image filename, aseprite_img
+    
+    IF aseprite_img.header.width <= 0 THEN
+        load_specific_layer_image_enhanced& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Open file for reading
+    DIM file_handle AS INTEGER
+    file_handle = FREEFILE
+    OPEN filename FOR BINARY AS #file_handle
+    
+    ' Skip header
+    SEEK #file_handle, 129
+    
+    ' Variables for chunk processing - DECLARED OUTSIDE LOOPS to fix variable scope
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM frame_start_pos AS LONG
+    DIM chunk_start_pos AS LONG
+    DIM next_chunk_pos AS LONG
+    
+    ' Create target image with proper color depth
+    DIM image_handle AS LONG
+    DIM cel_width AS INTEGER, cel_height AS INTEGER
+    
+    ' We'll resize the image once we find the first CEL to get proper dimensions
+    image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
+    _CLEARCOLOR _RGBA32(0, 0, 0, 0), image_handle ' Transparent background
+    
+    DIM chunks_found AS INTEGER
+    chunks_found = 0
+    
+    frame_start_pos = 129 ' Start after header
+    
+    ' Process all frames to find the target frame and layer
+    DIM frame_num AS INTEGER
+    FOR frame_num = 0 TO aseprite_img.header.num_frames - 1
+        ' Read frame header
+        SEEK #file_handle, frame_start_pos
+        GET #file_handle, , frame_header
+        
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Searching frame " + STR$(frame_num) + " for layer " + STR$(target_layer_index)
+        
+        ' Calculate number of chunks
+        DIM num_chunks AS LONG
+        IF frame_header.new_chunks > 0 THEN
+            num_chunks = frame_header.new_chunks
+        ELSE
+            num_chunks = frame_header.old_chunks
+        END IF
+        
+        ' Process chunks in this frame
+        DIM chunk_num AS INTEGER
+        FOR chunk_num = 1 TO num_chunks
+            ' Store current position before reading chunk header
+            chunk_start_pos = SEEK(file_handle)
+            
+            ' Read chunk header
+            GET #file_handle, , chunk_header
+            
+            ' Calculate where the next chunk should start
+            next_chunk_pos = chunk_start_pos + chunk_header.chunk_size
+            
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
+                ' Read CEL chunk data
+                DIM cel_chunk AS ASEPRITE_CEL_CHUNK
+                GET #file_handle, , cel_chunk
+                
+                IF cel_chunk.layer_index = target_layer_index THEN
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    *** FOUND TARGET LAYER CEL ***"
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Layer index: " + STR$(cel_chunk.layer_index) + " (target: " + STR$(target_layer_index) + ")"
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    CEL position: (" + STR$(cel_chunk.x_position) + "," + STR$(cel_chunk.y_position) + ")"
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    CEL type: " + STR$(cel_chunk.cel_type)
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Opacity: " + STR$(cel_chunk.opacity)
+                    
+                    ' Only process if this is the target frame or frame_index is -1 (any frame)
+                    IF frame_index = -1 OR frame_num = frame_index THEN
+                        SELECT CASE cel_chunk.cel_type
+                            CASE ASEPRITE_CEL_COMPRESSED ' Compressed image (type 2)
+                                GET #file_handle, , cel_width
+                                GET #file_handle, , cel_height
+                                
+                                ' Resize image to CEL dimensions if this is our first CEL found
+                                IF chunks_found = 0 THEN
+                                    _FREEIMAGE image_handle
+                                    image_handle = _NEWIMAGE(cel_width, cel_height, 32)
+                                    _CLEARCOLOR _RGBA32(0, 0, 0, 0), image_handle ' Transparent background
+                                END IF
+                                
+                                IF load_compressed_pixel_data_for_layer%(file_handle, image_handle, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
+                                    chunks_found = chunks_found + 1
+                                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "      Compressed pixel data loaded for layer " + STR$(target_layer_index)
+                                END IF
+                        END SELECT
+                    END IF
+                ELSE
+                    IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping CEL for layer " + STR$(cel_chunk.layer_index) + " (want " + STR$(target_layer_index) + ")"
+                END IF
+            ELSE
+                ' Skip non-CEL chunks
+                IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping non-CEL chunk type: 0x" + HEX$(chunk_header.chunk_type)
+            END IF
+            
+            ' Move to next chunk
+            SEEK #file_handle, next_chunk_pos
+        NEXT chunk_num
+        
+        ' Move to next frame position
+        frame_start_pos = frame_start_pos + frame_header.num_bytes
+    NEXT frame_num
+    
+    CLOSE #file_handle
+    
+    IF chunks_found > 0 THEN
+        load_specific_layer_image_enhanced& = image_handle
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: load_specific_layer_image_enhanced returned handle: " + STR$(image_handle)
+    ELSE
+        _FREEIMAGE image_handle
+        load_specific_layer_image_enhanced& = 0
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: No CEL chunks found for layer " + STR$(target_layer_index) + " in frame " + STR$(frame_index)
+    END IF
+END FUNCTION
+
+''
+' Create an ASEPRITE image from a specific layer with enhanced support
+' This is the high-level wrapper function for easy layer extraction
+'
+FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS STRING, layer_index AS INTEGER, frame AS INTEGER)
+    ' Load the enhanced ASEPRITE image
+    DIM enhanced_img AS ASEPRITE_ENHANCED_IMAGE
+    load_aseprite_enhanced filename, enhanced_img
+    
+    ' Check if the enhanced image loaded successfully
+    IF enhanced_img.num_layers <= 0 THEN
+        create_aseprite_image_from_layer& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Find the target layer
+    DIM target_index AS INTEGER
+    target_index = -1
+    
+    IF layer_name <> "" THEN
+        ' Search by layer name
+        DIM i AS INTEGER
+        FOR i = 0 TO enhanced_img.num_layers - 1
+            DIM current_name AS STRING
+            current_name = get_layer_name(enhanced_img, i)
+            IF current_name = layer_name THEN
+                target_index = i
+                EXIT FOR
+            END IF
+        NEXT i
+    ELSE
+        ' Use layer index directly
+        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
+            target_index = layer_index
+        END IF
+    END IF
+    
+    IF target_index = -1 THEN
+        create_aseprite_image_from_layer& = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Use the enhanced extraction function
+    DIM result_handle AS LONG
+    result_handle = load_specific_layer_image_enhanced(filename, target_index, frame)
+    
+    create_aseprite_image_from_layer& = result_handle
+END FUNCTION
 
 ''
 ' Displays an enhanced Aseprite image with animation support
@@ -1175,7 +1807,7 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
         oldDest = _DEST
         IF _CONSOLE THEN
             _DEST _CONSOLE
-            PRINT "Cannot display: Invalid enhanced Aseprite image"
+            _ECHO "Cannot display: Invalid enhanced Aseprite image"
             _DEST oldDest
         END IF
         EXIT SUB
@@ -1246,14 +1878,14 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
     ' Send status to console (check if console is available first)
     IF _CONSOLE THEN
         _DEST _CONSOLE
-        PRINT "Enhanced Aseprite display shown - Graphics window active"
-        PRINT "Layers: "; enhanced_img.num_layers; " | Frames: "; enhanced_img.num_frames
+        _ECHO "Enhanced Aseprite display shown - Graphics window active"
+        _ECHO "Layers: " + STR$(enhanced_img.num_layers) + " | Frames: " + STR$(enhanced_img.num_frames)
         IF enhanced_img.animation.is_playing THEN
-            PRINT "Animation: Playing | Frame: "; enhanced_img.animation.current_frame + 1; "/"; enhanced_img.animation.total_frames
+            _ECHO "Animation: Playing | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
         ELSE
-            PRINT "Animation: Paused | Frame: "; enhanced_img.animation.current_frame + 1; "/"; enhanced_img.animation.total_frames
+            _ECHO "Animation: Paused | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
         END IF
-        PRINT "Auto-closing in 3 seconds..."
+        _ECHO "Auto-closing in 3 seconds..."
         _DEST oldDest
     END IF
     

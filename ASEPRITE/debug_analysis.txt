@@ -1,0 +1,1864 @@
+ASEPRITE Layer Extraction Test
+==============================
+
+File loaded successfully:
+  Frames:  4
+  Width:  32 x Height:  32
+  Color depth:  32 bits
+
+Test 1: Extracting layer 0 (BG) - has actual pixel data
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 8 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 7 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 6 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 5 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 4 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 3 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 2 visible layers)
+  Debug: Attempting to load specific layer data for layer  0
+  Debug: Starting load_specific_layer_image for layer  0
+    Searching frame  0 for layer  0
+    Skipping non-CEL chunk type: 0x2007
+    Skipping non-CEL chunk type: 0x2019
+    Skipping non-CEL chunk type: 0x4
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  1 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  2356
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  2 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  3954
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  3 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  5433
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+  Debug: Successfully loaded  4 CEL chunks for layer  0
+  Debug: load_specific_layer_image returned handle: -12
+  Debug: Loaded actual pixel data for layer  0 (BG)
+SUCCESS: Layer 'BG' extracted (Handle: -12)
+  Dimensions:  32x 32
+
+Test 2: Extracting layer 7 (Pumpkin Head) - empty layer
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 8 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 7 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 6 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 5 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 4 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 3 visible layers)
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 2 visible layers)
+  Debug: Attempting to load specific layer data for layer  7
+  Debug: Starting load_specific_layer_image for layer  7
+    Searching frame  0 for layer  7
+    Skipping non-CEL chunk type: 0x2007
+    Skipping non-CEL chunk type: 0x2019
+    Skipping non-CEL chunk type: 0x4
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping CEL for layer  0 (want  7)
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  1 for layer  7
+    Skipping CEL for layer  0 (want  7)
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  2 for layer  7
+    Skipping CEL for layer  0 (want  7)
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  3 for layer  7
+    Skipping CEL for layer  0 (want  7)
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+  Debug: No CEL chunks found for layer  7
+  Debug: load_specific_layer_image returned handle:  0
+  Debug: Created transparent image for empty layer  7
+SUCCESS: Layer 'Pumpkin Head' extracted (Handle: -13)
+  Dimensions:  32x 32
+  Note: This layer was empty, so a transparent image was created
+  (You would see nothing when displaying this image)
+
+Test 3: Extracting non-existent layer
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 8 visible layers)
+EXPECTED: Non-existent layer correctly returned 0 (failure)
+
+Test 4: Creating merged image from all layers
+Processing chunk 1 of 23
+  Chunk type: 0x2007
+  Chunk size: 22
+  -> Skipping chunk type: 0x2007
+Processing chunk 2 of 23
+  Chunk type: 0x2019
+  Chunk size: 122
+  -> Skipping chunk type: 0x2019
+Processing chunk 3 of 23
+  Chunk type: 0x4
+  Chunk size: 58
+  -> Skipping chunk type: 0x4
+Processing chunk 4 of 23
+  Chunk type: 0x2004
+  Chunk size: 26
+  -> Skipping chunk type: 0x2004
+Processing chunk 5 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 6 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 7 of 23
+  Chunk type: 0x2004
+  Chunk size: 28
+  -> Skipping chunk type: 0x2004
+Processing chunk 8 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 9 of 23
+  Chunk type: 0x2004
+  Chunk size: 38
+  -> Skipping chunk type: 0x2004
+Processing chunk 10 of 23
+  Chunk type: 0x2004
+  Chunk size: 43
+  -> Skipping chunk type: 0x2004
+Processing chunk 11 of 23
+  Chunk type: 0x2004
+  Chunk size: 36
+  -> Skipping chunk type: 0x2004
+Processing chunk 12 of 23
+  Chunk type: 0x2004
+  Chunk size: 35
+  -> Skipping chunk type: 0x2004
+Processing chunk 13 of 23
+  Chunk type: 0x2004
+  Chunk size: 31
+  -> Skipping chunk type: 0x2004
+Processing chunk 14 of 23
+  Chunk type: 0x2005
+  Chunk size: 116
+  -> CEL chunk found!
+    Layer index: 0
+    Position: ( 0, 0)
+    Opacity: 255
+    CEL type: 2
+    -> Processing COMPRESSED image data
+    Dimensions:  32 x  32
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+    Compressed pixel data loaded successfully
+Processing chunk 15 of 23
+  Chunk type: 0xE587
+  Chunk size: 4122338493
+  -> Skipping chunk type: 0xE587
+Processing chunk 16 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 17 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 18 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 19 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 20 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 21 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 22 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+Processing chunk 23 of 23
+  Chunk type: 0x0
+  Chunk size: 0
+  -> Skipping chunk type: 0x0
+  Debug: Composite updated with merged image data ( 8 visible layers)
+SUCCESS: Merged image created (Handle: -15)
+  Dimensions:  32x 32
+
+Layer extraction tests completed!
