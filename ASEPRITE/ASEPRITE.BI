@@ -123,7 +123,7 @@ CONST ASEPRITE_CHUNK_TILESET         = &H2023 ' Tileset chunk
 
 ' Magic numbers
 CONST ASEPRITE_HEADER_MAGIC   = 42464  ' File header magic number (0xA5E0 as unsigned)
-CONST ASEPRITE_FRAME_MAGIC    = &HF1FA ' Frame header magic number
+CONST ASEPRITE_FRAME_MAGIC    = 61946  ' Frame header magic number (0xF1FA as unsigned)
 
 ' Header flags
 CONST ASEPRITE_FLAG_LAYER_OPACITY_VALID = 1 ' Layer opacity has valid value

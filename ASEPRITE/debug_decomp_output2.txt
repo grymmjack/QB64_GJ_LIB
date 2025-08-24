@@ -1,0 +1,84 @@
+DEBUG: ASEPRITE Decompression Analysis
+======================================
+✓ File loaded successfully!
+  Dimensions:  192 x  108
+  Color depth:  32 bpp
+  Frames:  1
+
+DEBUG: Analyzing pixel data loading...
+Opening file for binary reading...
+Reading frame header...
+Frame magic number: 0xF1FA
+Expected magic: 0xF1FA
+Magic match:  0
+ERROR: Frame magic number mismatch!
+  Got:  61946
+  Expected: -3590
+  Continuing analysis anyway...
+Number of chunks to process:  5
+
+Chunk  1:
+  Type: 0x2007
+  Size:  22 bytes
+  -> Skipping non-CEL chunk
+
+Chunk  2:
+  Type: 0x2019
+  Size:  218 bytes
+  -> Skipping non-CEL chunk
+
+Chunk  3:
+  Type: 0x4
+  Size:  106 bytes
+  -> Skipping non-CEL chunk
+
+Chunk  4:
+  Type: 0x2004
+  Size:  31 bytes
+  -> Skipping non-CEL chunk
+
+Chunk  5:
+  Type: 0x2005
+  Size:  1609 bytes
+  -> CEL CHUNK FOUND!
+    Layer index:  0
+    Position: ( 0,  0)
+    CEL type:  2
+    -> COMPRESSED IMAGE DATA
+    Dimensions:  192 x  108
+    Compressed data size:  1589 bytes
+    First 10 bytes of compressed data:
+      Byte  1:  120 (0x78)
+      Byte  2:  156 (0x9C)
+      Byte  3:  237 (0xED)
+      Byte  4:  217 (0xD9)
+      Byte  5:  77 (0x4D)
+      Byte  6:  174 (0xAE)
+      Byte  7:  221 (0xDD)
+      Byte  8:  54 (0x36)
+      Byte  9:  12 (0xC)
+      Byte  10:  5 (0x5)
+    Attempting decompression with _INFLATE$...
+    Decompressed size:  82944 bytes
+    Expected size:  82944 bytes
+    ✓ DECOMPRESSION SUCCESSFUL!
+    First 16 bytes of pixel data:
+      Pixel byte  1:  89
+      Pixel byte  2:  86
+      Pixel byte  3:  82
+      Pixel byte  4:  255
+      Pixel byte  5:  89
+      Pixel byte  6:  86
+      Pixel byte  7:  82
+      Pixel byte  8:  255
+      Pixel byte  9:  89
+      Pixel byte  10:  86
+      Pixel byte  11:  82
+      Pixel byte  12:  255
+      Pixel byte  13:  89
+      Pixel byte  14:  86
+      Pixel byte  15:  82
+      Pixel byte  16:  255
+
+
+Debug completed.

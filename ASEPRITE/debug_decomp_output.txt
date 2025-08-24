@@ -1,0 +1,14 @@
+DEBUG: ASEPRITE Decompression Analysis
+======================================
+✓ File loaded successfully!
+  Dimensions:  192 x  108
+  Color depth:  32 bpp
+  Frames:  1
+
+DEBUG: Analyzing pixel data loading...
+Opening file for binary reading...
+Reading frame header...
+Frame magic number: 0xF1FA
+ERROR: Invalid frame magic number!
+
+Debug completed.

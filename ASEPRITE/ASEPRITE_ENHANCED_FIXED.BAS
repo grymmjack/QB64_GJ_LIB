@@ -255,7 +255,7 @@ SUB OriginalMainProgram
         PRINT "Test 3: Creating QB64PE image..."
         img_handle = create_image_from_aseprite&(aseprite_img)
         
-        IF img_handle > 0 THEN
+        IF img_handle <> 0 AND img_handle <> -1 THEN
             CALL LogMessage("SUCCESS", "QB64PE image created successfully (handle:" + STR$(img_handle) + ")")
             PRINT "✓ QB64PE image created successfully (handle:" + STR$(img_handle) + ")"
             
