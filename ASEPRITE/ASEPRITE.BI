@@ -671,6 +671,63 @@ TYPE ASEPRITE_IMAGE
     ' Note: Frame and chunk data are handled separately via arrays/collections
 END TYPE
 
+' Enhanced layer information structure
+TYPE ASEPRITE_LAYER_INFO
+    layer_name      AS STRING                ' Layer name
+    flags           AS _UNSIGNED INTEGER     ' Layer flags (visible, editable, etc.)
+    layer_type      AS _UNSIGNED INTEGER     ' Layer type (normal, group, tilemap)
+    child_level     AS _UNSIGNED INTEGER     ' Nesting level
+    blend_mode      AS _UNSIGNED INTEGER     ' Blend mode
+    opacity         AS _UNSIGNED _BYTE       ' Layer opacity (0-255)
+    is_visible      AS _BYTE                 ' 1 if visible, 0 if hidden
+    is_background   AS _BYTE                 ' 1 if background layer
+END TYPE
+
+' Frame information structure
+TYPE ASEPRITE_FRAME_INFO
+    frame_index     AS INTEGER               ' Frame number (0-based)
+    duration        AS _UNSIGNED INTEGER     ' Frame duration in milliseconds
+    num_cels        AS INTEGER               ' Number of cels in this frame
+    has_data        AS _BYTE                 ' 1 if frame has pixel data
+END TYPE
+
+' Animation information structure  
+TYPE ASEPRITE_ANIMATION_INFO
+    total_frames    AS INTEGER               ' Total number of frames
+    current_frame   AS INTEGER               ' Currently displayed frame
+    is_playing      AS _BYTE                 ' 1 if animation is playing
+    loop_mode       AS _BYTE                 ' Loop mode (0=once, 1=loop, 2=ping-pong)
+    total_duration  AS LONG                  ' Total animation duration in ms
+    elapsed_time    AS LONG                  ' Time elapsed in current cycle
+    last_update     AS DOUBLE                ' Last update time (TIMER)
+END TYPE
+
+' Enhanced ASEPRITE image with layer and animation support
+TYPE ASEPRITE_ENHANCED_IMAGE
+    base_image      AS ASEPRITE_IMAGE        ' Base image data
+    num_layers      AS INTEGER               ' Number of layers found
+    layer_info      AS STRING                ' Serialized layer information
+    num_frames      AS INTEGER               ' Number of animation frames
+    frame_info      AS STRING                ' Serialized frame information  
+    animation       AS ASEPRITE_ANIMATION_INFO ' Animation state
+    current_display AS LONG                  ' Current composite image handle
+END TYPE
+
+' Function declarations for layer and animation support
+DECLARE SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE SUB init_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE SUB play_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE SUB pause_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE SUB set_aseprite_frame (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER)
+DECLARE FUNCTION get_layer_count% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
+DECLARE FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
+DECLARE FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
+DECLARE SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
+DECLARE SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS SINGLE, center_display AS INTEGER)
+
 
 'NUMBERS
 '1 byte  = 8 bits  = _UNSIGNED _BYTE      = BYTE
