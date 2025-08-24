@@ -1,0 +1,98 @@
+=== Testing Full Canvas Layer Approach ===
+Starting composite creation...
+  Debug: Starting load_specific_layer_image for layer  0
+    Searching frame  0 for layer  0
+    Skipping non-CEL chunk type: 0x2007
+    Skipping non-CEL chunk type: 0x2019
+    Skipping non-CEL chunk type: 0x4
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    Skipping non-CEL chunk type: 0x2004
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  700
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  1 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  2356
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  2 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  3954
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Searching frame  3 for layer  0
+    *** FOUND TARGET LAYER CEL ***
+    Layer index:  0 (target:  0)
+    CEL position: ( 0, 0)
+    CEL type:  2
+    Opacity:  255
+Compressed data size:  96
+Expected decompressed size:  4096
+File position:  5433
+QB64PE _INFLATE$ decompression successful:  4096 bytes
+Pixel loading completed successfully
+      Compressed pixel data loaded for layer  0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+    Skipping non-CEL chunk type: 0x0
+  Debug: Successfully loaded  4 CEL chunks for layer  0

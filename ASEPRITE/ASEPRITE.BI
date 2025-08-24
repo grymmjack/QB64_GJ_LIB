@@ -735,6 +735,15 @@ TYPE ASEPRITE_ENHANCED_IMAGE
     needs_update    AS _BYTE                 ' 1 if composite needs regeneration
 END TYPE
 
+' Layer ordering item for z-index processing (based on Aseprite RenderPlan)
+TYPE ASEPRITE_RENDER_ITEM
+    layer_index     AS INTEGER               ' Original layer index from file
+    cel_z_index     AS INTEGER               ' Z-index value from cel
+    original_order  AS INTEGER               ' Original processing order
+    final_order     AS INTEGER               ' Calculated order = original_order + cel_z_index
+    cel_info        AS ASEPRITE_CEL_INFO     ' Cel information for this item
+END TYPE
+
 ' Function declarations for basic and enhanced layer support
 DECLARE SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
 DECLARE SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
@@ -756,6 +765,16 @@ DECLARE FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_na
 DECLARE FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
 DECLARE SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS SINGLE, center_display AS INTEGER)
 DECLARE FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
+DECLARE FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGER)
+DECLARE FUNCTION create_all_layers_composite& (filename AS STRING, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)
+DECLARE SUB save_composite_image (filename AS STRING, frame_index AS INTEGER, output_filename AS STRING)
+
+' Z-index processing functions (based on Aseprite RenderPlan algorithm)
+DECLARE FUNCTION collect_render_items% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER, render_items() AS ASEPRITE_RENDER_ITEM)
+DECLARE SUB process_z_indexes (render_items() AS ASEPRITE_RENDER_ITEM, num_items AS INTEGER)
+DECLARE FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)
+DECLARE SUB get_cel_position_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, frame_index AS INTEGER, cel_x AS INTEGER, cel_y AS INTEGER, cel_width AS INTEGER, cel_height AS INTEGER, cel_z_index AS INTEGER)
+DECLARE SUB get_cel_position_from_loaded_data (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER, frame_index AS INTEGER, cel_x AS INTEGER, cel_y AS INTEGER)
 
 
 'NUMBERS
