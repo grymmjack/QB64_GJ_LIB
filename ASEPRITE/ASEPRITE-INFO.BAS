@@ -614,11 +614,58 @@ SUB display_analysis_summary
     IF layer_count > 0 THEN
         PRINT "LAYER INFORMATION (" + STR$(layer_count) + " layers)"
         PRINT "=================="
+        
+        ' Count layer types
+        DIM layer_type_counts(0 TO 2) AS INTEGER
+        DIM visible_count AS INTEGER
+        DIM background_count AS INTEGER
+        
         FOR i = 1 TO layer_count
-            PRINT format_number$(i, 3) + ": " + layers(i).layer_name + " (" + layer_type_names(layers(i).layer_type) + ")"
-            PRINT "     Level: " + STR$(layers(i).child_level) + ", Opacity: " + STR$(layers(i).opacity) + "/255"
-            PRINT "     Blend: " + blend_mode_names(layers(i).blend_mode) + ", Cels: " + STR$(layers(i).cel_count)
-            PRINT "     Flags: " + format_layer_flags$(layers(i).flags)
+            layer_type_counts(layers(i).layer_type) = layer_type_counts(layers(i).layer_type) + 1
+            IF layers(i).is_visible THEN visible_count = visible_count + 1
+            IF layers(i).is_background THEN background_count = background_count + 1
+        NEXT i
+        
+        ' Show layer type summary
+        PRINT "Summary: ",
+        FOR i = 0 TO 2
+            IF layer_type_counts(i) > 0 THEN
+                PRINT STR$(layer_type_counts(i)) + " " + layer_type_names(i) + " ",
+            END IF
+        NEXT i
+        PRINT "(" + STR$(visible_count) + " visible, " + STR$(background_count) + " background)"
+        PRINT
+        
+        FOR i = 1 TO layer_count
+            DIM indent_str AS STRING
+            DIM hierarchy_prefix AS STRING
+            
+            ' Create indentation based on child level for hierarchy visualization
+            indent_str = ""
+            hierarchy_prefix = ""
+            IF layers(i).child_level > 0 THEN
+                DIM j AS INTEGER
+                FOR j = 1 TO layers(i).child_level
+                    indent_str = indent_str + "  "
+                NEXT j
+                hierarchy_prefix = STRING$(layers(i).child_level, 45) + " " ' Dashes for hierarchy
+            END IF
+            
+            ' Display layer with hierarchy
+            PRINT format_number$(i, 3) + ": " + indent_str + hierarchy_prefix + "'" + layers(i).layer_name + "' (" + layer_type_names(layers(i).layer_type) + ")"
+            
+            ' Layer properties with proper indentation
+            PRINT "     " + indent_str + "Index: " + STR$(layers(i).layer_index) + ", Level: " + STR$(layers(i).child_level) + ", Opacity: " + format_opacity$(layers(i).opacity)
+            PRINT "     " + indent_str + "Blend: " + blend_mode_names(layers(i).blend_mode) + ", Cels: " + STR$(layers(i).cel_count)
+            PRINT "     " + indent_str + "Flags: " + format_layer_flags$(layers(i).flags)
+            
+            ' Show additional properties for special layer types
+            IF layers(i).is_background THEN
+                PRINT "     " + indent_str + "*** BACKGROUND LAYER ***"
+            END IF
+            IF layers(i).is_visible = 0 THEN
+                PRINT "     " + indent_str + "*** HIDDEN ***"
+            END IF
         NEXT i
         PRINT
     END IF
@@ -735,6 +782,17 @@ FUNCTION format_layer_flags$ (flags AS INTEGER)
     ELSE
         format_layer_flags$ = LEFT$(result, LEN(result) - 2) ' Remove trailing ", "
     END IF
+END FUNCTION
+
+''
+' Format opacity as percentage and fraction
+' @param opacity Opacity value (0-255)
+' @return STRING Formatted opacity (e.g., "255/255 (100%)")
+''
+FUNCTION format_opacity$ (opacity AS INTEGER)
+    DIM percent AS SINGLE
+    percent = (opacity / 255.0) * 100.0
+    format_opacity$ = STR$(opacity) + "/255 (" + format_decimal$(percent, 1) + "%)"
 END FUNCTION
 
 ''
