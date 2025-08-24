@@ -10,49 +10,63 @@
 - **QB64-PE Modern**: Leverages QB64-PE V3.12+ features (not QB1.1/QuickBasic compatible)
 - **Developer-Friendly**: Extensive debugging, testing, and documentation support
 
+## Critical Development Workflow
+
+### Build System Integration
+- **Primary build task**: Use VS Code's "BUILD: Compile" task which auto-removes old executables and compiles with QB64-PE
+- **Cross-platform support**: Tasks configured for Windows (.exe), macOS/Linux (.run) with proper compiler paths
+- **Execution pattern**: "EXECUTE: Run" depends on successful compilation, handles platform differences automatically
+- **QB64-PE path**: Configure `qb64pe.compilerPath` setting to point to your QB64-PE installation
+
 ## Library Architecture
 
 ### Include Pattern (.BI/.BM System)
-QB64_GJ_LIB uses a consistent modular include pattern:
+QB64_GJ_LIB uses a consistent modular include pattern that separates interface from implementation:
 
 ```basic
 ' Unified Usage (everything)
-'$INCLUDE:'path_to_GJ_LIB/_GJ_LIB.BI'     ' Header/interface
+'$INCLUDE:'path_to_GJ_LIB/_GJ_LIB.BI'     ' Header/interface at TOP
 ' ...your code...
-'$INCLUDE:'path_to_GJ_LIB/_GJ_LIB.BM'     ' Implementation
+'$INCLUDE:'path_to_GJ_LIB/_GJ_LIB.BM'     ' Implementation at BOTTOM
 
 ' Individual Usage (example: ANSI + DUMP)
-'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BI'
+'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BI'   ' Headers at TOP
 '$INCLUDE:'path_to_GJ_LIB/DUMP/DUMP.BI'
 ' ...your code...
-'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BM'
+'$INCLUDE:'path_to_GJ_LIB/ANSI/ANSI.BM'   ' Implementations at BOTTOM
 '$INCLUDE:'path_to_GJ_LIB/DUMP/DUMP.BM'
 ```
 
 **Critical Rules:**
-- `.BI` files contain type definitions, constants, and function declarations
-- `.BM` files contain the actual implementation code
-- Always include `.BI` at the top, `.BM` at the bottom
-- Use `$IF` preprocessor guards for safe unified/individual inclusion
+- `.BI` files: Type definitions, constants, function declarations (always at top)
+- `.BM` files: Actual implementation code (always at bottom)
+- ARR library is special: Uses `.BAS` files with type-specific implementations (ARR_STR.BAS, ARR_INT.BAS, etc.)
+- All files use `$INCLUDEONCE` and preprocessor guards for safe unified/individual inclusion
+
+### Testing Architecture
+- **Test files**: Use `.BAS` extension (uppercase) in same directory as library
+- **Console testing**: Always use `$CONSOLE:ONLY` and end with `SYSTEM` for clean automation
+- **Unified vs Individual**: Toggle with `$LET GJ_LIB_UNIFIED_TESTING = 1` in `_GJ_LIB.BI`
+- **Pattern**: Tests typically use DUMP library to display array/object states for verification
 
 ### Available Libraries
 
-| Library | Purpose | Key Features |
-|---------|---------|--------------|
-| **ANSI** | ANSI text mode | Full ANSI.SYS support, 256/RGB colors, QB64 native emulation |
-| **ARR** | Array operations | High-level array manipulation for all QB64 types |
-| **ASEPRITE** | Aseprite file support | Load/display .ase/.aseprite files with layer compositing |
-| **BBX** | Bounding box | Reusable bounding box with position, resize, keyboard/mouse control |
-| **CONSOLE** | Console management | Enhanced console debugging and output control |
-| **DICT** | Dictionary/hash | Key-value pairs using custom types with `.key` and `.val` |
-| **DUMP** | Debug printing | PHP `print_r` style variable dumping |
-| **INPUT** | Advanced input | Lightbar menus, text boxes, enhanced user input |
-| **MISC** | Utilities | Miscellaneous helper functions that don't fit elsewhere |
-| **PIPEPRINT** | ANSI string DSL | Mystic BBS-style pipe (\|) parsing for colored text |
-| **STRINGS** | String manipulation | Extensive string processing, arrays, parsing, searching |
-| **SYS** | System utilities | OS integration, file operations, system info |
-| **VECT2D** | 2D vectors | Mathematical 2D vector operations |
-| **VIDEO_MODES** | Display modes | Video mode detection and management |
+| Library | Purpose | Key Features | Function Pattern |
+|---------|---------|--------------|------------------|
+| **ANSI** | ANSI text mode | Full ANSI.SYS support, 256/RGB colors, QB64 native emulation | `ansi_color$()`, `ansi_rgb$()` |
+| **ARR** | Array operations | High-level array manipulation for all QB64 types | `ARR_[TYPE].push()`, `ARR_[TYPE].find()` |
+| **ASEPRITE** | Aseprite file support | Load/display .ase/.aseprite files with layer compositing | `load_aseprite_image()`, `create_composite_image_from_aseprite&()` |
+| **BBX** | Bounding box | Reusable bounding box with position, resize, keyboard/mouse control | Object-oriented style with BBX type |
+| **CONSOLE** | Console management | Enhanced console debugging and output control | Console object with methods |
+| **DICT** | Dictionary/hash | Key-value pairs using custom `DICTIONARY` type with `.key` and `.val` | `dict_set()`, `dict_get()` |
+| **DUMP** | Debug printing | PHP `print_r` style variable dumping | `dump_var()`, `DUMP.string_array$()` |
+| **INPUT** | Advanced input | Lightbar menus (LIGHTBAR/LIGHTBAR32), text boxes, enhanced user input | Menu-driven input systems |
+| **MISC** | Utilities | Miscellaneous helper functions that don't fit elsewhere | Various utility functions |
+| **PIPEPRINT** | ANSI string DSL | Mystic BBS-style pipe (\|) parsing for colored text | `pipeprint()` with pipe codes |
+| **STRINGS** | String manipulation | Extensive string processing, arrays, parsing, searching | `str_split()`, `str_join()`, etc. |
+| **SYS** | System utilities | OS integration, file operations, system info | Cross-platform system functions |
+| **VECT2D** | 2D vectors | Mathematical 2D vector operations | Vector math functions |
+| **VIDEO_MODES** | Display modes | Video mode detection and management | Video mode utilities |
 
 ## Coding Conventions
 
@@ -208,6 +222,87 @@ Tasks are configured for Windows, macOS, and Linux:
 
 ## Common Patterns and Examples
 
+### VS Code Integration
+The project includes comprehensive VS Code configuration:
+
+**Build Tasks:**
+- `BUILD: Compile` - Compiles current file with QB64-PE
+- `BUILD: Remove` - Cleans compiled executables
+- `EXECUTE: Run` - Compiles and runs current file
+
+**External Tool Integration:**
+- QB64-PE IDE integration
+- InForm-PE GUI designer
+- Image editors (GIMP, Krita, Aseprite, Inkscape)
+- Text mode editors (MoebiusXBIN, IcyDraw, PabloDraw)
+
+### Cross-Platform Support
+Tasks are configured for Windows, macOS, and Linux:
+```jsonc
+"windows": {
+    "command": "${config:qb64pe.compilerPath}",
+    "args": ["-w", "-x", "${fileDirname}\\${fileBasename}"]
+},
+"linux": {
+    "command": "${config:qb64pe.compilerPath}",
+    "args": ["-w", "-x", "${fileDirname}/${fileBasename}"]
+}
+```
+
+## Common Patterns and Examples
+
+### Dictionary Usage (DICT)
+```basic
+' Create dictionary
+DIM dict(1 TO 100) AS DICT_KV
+dict_size = 0
+
+' Add entries
+dict_size = dict_set(dict(), dict_size, "username", "grymmjack")
+dict_size = dict_set(dict(), dict_size, "age", "42")
+
+' Retrieve values
+username$ = dict_get(dict(), dict_size, "username")
+```
+
+### Array Operations (ARR)
+```basic
+' Dynamic string array example
+DIM my_strings(1 TO 1000) AS STRING
+arr_size = 0
+
+' Add elements
+arr_size = arr_str_push(my_strings(), arr_size, "Hello")
+arr_size = arr_str_push(my_strings(), arr_size, "World")
+
+' Search and manipulate
+index = arr_str_find(my_strings(), arr_size, "Hello")
+```
+
+### ANSI Text Styling
+```basic
+' Using ANSI library for colored output
+PRINT ansi_color$(15, 4) + "White text on red background" + ansi_reset$
+PRINT ansi_rgb$(255, 128, 0) + "Orange text" + ansi_reset$
+```
+
+### Debug Dumping (DUMP)
+```basic
+' PHP-style variable dumping
+TYPE person
+    name AS STRING
+    age AS INTEGER
+END TYPE
+
+DIM p AS person
+p.name = "John"
+p.age = 30
+
+dump_var p  ' Outputs structured variable information
+```
+
+## Error Handling and Debugging
+
 ### Dictionary Usage (DICT)
 ```basic
 ' Create dictionary
@@ -293,6 +388,37 @@ IF _FILEEXISTS(filename$) THEN
 END IF
 ```
 
+**Console vs Graphics Mode Conflicts:**
+```basic
+' Problem: Console output not visible in graphics mode
+' Solution: Use $CONSOLE:ONLY for debug builds
+
+' Problem: "Press any key" prompts in automated testing  
+' Solution: Always end with SYSTEM, not END
+```
+
+**File Path Issues:**
+```basic
+' Problem: Relative paths causing include errors
+' Solution: Use absolute paths or proper working directory
+
+' Correct:
+'$INCLUDE:'C:\path\to\QB64_GJ_LIB\_GJ_LIB.BI'
+
+' Or ensure working directory is set properly
+```
+
+**Memory Management:**
+```basic
+' Always free image resources
+IF img& <> -1 THEN _FREEIMAGE img&
+
+' Check for valid handles before use
+IF _FILEEXISTS(filename$) THEN
+    ' Safe to proceed
+END IF
+```
+
 ## Integration Guidelines
 
 ### Adding New Libraries
@@ -338,68 +464,68 @@ This project includes access to specialized QB64PE MCP (Model Context Protocol) 
 
 #### Code Analysis and Enhancement
 ```
-#mcp_qb64pe_analyze_qb64pe_execution_mode - Analyze QB64PE execution characteristics
-#mcp_qb64pe_enhance_qb64pe_code_for_debugging - Add debugging enhancements automatically
-#mcp_qb64pe_validate_qb64pe_syntax - Check syntax and suggest corrections
-#mcp_qb64pe_validate_qb64pe_compatibility - Check for compatibility issues
+#qb64pe_analyze_qb64pe_execution_mode - Analyze QB64PE execution characteristics
+#qb64pe_enhance_qb64pe_code_for_debugging - Add debugging enhancements automatically
+#qb64pe_validate_qb64pe_syntax - Check syntax and suggest corrections
+#qb64pe_validate_qb64pe_compatibility - Check for compatibility issues
 ```
 
 #### Debugging and Monitoring
 ```
-#mcp_qb64pe_get_llm_debugging_guide - Get LLM-specific debugging guidance
-#mcp_qb64pe_generate_advanced_debugging_template - Create debugging templates
-#mcp_qb64pe_inject_native_qb64pe_logging - Add native logging capabilities
-#mcp_qb64pe_parse_qb64pe_structured_output - Parse program output
+#qb64pe_get_llm_debugging_guide - Get LLM-specific debugging guidance
+#qb64pe_generate_advanced_debugging_template - Create debugging templates
+#qb64pe_inject_native_qb64pe_logging - Add native logging capabilities
+#qb64pe_parse_qb64pe_structured_output - Parse program output
 ```
 
 #### Screenshot and Graphics Analysis
 ```
-#mcp_qb64pe_capture_qb64pe_screenshot - Auto-capture program screenshots
-#mcp_qb64pe_analyze_qb64pe_graphics_screenshot - Analyze visual output
-#mcp_qb64pe_generate_qb64pe_screenshot_analysis_template - Create test templates
-#mcp_qb64pe_start_screenshot_monitoring - Monitor graphics programs
+#qb64pe_capture_qb64pe_screenshot - Auto-capture program screenshots
+#qb64pe_analyze_qb64pe_graphics_screenshot - Analyze visual output
+#qb64pe_generate_qb64pe_screenshot_analysis_template - Create test templates
+#qb64pe_start_screenshot_monitoring - Monitor graphics programs
 ```
 
 #### Knowledge and Documentation
 ```
-#mcp_qb64pe_search_qb64pe_wiki - Search QB64PE documentation
-#mcp_qb64pe_lookup_qb64pe_keyword - Get keyword information
-#mcp_qb64pe_get_qb64pe_keywords_by_category - Browse keywords by category
-#mcp_qb64pe_autocomplete_qb64pe_keywords - Get keyword suggestions
+#qb64pe_search_qb64pe_wiki - Search QB64PE documentation
+#qb64pe_lookup_qb64pe_keyword - Get keyword information
+#qb64pe_get_qb64pe_keywords_by_category - Browse keywords by category
+#qb64pe_autocomplete_qb64pe_keywords - Get keyword suggestions
 ```
 
 #### Installation and Configuration
 ```
-#mcp_qb64pe_detect_qb64pe_installation - Check QB64PE installation
-#mcp_qb64pe_get_qb64pe_installation_guidance - Get setup instructions
-#mcp_qb64pe_validate_qb64pe_path - Verify installation path
+#qb64pe_detect_qb64pe_installation - Check QB64PE installation
+#qb64pe_get_qb64pe_installation_guidance - Get setup instructions
+#qb64pe_validate_qb64pe_path - Verify installation path
 ```
 
 ### AI Agent Best Practices with MCP Tools
 
 #### 1. **Program Execution Safety**
 **CRITICAL**: Never wait indefinitely for QB64PE programs
-- Use `#mcp_qb64pe_analyze_qb64pe_execution_mode` to understand program behavior
-- Apply `#mcp_qb64pe_enhance_qb64pe_code_for_debugging` before execution
+- Use `#qb64pe_analyze_qb64pe_execution_mode` to understand program behavior
+- Apply `#qb64pe_enhance_qb64pe_code_for_debugging` before execution
 - Set timeouts: 30-60 seconds for graphics, 15-30 for console programs
-- Monitor with `#mcp_qb64pe_get_process_monitoring_commands`
+- Monitor with `#qb64pe_get_process_monitoring_commands`
 
 #### 2. **Debugging Workflow**
 ```
-1. Analyze code: #mcp_qb64pe_analyze_qb64pe_execution_mode
-2. Enhance for debugging: #mcp_qb64pe_enhance_qb64pe_code_for_debugging  
-3. Validate syntax: #mcp_qb64pe_validate_qb64pe_syntax
+1. Analyze code: #qb64pe_analyze_qb64pe_execution_mode
+2. Enhance for debugging: #qb64pe_enhance_qb64pe_code_for_debugging  
+3. Validate syntax: #qb64pe_validate_qb64pe_syntax
 4. Execute with monitoring
-5. Parse output: #mcp_qb64pe_parse_qb64pe_structured_output
-6. Capture screenshots: #mcp_qb64pe_capture_qb64pe_screenshot (if graphics)
-7. Analyze results: #mcp_qb64pe_analyze_qb64pe_graphics_screenshot
+5. Parse output: #qb64pe_parse_qb64pe_structured_output
+6. Capture screenshots: #qb64pe_capture_qb64pe_screenshot (if graphics)
+7. Analyze results: #qb64pe_analyze_qb64pe_graphics_screenshot
 ```
 
 #### 3. **Graphics Program Handling**
-- Use `#mcp_qb64pe_start_screenshot_monitoring` for automated capture
-- Apply `#mcp_qb64pe_generate_qb64pe_screenshot_analysis_template` for testing
-- Analyze with `#mcp_qb64pe_analyze_qb64pe_graphics_screenshot`
-- Generate feedback with `#mcp_qb64pe_generate_programming_feedback`
+- Use `#qb64pe_start_screenshot_monitoring` for automated capture
+- Apply `#qb64pe_generate_qb64pe_screenshot_analysis_template` for testing
+- Analyze with `#qb64pe_analyze_qb64pe_graphics_screenshot`
+- Generate feedback with `#qb64pe_generate_programming_feedback`
 
 #### 4. **Code Enhancement Patterns**
 ```basic
@@ -419,16 +545,32 @@ SYSTEM                                ' Added by debugging service
 ```
 
 #### 5. **Compatibility and Porting**
-- Use `#mcp_qb64pe_analyze_qbasic_compatibility` for legacy code
-- Apply `#mcp_qb64pe_port_qbasic_to_qb64pe` for conversions
-- Check with `#mcp_qb64pe_search_qb64pe_compatibility`
+- Use `#qb64pe_analyze_qbasic_compatibility` for legacy code
+- Apply `#qb64pe_port_qbasic_to_qb64pe` for conversions
+- Check with `#qb64pe_search_qb64pe_compatibility`
+
+### MCP Setup
+In `.vscode/mcp.json`:
+```json
+{
+    "servers": {
+        "qb64pe": {
+            "command": "node",
+            "args": ["C:/Users/grymmjack/git/qb64pe-mcp-server/build/index.js"],
+            "env": {}
+        }
+    },
+}
+```
+> Then save the file, open extensions, find the MCP server, choose settings
+> and grant it model access.
 
 ### MCP Tool Configuration
 The workspace includes MCP server configuration in `.vscode/settings.json`:
 ```jsonc
 "chat.mcp.serverSampling": {
   "QB64_GJ_LIB/.vscode/mcp.json: qb64pe": {
-    "allowedModels": ["copilot/claude-3.5-sonnet", ...]
+    "allowedModels": ["copilot/claude-4.0-sonnet", "copilot/claude-3.5-sonnet", ...]
   }
 }
 ```

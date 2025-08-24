@@ -1,8 +1,9 @@
+$CONSOLE:ONLY
+
 ''
 ' Debug Individual Layers Example - Show each layer separately for analysis
 ' This helps debug positioning and visibility issues
-'
-$CONSOLE
+''
 
 '$INCLUDE:'ASEPRITE.BI'
 
@@ -36,11 +37,6 @@ PRINT "Cels found: "; get_aseprite_cel_count(aseprite_img)
 PRINT "Tags found: "; get_aseprite_tag_count(aseprite_img)
 PRINT
 
-' Set up graphics mode for showing individual layers
-SCREEN _NEWIMAGE(1200, 800, 32)
-_TITLE "DEBUG: Individual ASEPRITE Layers Analysis"
-CLS , _RGB32(32, 32, 32) ' Dark background
-
 ' Show each layer individually using proper API
 DIM total_layers AS INTEGER
 total_layers = get_aseprite_layer_count(aseprite_img)
@@ -59,21 +55,7 @@ FOR i = 0 TO total_layers - 1
             layer_count = layer_count + 1
             PRINT "SUCCESS! ("; _WIDTH(layer_image); "x"; _HEIGHT(layer_image); ")"
         
-        ' Calculate position for this layer in the debug grid
-        DIM grid_x AS INTEGER, grid_y AS INTEGER
-        grid_x = 50 + (i MOD 5) * 220  ' 5 layers per row
-        grid_y = 100 + (i \ 5) * 250   ' Multiple rows if needed
-        
-        ' Display this layer at 8x scale
-        _PUTIMAGE (grid_x, grid_y)-(grid_x + 32*8 - 1, grid_y + 32*8 - 1), layer_image
-        
-        ' Add border and label
-        LINE (grid_x - 2, grid_y - 2)-(grid_x + 32*8 + 1, grid_y + 32*8 + 1), _RGB32(255, 255, 255), B
-        COLOR _RGB32(255, 255, 255)
-        _PRINTSTRING (grid_x, grid_y - 20), "Layer " + STR$(i)
-        _PRINTSTRING (grid_x, grid_y + 32*8 + 5), STR$(_WIDTH(layer_image)) + "x" + STR$(_HEIGHT(layer_image))
-        
-        ' Also save individual layer
+        ' Save individual layer image
         DIM save_name AS STRING
         save_name = "debug_layer_" + RIGHT$("0" + LTRIM$(STR$(i)), 2) + ".png"
         _SAVEIMAGE save_name, layer_image
@@ -88,28 +70,36 @@ ELSE
 END IF
 NEXT i
 
-' Add title and instructions
-COLOR _RGB32(255, 255, 255)
-_PRINTSTRING (50, 20), "ASEPRITE Layers Debug Analysis - " + filename
-_PRINTSTRING (50, 40), "Found " + STR$(layer_count) + " layers with data out of " + STR$(get_aseprite_layer_count(aseprite_img)) + " total"
-_PRINTSTRING (50, 60), "File: " + STR$(get_aseprite_frame_count(aseprite_img)) + " frames, " + STR$(get_aseprite_cel_count(aseprite_img)) + " cels"
-_PRINTSTRING (50, 80), "Individual layer files saved as debug_layer_XX.png"
-
-COLOR _RGB32(0, 255, 0)
-_PRINTSTRING (50, 720), "Press any key to continue..."
-
-_DISPLAY
-SLEEP
-
 PRINT
 PRINT "Debug analysis complete!"
 PRINT "Found "; layer_count; " layers with data out of "; get_aseprite_layer_count(aseprite_img); " total layers"
-PRINT "File contains "; get_aseprite_frame_count(aseprite_img); " frames and "; get_aseprite_cel_count(aseprite_img); " cels"
-IF get_aseprite_tag_count(aseprite_img) > 0 THEN
-    PRINT "Animation tags: "; get_aseprite_tag_count(aseprite_img)
-END IF
 PRINT "Individual layer images saved as debug_layer_XX.png"
 PRINT "Check these files to see what each layer contains"
+PRINT
+PRINT "Creating composite image from all layers..."
+
+' Create composite image using the standard library function
+DIM composite_image AS LONG
+PRINT "About to call create_composite_image_from_aseprite..."
+composite_image = create_composite_image_from_aseprite&(aseprite_img)
+PRINT "Standard composite function returned: "; composite_image
+
+IF composite_image <> -1 AND composite_image <> 0 THEN
+    PRINT "Composite image created successfully!"
+    
+    ' Save the composite image IMMEDIATELY
+    _SAVEIMAGE "debug_composite.png", composite_image
+    PRINT "Composite image saved as debug_composite.png"
+    PRINT "*** COMPOSITE SAVE COMPLETED ***"
+    
+    ' Clean up and exit cleanly
+    _FREEIMAGE composite_image
+    PRINT "Cleanup completed. Exiting..."
+    SYSTEM
+ELSE
+    PRINT "ERROR: Failed to create composite image"
+    SYSTEM
+END IF
 
 SYSTEM
 

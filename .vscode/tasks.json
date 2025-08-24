@@ -283,7 +283,7 @@
             "label": "IMAGE: Open in Aseprite",
             "type": "shell",
             "windows": {
-                "command": "C:\\Program Files\\Aseprite\\aseprite.exe",
+                "command": "F:\\SteamLibrary\\steamapps\\common\\Aseprite\\Aseprite.exe",
                 "args": [
                     "${file}"
                 ]
