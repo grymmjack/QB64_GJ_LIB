@@ -13,8 +13,8 @@
 '
 $INCLUDEONCE
 
-' Include ZLIB support for decompressing compressed CEL data
-'$INCLUDE:'ZLIB.BI'
+' Compression support provided by QB64PE built-in _INFLATE$ function
+' No external libraries required!
 
 TYPE ASEPRITE_HEADER
 ' A 128-byte header (same as FLC/FLI header, but with other magic number):

@@ -43,7 +43,7 @@
 OPTION _EXPLICIT
 
 ' Debug mode - set to 1 to bypass all user interactions
-CONST DEBUG_MODE = 0
+CONST DEBUG_MODE = 1
 
 ' $LET GJ_LIB_UNIFIED_TESTING = 1
 $IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
@@ -80,6 +80,10 @@ SUB main
         test_file$ = "C:\Users\grymmjack\git\QB64_GJ_LIB\ASEPRITE\test-files\CAVE CITY.aseprite"
         PRINT "Testing with default file: " + test_file$
         PRINT
+        
+        PRINT "Press any key to continue with test..."
+        SLEEP
+        
         test_aseprite_file test_file$
         PRINT
         PRINT "DEBUG MODE: Testing graphics display..."
@@ -102,6 +106,8 @@ SUB main
         END IF
         PRINT
         PRINT "DEBUG MODE: Test completed."
+        PRINT "Press any key to exit..."
+        SLEEP
         SYSTEM
     END IF
     
