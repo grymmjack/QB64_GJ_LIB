@@ -331,6 +331,108 @@ END IF
 - Implement buffering for large file operations
 - Check file existence before operations
 
+## MCP Server Tools Integration
+
+### QB64PE MCP Server
+This project includes access to specialized QB64PE MCP (Model Context Protocol) server tools that provide enhanced AI coding assistance:
+
+#### Code Analysis and Enhancement
+```
+#mcp_qb64pe_analyze_qb64pe_execution_mode - Analyze QB64PE execution characteristics
+#mcp_qb64pe_enhance_qb64pe_code_for_debugging - Add debugging enhancements automatically
+#mcp_qb64pe_validate_qb64pe_syntax - Check syntax and suggest corrections
+#mcp_qb64pe_validate_qb64pe_compatibility - Check for compatibility issues
+```
+
+#### Debugging and Monitoring
+```
+#mcp_qb64pe_get_llm_debugging_guide - Get LLM-specific debugging guidance
+#mcp_qb64pe_generate_advanced_debugging_template - Create debugging templates
+#mcp_qb64pe_inject_native_qb64pe_logging - Add native logging capabilities
+#mcp_qb64pe_parse_qb64pe_structured_output - Parse program output
+```
+
+#### Screenshot and Graphics Analysis
+```
+#mcp_qb64pe_capture_qb64pe_screenshot - Auto-capture program screenshots
+#mcp_qb64pe_analyze_qb64pe_graphics_screenshot - Analyze visual output
+#mcp_qb64pe_generate_qb64pe_screenshot_analysis_template - Create test templates
+#mcp_qb64pe_start_screenshot_monitoring - Monitor graphics programs
+```
+
+#### Knowledge and Documentation
+```
+#mcp_qb64pe_search_qb64pe_wiki - Search QB64PE documentation
+#mcp_qb64pe_lookup_qb64pe_keyword - Get keyword information
+#mcp_qb64pe_get_qb64pe_keywords_by_category - Browse keywords by category
+#mcp_qb64pe_autocomplete_qb64pe_keywords - Get keyword suggestions
+```
+
+#### Installation and Configuration
+```
+#mcp_qb64pe_detect_qb64pe_installation - Check QB64PE installation
+#mcp_qb64pe_get_qb64pe_installation_guidance - Get setup instructions
+#mcp_qb64pe_validate_qb64pe_path - Verify installation path
+```
+
+### AI Agent Best Practices with MCP Tools
+
+#### 1. **Program Execution Safety**
+**CRITICAL**: Never wait indefinitely for QB64PE programs
+- Use `#mcp_qb64pe_analyze_qb64pe_execution_mode` to understand program behavior
+- Apply `#mcp_qb64pe_enhance_qb64pe_code_for_debugging` before execution
+- Set timeouts: 30-60 seconds for graphics, 15-30 for console programs
+- Monitor with `#mcp_qb64pe_get_process_monitoring_commands`
+
+#### 2. **Debugging Workflow**
+```
+1. Analyze code: #mcp_qb64pe_analyze_qb64pe_execution_mode
+2. Enhance for debugging: #mcp_qb64pe_enhance_qb64pe_code_for_debugging  
+3. Validate syntax: #mcp_qb64pe_validate_qb64pe_syntax
+4. Execute with monitoring
+5. Parse output: #mcp_qb64pe_parse_qb64pe_structured_output
+6. Capture screenshots: #mcp_qb64pe_capture_qb64pe_screenshot (if graphics)
+7. Analyze results: #mcp_qb64pe_analyze_qb64pe_graphics_screenshot
+```
+
+#### 3. **Graphics Program Handling**
+- Use `#mcp_qb64pe_start_screenshot_monitoring` for automated capture
+- Apply `#mcp_qb64pe_generate_qb64pe_screenshot_analysis_template` for testing
+- Analyze with `#mcp_qb64pe_analyze_qb64pe_graphics_screenshot`
+- Generate feedback with `#mcp_qb64pe_generate_programming_feedback`
+
+#### 4. **Code Enhancement Patterns**
+```basic
+' Before: Basic QB64PE code
+SCREEN _NEWIMAGE(800, 600, 32)
+PRINT "Hello World"
+
+' After: Enhanced with MCP tools
+$CONSOLE:ONLY                    ' Added by debugging service
+CONST DEBUG_MODE = 1            ' Added by debugging service
+SCREEN _NEWIMAGE(800, 600, 32)
+CALL DebugLog("Graphics initialized")  ' Added by debugging service
+PRINT "Hello World"
+CALL DebugLog("Print completed")      ' Added by debugging service
+CALL AutoExit(10)                     ' Added by debugging service
+SYSTEM                                ' Added by debugging service
+```
+
+#### 5. **Compatibility and Porting**
+- Use `#mcp_qb64pe_analyze_qbasic_compatibility` for legacy code
+- Apply `#mcp_qb64pe_port_qbasic_to_qb64pe` for conversions
+- Check with `#mcp_qb64pe_search_qb64pe_compatibility`
+
+### MCP Tool Configuration
+The workspace includes MCP server configuration in `.vscode/settings.json`:
+```jsonc
+"chat.mcp.serverSampling": {
+  "QB64_GJ_LIB/.vscode/mcp.json: qb64pe": {
+    "allowedModels": ["copilot/claude-3.5-sonnet", ...]
+  }
+}
+```
+
 ## Resources and References
 
 ### Essential Links
@@ -342,7 +444,8 @@ END IF
 - **QB64-PE Compiler**: Primary development environment
 - **InForm-PE**: GUI form designer
 - **VS Code**: Recommended editor with full task integration
+- **QB64PE MCP Server**: Enhanced AI assistance for QB64PE development
 
 ---
 
-*This instruction set ensures AI coding agents have comprehensive knowledge of QB64_GJ_LIB architecture, conventions, and best practices for immediate productivity in this codebase.*
+*This instruction set ensures AI coding agents have comprehensive knowledge of QB64_GJ_LIB architecture, conventions, and best practices, plus access to specialized MCP tools for enhanced QB64PE development productivity.*
