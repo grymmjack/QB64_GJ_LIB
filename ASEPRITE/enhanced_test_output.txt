@@ -1,0 +1,82 @@
+[INFO] Starting automated ASEPRITE test session...
+[INFO] ASEPRITE Library Test Program Starting
+ASEPRITE Library Test Program
+=============================
+
+[FILE] Testing file: test-files/CAVE CITY.aseprite
+Testing file: test-files/CAVE CITY.aseprite
+
+[INFO] Test 1: File validation...
+Test 1: File validation...
+[SUCCESS] File is valid ASEPRITE format
+✓ File is valid ASEPRITE format
+[INFO] Validation complete (auto-continuing in  1.5s...)
+Validation complete (auto-continuing in  1.5s...)
+[INFO] Test 2: Loading ASEPRITE file...
+Test 2: Loading ASEPRITE file...
+[SUCCESS] ASEPRITE file loaded successfully
+✓ ASEPRITE file loaded successfully
+[INFO] File info: ASEPRITE FILE INFORMATION
+========================
+File Path: test-files/CAVE CITY.aseprite
+File Size:  2130 bytes
+Magic Number: 0xA5E0
+
+IMAGE PROPERTIES:
+Width:  192 pixels
+Height:  108 pixels
+Color Depth:  32 bpp (RGBA)
+Number of Frames:  1
+Frame Speed:  100 ms (deprecated)
+Number of Colors:  32
+
+FLAGS:
+- Layer opacity values are valid
+
+PIXEL RATIO:
+Pixel Width:  1
+Pixel Height:  1
+Ratio:  1:1
+
+GRID PROPERTIES:
+Grid Position: ( 0,  0)
+Grid Size:  16 x  16
+Grid: Enabled
+
+
+ASEPRITE FILE INFORMATION
+========================
+File Path: test-files/CAVE CITY.aseprite
+File Size:  2130 bytes
+Magic Number: 0xA5E0
+
+IMAGE PROPERTIES:
+Width:  192 pixels
+Height:  108 pixels
+Color Depth:  32 bpp (RGBA)
+Number of Frames:  1
+Frame Speed:  100 ms (deprecated)
+Number of Colors:  32
+
+FLAGS:
+- Layer opacity values are valid
+
+PIXEL RATIO:
+Pixel Width:  1
+Pixel Height:  1
+Ratio:  1:1
+
+GRID PROPERTIES:
+Grid Position: ( 0,  0)
+Grid Size:  16 x  16
+Grid: Enabled
+
+
+[INFO] File loaded, creating image... (auto-continuing in  1.5s...)
+File loaded, creating image... (auto-continuing in  1.5s...)
+[INFO] Test 3: Creating QB64PE image...
+Test 3: Creating QB64PE image...
+[ERROR] Failed to create QB64PE image
+[INFO] Test completed
+[INFO] ASEPRITE test session completed successfully
+[INFO] Resource cleanup completed
