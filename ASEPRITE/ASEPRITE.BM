@@ -2110,6 +2110,34 @@ END FUNCTION
 
 
 ''
+' Loads an ASEPRITE file and returns an ASEPRITE_IMAGE structure
+'
+' @param filename Path to ASEPRITE file
+' @return LONG Image handle for composite image, or 0 on failure
+'
+FUNCTION load_aseprite_file& (filename AS STRING)
+  DIM ase_img   AS ASEPRITE_IMAGE
+  DIM composite AS LONG
+
+  IF ASEPRITE_DEBUG_MODE THEN
+      _ECHO "Loading: " + filename$
+  END IF
+  CALL load_aseprite_image(filename$, ase_img)
+
+  IF ase_img.is_valid = _FALSE THEN
+      IF ASEPRITE_DEBUG_MODE THEN
+          _ECHO "Failed to load ASEPRITE: " + ase_img.error_message
+      END IF
+      load_aseprite_file& = 0
+      EXIT FUNCTION
+  ELSE
+    composite& = create_composite_image_from_aseprite&(ase_img)
+    load_aseprite_file& = composite&
+  END IF
+
+END FUNCTION
+
+''
 ' Creates a simple composite image from an already-loaded ASEPRITE_IMAGE
 ' This implementation composites each layer in file order using
 ' `load_specific_layer_image&` (which returns a full-size image with
