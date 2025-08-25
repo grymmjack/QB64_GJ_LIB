@@ -5,6 +5,8 @@
 
 '$INCLUDE:'ASEPRITE.BI'
 
+$CONSOLE
+
 ' Constants
 CONST TEST_FILE$ = "test-files\DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -101,8 +103,9 @@ ELSE
     _PRINTSTRING (10, 110), "Press any key to exit..."
 END IF
 
+DO
 ' Wait for user input
-SLEEP
+LOOP UNTIL _KEYHIT = 27
 SYSTEM
 
 '$INCLUDE:'ASEPRITE.BM'

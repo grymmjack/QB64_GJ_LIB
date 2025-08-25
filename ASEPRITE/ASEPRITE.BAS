@@ -21,6 +21,8 @@ $CONSOLE
 
 DIM filename  AS STRING
 DIM aseprite_image AS LONG
+DIM ZOOM AS INTEGER
+ZOOM = 10
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -33,12 +35,14 @@ IF aseprite_image& = 0 THEN
 END IF
 
 _TITLE "ASEPRITE ImageViewer"
-SCREEN _NEWIMAGE(_WIDTH(aseprite_image&), _HEIGHT(aseprite_image&), 32)
+SCREEN _NEWIMAGE(_WIDTH(aseprite_image&) * ZOOM, _HEIGHT(aseprite_image&) * ZOOM, 32)
 _SCREENMOVE _MIDDLE
 _SOURCE aseprite_image&
 _DEST 0
 _PUTIMAGE
-SLEEP
+DO
+  ' WAIT FOR ESC
+LOOP UNTIL _KEYHIT = 27
 
 SYSTEM 1
 

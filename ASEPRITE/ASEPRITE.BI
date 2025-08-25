@@ -754,6 +754,7 @@ TYPE ASEPRITE_RENDER_ITEM
 END TYPE
 
 ' Function declarations for basic and enhanced layer support
+DECLARE FUNCTION load_aseprite_file& (filename AS STRING)
 DECLARE SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
 DECLARE SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
 

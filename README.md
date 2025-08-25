@@ -1,7 +1,7 @@
 # QB64_GJ_LIB
 ## GRYMMJACK'S QB64 LIBRARY
 
-# REQUIRES QB64-PE V3.12+
+# REQUIRES QB64-PE V4+
 
 ### WHAT IS THIS?
 > This is a library of QB64 code which I've created to fill in some "holes" that I
@@ -14,6 +14,7 @@ in it's current state.
 | LIBRARY | PURPOSE | NOTES |
 |---------|---------|------|
 | [ANSI](ANSI/README.md) | ANSI text mode | Full ANSI.SYS support plus 256 and RGB color modes as well as a QB64 native ansi emulation mode. |
+| [ASEPRITE](ASEPRITE/README.md) | [ASEPRITE](https://www.aseprite.org/) Image Format support | Natively use `.aseprite` files in QB64! |
 | [ARR](ARR/README.md) | ARRay Library | A high level library for working with arrays of all types in QB64 |
 | [BBX](BBX/README.md) | Bounding BoX Library | Reusable bounding box with position, resize, keyboard and mouse control | 
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
