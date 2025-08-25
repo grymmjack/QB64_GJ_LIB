@@ -15,7 +15,7 @@ CALL load_aseprite_image(filename, ase_img)
 
 IF ase_img.is_valid = 0 THEN
     PRINT "Failed to load ASEPRITE: "; ase_img.error_message
-    SYSTEM
+    SYSTEM 0
 END IF
 
 PRINT "Loaded: "; ase_img.layer_count; " layers, "; ase_img.frame_count; " frames"
@@ -25,7 +25,7 @@ composite = create_composite_image_from_aseprite&(ase_img)
 
 IF composite = -1 OR composite = 0 THEN
     PRINT "Composite creation failed"
-    SYSTEM
+    SYSTEM 0
 END IF
 
 _SAVEIMAGE "composite_debug_lib.png", composite
@@ -33,6 +33,6 @@ PRINT "Saved composite_debug_lib.png"
 
 _FREEIMAGE composite
 
-SYSTEM
+SYSTEM 1
 
 '$INCLUDE:'ASEPRITE.BM'

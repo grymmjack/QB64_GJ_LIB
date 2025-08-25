@@ -19,31 +19,31 @@ $INCLUDEONCE
 ' @param result ASEPRITE_IMAGE Complete Aseprite image data structure (output)
 '
 SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
-    DIM file_handle AS INTEGER
-    DIM temp_header AS ASEPRITE_HEADER
-    DIM i AS INTEGER
-    DIM j AS INTEGER
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM file_handle     AS INTEGER
+    DIM temp_header     AS ASEPRITE_HEADER
+    DIM i               AS INTEGER
+    DIM j               AS INTEGER
+    DIM frame_header    AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header    AS ASEPRITE_CHUNK_HEADER
     DIM frame_start_pos AS LONG
     DIM chunk_start_pos AS LONG
-    DIM chunk_end_pos AS LONG
-    DIM actual_chunks AS LONG
-    DIM layer_name_len AS INTEGER
-    DIM layer_name AS STRING
-    DIM cel_width AS INTEGER
-    DIM cel_height AS INTEGER
+    DIM chunk_end_pos   AS LONG
+    DIM actual_chunks   AS LONG
+    DIM layer_name_len  AS INTEGER
+    DIM layer_name      AS STRING
+    DIM cel_width       AS INTEGER
+    DIM cel_height      AS INTEGER
     
     ' Initialize result with enhanced metadata
-    result.file_path = img_path$
-    result.is_valid = 0
-    result.frames_loaded = 0
-    result.chunks_loaded = 0
-    result.error_message = ""
-    result.layer_count = 0
-    result.frame_count = 0
-    result.cel_count = 0
-    result.tag_count = 0
+    result.file_path      = img_path$
+    result.is_valid       = _FALSE
+    result.frames_loaded  = 0
+    result.chunks_loaded  = 0
+    result.error_message  = ""
+    result.layer_count    = 0
+    result.frame_count    = 0
+    result.cel_count      = 0
+    result.tag_count      = 0
     result.palette_chunks = 0
     
     ' Check if file exists
@@ -93,9 +93,7 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
         
         ' Validate frame magic number
         IF frame_header.magic_number <> ASEPRITE_FRAME_MAGIC THEN
-            IF ASEPRITE_DEBUG_MODE THEN
-                PRINT "WARNING: Invalid frame magic number in frame " + STR$(i)
-            END IF
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "WARNING: Invalid frame magic number in frame " + STR$(i)
         END IF
         
         ' Determine chunk count (use new field if available, otherwise old field)
@@ -146,17 +144,17 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     NEXT i
     
     ' Mark as successfully loaded
-    result.is_valid = 1
+    result.is_valid = _TRUE
     result.frames_loaded = temp_header.num_frames
     
     IF ASEPRITE_DEBUG_MODE THEN
-        PRINT "ASEPRITE: Loaded " + img_path$
-        PRINT "  Layers: " + STR$(result.layer_count)
-        PRINT "  Frames: " + STR$(result.frame_count) 
-        PRINT "  Cels: " + STR$(result.cel_count)
-        PRINT "  Tags: " + STR$(result.tag_count)
-        PRINT "  Palette chunks: " + STR$(result.palette_chunks)
-        PRINT "  Total chunks: " + STR$(result.chunks_loaded)
+        _ECHO "ASEPRITE: Loaded " + img_path$
+        _ECHO "  Layers: " + STR$(result.layer_count)
+        _ECHO "  Frames: " + STR$(result.frame_count) 
+        _ECHO "  Cels: " + STR$(result.cel_count)
+        _ECHO "  Tags: " + STR$(result.tag_count)
+        _ECHO "  Palette chunks: " + STR$(result.palette_chunks)
+        _ECHO "  Total chunks: " + STR$(result.chunks_loaded)
     END IF
     
     CLOSE #file_handle
@@ -173,7 +171,7 @@ FUNCTION get_aseprite_info$ (aseprite_img AS ASEPRITE_IMAGE)
     nl$ = CHR$(13) + CHR$(10)
     out$ = ""
     
-    IF aseprite_img.is_valid = 0 THEN
+    IF aseprite_img.is_valid = _FALSE THEN
         out$ = "INVALID ASEPRITE FILE" + nl$
         IF LEN(aseprite_img.error_message) > 0 THEN
             out$ = out$ + "Error: " + aseprite_img.error_message + nl$
@@ -251,7 +249,7 @@ END FUNCTION
 ' Validates if a file is a proper Aseprite file
 '
 ' @param img_path$ Path to file to validate
-' @return integer 1 if valid Aseprite file, 0 otherwise
+' @return BOOLEAN _TRUE if valid Aseprite file, _FALSE otherwise
 '
 FUNCTION is_valid_aseprite_file (img_path$)
     DIM test_img AS ASEPRITE_IMAGE
@@ -265,6 +263,7 @@ END FUNCTION
 ' @return string ".ase" or ".aseprite" extension
 '
 FUNCTION get_aseprite_extension$
+    get_aseprite_extension$ = ".aseprite"
     get_aseprite_extension$ = ".ase"
 END FUNCTION
 
@@ -276,25 +275,25 @@ END FUNCTION
 '
 FUNCTION get_blend_mode_name$ (blend_mode AS _UNSIGNED INTEGER)
     SELECT CASE blend_mode
-        CASE ASEPRITE_BLEND_NORMAL: get_blend_mode_name$ = "Normal"
-        CASE ASEPRITE_BLEND_MULTIPLY: get_blend_mode_name$ = "Multiply"
-        CASE ASEPRITE_BLEND_SCREEN: get_blend_mode_name$ = "Screen"
-        CASE ASEPRITE_BLEND_OVERLAY: get_blend_mode_name$ = "Overlay"
-        CASE ASEPRITE_BLEND_DARKEN: get_blend_mode_name$ = "Darken"
-        CASE ASEPRITE_BLEND_LIGHTEN: get_blend_mode_name$ = "Lighten"
+        CASE ASEPRITE_BLEND_NORMAL: get_blend_mode_name$      = "Normal"
+        CASE ASEPRITE_BLEND_MULTIPLY: get_blend_mode_name$    = "Multiply"
+        CASE ASEPRITE_BLEND_SCREEN: get_blend_mode_name$      = "Screen"
+        CASE ASEPRITE_BLEND_OVERLAY: get_blend_mode_name$     = "Overlay"
+        CASE ASEPRITE_BLEND_DARKEN: get_blend_mode_name$      = "Darken"
+        CASE ASEPRITE_BLEND_LIGHTEN: get_blend_mode_name$     = "Lighten"
         CASE ASEPRITE_BLEND_COLOR_DODGE: get_blend_mode_name$ = "Color Dodge"
-        CASE ASEPRITE_BLEND_COLOR_BURN: get_blend_mode_name$ = "Color Burn"
-        CASE ASEPRITE_BLEND_HARD_LIGHT: get_blend_mode_name$ = "Hard Light"
-        CASE ASEPRITE_BLEND_SOFT_LIGHT: get_blend_mode_name$ = "Soft Light"
-        CASE ASEPRITE_BLEND_DIFFERENCE: get_blend_mode_name$ = "Difference"
-        CASE ASEPRITE_BLEND_EXCLUSION: get_blend_mode_name$ = "Exclusion"
-        CASE ASEPRITE_BLEND_HUE: get_blend_mode_name$ = "Hue"
-        CASE ASEPRITE_BLEND_SATURATION: get_blend_mode_name$ = "Saturation"
-        CASE ASEPRITE_BLEND_COLOR: get_blend_mode_name$ = "Color"
-        CASE ASEPRITE_BLEND_LUMINOSITY: get_blend_mode_name$ = "Luminosity"
-        CASE ASEPRITE_BLEND_ADDITION: get_blend_mode_name$ = "Addition"
-        CASE ASEPRITE_BLEND_SUBTRACT: get_blend_mode_name$ = "Subtract"
-        CASE ASEPRITE_BLEND_DIVIDE: get_blend_mode_name$ = "Divide"
+        CASE ASEPRITE_BLEND_COLOR_BURN: get_blend_mode_name$  = "Color Burn"
+        CASE ASEPRITE_BLEND_HARD_LIGHT: get_blend_mode_name$  = "Hard Light"
+        CASE ASEPRITE_BLEND_SOFT_LIGHT: get_blend_mode_name$  = "Soft Light"
+        CASE ASEPRITE_BLEND_DIFFERENCE: get_blend_mode_name$  = "Difference"
+        CASE ASEPRITE_BLEND_EXCLUSION: get_blend_mode_name$   = "Exclusion"
+        CASE ASEPRITE_BLEND_HUE: get_blend_mode_name$         = "Hue"
+        CASE ASEPRITE_BLEND_SATURATION: get_blend_mode_name$  = "Saturation"
+        CASE ASEPRITE_BLEND_COLOR: get_blend_mode_name$       = "Color"
+        CASE ASEPRITE_BLEND_LUMINOSITY: get_blend_mode_name$  = "Luminosity"
+        CASE ASEPRITE_BLEND_ADDITION: get_blend_mode_name$    = "Addition"
+        CASE ASEPRITE_BLEND_SUBTRACT: get_blend_mode_name$    = "Subtract"
+        CASE ASEPRITE_BLEND_DIVIDE: get_blend_mode_name$      = "Divide"
         CASE ELSE: get_blend_mode_name$ = "Unknown (" + STR$(blend_mode) + ")"
     END SELECT
 END FUNCTION
@@ -307,9 +306,9 @@ END FUNCTION
 '
 FUNCTION get_animation_direction_name$ (direction AS _UNSIGNED _BYTE)
     SELECT CASE direction
-        CASE ASEPRITE_ANIM_FORWARD: get_animation_direction_name$ = "Forward"
-        CASE ASEPRITE_ANIM_REVERSE: get_animation_direction_name$ = "Reverse"
-        CASE ASEPRITE_ANIM_PING_PONG: get_animation_direction_name$ = "Ping-pong"
+        CASE ASEPRITE_ANIM_FORWARD: get_animation_direction_name$           = "Forward"
+        CASE ASEPRITE_ANIM_REVERSE: get_animation_direction_name$           = "Reverse"
+        CASE ASEPRITE_ANIM_PING_PONG: get_animation_direction_name$         = "Ping-pong"
         CASE ASEPRITE_ANIM_PING_PONG_REVERSE: get_animation_direction_name$ = "Ping-pong Reverse"
         CASE ELSE: get_animation_direction_name$ = "Unknown (" + STR$(direction) + ")"
     END SELECT
@@ -326,7 +325,7 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     DIM x AS INTEGER, y AS INTEGER
     DIM pixel_color AS _UNSIGNED LONG
     
-    IF aseprite_img.is_valid = 0 THEN
+    IF aseprite_img.is_valid = _FALSE THEN
         create_image_from_aseprite& = 0
         EXIT FUNCTION
     END IF
@@ -339,7 +338,8 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     
     image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
     
-    IF image_handle = -1 OR image_handle = 0 THEN
+    IF image_handle = 0 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Failed to create image from Aseprite data"
         create_image_from_aseprite& = 0
         EXIT FUNCTION
     END IF
@@ -350,6 +350,8 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     ELSE
         ' Fall back to placeholder pattern
         DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+        DIM old_dest AS LONG
+        old_dest& = _DEST
         _DEST image_handle
         FOR y = 0 TO aseprite_img.header.height - 1
             FOR x = 0 TO aseprite_img.header.width - 1
@@ -362,7 +364,7 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
                 END IF
             NEXT x
         NEXT y
-        _DEST 0
+        _DEST old_dest&
     END IF
     
     create_image_from_aseprite& = image_handle
@@ -382,49 +384,35 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     DIM x_pos AS INTEGER, y_pos AS INTEGER
     DIM old_dest AS LONG
     
-    IF aseprite_img.is_valid = 0 THEN
+    IF aseprite_img.is_valid = _FALSE THEN
         _ECHO "Cannot display: Invalid Aseprite image"
         EXIT SUB
     END IF
-    
-    ' Create graphics screen FIRST, before trying to create images
-    IF _PIXELSIZE(0) = 0 THEN
-        SCREEN _NEWIMAGE(800, 600, 32)
-        _TITLE "Aseprite Image Viewer - " + aseprite_img.file_path
-    END IF
-    
+      
     ' Clear screen and show debug info
-    CLS
     IF ASEPRITE_DEBUG_MODE THEN
-        COLOR _RGB32(255, 255, 0)
-        _PRINTSTRING (10, 10), "Loading Aseprite image..."
-        _PRINTSTRING (10, 30), "File: " + aseprite_img.file_path
-        _PRINTSTRING (10, 50), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height)
-        _DISPLAY
-        _DELAY 1
+        _ECHO "Loading Aseprite image..."
+        _ECHO "File: " + aseprite_img.file_path
+        _ECHO "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height)
     END IF
     
     ' Now create image from Aseprite data (after we're in graphics mode)
     image_handle = create_image_from_aseprite&(aseprite_img)
     
     IF image_handle = 0 THEN
-        IF ASEPRITE_DEBUG_MODE THEN
-            _PRINTSTRING (10, 70), "ERROR: Failed to create image from Aseprite data"
-            _DISPLAY
-            _DELAY 3
-        END IF
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "ERROR: Failed to create image from Aseprite data"
         EXIT SUB
     END IF
     
     ' Calculate display dimensions
-    display_width = INT(aseprite_img.header.width * scale)
+    display_width  = INT(aseprite_img.header.width * scale)
     display_height = INT(aseprite_img.header.height * scale)
     
-    screen_width = _WIDTH(0)
-    screen_height = _HEIGHT(0)
+    screen_width   = _WIDTH(0)
+    screen_height  = _HEIGHT(0)
     
-    screen_width = _WIDTH(0)
-    screen_height = _HEIGHT(0)
+    screen_width   = _WIDTH(0)
+    screen_height  = _HEIGHT(0)
     
     ' Calculate position
     IF center_display THEN
@@ -435,16 +423,12 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
         y_pos = 10
     END IF
     
-    ' Clear screen
-    CLS
-    
     ' Display image info
     IF ASEPRITE_DEBUG_MODE THEN
-        COLOR _RGB32(255, 255, 255)
-        _PRINTSTRING (10, 10), "File: " + aseprite_img.file_path
-        _PRINTSTRING (10, 30), "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height) + " pixels"
-        _PRINTSTRING (10, 50), "Scale: " + STR$(scale) + "x"
-        _PRINTSTRING (10, 70), "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp"
+        _ECHO "File: " + aseprite_img.file_path
+        _ECHO "Size: " + STR$(aseprite_img.header.width) + "x" + STR$(aseprite_img.header.height) + " pixels"
+        _ECHO "Scale: " + STR$(scale) + "x"
+        _ECHO "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp"
     END IF
     
     ' Display the image
@@ -452,15 +436,6 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
         _PUTIMAGE (x_pos, y_pos + 100), image_handle
     ELSE
         _PUTIMAGE (x_pos, y_pos + 100)-(x_pos + display_width - 1, y_pos + 100 + display_height - 1), image_handle
-    END IF
-    
-    ' Display controls and wait for user input (unless in auto-mode)
-    IF ASEPRITE_DEBUG_MODE THEN
-        _PRINTSTRING (10, screen_height - 40), "Aseprite graphics display - Auto-closing in 3 seconds..."
-        _DISPLAY
-        _DELAY 3 ' Show for 3 seconds
-    ELSE
-        _DISPLAY
     END IF
     
     ' Clean up
@@ -491,7 +466,7 @@ END SUB
 '
 ' @param aseprite_img ASEPRITE_IMAGE structure with loaded data
 ' @param target_image Handle to QB64PE image to load pixels into
-' @return -1 if successful, 0 if failed
+' @return boolean _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
     DIM file_handle AS INTEGER
@@ -511,7 +486,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
     
     load_aseprite_pixels% = 0 ' Default to failure
     
-    IF aseprite_img.is_valid = 0 THEN EXIT FUNCTION
+    IF aseprite_img.is_valid = _FALSE THEN EXIT FUNCTION
     
     ' Open file for binary reading
     file_handle = FREEFILE
@@ -580,7 +555,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                         ' Load raw pixel data based on color depth
                         IF load_raw_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
                             IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Raw pixel data loaded successfully"
-                            load_aseprite_pixels% = -1 ' Success
+                            load_aseprite_pixels% = _TRUE ' Success
                         ELSE
                             IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Failed to load raw pixel data"
                         END IF
@@ -595,13 +570,13 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                         ' Load compressed pixel data with QB64PE built-in decompression
                         IF load_compressed_pixel_data%(file_handle, target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp, chunk_header.chunk_size) THEN
                             IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Compressed pixel data loaded successfully"
-                            load_aseprite_pixels% = -1 ' Success
+                            load_aseprite_pixels% = _TRUE ' Success
                         ELSE
                             IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Compressed decompression failed, using placeholder"
                             ' Fallback to placeholder if decompression fails
                             IF create_compressed_placeholder%(target_image, cel_chunk, cel_width, cel_height, aseprite_img.header.color_depth_bpp) THEN
                                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Placeholder created"
-                                load_aseprite_pixels% = -1 ' Success with placeholder
+                                load_aseprite_pixels% = _TRUE ' Success with placeholder
                             END IF
                         END IF
                         
@@ -632,7 +607,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
     CLOSE #file_handle
     
     ' If we found at least one CEL chunk, consider it a success
-    IF chunks_found > 0 THEN load_aseprite_pixels% = -1
+    IF chunks_found > 0 THEN load_aseprite_pixels% = _TRUE
     
 END FUNCTION
 
@@ -645,7 +620,7 @@ END FUNCTION
 ' @param width Image width in pixels
 ' @param height Image height in pixels  
 ' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
-' @return -1 if successful, 0 if failed
+' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
     DIM x AS INTEGER, y AS INTEGER
@@ -675,7 +650,7 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                     PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
                 NEXT x
             NEXT y
-            load_raw_pixel_data% = -1 ' Success
+            load_raw_pixel_data% = _TRUE ' Success
             
         CASE 16 ' Grayscale format (2 bytes per pixel)
             FOR y = 0 TO height - 1
@@ -687,7 +662,7 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                     PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
                 NEXT x
             NEXT y
-            load_raw_pixel_data% = -1 ' Success
+            load_raw_pixel_data% = _TRUE ' Success
             
         CASE 8 ' Indexed format (1 byte per pixel)
             ' For indexed mode, we'd need the palette data
@@ -701,7 +676,7 @@ FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel
                     PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
                 NEXT x
             NEXT y
-            load_raw_pixel_data% = -1 ' Success
+            load_raw_pixel_data% = _TRUE ' Success
     END SELECT
     
     ' Restore destination
@@ -717,7 +692,7 @@ END FUNCTION
 ' @param width Image width in pixels
 ' @param height Image height in pixels
 ' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
-' @return -1 if successful, 0 if failed
+' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION create_compressed_placeholder% (target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
     DIM x AS INTEGER, y AS INTEGER
@@ -725,7 +700,7 @@ FUNCTION create_compressed_placeholder% (target_image AS LONG, cel_chunk AS ASEP
     DIM old_dest AS LONG
     DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
     
-    create_compressed_placeholder% = -1 ' Success by default
+    create_compressed_placeholder% = _TRUE ' Success by default
     
     ' Set destination to our target image
     old_dest = _DEST
@@ -764,7 +739,7 @@ END FUNCTION
 ' @param height Image height in pixels  
 ' @param color_depth_bpp Color depth (8, 16, or 32 bits per pixel)
 ' @param chunk_size Total size of the chunk for bounds checking
-' @return -1 if successful, 0 if failed
+' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
     DIM compressed_data$
@@ -901,7 +876,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     _DEST old_dest
     
     IF ASEPRITE_DEBUG_MODE THEN _ECHO "Pixel loading completed successfully"
-    load_compressed_pixel_data% = -1 ' Success
+    load_compressed_pixel_data% = _TRUE ' Success
 END FUNCTION
 
 ''
@@ -1040,7 +1015,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
     _DEST old_dest
     
     IF ASEPRITE_DEBUG_MODE THEN _ECHO "Pixel loading completed successfully"
-    load_compressed_pixel_data_for_layer% = -1 ' Success
+    load_compressed_pixel_data_for_layer% = _TRUE ' Success
 END FUNCTION
 
 ''
@@ -1089,23 +1064,23 @@ SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
     DIM file_handle AS INTEGER
     
     ' Initialize result
-    result.base_image.file_path = file_path$
-    result.base_image.is_valid = 0
+    result.base_image.file_path     = file_path$
+    result.base_image.is_valid      = _FALSE
     result.base_image.frames_loaded = 0
     result.base_image.chunks_loaded = 0
     result.base_image.error_message = ""
-    result.num_layers = 0
-    result.num_frames = 0
-    result.layer_info = ""
-    result.layer_visibility = ""
-    result.frame_info = ""
-    result.current_display = 0
-    result.needs_update = 1
+    result.num_layers               = 0
+    result.num_frames               = 0
+    result.layer_info               = ""
+    result.layer_visibility         = ""
+    result.frame_info               = ""
+    result.current_display          = 0
+    result.needs_update             = 1
     
     ' Load base image first
     load_aseprite_image file_path$, result.base_image
     
-    IF result.base_image.is_valid = 0 THEN EXIT SUB
+    IF result.base_image.is_valid = _FALSE THEN EXIT SUB
     
     ' Open file for detailed layer/frame parsing
     file_handle = FREEFILE
@@ -1128,10 +1103,8 @@ SUB load_aseprite_enhanced (file_path$, result AS ASEPRITE_ENHANCED_IMAGE)
         update_composite_image result
     ELSE
         ' Debug: show what failed
-        IF _CONSOLE THEN
-            _DEST _CONSOLE
+        IF ASEPRITE_DEBUG_MODE THEN
             _ECHO "Debug: Layer parsing result: " + STR$(layer_result) + " Frame parsing result: " + STR$(frame_result)
-            _DEST 0
         END IF
     END IF
     
@@ -1143,7 +1116,7 @@ END SUB
 '
 ' @param file_handle Open file handle
 ' @param enhanced_img Enhanced image structure to populate
-' @return -1 if successful, 0 if failed
+' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM file_pos AS LONG
@@ -1220,7 +1193,7 @@ FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
         END IF
     NEXT chunk_num
     
-    parse_layer_chunks% = -1 ' Success
+    parse_layer_chunks% = _TRUE ' Success
 END FUNCTION
 
 ''
@@ -1228,7 +1201,7 @@ END FUNCTION
 '
 ' @param file_handle Open file handle  
 ' @param enhanced_img Enhanced image structure to populate
-' @return -1 if successful, 0 if failed
+' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM frame_info AS ASEPRITE_FRAME_INFO
@@ -1246,7 +1219,7 @@ FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
         frame_info.frame_index = i
         frame_info.duration = enhanced_img.base_image.header.frame_speed ' Default speed
         frame_info.num_cels = 1 ' Assume 1 cel per frame for now
-        frame_info.has_data = -1 ' Assume all frames have data
+        frame_info.has_data = _TRUE ' Assume all frames have data
         
         total_duration = total_duration + frame_info.duration
         
@@ -1257,7 +1230,7 @@ FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
     enhanced_img.animation.total_duration = total_duration
     enhanced_img.animation.total_frames = enhanced_img.num_frames
     
-    parse_frame_chunks% = -1 ' Success
+    parse_frame_chunks% = _TRUE ' Success
 END FUNCTION
 
 ''
@@ -1267,10 +1240,10 @@ END FUNCTION
 '
 SUB init_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     enhanced_img.animation.current_frame = 0
-    enhanced_img.animation.is_playing = 0
-    enhanced_img.animation.loop_mode = 1 ' Loop by default
-    enhanced_img.animation.elapsed_time = 0
-    enhanced_img.animation.last_update = TIMER
+    enhanced_img.animation.is_playing    = _FALSE
+    enhanced_img.animation.loop_mode     = 1 ' Loop by default
+    enhanced_img.animation.elapsed_time  = 0
+    enhanced_img.animation.last_update   = TIMER
 END SUB
 
 ''
@@ -1283,7 +1256,7 @@ SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM delta_time AS LONG
     DIM frame_duration AS LONG
     
-    IF enhanced_img.animation.is_playing = 0 THEN EXIT SUB
+    IF enhanced_img.animation.is_playing = _FALSE THEN EXIT SUB
     IF enhanced_img.animation.total_frames <= 1 THEN EXIT SUB
     
     current_time = TIMER
@@ -1308,7 +1281,7 @@ SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
             SELECT CASE enhanced_img.animation.loop_mode
                 CASE 0 ' Play once
                     enhanced_img.animation.current_frame = enhanced_img.animation.total_frames - 1
-                    enhanced_img.animation.is_playing = 0
+                    enhanced_img.animation.is_playing = _FALSE
                 CASE 1 ' Loop
                     enhanced_img.animation.current_frame = 0
                 CASE 2 ' Ping-pong (TODO: implement reverse direction)
@@ -1324,7 +1297,7 @@ END SUB
 ' @param enhanced_img Enhanced image structure
 '
 SUB play_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    enhanced_img.animation.is_playing = -1
+    enhanced_img.animation.is_playing = _TRUE
     enhanced_img.animation.last_update = TIMER
 END SUB
 
@@ -1334,7 +1307,7 @@ END SUB
 ' @param enhanced_img Enhanced image structure  
 '
 SUB pause_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    enhanced_img.animation.is_playing = 0
+    enhanced_img.animation.is_playing = _FALSE
 END SUB
 
 ''
@@ -1422,7 +1395,7 @@ END FUNCTION
 '
 ' @param aseprite_img Basic ASEPRITE_IMAGE structure
 ' @param layer_index Layer index to validate (0-based)
-' @return INTEGER 1 if valid, 0 if invalid
+' @return BOOLEAN _TRUE if valid, _FALSE if invalid
 ' @example
 '   IF is_valid_layer_index(my_image, layer_idx) THEN
 '       ' Safe to use layer_idx
@@ -1432,9 +1405,9 @@ END FUNCTION
 ''
 FUNCTION is_valid_layer_index% (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER)
     IF layer_index >= 0 AND layer_index < aseprite_img.layer_count THEN
-        is_valid_layer_index% = 1
+        is_valid_layer_index% = _TRUE
     ELSE
-        is_valid_layer_index% = 0
+        is_valid_layer_index% = _FALSE
     END IF
 END FUNCTION
 
@@ -1443,8 +1416,8 @@ END FUNCTION
 ' Validates if a frame index is within valid range
 '
 ' @param aseprite_img Basic ASEPRITE_IMAGE structure
-' @param frame_index Frame index to validate (0-based)  
-' @return INTEGER 1 if valid, 0 if invalid
+' @param frame_index Frame index to validate (0-based)
+' @return BOOLEAN _TRUE if valid, _FALSE if invalid
 ' @example
 '   IF is_valid_frame_index(my_image, frame_idx) THEN
 '       ' Safe to use frame_idx
@@ -1454,9 +1427,9 @@ END FUNCTION
 ''
 FUNCTION is_valid_frame_index% (aseprite_img AS ASEPRITE_IMAGE, frame_index AS INTEGER)
     IF frame_index >= 0 AND frame_index < aseprite_img.frame_count THEN
-        is_valid_frame_index% = 1
+        is_valid_frame_index% = _TRUE
     ELSE
-        is_valid_frame_index% = 0
+        is_valid_frame_index% = _FALSE
     END IF
 END FUNCTION
 
@@ -1523,26 +1496,26 @@ END FUNCTION
 '
 ' @param enhanced_img Enhanced image structure
 ' @param layer_index Layer index (0-based)  
-' @return -1 if visible, 0 if hidden
+' @return BOOLEAN _TRUE if visible, _FALSE if hidden
 '
 FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
     ' Check if layer index is valid
     IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN
-        is_layer_visible% = 0
+        is_layer_visible% = _FALSE
         EXIT FUNCTION
     END IF
     
     ' Check visibility from stored visibility string
     IF LEN(enhanced_img.layer_visibility) > layer_index THEN
-        ' Return -1 if visible (non-zero), 0 if hidden
+        ' Return _TRUE if visible (non-zero), _FALSE if hidden
         IF ASC(MID$(enhanced_img.layer_visibility, layer_index + 1, 1)) <> 0 THEN
-            is_layer_visible% = -1
+            is_layer_visible% = _TRUE
         ELSE
-            is_layer_visible% = 0
+            is_layer_visible% = _FALSE
         END IF
     ELSE
         ' Default to visible if visibility data not available
-        is_layer_visible% = -1
+        is_layer_visible% = _TRUE
     END IF
 END FUNCTION
 
@@ -1551,7 +1524,7 @@ END FUNCTION
 '
 ' @param enhanced_img Enhanced image structure
 ' @param layer_index Layer index (0-based)
-' @param visible -1 for visible, 0 for hidden
+' @param BOOLEAN visible _TRUE for visible, _FALSE for hidden
 '
 SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
     ' Validate layer index
@@ -1569,7 +1542,7 @@ SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index A
         IF current_visibility <> 0 THEN EXIT SUB ' Already visible
     ELSE
         visibility_char = CHR$(0)
-        IF current_visibility = 0 THEN EXIT SUB ' Already hidden
+        IF current_visibility = _FALSE THEN EXIT SUB ' Already hidden
     END IF
     
     ' Update the visibility string at the specified layer index
@@ -1586,21 +1559,21 @@ END SUB
 ' @param enhanced_img Enhanced image structure
 '
 SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    DIM oldDest AS LONG
+    DIM old_dest AS LONG
     DIM temp_image AS LONG
     DIM i AS INTEGER
     DIM visible_count AS INTEGER
     DIM target_layer_index AS INTEGER
     
     ' Only update if needed
-    IF enhanced_img.needs_update = 0 THEN EXIT SUB
+    IF enhanced_img.needs_update = _FALSE THEN EXIT SUB
     
     ' Clear the composite image first
     IF enhanced_img.current_display <> 0 THEN
-        oldDest = _DEST
+        old_dest = _DEST
         _DEST enhanced_img.current_display
         CLS , _RGBA32(0, 0, 0, 0)  ' Clear with transparent background
-        _DEST oldDest
+        _DEST old_dest
     END IF
     
     ' Count visible layers and find the target layer
@@ -1621,23 +1594,23 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
         
         IF temp_image <> 0 AND enhanced_img.current_display <> 0 THEN
             ' Successfully loaded the specific layer data
-            oldDest = _DEST
+            old_dest = _DEST
             _DEST enhanced_img.current_display
             _PUTIMAGE (0, 0), temp_image
-            _DEST oldDest
+            _DEST old_dest
             
             _FREEIMAGE temp_image
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Loaded actual pixel data for layer " + STR$(target_layer_index) + " (" + get_layer_name$(enhanced_img, target_layer_index) + ")"
         ELSE
             ' Layer has no pixel data - create transparent image
             IF enhanced_img.current_display <> 0 THEN
-                oldDest = _DEST
+                old_dest = _DEST
                 _DEST enhanced_img.current_display
                 
                 ' Clear with transparent pixels (empty layer)
                 CLS , _RGBA32(0, 0, 0, 0)  ' Fully transparent
                 
-                _DEST oldDest
+                _DEST old_dest
                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Created transparent image for empty layer " + STR$(target_layer_index)
             END IF
         END IF
@@ -1646,10 +1619,10 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
         temp_image = create_image_from_aseprite&(enhanced_img.base_image)
         
         IF temp_image <> 0 AND enhanced_img.current_display <> 0 THEN
-            oldDest = _DEST
+            old_dest = _DEST
             _DEST enhanced_img.current_display
             _PUTIMAGE (0, 0), temp_image
-            _DEST oldDest
+            _DEST old_dest
             
             _FREEIMAGE temp_image
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Composite updated with merged image data (" + STR$(visible_count) + " visible layers)"
@@ -1657,7 +1630,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     END IF
     
     ' Mark as updated
-    enhanced_img.needs_update = 0
+    enhanced_img.needs_update = _FALSE
 END SUB
 
 
@@ -1690,7 +1663,10 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     
     ' Create image to hold the layer data
     image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
-    IF image_handle = -1 OR image_handle = 0 THEN EXIT FUNCTION
+    IF image_handle = 0 THEN 
+      IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Failed to create image for layer " + STR$(target_layer_index)
+      EXIT FUNCTION
+    END IF
     
     ' Clear with transparent background using _CLEARCOLOR
     DIM old_dest AS LONG
@@ -1815,6 +1791,11 @@ END FUNCTION
 ''
 ' Enhanced layer extraction function that takes filename, layer index, and frame
 ' This is the working version with the variable scope fix
+'
+' @param filename The name of the ASEPRITE file to load
+' @param target_layer_index The layer index to extract (0-based)
+' @param frame_index The frame index to extract (0-based)
+' @return LONG Handle to the loaded image, or 0 on failure
 '
 FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_index AS INTEGER, frame_index AS INTEGER)
     ' Load the base ASEPRITE image first
@@ -1947,6 +1928,12 @@ END FUNCTION
 ' Create an ASEPRITE image from a specific layer with enhanced support
 ' This is the high-level wrapper function for easy layer extraction
 '
+' @param filename The path to the ASEPRITE file
+' @param layer_name The name of the layer to extract (optional)
+' @param layer_index The index of the layer to extract (optional)
+' @param frame The frame number to extract (optional)
+' @return LONG - The handle to the extracted layer image, or 0 if failed
+'
 FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS STRING, layer_index AS INTEGER, frame AS INTEGER)
     ' Load the enhanced ASEPRITE image
     DIM enhanced_img AS ASEPRITE_ENHANCED_IMAGE
@@ -1981,6 +1968,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     END IF
     
     IF target_index = -1 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_aseprite_image_from_layer: layer not found"
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -2003,28 +1991,12 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
     DIM screen_width AS INTEGER, screen_height AS INTEGER
     DIM display_width AS INTEGER, display_height AS INTEGER
     DIM x_pos AS INTEGER, y_pos AS INTEGER
-    DIM oldDest AS LONG
     
-    IF enhanced_img.base_image.is_valid = 0 THEN
-        ' Capture current destination for console output
-        oldDest = _DEST
-        IF _CONSOLE THEN
-            _DEST _CONSOLE
-            _ECHO "Cannot display: Invalid enhanced Aseprite image"
-            _DEST oldDest
-        END IF
+    IF enhanced_img.base_image.is_valid = _FALSE THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Cannot display: Invalid enhanced Aseprite image"
         EXIT SUB
     END IF
-    
-    ' Capture original destination before creating graphics
-    oldDest = _DEST
-    
-    ' Create graphics screen if needed
-    IF _PIXELSIZE(0) = 0 THEN
-        SCREEN _NEWIMAGE(800, 600, 32)
-        _TITLE "Enhanced Aseprite Viewer - " + enhanced_img.base_image.file_path
-    END IF
-    
+          
     ' Calculate display dimensions
     display_width = INT(enhanced_img.base_image.header.width * scale)
     display_height = INT(enhanced_img.base_image.header.height * scale)
@@ -2045,15 +2017,14 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
     CLS
     
     ' Display enhanced information
-    COLOR _RGB32(255, 255, 255)
-    _PRINTSTRING (10, 10), "Enhanced Aseprite: " + enhanced_img.base_image.file_path
-    _PRINTSTRING (10, 30), "Layers: " + STR$(enhanced_img.num_layers) + " | Frames: " + STR$(enhanced_img.num_frames)
+    _ECHO "Enhanced Aseprite: " + enhanced_img.base_image.file_path
+    _ECHO "Layers: " + STR$(enhanced_img.num_layers) + " | Frames: " + STR$(enhanced_img.num_frames)
     
     ' Show animation status
     IF enhanced_img.animation.is_playing THEN
-        _PRINTSTRING (10, 50), "Animation: Playing | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
+        _ECHO "Animation: Playing | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
     ELSE
-        _PRINTSTRING (10, 50), "Animation: Paused | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
+        _ECHO "Animation: Paused | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
     END IF
     
     ' Update animation
@@ -2073,14 +2044,11 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
     END IF
     
     ' Display controls
-    _PRINTSTRING (10, screen_height - 60), "Controls: SPACE=Play/Pause, LEFT/RIGHT=Frame, ESC=Exit"
-    _PRINTSTRING (10, screen_height - 40), "Enhanced display - Auto-closing in 3 seconds..."
-    
-    _DISPLAY
+    _ECHO "Controls: SPACE=Play/Pause, LEFT/RIGHT=Frame, ESC=Exit"
+    _ECHO "Enhanced display - Auto-closing in 3 seconds..."
     
     ' Send status to console (check if console is available first)
-    IF _CONSOLE THEN
-        _DEST _CONSOLE
+    IF ASEPRITE_DEBUG_MODE THEN
         _ECHO "Enhanced Aseprite display shown - Graphics window active"
         _ECHO "Layers: " + STR$(enhanced_img.num_layers) + " | Frames: " + STR$(enhanced_img.num_frames)
         IF enhanced_img.animation.is_playing THEN
@@ -2089,30 +2057,24 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
             _ECHO "Animation: Paused | Frame: " + STR$(enhanced_img.animation.current_frame + 1) + "/" + STR$(enhanced_img.animation.total_frames)
         END IF
         _ECHO "Auto-closing in 3 seconds..."
-        _DEST oldDest
     END IF
-    
-    _DELAY 3
 END SUB
-
-
 
 ''
 ' Creates a full composite image from all layers in an ASEPRITE file
 '
 ' @param filename Path to ASEPRITE file
 ' @param frame_index Frame to composite (0-based)
-' @return Image handle with all layers composited, or -1 on error
+' @return Image handle with all layers composited, or 0 on error
 ' @example
 '   composite& = create_full_composite_image&("sprite.aseprite", 0)
 '   _PUTIMAGE (100, 100), composite&
 '   _FREEIMAGE composite&
 '
 FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGER)
-    create_full_composite_image& = -1
-    
     IF NOT _FILEEXISTS(filename) THEN
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "File not found: "; filename
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "File not found: " + filename
+        create_full_composite_image& = 0
         EXIT FUNCTION
     END IF
     
@@ -2121,7 +2083,8 @@ FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGE
     CALL load_aseprite_enhanced(filename, enhanced_img)
     
     IF NOT enhanced_img.base_image.is_valid THEN
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "Failed to load ASEPRITE file for composite"
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Failed to load ASEPRITE file for composite"
+        create_full_composite_image& = 0
         EXIT FUNCTION
     END IF
     
@@ -2134,48 +2097,16 @@ FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGE
     DIM composite_handle AS LONG
     composite_handle = create_z_ordered_composite&(enhanced_img, frame_index, _RGBA32(0, 0, 0, 0))
     
-    create_full_composite_image& = composite_handle
-    
     IF ASEPRITE_DEBUG_MODE THEN
-        IF composite_handle <> -1 THEN
-            PRINT "Z-ordered composite created:", image_width; "x"; image_height
+        IF composite_handle <> 0 THEN
+            _ECHO "Z-ordered composite created: " + STR$(image_width) + "x" + STR$(image_height)
         ELSE
-            PRINT "Failed to create z-ordered composite"
+            _ECHO "Failed to create z-ordered composite"
         END IF
     END IF
+
+    create_full_composite_image& = composite_handle    
 END FUNCTION
-
-
-''
-' Gets CEL position for a specific layer from loaded ASEPRITE data
-'
-' @param ASEPRITE_IMAGE aseprite_img The loaded ASEPRITE image data
-' @param INTEGER layer_index The layer index to get position for
-' @param INTEGER frame_index The frame index to check
-' @param INTEGER cel_x Output parameter for X position
-' @param INTEGER cel_y Output parameter for Y position
-''
-SUB get_cel_position_from_loaded_data (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER, frame_index AS INTEGER, cel_x AS INTEGER, cel_y AS INTEGER)
-    cel_x = 0
-    cel_y = 0
-    
-    ' For now, use the positions based on what we observed in debug output
-    ' Default positions for layers 0-9
-    IF layer_index >= 0 AND layer_index <= 9 THEN
-        SELECT CASE layer_index
-            CASE 0: cel_x = 0: cel_y = 0
-            CASE 1: cel_x = 7: cel_y = 0
-            CASE 2: cel_x = 10: cel_y = 22
-            CASE 3: cel_x = 8: cel_y = 0
-            CASE 4: cel_x = 9: cel_y = 10
-            CASE 5: cel_x = 11: cel_y = 11
-            CASE 6: cel_x = 9: cel_y = 10
-            CASE 7: cel_x = 1: cel_y = 0
-            CASE 8: cel_x = 11: cel_y = 12
-            CASE 9: cel_x = 22: cel_y = 13
-        END SELECT
-    END IF
-END SUB
 
 
 ''
@@ -2187,7 +2118,7 @@ END SUB
 ' stable, low-risk implementation for library use.
 '
 ' @param aseprite_img ASEPRITE_IMAGE structure (must be loaded via load_aseprite_image)
-' @return LONG Image handle for composite, or -1 on failure
+' @return LONG Image handle for composite, or 0 on failure
 ''
 FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     DIM i AS INTEGER
@@ -2195,9 +2126,10 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     DIM composite_img AS LONG
     DIM width AS INTEGER, height AS INTEGER
 
-    create_composite_image_from_aseprite& = -1
-
-    IF aseprite_img.is_valid = 0 THEN EXIT FUNCTION
+    IF aseprite_img.is_valid = _FALSE THEN 
+      IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: invalid ASEPRITE image"
+      EXIT FUNCTION
+    END IF
 
     width = aseprite_img.header.width
     height = aseprite_img.header.height
@@ -2208,7 +2140,12 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     END IF
 
     composite_img = _NEWIMAGE(width, height, 32)
-    IF composite_img = -1 OR composite_img = 0 THEN EXIT FUNCTION
+    IF composite_img = 0 THEN 
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: failed to create image"
+        _FREEIMAGE composite_img
+        create_composite_image_from_aseprite& = 0
+        EXIT FUNCTION
+    END IF
 
     ' Initialize with transparent background
     DIM old_dest AS LONG
@@ -2226,6 +2163,9 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
             _FREEIMAGE layer_img
         ELSE
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: no data for layer " + STR$(i)
+            _FREEIMAGE layer_img
+             create_composite_image_from_aseprite& = 0
+             EXIT FUNCTION
         END IF
     NEXT i
 
@@ -2239,20 +2179,20 @@ END FUNCTION
 ' @param filename Path to ASEPRITE file
 ' @param frame_index Frame to composite (0-based)
 ' @param background_color Background color (use _RGB32 or _RGBA32)
-' @return Image handle with all layers composited, or -1 on error
+' @return Image handle with all layers composited, or 0 on error
 ' @example
 '   composite& = create_all_layers_composite&("sprite.aseprite", 0, _RGB32(255, 255, 255))
 '   _PUTIMAGE (100, 100), composite&
 '   _FREEIMAGE composite&
 '
-FUNCTION create_all_layers_composite& (filename AS STRING, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)
-    create_all_layers_composite& = -1
-    
+FUNCTION create_all_layers_composite& (filename AS STRING, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)   
     ' First create transparent composite
     DIM transparent_composite AS LONG
     transparent_composite = create_full_composite_image&(filename, frame_index)
     
-    IF transparent_composite = -1 THEN
+    IF transparent_composite = 0 THEN
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_all_layers_composite: failed to create transparent composite"
+        create_all_layers_composite& = 0
         EXIT FUNCTION
     END IF
     
@@ -2284,15 +2224,16 @@ END FUNCTION
 '
 SUB save_composite_image (filename AS STRING, frame_index AS INTEGER, output_filename AS STRING)
     DIM composite AS LONG
-    composite = create_all_layers_composite&(filename, frame_index, _RGB32(255, 255, 255))
+    composite = create_all_layers_composite&(filename, frame_index, _RGBA32(0, 0, 0, 0))
     
-    IF composite <> -1 THEN
+    IF composite <> 0 THEN
         _SAVEIMAGE output_filename, composite
-        _FREEIMAGE composite
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "Composite saved as: "; output_filename
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Composite saved as: " + output_filename
     ELSE
-        IF ASEPRITE_DEBUG_MODE THEN PRINT "Failed to create composite for saving"
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "Failed to create composite for saving"
     END IF
+
+    _FREEIMAGE composite
 END SUB
 
 
@@ -2310,7 +2251,10 @@ SUB get_cel_position (filename AS STRING, layer_index AS INTEGER, frame_index AS
     cel_x = 0
     cel_y = 0
     
-    IF NOT _FILEEXISTS(filename) THEN EXIT SUB
+    IF NOT _FILEEXISTS(filename) THEN 
+      IF ASEPRITE_DEBUG_MODE THEN _ECHO "get_cel_position: file not found"
+      EXIT SUB
+    END IF
     
     DIM file_handle AS INTEGER
     file_handle = FREEFILE
@@ -2322,6 +2266,7 @@ SUB get_cel_position (filename AS STRING, layer_index AS INTEGER, frame_index AS
     
     IF header.magic_number <> ASEPRITE_HEADER_MAGIC THEN
         CLOSE #file_handle
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "get_cel_position: invalid file format (header.magic_number)"
         EXIT SUB
     END IF
     
@@ -2523,7 +2468,7 @@ END SUB
 ' @param ASEPRITE_ENHANCED_IMAGE enhanced_img Enhanced image data
 ' @param INTEGER frame_index Frame to composite (0-based)
 ' @param _UNSIGNED LONG background_color Background color (RGBA)
-' @return LONG Image handle for composite
+' @return LONG Image handle for composite or 0 if failed
 ''
 FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)
     ' Create array for render items (max 100 layers)
@@ -2534,7 +2479,8 @@ FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, f
     num_items = collect_render_items%(enhanced_img, frame_index, render_items())
     
     IF num_items = 0 THEN
-        create_z_ordered_composite& = -1
+        IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_z_ordered_composite: no render items found"
+        create_z_ordered_composite& = 0
         EXIT FUNCTION
     END IF
     
@@ -2556,7 +2502,13 @@ FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, f
         DIM layer_img AS LONG
         layer_img = load_specific_layer_image&(enhanced_img.base_image, render_items(i).layer_index)
         
-        IF layer_img <> -1 THEN
+        IF layer_img = 0 THEN
+          IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_z_ordered_composite: layer not found"
+          _FREEIMAGE composite_img
+          _FREEIMAGE layer_img
+          create_z_ordered_composite& = 0
+          EXIT FUNCTION
+        ELSEIF layer_img <> 0 THEN
             ' Use CEL position and opacity
             DIM cel_x AS INTEGER, cel_y AS INTEGER
             cel_x = render_items(i).cel_info.x_position

@@ -18,7 +18,14 @@
 '   - User data (if any)
 '   - Tileset information (if any)
 '
-$CONSOLE:ONLY
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
+    '$INCLUDE:'../_GJ_LIB.BI'
+$END IF
+
+' DEBUG CONTROL
+' Set to 1 to enable debug output, 0 to disable
+$LET ASEPRITE_DEBUG_MODE = 1
 
 '$INCLUDE:'ASEPRITE.BI'
 
@@ -149,16 +156,16 @@ anim_direction_names(2) = "Ping-pong"
 anim_direction_names(3) = "Ping-pong Reverse"
 
 ' Main program
-PRINT "ASEPRITE File Introspection Utility v1.0"
-PRINT "========================================"
-PRINT
+_ECHO "ASEPRITE File Introspection Utility v1.0"
+_ECHO "========================================"
+_ECHO ""
 
 ' Check command line arguments
 IF COMMAND$ = "" THEN
-    PRINT "Usage: ASEPRITE-INFO.EXE <filename.ase/.aseprite>"
-    PRINT
-    PRINT "Example: ASEPRITE-INFO.EXE test-files\example.aseprite"
-    SYSTEM
+    _ECHO "Usage: ASEPRITE-INFO.EXE <filename.ase/.aseprite>"
+    _ECHO ""
+    _ECHO "Example: ASEPRITE-INFO.EXE test-files\example.aseprite"
+    SYSTEM 1
 END IF
 
 DIM filename$
@@ -169,18 +176,18 @@ IF LEFT$(filename$, 1) = CHR$(34) THEN filename$ = MID$(filename$, 2, LEN(filena
 
 ' Check if file exists
 IF NOT _FILEEXISTS(filename$) THEN
-    PRINT "ERROR: File '" + filename$ + "' not found!"
+    _ECHO "ERROR: File '" + filename$ + "' not found!"
     SYSTEM 1
 END IF
 
-PRINT "Analyzing file: " + filename$
-PRINT STRING$(60, "-")
-PRINT
+_ECHO "Analyzing file: " + filename$
+_ECHO STRING$(60, "-")
+_ECHO ""
 
 ' Perform the analysis
 CALL analyze_aseprite_file(filename$)
 
-SYSTEM
+SYSTEM 0
 
 ''
 ' Main analysis subroutine
@@ -235,20 +242,20 @@ FUNCTION read_aseprite_header% (file_handle AS INTEGER, header AS ASEPRITE_HEADE
     
     ' Validate magic number
     IF header.magic_number <> ASEPRITE_HEADER_MAGIC THEN
-        PRINT "ERROR: Invalid ASEPRITE file format (magic number: 0x" + HEX$(header.magic_number) + ")"
+        _ECHO "ERROR: Invalid ASEPRITE file format (magic number: 0x" + HEX$(header.magic_number) + ")"
         read_aseprite_header% = 0
         EXIT FUNCTION
     END IF
     
     ' Validate basic constraints
     IF header.width = 0 OR header.height = 0 THEN
-        PRINT "ERROR: Invalid dimensions (" + STR$(header.width) + "x" + STR$(header.height) + ")"
+        _ECHO "ERROR: Invalid dimensions (" + STR$(header.width) + "x" + STR$(header.height) + ")"
         read_aseprite_header% = 0
         EXIT FUNCTION
     END IF
     
     IF header.color_depth_bpp <> 8 AND header.color_depth_bpp <> 16 AND header.color_depth_bpp <> 32 THEN
-        PRINT "ERROR: Invalid color depth (" + STR$(header.color_depth_bpp) + " bpp)"
+        _ECHO "ERROR: Invalid color depth (" + STR$(header.color_depth_bpp) + " bpp)"
         read_aseprite_header% = 0
         EXIT FUNCTION
     END IF
@@ -262,25 +269,25 @@ END FUNCTION
 ' @param filename$ The filename being analyzed
 ''
 SUB display_header_info (header AS ASEPRITE_HEADER, filename$)
-    PRINT "FILE INFORMATION"
-    PRINT "================"
-    PRINT "Filename:           " + filename$
-    PRINT "File Size:          " + format_bytes$(analysis_stats.actual_file_size) + " (" + format_bytes$(header.file_size) + " reported)"
-    PRINT "Magic Number:       0x" + HEX$(header.magic_number) + " (Valid ASEPRITE file)"
-    PRINT
+    _ECHO "FILE INFORMATION"
+    _ECHO "================"
+    _ECHO "Filename:           " + filename$
+    _ECHO "File Size:          " + format_bytes$(analysis_stats.actual_file_size) + " (" + format_bytes$(header.file_size) + " reported)"
+    _ECHO "Magic Number:       0x" + HEX$(header.magic_number) + " (Valid ASEPRITE file)"
+    _ECHO ""
     
-    PRINT "IMAGE PROPERTIES"
-    PRINT "================"
-    PRINT "Dimensions:         " + STR$(header.width) + " x " + STR$(header.height) + " pixels"
-    PRINT "Color Depth:        " + color_depth_names(header.color_depth_bpp)
+    _ECHO "IMAGE PROPERTIES"
+    _ECHO "================"
+    _ECHO "Dimensions:         " + STR$(header.width) + " x " + STR$(header.height) + " pixels"
+    _ECHO "Color Depth:        " + color_depth_names(header.color_depth_bpp)
     
     IF header.color_depth_bpp = 8 THEN
         DIM num_colors AS INTEGER
         num_colors = header.num_colors
         IF num_colors = 0 THEN num_colors = 256
-        PRINT "Palette Colors:     " + STR$(num_colors) + " colors"
+        _ECHO "Palette Colors:     " + STR$(num_colors) + " colors"
         IF header.transparent_color_index > 0 THEN
-            PRINT "Transparent Index:  " + STR$(header.transparent_color_index)
+            _ECHO "Transparent Index:  " + STR$(header.transparent_color_index)
         END IF
     END IF
     
@@ -288,42 +295,42 @@ SUB display_header_info (header AS ASEPRITE_HEADER, filename$)
     IF header.pixel_width > 0 AND header.pixel_height > 0 THEN
         DIM ratio AS SINGLE
         ratio = header.pixel_width / header.pixel_height
-        PRINT "Pixel Ratio:        " + STR$(header.pixel_width) + ":" + STR$(header.pixel_height) + " (" + format_decimal$(ratio, 2) + ")"
+        _ECHO "Pixel Ratio:        " + STR$(header.pixel_width) + ":" + STR$(header.pixel_height) + " (" + format_decimal$(ratio, 2) + ")"
     ELSE
-        PRINT "Pixel Ratio:        1:1 (square pixels)"
+        _ECHO "Pixel Ratio:        1:1 (square pixels)"
     END IF
     
     ' Grid information
     IF header.grid_width > 0 AND header.grid_height > 0 THEN
-        PRINT "Grid Size:          " + STR$(header.grid_width) + " x " + STR$(header.grid_height) + " pixels"
-        PRINT "Grid Position:      (" + STR$(header.grid_x_pos) + ", " + STR$(header.grid_y_pos) + ")"
+        _ECHO "Grid Size:          " + STR$(header.grid_width) + " x " + STR$(header.grid_height) + " pixels"
+        _ECHO "Grid Position:      (" + STR$(header.grid_x_pos) + ", " + STR$(header.grid_y_pos) + ")"
     ELSE
-        PRINT "Grid:               None"
+        _ECHO "Grid:               None"
     END IF
-    PRINT
+    _ECHO ""
     
-    PRINT "ANIMATION PROPERTIES"
-    PRINT "==================="
-    PRINT "Total Frames:       " + STR$(header.num_frames)
+    _ECHO "ANIMATION PROPERTIES"
+    _ECHO "==================="
+    _ECHO "Total Frames:       " + STR$(header.num_frames)
     IF header.frame_speed > 0 THEN
-        PRINT "Default Speed:      " + STR$(header.frame_speed) + " ms/frame (DEPRECATED)"
+        _ECHO "Default Speed:      " + STR$(header.frame_speed) + " ms/frame (DEPRECATED)"
         DIM fps AS SINGLE
         fps = 1000.0 / header.frame_speed
-        PRINT "                    (~" + format_decimal$(fps, 1) + " FPS)"
+        _ECHO "                    (~" + format_decimal$(fps, 1) + " FPS)"
     END IF
     
     ' Header flags
-    PRINT "Header Flags:       0x" + HEX$(header.flags)
+    _ECHO "Header Flags:       0x" + HEX$(header.flags)
     IF header.flags AND ASEPRITE_FLAG_LAYER_OPACITY_VALID THEN
-        PRINT "                    - Layer opacity values are valid"
+        _ECHO "                    - Layer opacity values are valid"
     END IF
     IF header.flags AND ASEPRITE_FLAG_GROUP_BLEND_VALID THEN
-        PRINT "                    - Group blend modes are valid"
+        _ECHO "                    - Group blend modes are valid"
     END IF
     IF header.flags AND ASEPRITE_FLAG_LAYERS_HAVE_UUID THEN
-        PRINT "                    - Layers have UUIDs"
+        _ECHO "                    - Layers have UUIDs"
     END IF
-    PRINT
+    _ECHO ""
 END SUB
 
 ''
@@ -341,8 +348,8 @@ SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER
     DIM j AS INTEGER
     DIM actual_chunks AS LONG
     
-    PRINT "ANALYZING FRAMES AND CHUNKS..."
-    PRINT "=============================="
+    _ECHO "ANALYZING FRAMES AND CHUNKS..."
+    _ECHO "=============================="
     
     frame_count = header.num_frames
     
@@ -354,7 +361,7 @@ SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER
         
         ' Validate frame magic number
         IF frame_header.magic_number <> ASEPRITE_FRAME_MAGIC THEN
-            PRINT "WARNING: Invalid frame magic number in frame " + STR$(i) + " (0x" + HEX$(frame_header.magic_number) + ")"
+            _ECHO "WARNING: Invalid frame magic number in frame " + STR$(i) + " (0x" + HEX$(frame_header.magic_number) + ")"
         END IF
         
         ' Store frame info
@@ -369,7 +376,7 @@ SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER
         frames(i).chunk_count = actual_chunks
         frames(i).cel_count_in_frame = 0
         
-        PRINT "Frame " + format_number$(i, 3) + ": " + format_number$(actual_chunks, 3) + " chunks, " + format_number$(frame_header.duration, 4) + " ms, " + format_bytes$(frame_header.num_bytes)
+        _ECHO "Frame " + format_number$(i, 3) + ": " + format_number$(actual_chunks, 3) + " chunks, " + format_number$(frame_header.duration, 4) + " ms, " + format_bytes$(frame_header.num_bytes)
         
         ' Analyze chunks in this frame
         FOR j = 1 TO actual_chunks
@@ -421,7 +428,7 @@ SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER
         SEEK file_handle, expected_frame_end
     NEXT i
     
-    PRINT
+    _ECHO ""
 END SUB
 
 ''
@@ -592,28 +599,28 @@ SUB display_analysis_summary
     DIM max_duration AS INTEGER
     DIM avg_duration AS SINGLE
     
-    PRINT "DETAILED ANALYSIS SUMMARY"
-    PRINT "========================="
-    PRINT
+    _ECHO "DETAILED ANALYSIS SUMMARY"
+    _ECHO "========================="
+    _ECHO ""
     
     ' Chunk statistics
-    PRINT "CHUNK STATISTICS"
-    PRINT "---------------"
-    PRINT "Total Chunks:       " + format_number$(analysis_stats.total_chunks, 6)
-    PRINT "Layer Chunks:       " + format_number$(analysis_stats.layer_chunks, 6)
-    PRINT "Cel Chunks:         " + format_number$(analysis_stats.cel_chunks, 6)
-    PRINT "Palette Chunks:     " + format_number$(analysis_stats.palette_chunks, 6)
-    PRINT "Tag Chunks:         " + format_number$(analysis_stats.tag_chunks, 6)
-    PRINT "User Data Chunks:   " + format_number$(analysis_stats.user_data_chunks, 6)
-    PRINT "Tileset Chunks:     " + format_number$(analysis_stats.tileset_chunks, 6)
-    PRINT "External Chunks:    " + format_number$(analysis_stats.external_chunks, 6)
-    PRINT "Unknown Chunks:     " + format_number$(analysis_stats.unknown_chunks, 6)
-    PRINT
+    _ECHO "CHUNK STATISTICS"
+    _ECHO "---------------"
+    _ECHO "Total Chunks:       " + format_number$(analysis_stats.total_chunks, 6)
+    _ECHO "Layer Chunks:       " + format_number$(analysis_stats.layer_chunks, 6)
+    _ECHO "Cel Chunks:         " + format_number$(analysis_stats.cel_chunks, 6)
+    _ECHO "Palette Chunks:     " + format_number$(analysis_stats.palette_chunks, 6)
+    _ECHO "Tag Chunks:         " + format_number$(analysis_stats.tag_chunks, 6)
+    _ECHO "User Data Chunks:   " + format_number$(analysis_stats.user_data_chunks, 6)
+    _ECHO "Tileset Chunks:     " + format_number$(analysis_stats.tileset_chunks, 6)
+    _ECHO "External Chunks:    " + format_number$(analysis_stats.external_chunks, 6)
+    _ECHO "Unknown Chunks:     " + format_number$(analysis_stats.unknown_chunks, 6)
+    _ECHO ""
     
     ' Layer information
     IF layer_count > 0 THEN
-        PRINT "LAYER INFORMATION (" + STR$(layer_count) + " layers)"
-        PRINT "=================="
+        _ECHO "LAYER INFORMATION (" + STR$(layer_count) + " layers)"
+        _ECHO "=================="
         
         ' Count layer types
         DIM layer_type_counts(0 TO 2) AS INTEGER
@@ -627,14 +634,14 @@ SUB display_analysis_summary
         NEXT i
         
         ' Show layer type summary
-        PRINT "Summary: ",
+        _ECHO "Summary: "
         FOR i = 0 TO 2
             IF layer_type_counts(i) > 0 THEN
-                PRINT STR$(layer_type_counts(i)) + " " + layer_type_names(i) + " ",
+                _ECHO STR$(layer_type_counts(i)) + " " + layer_type_names(i) + " "
             END IF
         NEXT i
-        PRINT "(" + STR$(visible_count) + " visible, " + STR$(background_count) + " background)"
-        PRINT
+        _ECHO "(" + STR$(visible_count) + " visible, " + STR$(background_count) + " background)"
+        _ECHO ""
         
         FOR i = 1 TO layer_count
             DIM indent_str AS STRING
@@ -652,22 +659,22 @@ SUB display_analysis_summary
             END IF
             
             ' Display layer with hierarchy
-            PRINT format_number$(i, 3) + ": " + indent_str + hierarchy_prefix + "'" + layers(i).layer_name + "' (" + layer_type_names(layers(i).layer_type) + ")"
+            _ECHO format_number$(i, 3) + ": " + indent_str + hierarchy_prefix + "'" + layers(i).layer_name + "' (" + layer_type_names(layers(i).layer_type) + ")"
             
             ' Layer properties with proper indentation
-            PRINT "     " + indent_str + "Index: " + STR$(layers(i).layer_index) + ", Level: " + STR$(layers(i).child_level) + ", Opacity: " + format_opacity$(layers(i).opacity)
-            PRINT "     " + indent_str + "Blend: " + blend_mode_names(layers(i).blend_mode) + ", Cels: " + STR$(layers(i).cel_count)
-            PRINT "     " + indent_str + "Flags: " + format_layer_flags$(layers(i).flags)
+            _ECHO "     " + indent_str + "Index: " + STR$(layers(i).layer_index) + ", Level: " + STR$(layers(i).child_level) + ", Opacity: " + format_opacity$(layers(i).opacity)
+            _ECHO "     " + indent_str + "Blend: " + blend_mode_names(layers(i).blend_mode) + ", Cels: " + STR$(layers(i).cel_count)
+            _ECHO "     " + indent_str + "Flags: " + format_layer_flags$(layers(i).flags)
             
             ' Show additional properties for special layer types
             IF layers(i).is_background THEN
-                PRINT "     " + indent_str + "*** BACKGROUND LAYER ***"
+                _ECHO "     " + indent_str + "*** BACKGROUND LAYER ***"
             END IF
             IF layers(i).is_visible = 0 THEN
-                PRINT "     " + indent_str + "*** HIDDEN ***"
+                _ECHO "     " + indent_str + "*** HIDDEN ***"
             END IF
         NEXT i
-        PRINT
+        _ECHO ""
     END IF
     
     ' Frame timing analysis
@@ -684,42 +691,42 @@ SUB display_analysis_summary
         
         IF frame_count > 0 THEN avg_duration = total_duration / frame_count
         
-        PRINT "FRAME TIMING ANALYSIS"
-        PRINT "===================="
-        PRINT "Total Duration:     " + format_time$(total_duration) + " (" + STR$(total_duration) + " ms)"
-        PRINT "Average Duration:   " + format_decimal$(avg_duration, 1) + " ms/frame"
-        PRINT "Min Duration:       " + STR$(min_duration) + " ms"
-        PRINT "Max Duration:       " + STR$(max_duration) + " ms"
+        _ECHO "FRAME TIMING ANALYSIS"
+        _ECHO "===================="
+        _ECHO "Total Duration:     " + format_time$(total_duration) + " (" + STR$(total_duration) + " ms)"
+        _ECHO "Average Duration:   " + format_decimal$(avg_duration, 1) + " ms/frame"
+        _ECHO "Min Duration:       " + STR$(min_duration) + " ms"
+        _ECHO "Max Duration:       " + STR$(max_duration) + " ms"
         IF total_duration > 0 THEN
             DIM avg_fps AS SINGLE
             avg_fps = 1000.0 / avg_duration
-            PRINT "Average FPS:        " + format_decimal$(avg_fps, 2)
+            _ECHO "Average FPS:        " + format_decimal$(avg_fps, 2)
         END IF
-        PRINT
+        _ECHO ""
     END IF
     
     ' Animation tags
     IF tag_count > 0 THEN
-        PRINT "ANIMATION TAGS (" + STR$(tag_count) + " tags)"
-        PRINT "=============="
+        _ECHO "ANIMATION TAGS (" + STR$(tag_count) + " tags)"
+        _ECHO "=============="
         FOR i = 1 TO tag_count
-            PRINT format_number$(i, 2) + ": " + tags(i).tag_name
-            PRINT "    Frames: " + STR$(tags(i).from_frame) + "-" + STR$(tags(i).to_frame)
-            PRINT "    Direction: " + anim_direction_names(tags(i).direction)
+            _ECHO format_number$(i, 2) + ": " + tags(i).tag_name
+            _ECHO "    Frames: " + STR$(tags(i).from_frame) + "-" + STR$(tags(i).to_frame)
+            _ECHO "    Direction: " + anim_direction_names(tags(i).direction)
             IF tags(i).repeat_count = 0 THEN
-                PRINT "    Repeat: Infinite"
+                _ECHO "    Repeat: Infinite"
             ELSE
-                PRINT "    Repeat: " + STR$(tags(i).repeat_count)
+                _ECHO "    Repeat: " + STR$(tags(i).repeat_count)
             END IF
-            PRINT "    Color: RGB(" + STR$(tags(i).tag_color_r) + "," + STR$(tags(i).tag_color_g) + "," + STR$(tags(i).tag_color_b) + ")"
+            _ECHO "    Color: RGB(" + STR$(tags(i).tag_color_r) + "," + STR$(tags(i).tag_color_g) + "," + STR$(tags(i).tag_color_b) + ")"
         NEXT i
-        PRINT
+        _ECHO ""
     END IF
     
     ' Cel statistics
     IF cel_count > 0 THEN
-        PRINT "CEL STATISTICS (" + STR$(cel_count) + " cels)"
-        PRINT "=============="
+        _ECHO "CEL STATISTICS (" + STR$(cel_count) + " cels)"
+        _ECHO "=============="
         
         DIM cel_type_counts(0 TO 3) AS INTEGER
         DIM total_compressed AS LONG
@@ -733,31 +740,31 @@ SUB display_analysis_summary
         
         FOR i = 0 TO 3
             IF cel_type_counts(i) > 0 THEN
-                PRINT cel_type_names(i) + ": " + STR$(cel_type_counts(i)) + " cels"
+                _ECHO cel_type_names(i) + ": " + STR$(cel_type_counts(i)) + " cels"
             END IF
         NEXT i
         
         IF total_compressed > 0 AND total_uncompressed > 0 THEN
             analysis_stats.compression_ratio = total_compressed / total_uncompressed
-            PRINT "Compression Ratio:  " + format_decimal$(analysis_stats.compression_ratio * 100, 1) + "%"
-            PRINT "Space Saved:        " + format_bytes$(total_uncompressed - total_compressed)
+            _ECHO "Compression Ratio:  " + format_decimal$(analysis_stats.compression_ratio * 100, 1) + "%"
+            _ECHO "Space Saved:        " + format_bytes$(total_uncompressed - total_compressed)
         END IF
-        PRINT
+        _ECHO ""
     END IF
     
     ' File integrity
-    PRINT "FILE INTEGRITY"
-    PRINT "=============="
+    _ECHO "FILE INTEGRITY"
+    _ECHO "=============="
     IF analysis_stats.actual_file_size = analysis_stats.total_file_size THEN
-        PRINT "File Size Check:    PASSED"
+        _ECHO "File Size Check:    PASSED"
     ELSE
-        PRINT "File Size Check:    WARNING - Reported: " + format_bytes$(analysis_stats.total_file_size) + ", Actual: " + format_bytes$(analysis_stats.actual_file_size)
+        _ECHO "File Size Check:    WARNING - Reported: " + format_bytes$(analysis_stats.total_file_size) + ", Actual: " + format_bytes$(analysis_stats.actual_file_size)
     END IF
     
-    PRINT "Magic Numbers:      VALIDATED"
-    PRINT
+    _ECHO "Magic Numbers:      VALIDATED"
+    _ECHO ""
     
-    PRINT "Analysis complete!"
+    _ECHO "Analysis complete!"
 END SUB
 
 ''
@@ -878,5 +885,9 @@ FUNCTION format_number$ (value AS LONG, width AS INTEGER)
     WEND
     format_number$ = result
 END FUNCTION
+
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
+    '$INCLUDE:'../_GJ_LIB.BM'
+$END IF
 
 '$INCLUDE:'ASEPRITE.BM'

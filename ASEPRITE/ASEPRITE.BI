@@ -13,11 +13,14 @@
 '
 $INCLUDEONCE
 
-$CONSOLE
-
 ' DEBUG CONTROL
 ' Set to 1 to enable debug output, 0 to disable
-CONST ASEPRITE_DEBUG_MODE = 1 ' Set to 1 for detailed debugging output
+$IF ASEPRITE_DEBUG_MODE = 1 THEN
+  $CONSOLE
+  CONST ASEPRITE_DEBUG_MODE = 1 ' Set to 1 for detailed debugging output
+$ELSE
+  CONST ASEPRITE_DEBUG_MODE = 0
+$END IF
 
 ' Compression support provided by QB64PE built-in _INFLATE$ function
 ' No external libraries required!
