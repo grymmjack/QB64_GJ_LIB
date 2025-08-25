@@ -3,7 +3,7 @@
 
 Adds native [ASEPRITE](https://www.aseprite.org/) support to QB64!
 
-### USAGE for Dict Object (separately)
+### USAGE for ASEPRITE LIB (separately)
 ```basic
 'Insert at top of file:
 '$INCLUDE:'path_to_GJ_LIB/ASEPRITE/ASEPRITE.BI' at the top of file
@@ -19,6 +19,7 @@ Adds native [ASEPRITE](https://www.aseprite.org/) support to QB64!
 ## WHAT'S IN THE LIBRARY (WIP)
 | SUB / FUNCTION | NOTES |
 |----------------|-------|
+| load_aseprite_file&      | Top-level convenience loader that returns a composite image handle ready for _PUTIMAGE
 | load_aseprite_image      | Loads a .ase/.aseprite file into an ASEPRITE_IMAGE structure
 | get_aseprite_info$       | Returns human-readable information about an ASEPRITE_IMAGE
 | is_valid_aseprite_file   | Checks whether a file is a valid Aseprite file
@@ -58,7 +59,6 @@ Adds native [ASEPRITE](https://www.aseprite.org/) support to QB64!
 | load_specific_layer_image_enhanced& | Enhanced layer extraction with improved scope handling
 | create_aseprite_image_from_layer& | High-level wrapper to create an image from a named/indexed layer
 | create_full_composite_image& | Composites all layers for a given frame into a single image handle
-| load_aseprite_file&      | Top-level convenience loader that returns a composite image handle
 
 ### SAMPLE PROGRAMS
 - [ASEPRITE.BAS](ASEPRITE.BAS) - Simple implementation to load a `.aseprite` image
