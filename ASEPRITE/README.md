@@ -71,4 +71,3 @@ Adds native [ASEPRITE](https://www.aseprite.org/) support to QB64!
 
 > Screenshot of output from [WORKING-KEEP-visual_pumpkin_viewer.BAS](WORKING-KEEP-visual_pumpkin_viewer.BAS)
 ![Example output from [WORKING-KEEP-visual_pumpkin_viewer.BAS](WORKING-KEEP-visual_pumpkin_viewer.BAS)](WORKING-KEEP-visual_pumpkin_viewer.png)
-![alt text](image.png)
