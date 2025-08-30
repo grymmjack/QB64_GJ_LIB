@@ -1,0 +1,1305 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S IMAGE ADJUSTMENT (IMGADJ) LIBRARY - IMPLEMENTATION
+'
+' USAGE:
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BM' at the bottom of file
+'
+' This library provides optimized image adjustment algorithms for QB64PE.
+' All functions work by creating new image handles - original images are preserved.
+' Memory management: You must _FREEIMAGE the returned handles when done.
+'
+' @author grymmjack
+' @version 1.0
+' @description Comprehensive image adjustment library for QB64PE - Implementation
+''
+
+
+
+$INCLUDEONCE
+
+''
+' Initialize the image adjustment system
+' Sets up lookup tables and noise patterns for optimized operations
+'
+SUB IMGADJ_Init
+    ' Initialize noise lookup table for film grain
+    IF IMGADJ_noiseInit = 0 THEN
+        RANDOMIZE TIMER
+        DIM i
+        FOR i = 0 TO 65535
+            IMGADJ_noise(i) = INT((RND * 100) - 50)  ' Range -50 to +49
+        NEXT i
+        IMGADJ_noiseInit = 1
+    END IF
+END SUB
+
+
+''
+' Clamp a value between min and max
+' @param value INTEGER Value to clamp
+' @param minVal INTEGER Minimum allowed value
+' @param maxVal INTEGER Maximum allowed value
+' @return INTEGER Clamped value
+'
+FUNCTION IMGADJ_Clamp (value AS INTEGER, minVal AS INTEGER, maxVal AS INTEGER)
+    IF value < minVal THEN
+        IMGADJ_Clamp = minVal
+    ELSEIF value > maxVal THEN
+        IMGADJ_Clamp = maxVal
+    ELSE
+        IMGADJ_Clamp = value
+    END IF
+END FUNCTION
+
+
+''
+' Convert RGB to HSV color space
+' @param r INTEGER Red component (0-255)
+' @param g INTEGER Green component (0-255)
+' @param b INTEGER Blue component (0-255)
+' @param hue SINGLE Output hue (0-360)
+' @param sat SINGLE Output saturation (0-1)
+' @param value SINGLE Output value (0-1)
+'
+SUB IMGADJ_RGBtoHSV (r AS INTEGER, g AS INTEGER, b AS INTEGER, hue AS SINGLE, sat AS SINGLE, value AS SINGLE)
+    DIM rf AS SINGLE, gf AS SINGLE, bf AS SINGLE
+    DIM maxVal AS SINGLE, minVal AS SINGLE, delta AS SINGLE
+    
+    rf = r / 255.0
+    gf = g / 255.0
+    bf = b / 255.0
+    
+    maxVal = rf
+    IF gf > maxVal THEN maxVal = gf
+    IF bf > maxVal THEN maxVal = bf
+    
+    minVal = rf
+    IF gf < minVal THEN minVal = gf
+    IF bf < minVal THEN minVal = bf
+    
+    value = maxVal
+    delta = maxVal - minVal
+    
+    IF maxVal = 0 THEN
+        sat = 0
+    ELSE
+        sat = delta / maxVal
+    END IF
+    
+    IF delta = 0 THEN
+        hue = 0
+    ELSEIF maxVal = rf THEN
+        hue = 60 * (((gf - bf) / delta) + 0)
+        IF hue < 0 THEN hue = hue + 360
+    ELSEIF maxVal = gf THEN
+        hue = 60 * (((bf - rf) / delta) + 2)
+    ELSE
+        hue = 60 * (((rf - gf) / delta) + 4)
+    END IF
+END SUB
+
+
+''
+' Convert HSV to RGB color space
+' @param hue SINGLE Hue (0-360)
+' @param sat SINGLE Saturation (0-1)
+' @param value SINGLE Value (0-1)
+' @param r INTEGER Output red component (0-255)
+' @param g INTEGER Output green component (0-255)
+' @param b INTEGER Output blue component (0-255)
+'
+SUB IMGADJ_HSVtoRGB (hue AS SINGLE, sat AS SINGLE, value AS SINGLE, r AS INTEGER, g AS INTEGER, b AS INTEGER)
+    DIM c AS SINGLE, x AS SINGLE, m AS SINGLE
+    DIM rf AS SINGLE, gf AS SINGLE, bf AS SINGLE
+    DIM hSector
+    
+    c = value * sat
+    hSector = INT(hue / 60) MOD 6
+    x = c * (1 - ABS(((hue / 60) - 2 * INT((hue / 60) / 2)) - 1))
+    m = value - c
+    
+    SELECT CASE hSector
+        CASE 0: rf = c: gf = x: bf = 0
+        CASE 1: rf = x: gf = c: bf = 0
+        CASE 2: rf = 0: gf = c: bf = x
+        CASE 3: rf = 0: gf = x: bf = c
+        CASE 4: rf = x: gf = 0: bf = c
+        CASE 5: rf = c: gf = 0: bf = x
+    END SELECT
+    
+    r = INT((rf + m) * 255)
+    g = INT((gf + m) * 255)
+    b = INT((bf + m) * 255)
+    
+    r = IMGADJ_Clamp(r, 0, 255)
+    g = IMGADJ_Clamp(g, 0, 255)
+    b = IMGADJ_Clamp(b, 0, 255)
+END SUB
+
+
+''
+' Adjust image brightness
+' @param sourceImg LONG Source image handle
+' @param direction STRING "+" to increase, "-" to decrease
+' @param amount INTEGER Amount to adjust (0-255)
+' @return LONG New image handle with brightness adjusted
+' @example
+'   brightened = IMGADJ_Brightness(myImage, "+", 50)
+'
+FUNCTION IMGADJ_Brightness (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Brightness: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM offset
+    IF direction = "+" THEN
+        offset = amount
+    ELSE
+        offset = -amount
+    END IF
+    
+    ' Ultra-fast brightness adjustment using _MEMIMAGE
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            r = IMGADJ_Clamp(r + offset, 0, 255)
+            g = IMGADJ_Clamp(g + offset, 0, 255)
+            b = IMGADJ_Clamp(b + offset, 0, 255)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Brightness = resultImg
+END FUNCTION
+
+
+''
+' Adjust image contrast
+' @param sourceImg LONG Source image handle
+' @param direction STRING "+" to increase, "-" to decrease
+' @param amount INTEGER Contrast percentage (0-100)
+' @return LONG New image handle with contrast adjusted
+' @example
+'   contrasted = IMGADJ_Contrast(myImage, "+", 25)
+'
+FUNCTION IMGADJ_Contrast (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Contrast: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM pct
+    IF direction = "+" THEN
+        pct = amount
+    ELSE
+        pct = -amount
+    END IF
+    
+    DIM f AS DOUBLE
+    f = (259.0 * (pct + 255.0)) / (255.0 * (259.0 - pct))
+    
+    ' Ultra-fast contrast adjustment using _MEMIMAGE
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            r = IMGADJ_Clamp(INT(f * (r - 128) + 128), 0, 255)
+            g = IMGADJ_Clamp(INT(f * (g - 128) + 128), 0, 255)
+            b = IMGADJ_Clamp(INT(f * (b - 128) + 128), 0, 255)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Contrast = resultImg
+END FUNCTION
+
+
+''
+' Adjust image gamma
+' @param sourceImg LONG Source image handle
+' @param direction STRING "+" to lighten midtones, "-" to darken
+' @param amount INTEGER Gamma adjustment (amount/100 = gamma multiplier)
+' @return LONG New image handle with gamma adjusted
+' @example
+'   gamma_adj = IMGADJ_Gamma(myImage, "+", 30)  ' Gamma = 1.3
+'
+FUNCTION IMGADJ_Gamma (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Gamma: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM gamma AS SINGLE
+    IF direction = "+" THEN
+        gamma = 1.0 + (amount / 100.0)
+    ELSE
+        gamma = 1.0 - (amount / 100.0)
+    END IF
+    
+    IF gamma <= 0 THEN gamma = 0.1
+    
+    ' Create lookup table for gamma correction (much faster than repeated power calculations)
+    DIM gammaTable(0 TO 255)
+    DIM i
+    FOR i = 0 TO 255
+        gammaTable(i) = IMGADJ_Clamp(INT(255.0 * ((i / 255.0) ^ (1.0 / gamma))), 0, 255)
+    NEXT i
+    
+    ' Apply gamma using lookup table
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            r = gammaTable(r)
+            g = gammaTable(g)
+            b = gammaTable(b)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Gamma = resultImg
+END FUNCTION
+
+
+''
+' Adjust image saturation
+' @param sourceImg LONG Source image handle
+' @param direction STRING "+" to increase saturation, "-" to decrease
+' @param amount INTEGER Saturation percentage change (0-200)
+' @return LONG New image handle with saturation adjusted
+' @example
+'   saturated = IMGADJ_Saturation(myImage, "+", 50)  ' +50% saturation
+'
+FUNCTION IMGADJ_Saturation (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Saturation: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM satMultiplier AS SINGLE
+    IF direction = "+" THEN
+        satMultiplier = 1.0 + (amount / 100.0)
+    ELSE
+        satMultiplier = 1.0 - (amount / 100.0)
+    END IF
+    
+    IF satMultiplier < 0 THEN satMultiplier = 0
+    
+    ' Apply saturation adjustment using HSV color space
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM hueVal AS SINGLE, satVal AS SINGLE, valVal AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            CALL IMGADJ_RGBtoHSV(r, g, b, hueVal, satVal, valVal)
+            satVal = satVal * satMultiplier
+            IF satVal > 1.0 THEN satVal = 1.0
+            CALL IMGADJ_HSVtoRGB(hueVal, satVal, valVal, r, g, b)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Saturation = resultImg
+END FUNCTION
+
+
+''
+' Shift image hue
+' @param sourceImg LONG Source image handle
+' @param direction STRING "+" for clockwise, "-" for counter-clockwise
+' @param amount INTEGER Degrees to shift (0-360)
+' @return LONG New image handle with hue shifted
+' @example
+'   hue_shifted = IMGADJ_Hue(myImage, "-", 120)  ' Shift -120 degrees
+'
+FUNCTION IMGADJ_Hue (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Hue: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM hueShift AS SINGLE
+    IF direction = "+" THEN
+        hueShift = amount
+    ELSE
+        hueShift = -amount
+    END IF
+    
+    ' Apply hue shift using HSV color space
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM hueVal AS SINGLE, satVal AS SINGLE, valVal AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            CALL IMGADJ_RGBtoHSV(r, g, b, hueVal, satVal, valVal)
+            hueVal = hueVal + hueShift
+            ' Wrap hue around 0-360 range
+            WHILE hueVal < 0
+                hueVal = hueVal + 360
+            WEND
+            WHILE hueVal >= 360
+                hueVal = hueVal - 360
+            WEND
+            CALL IMGADJ_HSVtoRGB(hueVal, satVal, valVal, r, g, b)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Hue = resultImg
+END FUNCTION
+
+
+''
+' Apply blur effect to image
+' @param sourceImg LONG Source image handle
+' @param radius INTEGER Blur radius (1-20)
+' @return LONG New image handle with blur applied
+' @example
+'   blurred = IMGADJ_Blur(myImage, 5)
+'
+FUNCTION IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Blur: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    IF radius <= 0 THEN
+        IMGADJ_Blur = resultImg
+        EXIT FUNCTION
+    END IF
+    
+    ' Simple box blur implementation
+    DIM tempImg
+    tempImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM, tempMem AS _MEM
+    m = _MEMIMAGE(resultImg)
+    tempMem = _MEMIMAGE(tempImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER, dx AS INTEGER, dy
+    DIM r AS LONG, g AS LONG, b AS LONG, count
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            r = 0: g = 0: b = 0: count = 0
+            
+            FOR dy = -radius TO radius
+                FOR dx = -radius TO radius
+                    DIM sx AS INTEGER, sy
+                    sx = x + dx
+                    sy = y + dy
+                    
+                    IF sx >= 0 AND sx < w AND sy >= 0 AND sy < h THEN
+                        DIM pixel AS _UNSIGNED LONG
+                        pixel = _MEMGET(tempMem, tempMem.OFFSET + (sy * w + sx) * 4, _UNSIGNED LONG)
+                        r = r + _RED32(pixel)
+                        g = g + _GREEN32(pixel)
+                        b = b + _BLUE32(pixel)
+                        count = count + 1
+                    END IF
+                NEXT dx
+            NEXT dy
+            
+            IF count > 0 THEN
+                r = r \ count
+                g = g \ count
+                b = b \ count
+            END IF
+            
+            DIM newPixel AS _UNSIGNED LONG
+            newPixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, newPixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    _MEMFREE tempMem
+    _FREEIMAGE tempImg
+    
+    IMGADJ_Blur = resultImg
+END FUNCTION
+
+
+''
+' Apply glow effect to image
+' @param sourceImg LONG Source image handle
+' @param radius INTEGER Glow radius (1-20)
+' @param intensity INTEGER Glow intensity (0-100)
+' @return LONG New image handle with glow applied
+' @example
+'   glowing = IMGADJ_Glow(myImage, 5, 80)
+'
+FUNCTION IMGADJ_Glow (sourceImg AS LONG, radius AS INTEGER, intensity AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Glow: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    IF radius <= 0 OR intensity <= 0 THEN
+        IMGADJ_Glow = resultImg
+        EXIT FUNCTION
+    END IF
+    
+    ' Create blurred version for glow
+    DIM blurred
+    blurred = IMGADJ_Blur(sourceImg, radius)
+    
+    ' Blend the original with the blurred version
+    DIM m1 AS _MEM, m2 AS _MEM
+    m1 = _MEMIMAGE(resultImg)
+    m2 = _MEMIMAGE(blurred)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r1 AS INTEGER, g1 AS INTEGER, b1
+    DIM r2 AS INTEGER, g2 AS INTEGER, b2
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM blend AS SINGLE
+    
+    blend = intensity / 100.0
+    IF blend > 1.0 THEN blend = 1.0
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel1 AS _UNSIGNED LONG, pixel2 AS _UNSIGNED LONG
+            pixel1 = _MEMGET(m1, m1.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            pixel2 = _MEMGET(m2, m2.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r1 = _RED32(pixel1)
+            g1 = _GREEN32(pixel1)
+            b1 = _BLUE32(pixel1)
+            
+            r2 = _RED32(pixel2)
+            g2 = _GREEN32(pixel2)
+            b2 = _BLUE32(pixel2)
+            
+            ' Additive blend for glow effect
+            r = IMGADJ_Clamp(r1 + INT(r2 * blend), 0, 255)
+            g = IMGADJ_Clamp(g1 + INT(g2 * blend), 0, 255)
+            b = IMGADJ_Clamp(b1 + INT(b2 * blend), 0, 255)
+            
+            DIM newPixel AS _UNSIGNED LONG
+            newPixel = _RGB32(r, g, b)
+            _MEMPUT m1, m1.OFFSET + (y * w + x) * 4, newPixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m1
+    _MEMFREE m2
+    _FREEIMAGE blurred
+    
+    IMGADJ_Glow = resultImg
+END FUNCTION
+
+
+''
+' Apply film grain effect to image
+' @param sourceImg LONG Source image handle
+' @param amount INTEGER Grain amount (0-100)
+' @return LONG New image handle with film grain applied
+' @example
+'   grainy = IMGADJ_FilmGrain(myImage, 40)
+'
+FUNCTION IMGADJ_FilmGrain (sourceImg AS LONG, amount AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_FilmGrain: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    IF amount <= 0 THEN
+        IMGADJ_FilmGrain = resultImg
+        EXIT FUNCTION
+    END IF
+    
+    ' Initialize noise table if needed
+    CALL IMGADJ_Init
+    
+    ' Optimized film grain implementation with pseudo-random pattern
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM noiseIndex
+    DIM scaledNoise
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Create pseudo-random index based on position to avoid patterns
+            noiseIndex = ((CLNG(x) * 157) XOR (CLNG(y) * 139)) AND 65535
+            
+            ' Ensure index is within bounds
+            IF noiseIndex < 0 THEN noiseIndex = 0
+            IF noiseIndex > 65535 THEN noiseIndex = 65535
+            
+            ' Scale the pre-generated noise to the requested amount
+            scaledNoise = (IMGADJ_noise(noiseIndex) * amount) \ 100
+            
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Apply grain with clamping
+            r = IMGADJ_Clamp(r + scaledNoise, 0, 255)
+            g = IMGADJ_Clamp(g + scaledNoise, 0, 255)
+            b = IMGADJ_Clamp(b + scaledNoise, 0, 255)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_FilmGrain = resultImg
+END FUNCTION
+
+
+''
+' Apply vignette effect to image
+' @param sourceImg LONG Source image handle
+' @param strength SINGLE Vignette strength (0.0-1.0)
+' @return LONG New image handle with vignette applied
+' @example
+'   vignetted = IMGADJ_Vignette(myImage, 0.7)
+'
+FUNCTION IMGADJ_Vignette (sourceImg AS LONG, strength AS SINGLE)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Vignette: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    IF strength <= 0 THEN
+        IMGADJ_Vignette = resultImg
+        EXIT FUNCTION
+    END IF
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM centerX AS SINGLE, centerY AS SINGLE
+    centerX = w / 2
+    centerY = h / 2
+    
+    DIM maxDist AS SINGLE
+    maxDist = SQR((centerX * centerX) + (centerY * centerY))
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM dx AS SINGLE, dy AS SINGLE, dist AS SINGLE
+    DIM factor AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Calculate distance from center
+            dx = x - centerX
+            dy = y - centerY
+            dist = SQR((dx * dx) + (dy * dy))
+            
+            ' Calculate vignette factor
+            factor = 1.0 - (dist / maxDist) * strength
+            IF factor < 0 THEN factor = 0
+            
+            ' Apply vignette
+            r = INT(r * factor)
+            g = INT(g * factor)
+            b = INT(b * factor)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Vignette = resultImg
+END FUNCTION
+
+
+''
+' Apply sepia tone effect to image
+' @param sourceImg LONG Source image handle
+' @return LONG New image handle with sepia applied
+' @example
+'   sepia_img = IMGADJ_Sepia(myImage)
+'
+FUNCTION IMGADJ_Sepia (sourceImg AS LONG)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Sepia: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM tr AS INTEGER, tg AS INTEGER, tb
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Apply sepia transformation
+            tr = IMGADJ_Clamp(INT((r * 0.393) + (g * 0.769) + (b * 0.189)), 0, 255)
+            tg = IMGADJ_Clamp(INT((r * 0.349) + (g * 0.686) + (b * 0.168)), 0, 255)
+            tb = IMGADJ_Clamp(INT((r * 0.272) + (g * 0.534) + (b * 0.131)), 0, 255)
+            
+            pixel = _RGB32(tr, tg, tb)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Sepia = resultImg
+END FUNCTION
+
+
+''
+' Invert image colors
+' @param sourceImg LONG Source image handle
+' @return LONG New image handle with colors inverted
+' @example
+'   inverted = IMGADJ_Invert(myImage)
+'
+FUNCTION IMGADJ_Invert (sourceImg AS LONG)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Invert: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = 255 - _RED32(pixel)
+            g = 255 - _GREEN32(pixel)
+            b = 255 - _BLUE32(pixel)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Invert = resultImg
+END FUNCTION
+
+
+''
+' Apply threshold effect to image
+' @param sourceImg LONG Source image handle
+' @param threshold INTEGER Threshold value (0-255)
+' @param mode INTEGER IMGADJ_THRESHOLD_BINARY or IMGADJ_THRESHOLD_INVERTED
+' @return LONG New image handle with threshold applied
+' @example
+'   binary = IMGADJ_Threshold(myImage, 128, IMGADJ_THRESHOLD_BINARY)
+'
+FUNCTION IMGADJ_Threshold (sourceImg AS LONG, threshold AS INTEGER, mode AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Threshold: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM gray AS INTEGER, newColor
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Convert to grayscale using luminance formula
+            gray = INT(0.299 * r + 0.587 * g + 0.114 * b)
+            
+            IF mode = IMGADJ_THRESHOLD_BINARY THEN
+                IF gray >= threshold THEN newColor = 255 ELSE newColor = 0
+            ELSE ' IMGADJ_THRESHOLD_INVERTED
+                IF gray >= threshold THEN newColor = 0 ELSE newColor = 255
+            END IF
+            
+            pixel = _RGB32(newColor, newColor, newColor)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Threshold = resultImg
+END FUNCTION
+
+
+''
+' Desaturate image to grayscale
+' @param sourceImg LONG Source image handle
+' @param method INTEGER IMGADJ_DESATURATE_AVERAGE or IMGADJ_DESATURATE_LUMINANCE
+' @return LONG New image handle with desaturation applied
+' @example
+'   grayscale = IMGADJ_Desaturate(myImage, IMGADJ_DESATURATE_LUMINANCE)
+'
+FUNCTION IMGADJ_Desaturate (sourceImg AS LONG, method AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Desaturate: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM gray
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            IF method = IMGADJ_DESATURATE_AVERAGE THEN
+                gray = (r + g + b) \ 3
+            ELSE ' IMGADJ_DESATURATE_LUMINANCE
+                gray = INT(0.299 * r + 0.587 * g + 0.114 * b)
+            END IF
+            
+            pixel = _RGB32(gray, gray, gray)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Desaturate = resultImg
+END FUNCTION
+
+
+''
+' Apply levels adjustment to image
+' @param sourceImg LONG Source image handle
+' @param inputMin INTEGER Input minimum level (0-255)
+' @param inputMax INTEGER Input maximum level (0-255)
+' @param outputMin INTEGER Output minimum level (0-255)
+' @param outputMax INTEGER Output maximum level (0-255)
+' @return LONG New image handle with levels applied
+' @example
+'   leveled = IMGADJ_Levels(myImage, 20, 230, 0, 255)
+'
+FUNCTION IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS INTEGER, outputMin AS INTEGER, outputMax AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_Levels: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    ' Create lookup table for levels adjustment
+    DIM levelsTable(0 TO 255)
+    DIM i AS INTEGER, inputRange AS INTEGER, outputRange
+    
+    inputRange = inputMax - inputMin
+    IF inputRange = 0 THEN inputRange = 1  ' Avoid division by zero
+    outputRange = outputMax - outputMin
+    
+    FOR i = 0 TO 255
+        IF i <= inputMin THEN
+            levelsTable(i) = outputMin
+        ELSEIF i >= inputMax THEN
+            levelsTable(i) = outputMax
+        ELSE
+            levelsTable(i) = outputMin + INT(((i - inputMin) * outputRange) / inputRange)
+        END IF
+        levelsTable(i) = IMGADJ_Clamp(levelsTable(i), 0, 255)
+    NEXT i
+    
+    ' Apply levels using lookup table
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            r = levelsTable(r)
+            g = levelsTable(g)
+            b = levelsTable(b)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_Levels = resultImg
+END FUNCTION
+
+
+''
+' Apply color balance adjustment to image
+' @param sourceImg LONG Source image handle
+' @param redShift INTEGER Red channel shift (-100 to 100)
+' @param greenShift INTEGER Green channel shift (-100 to 100)
+' @param blueShift INTEGER Blue channel shift (-100 to 100)
+' @return LONG New image handle with color balance applied
+' @example
+'   balanced = IMGADJ_ColorBalance(myImage, 20, -10, 5)
+'
+FUNCTION IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenShift AS INTEGER, blueShift AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "IMGADJ_ColorBalance: Invalid source image handle"
+        SYSTEM
+    END IF
+    
+    DIM resultImg
+    resultImg = _COPYIMAGE(sourceImg, 32)
+    
+    DIM m AS _MEM
+    m = _MEMIMAGE(resultImg)
+    
+    DIM w AS INTEGER, h
+    w = _WIDTH(resultImg)
+    h = _HEIGHT(resultImg)
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            DIM pixel AS _UNSIGNED LONG
+            pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
+            
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Apply color balance shifts
+            r = IMGADJ_Clamp(r + redShift, 0, 255)
+            g = IMGADJ_Clamp(g + greenShift, 0, 255)
+            b = IMGADJ_Clamp(b + blueShift, 0, 255)
+            
+            pixel = _RGB32(r, g, b)
+            _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel AS _UNSIGNED LONG
+        NEXT x
+    NEXT y
+    
+    _MEMFREE m
+    IMGADJ_ColorBalance = resultImg
+END FUNCTION
+
+
+''
+' Load a test image for demonstrations
+' @param imageType STRING "simple", "gradient", or "complex"
+' @return LONG Image handle, or exits with error if file not found
+' @example
+'   testImg = IMGADJ_LoadTestImage("complex")
+'
+FUNCTION IMGADJ_LoadTestImage (imageType AS STRING)
+    DIM filename AS STRING
+    
+    SELECT CASE LCASE$(imageType)
+        CASE "simple"
+            filename = "TESTIMAGE.PNG"
+        CASE "gradient"
+            filename = "TESTIMAGE-GRADIENT.PNG"
+        CASE "complex"
+            filename = "TESTIMAGE-COMPLEX.PNG"
+        CASE ELSE
+            filename = "TESTIMAGE.PNG"
+    END SELECT
+    
+    IF NOT _FILEEXISTS(filename) THEN
+        PRINT "IMGADJ_LoadTestImage: Test image file '" + filename + "' not found"
+        PRINT "Please ensure test images are in the current directory."
+        SYSTEM
+    END IF
+    
+    DIM img
+    img = _LOADIMAGE(filename, 32)
+    
+    IF img = -1 THEN
+        PRINT "IMGADJ_LoadTestImage: Failed to load '" + filename + "'"
+        SYSTEM
+    END IF
+    
+    IMGADJ_LoadTestImage = img
+END FUNCTION
+
+
+''
+' Show before/after comparison of original and adjusted images
+' @param originalImg LONG Original image handle
+' @param adjustedImg LONG Adjusted image handle
+' @param title STRING Title to display
+' @example
+'   CALL IMGADJ_ShowComparison(original, adjusted, "Brightness +50")
+'
+SUB IMGADJ_ShowComparison (originalImg AS LONG, adjustedImg AS LONG, title AS STRING)
+    IF originalImg = 0 OR adjustedImg = 0 THEN
+        PRINT "IMGADJ_ShowComparison: Invalid image handle"
+        EXIT SUB
+    END IF
+    
+    CLS
+    COLOR _RGB32(255, 255, 255)
+    PRINT title
+    PRINT
+    
+    DIM origW AS INTEGER, origH
+    DIM adjW AS INTEGER, adjH
+    
+    origW = _WIDTH(originalImg)
+    origH = _HEIGHT(originalImg)
+    adjW = _WIDTH(adjustedImg)
+    adjH = _HEIGHT(adjustedImg)
+    
+    ' Display original image on the left
+    _PUTIMAGE (10, 60), originalImg
+    COLOR _RGB32(255, 255, 255)
+    _PRINTSTRING (10, 40), "Original"
+    
+    ' Display adjusted image on the right
+    _PUTIMAGE (origW + 30, 60), adjustedImg
+    _PRINTSTRING (origW + 30, 40), "Adjusted"
+    
+    _DISPLAY
+END SUB
+
+
+''
+' Create a complex test image programmatically
+' @return LONG Image handle with complex test pattern
+' @example
+'   complexImg = IMGADJ_CreateComplexTestImage()
+'
+FUNCTION IMGADJ_CreateComplexTestImage ()
+    DIM img
+    img = _NEWIMAGE(300, 300, 32)
+    
+    DIM oldDest
+    oldDest = _DEST
+    _DEST img
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    DIM centerX AS INTEGER, centerY
+    DIM dist AS SINGLE, angle AS SINGLE
+    
+    centerX = 150: centerY = 150
+    
+    FOR y = 0 TO 299
+        FOR x = 0 TO 299
+            ' Calculate distance from center and angle
+            dist = SQR((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY))
+            angle = _ATAN2(y - centerY, x - centerX) * 180 / _PI
+            
+            ' Create complex test pattern
+            IF dist < 50 THEN
+                ' Center circle - solid color gradient
+                r = 255 - (dist * 5)
+                g = 128 + (SIN(angle * _PI / 180) * 64)
+                b = 64 + (COS(angle * _PI / 180) * 64)
+            ELSEIF dist < 100 THEN
+                ' Ring area - color bands
+                r = 128 + SIN((angle + dist) * _PI / 180 * 3) * 127
+                g = 128 + COS(angle * _PI / 180 * 2) * 127
+                b = 64 + SIN(dist * _PI / 180) * 64
+            ELSEIF x < 100 THEN
+                ' Left section - brightness ramp
+                r = (y * 255) \ 300
+                g = r \ 2
+                b = r \ 4
+            ELSEIF x > 200 THEN
+                ' Right section - color wheel
+                r = 128 + SIN(y * _PI / 180 * 2) * 127
+                g = 128 + COS(y * _PI / 180 * 3) * 127
+                b = 128 + SIN(y * _PI / 180 * 4) * 127
+            ELSE
+                ' Middle section - mixed patterns
+                r = ((x * 255) \ 300 + (y * 128) \ 300) \ 2
+                g = ((y * 255) \ 300 + SIN(x / 25) * 64 + 64)
+                b = ((x + y) * 255) \ 600 + COS(y / 20) * 32 + 32
+            END IF
+            
+            ' Add some noise for testing
+            r = r + (RND * 20) - 10
+            g = g + (RND * 20) - 10
+            b = b + (RND * 20) - 10
+            
+            r = IMGADJ_Clamp(r, 0, 255)
+            g = IMGADJ_Clamp(g, 0, 255)
+            b = IMGADJ_Clamp(b, 0, 255)
+            
+            PSET (x, y), _RGB32(r, g, b)
+        NEXT
+    NEXT
+    
+    _DEST oldDest
+    IMGADJ_CreateComplexTestImage = img
+END FUNCTION
+
+
+''
+' Create a gradient test image programmatically
+' @return LONG Image handle with gradient test pattern
+' @example
+'   gradientImg = IMGADJ_CreateGradientTestImage()
+'
+FUNCTION IMGADJ_CreateGradientTestImage ()
+    DIM img
+    img = _NEWIMAGE(300, 300, 32)
+    
+    DIM oldDest
+    oldDest = _DEST
+    _DEST img
+    
+    DIM x AS INTEGER, y
+    DIM r AS INTEGER, g AS INTEGER, b
+    
+    FOR y = 0 TO 299
+        FOR x = 0 TO 299
+            ' Create horizontal RGB gradient
+            r = (x * 255) \ 299
+            g = (y * 255) \ 299
+            b = ((x + y) * 255) \ 598
+            
+            PSET (x, y), _RGB32(r, g, b)
+        NEXT
+    NEXT
+    
+    _DEST oldDest
+    IMGADJ_CreateGradientTestImage = img
+END FUNCTION
+
+
+''
+' Create a simple test image programmatically
+' @return LONG Image handle with simple test pattern
+' @example
+'   simpleImg = IMGADJ_CreateSimpleTestImage()
+'
+FUNCTION IMGADJ_CreateTestImage ()
+    DIM img
+    img = _NEWIMAGE(300, 300, 32)
+    
+    DIM oldDest
+    oldDest = _DEST
+    _DEST img
+    
+    ' Clear to white
+    CLS , _RGB32(255, 255, 255)
+    
+    ' Draw some simple shapes in different colors
+    LINE (50, 50)-(150, 150), _RGB32(255, 0, 0), BF  ' Red square
+    CIRCLE (200, 100), 40, _RGB32(0, 255, 0)         ' Green circle
+    LINE (50, 200)-(250, 250), _RGB32(0, 0, 255), BF ' Blue rectangle
+    
+    _DEST oldDest
+    IMGADJ_CreateTestImage = img
+END FUNCTION
+

@@ -1,0 +1,16 @@
+''
+' TEST QB64PE FUNCTION SYNTAX
+''
+
+$CONSOLE:ONLY
+
+DECLARE FUNCTION TestFunc AS LONG
+
+DIM result AS LONG
+result = TestFunc
+PRINT "Result:", result
+SYSTEM
+
+FUNCTION TestFunc AS LONG
+    TestFunc = 42
+END FUNCTION
