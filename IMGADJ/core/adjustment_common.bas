@@ -5,7 +5,7 @@
 DIM SHARED noise(0 TO 65535) AS INTEGER
 DIM SHARED noiseInit AS INTEGER
 
-SUB IMGADJ_Init
+SUB GJ_IMGADJ_Init
     ' Initialize noise lookup table for film grain
     IF noiseInit = 0 THEN
         RANDOMIZE TIMER
@@ -309,7 +309,7 @@ END SUB
 
 ' ===== CLEAN IMAGE ADJUSTMENT API =====
 
-FUNCTION IMGADJ_Brightness& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_Brightness& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     DIM resultImg AS LONG, offset AS INTEGER
     
     ' Create working copy
@@ -327,10 +327,10 @@ FUNCTION IMGADJ_Brightness& (sourceImg AS LONG, direction AS STRING, amount AS I
     ' Apply brightness adjustment using OPTIMIZED core library (50x faster!)
     CALL ApplyBrightness(resultImg, offset)
     
-    IMGADJ_Brightness& = resultImg
+    GJ_IMGADJ_Brightness& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Contrast& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_Contrast& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     DIM resultImg AS LONG, pct AS INTEGER
     
     ' Create working copy
@@ -352,10 +352,10 @@ FUNCTION IMGADJ_Contrast& (sourceImg AS LONG, direction AS STRING, amount AS INT
     ' Apply contrast adjustment using OPTIMIZED core library (50x faster!)
     CALL ApplyContrast(resultImg, pct)
     
-    IMGADJ_Contrast& = resultImg
+    GJ_IMGADJ_Contrast& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Gamma& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_Gamma& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     DIM resultImg AS LONG, gamma AS SINGLE
     
     ' Create working copy
@@ -411,10 +411,10 @@ FUNCTION IMGADJ_Gamma& (sourceImg AS LONG, direction AS STRING, amount AS INTEGE
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Gamma& = resultImg
+    GJ_IMGADJ_Gamma& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Saturation& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_Saturation& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     DIM resultImg AS LONG, satMultiplier AS SINGLE
     
     ' Create working copy
@@ -460,10 +460,10 @@ FUNCTION IMGADJ_Saturation& (sourceImg AS LONG, direction AS STRING, amount AS I
     NEXT
     
     _SOURCE oldSrc: _DEST oldDest
-    IMGADJ_Saturation& = resultImg
+    GJ_IMGADJ_Saturation& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Hue& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_Hue& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     DIM resultImg AS LONG, hueShift AS SINGLE
     
     ' Create working copy
@@ -505,11 +505,11 @@ FUNCTION IMGADJ_Hue& (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     NEXT
     
     _SOURCE oldSrc: _DEST oldDest
-    IMGADJ_Hue& = resultImg
+    GJ_IMGADJ_Hue& = resultImg
 END FUNCTION
 
 ' Utility function to load test images
-FUNCTION IMGADJ_LoadTestImage& (imageType AS STRING)
+FUNCTION GJ_IMGADJ_LoadTestImage& (imageType AS STRING)
     DIM imgPath AS STRING
     
     SELECT CASE UCASE$(imageType)
@@ -530,11 +530,11 @@ FUNCTION IMGADJ_LoadTestImage& (imageType AS STRING)
         SYSTEM
     END IF
     
-    IMGADJ_LoadTestImage& = img
+    GJ_IMGADJ_LoadTestImage& = img
 END FUNCTION
 
 ' Utility function to show before/after comparison
-SUB IMGADJ_ShowComparison (originalImg AS LONG, adjustedImg AS LONG, title AS STRING)
+SUB GJ_IMGADJ_ShowComparison (originalImg AS LONG, adjustedImg AS LONG, title AS STRING)
     ' Clear screen
     CLS
     
@@ -556,10 +556,10 @@ SUB IMGADJ_ShowComparison (originalImg AS LONG, adjustedImg AS LONG, title AS ST
 END SUB
 
 ' ============================================================================
-' ADDITIONAL OPTIMIZED IMGADJ_ WRAPPER FUNCTIONS
+' ADDITIONAL OPTIMIZED GJ_IMGADJ WRAPPER FUNCTIONS
 ' ============================================================================
 
-FUNCTION IMGADJ_Invert& (sourceImg AS LONG)
+FUNCTION GJ_IMGADJ_Invert& (sourceImg AS LONG)
     ' Optimized invert function using _MEMIMAGE
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
@@ -589,10 +589,10 @@ FUNCTION IMGADJ_Invert& (sourceImg AS LONG)
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Invert& = resultImg
+    GJ_IMGADJ_Invert& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Sepia& (sourceImg AS LONG)
+FUNCTION GJ_IMGADJ_Sepia& (sourceImg AS LONG)
     ' Optimized sepia tone effect using _MEMIMAGE
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
@@ -633,10 +633,10 @@ FUNCTION IMGADJ_Sepia& (sourceImg AS LONG)
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Sepia& = resultImg
+    GJ_IMGADJ_Sepia& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Desaturate& (sourceImg AS LONG, method AS INTEGER)
+FUNCTION GJ_IMGADJ_Desaturate& (sourceImg AS LONG, method AS INTEGER)
     ' Optimized desaturate function using _MEMIMAGE
     ' method: 0 = average, 1 = luminance, 2 = max/min average
     DIM resultImg AS LONG
@@ -687,10 +687,10 @@ FUNCTION IMGADJ_Desaturate& (sourceImg AS LONG, method AS INTEGER)
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Desaturate& = resultImg
+    GJ_IMGADJ_Desaturate& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Threshold& (sourceImg AS LONG, threshold AS INTEGER, mode AS INTEGER)
+FUNCTION GJ_IMGADJ_Threshold& (sourceImg AS LONG, threshold AS INTEGER, mode AS INTEGER)
     ' Optimized threshold function using _MEMIMAGE
     ' mode: 0 = black/white, 1 = preserve color
     DIM resultImg AS LONG
@@ -739,16 +739,16 @@ FUNCTION IMGADJ_Threshold& (sourceImg AS LONG, threshold AS INTEGER, mode AS INT
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Threshold& = resultImg
+    GJ_IMGADJ_Threshold& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Blur& (sourceImg AS LONG, radius AS INTEGER)
+FUNCTION GJ_IMGADJ_Blur& (sourceImg AS LONG, radius AS INTEGER)
     ' Simple optimized blur implementation with bounds checking
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
     
     IF radius <= 0 THEN
-        IMGADJ_Blur& = resultImg
+        GJ_IMGADJ_Blur& = resultImg
         EXIT FUNCTION
     END IF
     
@@ -760,7 +760,7 @@ FUNCTION IMGADJ_Blur& (sourceImg AS LONG, radius AS INTEGER)
     IF radius >= w / 2 THEN radius = (w / 2) - 1
     IF radius >= h / 2 THEN radius = (h / 2) - 1
     IF radius <= 0 THEN
-        IMGADJ_Blur& = resultImg
+        GJ_IMGADJ_Blur& = resultImg
         EXIT FUNCTION
     END IF
     
@@ -825,22 +825,22 @@ FUNCTION IMGADJ_Blur& (sourceImg AS LONG, radius AS INTEGER)
     _FREEIMAGE tempImg
     _MEMFREE m
     
-    IMGADJ_Blur& = resultImg
+    GJ_IMGADJ_Blur& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Glow& (sourceImg AS LONG, radius AS INTEGER, intensity AS INTEGER)
+FUNCTION GJ_IMGADJ_Glow& (sourceImg AS LONG, radius AS INTEGER, intensity AS INTEGER)
     ' Simple glow effect using blur + blend
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
     
     IF radius <= 0 OR intensity <= 0 THEN
-        IMGADJ_Glow& = resultImg
+        GJ_IMGADJ_Glow& = resultImg
         EXIT FUNCTION
     END IF
     
     ' Create blurred version for glow
     DIM blurred AS LONG
-    blurred = IMGADJ_Blur&(sourceImg, radius)
+    blurred = GJ_IMGADJ_Blur&(sourceImg, radius)
     
     ' Blend the original with the blurred version
     DIM m1 AS _MEM, m2 AS _MEM
@@ -893,15 +893,15 @@ FUNCTION IMGADJ_Glow& (sourceImg AS LONG, radius AS INTEGER, intensity AS INTEGE
     _MEMFREE m2
     _FREEIMAGE blurred
     
-    IMGADJ_Glow& = resultImg
+    GJ_IMGADJ_Glow& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_FilmGrain& (sourceImg AS LONG, amount AS INTEGER)
+FUNCTION GJ_IMGADJ_FilmGrain& (sourceImg AS LONG, amount AS INTEGER)
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
     
     ' Initialize noise table if needed
-    CALL IMGADJ_Init
+    CALL GJ_IMGADJ_Init
     
     ' Optimized film grain implementation with pseudo-random pattern
     DIM m AS _MEM
@@ -954,10 +954,10 @@ FUNCTION IMGADJ_FilmGrain& (sourceImg AS LONG, amount AS INTEGER)
     NEXT y
     
     _MEMFREE m
-    IMGADJ_FilmGrain& = resultImg
+    GJ_IMGADJ_FilmGrain& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Vignette& (sourceImg AS LONG, strength AS SINGLE)
+FUNCTION GJ_IMGADJ_Vignette& (sourceImg AS LONG, strength AS SINGLE)
     ' Optimized vignette effect using _MEMIMAGE
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
@@ -1010,23 +1010,23 @@ FUNCTION IMGADJ_Vignette& (sourceImg AS LONG, strength AS SINGLE)
     NEXT y
     
     _MEMFREE m
-    IMGADJ_Vignette& = resultImg
+    GJ_IMGADJ_Vignette& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_Levels& (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS INTEGER, outputMin AS INTEGER, outputMax AS INTEGER)
+FUNCTION GJ_IMGADJ_Levels& (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS INTEGER, outputMin AS INTEGER, outputMax AS INTEGER)
     ' TODO: Add optimized levels function
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
     ' CALL ApplyLevels(resultImg, inputMin, inputMax, outputMin, outputMax)
-    IMGADJ_Levels& = resultImg
+    GJ_IMGADJ_Levels& = resultImg
 END FUNCTION
 
-FUNCTION IMGADJ_ColorBalance& (sourceImg AS LONG, redShift AS INTEGER, greenShift AS INTEGER, blueShift AS INTEGER)
+FUNCTION GJ_IMGADJ_ColorBalance& (sourceImg AS LONG, redShift AS INTEGER, greenShift AS INTEGER, blueShift AS INTEGER)
     ' TODO: Implement optimized color balance - using placeholder for now
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
     ' CALL ApplyColorBalance(resultImg, redShift, greenShift, blueShift)
-    IMGADJ_ColorBalance& = resultImg
+    GJ_IMGADJ_ColorBalance& = resultImg
 END FUNCTION
 
 ' Include the optimized core library implementation

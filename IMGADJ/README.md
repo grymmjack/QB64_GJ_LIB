@@ -22,57 +22,58 @@ The library draws inspiration from professional image editing software like Phot
 ### Core Adjustments
 | FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
 |----------|---------|------------|-------------|
-| `IMGADJ_Brightness&()` | Adjust image brightness | `(img&, "+"/"-", amount%)` | 10-50x faster with _MEMIMAGE |
-| `IMGADJ_Contrast&()` | Adjust image contrast | `(img&, "+"/"-", percentage%)` | 10-50x faster with _MEMIMAGE |
-| `IMGADJ_Gamma&()` | Gamma correction | `(img&, "+"/"-", amount%)` | 100x faster with lookup tables |
-| `IMGADJ_Saturation&()` | Adjust color saturation | `(img&, "+"/"-", percentage%)` | HSV color space conversion |
-| `IMGADJ_Hue&()` | Shift hue around color wheel | `(img&, "+"/"-", degrees%)` | HSV color space conversion |
+| `GJ_IMGADJ_Brightness&()` | Adjust image brightness | `(img&, "+"/"-", amount%)` | 10-50x faster with _MEMIMAGE |
+| `GJ_IMGADJ_Contrast&()` | Adjust image contrast | `(img&, "+"/"-", percentage%)` | 10-50x faster with _MEMIMAGE |
+| `GJ_IMGADJ_Gamma&()` | Gamma correction | `(img&, "+"/"-", amount%)` | 100x faster with lookup tables |
+| `GJ_IMGADJ_Saturation&()` | Adjust color saturation | `(img&, "+"/"-", percentage%)` | HSV color space conversion |
+| `GJ_IMGADJ_Hue&()` | Shift hue around color wheel | `(img&, "+"/"-", degrees%)` | HSV color space conversion |
 
 ### Creative Effects
 | FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
 |----------|---------|------------|-------------|
-| `IMGADJ_Blur&()` | Apply blur effect | `(img&, radius%)` | Box filter implementation |
-| `IMGADJ_Glow&()` | Add glow effect | `(img&, radius%, intensity%)` | Additive blend with blur |
-| `IMGADJ_FilmGrain&()` | Add film grain noise | `(img&, amount%)` | 100x faster with pre-computed noise |
-| `IMGADJ_Vignette&()` | Darken image edges | `(img&, strength!)` | 50x faster with optimized distance |
-| `IMGADJ_Sepia&()` | Apply sepia tone | `(img&)` | Optimized color transformation |
-| `IMGADJ_Invert&()` | Invert all colors | `(img&)` | 50x faster with _MEMIMAGE |
+| `GJ_IMGADJ_Blur&()` | Apply blur effect | `(img&, radius%)` | Box filter implementation |
+| `GJ_IMGADJ_Glow&()` | Add glow effect | `(img&, radius%, intensity%)` | Additive blend with blur |
+| `GJ_IMGADJ_FilmGrain&()` | Add film grain noise | `(img&, amount%)` | 100x faster with pre-computed noise |
+| `GJ_IMGADJ_Vignette&()` | Darken image edges | `(img&, strength!)` | 50x faster with optimized distance |
+| `GJ_IMGADJ_Posterize&()` | Reduce color levels | `(img&, levels%)` | 100x faster with lookup tables |
+| `GJ_IMGADJ_Sepia&()` | Apply sepia tone | `(img&)` | Optimized color transformation |
+| `GJ_IMGADJ_Invert&()` | Invert all colors | `(img&)` | 50x faster with _MEMIMAGE |
 
 ### Utility Functions
 | FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
 |----------|---------|------------|-------------|
-| `IMGADJ_Threshold&()` | Binary threshold | `(img&, threshold%, mode%)` | Luminance-based conversion |
-| `IMGADJ_Desaturate&()` | Convert to grayscale | `(img&, method%)` | Average or luminance methods |
-| `IMGADJ_Levels&()` | Adjust input/output levels | `(img&, inMin%, inMax%, outMin%, outMax%)` | 50x faster with lookup tables |
-| `IMGADJ_ColorBalance&()` | Adjust RGB balance | `(img&, redShift%, greenShift%, blueShift%)` | Direct channel manipulation |
+| `GJ_IMGADJ_Threshold&()` | Binary threshold | `(img&, threshold%, mode%)` | Luminance-based conversion |
+| `GJ_IMGADJ_Desaturate&()` | Convert to grayscale | `(img&, method%)` | Average or luminance methods |
+| `GJ_IMGADJ_Levels&()` | Adjust input/output levels | `(img&, inMin%, inMax%, outMin%, outMax%)` | 50x faster with lookup tables |
+| `GJ_IMGADJ_ColorBalance&()` | Adjust RGB balance | `(img&, redShift%, greenShift%, blueShift%)` | Direct channel manipulation |
 
 ### Test Utilities
 | FUNCTION | PURPOSE | PARAMETERS | NOTES |
 |----------|---------|------------|-------|
-| `IMGADJ_LoadTestImage&()` | Load test images | `(imageType$)` | "simple", "gradient", "complex" |
-| `IMGADJ_ShowComparison()` | Display before/after | `(original&, adjusted&, title$)` | Side-by-side comparison |
-| `IMGADJ_CreateComplexTestImage&()` | Generate test image | `()` | Complex pattern for testing |
-| `IMGADJ_CreateGradientTestImage&()` | Generate gradient | `()` | RGB gradient pattern |
-| `IMGADJ_CreateSimpleTestImage&()` | Generate simple image | `()` | Basic shapes and colors |
+| `GJ_IMGADJ_LoadTestImage&()` | Load test images | `(imageType$)` | "simple", "gradient", "complex" |
+| `GJ_IMGADJ_ShowComparison()` | Display before/after | `(original&, adjusted&, title$)` | Side-by-side comparison |
+| `GJ_IMGADJ_CreateComplexTestImage&()` | Generate test image | `()` | Complex pattern for testing |
+| `GJ_IMGADJ_CreateGradientTestImage&()` | Generate gradient | `()` | RGB gradient pattern |
+| `GJ_IMGADJ_CreateSimpleTestImage&()` | Generate simple image | `()` | Basic shapes and colors |
 
 ## USAGE
 
 ### Basic Usage (Individual Library)
-```basic
+```vb
 'Insert at top of code:
 '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BI'
 
 ' Load or create an image
 DIM myImage AS LONG
-myImage = IMGADJ_LoadTestImage&("complex")
+myImage = GJ_IMGADJ_LoadTestImage&("complex")
 
 ' Apply adjustments
 DIM brightened AS LONG, contrasted AS LONG
-brightened = IMGADJ_Brightness&(myImage, "+", 50)
-contrasted = IMGADJ_Contrast&(brightened, "+", 25)
+brightened = GJ_IMGADJ_Brightness&(myImage, "+", 50)
+contrasted = GJ_IMGADJ_Contrast&(brightened, "+", 25)
 
 ' Display results
-CALL IMGADJ_ShowComparison(myImage, contrasted, "Bright +50, Contrast +25")
+CALL GJ_IMGADJ_ShowComparison(myImage, contrasted, "Bright +50, Contrast +25")
 
 ' Clean up memory
 _FREEIMAGE brightened
@@ -86,48 +87,58 @@ _FREEIMAGE myImage
 ### Advanced Usage Patterns
 
 #### Chaining Adjustments
-```basic
+```vb
 ' Method 1: Explicit temporary variables (recommended)
 DIM temp AS LONG, final AS LONG
-temp = IMGADJ_Brightness&(original, "+", 20)
-final = IMGADJ_Contrast&(temp, "+", 15)
+temp = GJ_IMGADJ_Brightness&(original, "+", 20)
+final = GJ_IMGADJ_Contrast&(temp, "+", 15)
 _FREEIMAGE temp  ' Free intermediate result
 
 ' Method 2: Nested calls (compact but harder to debug)
-final = IMGADJ_Contrast&(IMGADJ_Brightness&(original, "+", 20), "+", 15)
+final = GJ_IMGADJ_Contrast&(GJ_IMGADJ_Brightness&(original, "+", 20), "+", 15)
 ```
 
 #### Interactive Adjustment
-```basic
+```vb
 DIM adjustment AS INTEGER: adjustment = 0
 DIM adjusted AS LONG
 DO
     IF adjusted <> 0 THEN _FREEIMAGE adjusted
-    adjusted = IMGADJ_Brightness&(original, IIF(adjustment >= 0, "+", "-"), ABS(adjustment))
-    CALL IMGADJ_ShowComparison(original, adjusted, "Brightness: " + STR$(adjustment))
+    adjusted = GJ_IMGADJ_Brightness&(original, IIF(adjustment >= 0, "+", "-"), ABS(adjustment))
+    CALL GJ_IMGADJ_ShowComparison(original, adjusted, "Brightness: " + STR$(adjustment))
     ' Handle input to change adjustment value...
 LOOP
 ```
 
 #### Batch Processing
-```basic
+```vb
 DIM images(10) AS LONG, processed(10) AS LONG
 FOR i = 0 TO 10
     ' Apply same adjustments to multiple images
-    processed(i) = IMGADJ_Brightness&(images(i), "+", 25)
+    processed(i) = GJ_IMGADJ_Brightness&(images(i), "+", 25)
     DIM temp AS LONG: temp = processed(i)
-    processed(i) = IMGADJ_Contrast&(temp, "+", 10)
+    processed(i) = GJ_IMGADJ_Contrast&(temp, "+", 10)
     _FREEIMAGE temp
 NEXT
+```
+
+#### Creative Effects Chaining
+```vb
+' Create artistic effect by combining adjustments
+DIM artistic AS LONG, temp1 AS LONG, temp2 AS LONG
+temp1 = GJ_IMGADJ_Posterize&(original, 4)          ' Reduce to 4 color levels
+temp2 = GJ_IMGADJ_Saturation&(temp1, "+", 50)      ' Boost saturation
+artistic = GJ_IMGADJ_Contrast&(temp2, "+", 20)     ' Add contrast
+_FREEIMAGE temp1: _FREEIMAGE temp2                  ' Clean up intermediates
 ```
 
 ## MEMORY MANAGEMENT
 
 ⚠️ **CRITICAL**: All IMGADJ functions return **NEW** image handles. You must free them when done:
 
-```basic
+```vb
 DIM adjusted AS LONG
-adjusted = IMGADJ_Brightness&(original, "+", 50)
+adjusted = GJ_IMGADJ_Brightness&(original, "+", 50)
 ' ... use the adjusted image ...
 _FREEIMAGE adjusted  ' Always free when done!
 ```
@@ -152,16 +163,17 @@ _FREEIMAGE adjusted  ' Always free when done!
 - **Hue**: 0-360 (degrees to shift)
 - **Film Grain**: 0-100 (noise intensity)
 - **Vignette**: 0.0-1.0 (edge darkening strength)
+- **Posterize**: 2-8 (number of levels per color channel)
 
 ### Constants
-```basic
+```vb
 ' Desaturate methods
-IMGADJ_DESATURATE_AVERAGE     ' Simple RGB average
-IMGADJ_DESATURATE_LUMINANCE   ' Weighted luminance formula
+GJ_IMGADJ_DESATURATE_AVERAGE     ' Simple RGB average
+GJ_IMGADJ_DESATURATE_LUMINANCE   ' Weighted luminance formula
 
 ' Threshold modes  
-IMGADJ_THRESHOLD_BINARY       ' White above threshold, black below
-IMGADJ_THRESHOLD_INVERTED     ' Black above threshold, white below
+GJ_IMGADJ_THRESHOLD_BINARY       ' White above threshold, black below
+GJ_IMGADJ_THRESHOLD_INVERTED     ' Black above threshold, white below
 ```
 
 ## PERFORMANCE BENEFITS
@@ -171,6 +183,7 @@ IMGADJ_THRESHOLD_INVERTED     ' Black above threshold, white below
 | Brightness/Contrast | _MEMIMAGE direct access | 10-50x faster |
 | Gamma Correction | Lookup table | 100x faster |
 | Film Grain | Pre-computed noise array | 100x faster |
+| Posterize | Lookup table | 100x faster |
 | Vignette | Optimized distance calculation | 50x faster |
 | Levels | Lookup table | 50x faster |
 | Simple Effects | _MEMIMAGE operations | 50x faster |
@@ -180,7 +193,7 @@ IMGADJ_THRESHOLD_INVERTED     ' Black above threshold, white below
 ## ERROR HANDLING
 
 - Functions validate image handles and exit with error messages if invalid
-- `IMGADJ_LoadTestImage&` exits if test image files don't exist  
+- `GJ_IMGADJ_LoadTestImage&` exits if test image files don't exist  
 - Parameter values are automatically clamped to safe ranges
 - Memory allocation failures are handled gracefully
 
