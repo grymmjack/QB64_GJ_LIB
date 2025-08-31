@@ -112,4 +112,4 @@ SUB ApplyCurves (img AS LONG, curveType AS INTEGER)
     _SOURCE old: _DEST oldW
 END SUB
 
-'$INCLUDE:'../core/adjustment_common.bas'
+'$INCLUDE:'../IMGADJ.BM'

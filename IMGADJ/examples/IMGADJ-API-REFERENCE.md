@@ -18,7 +18,7 @@ adjusted = GJ_IMGADJ_Gamma&(myImage, "+", 20)          ' Increase gamma to 1.2
 adjusted = GJ_IMGADJ_Saturation&(myImage, "+", 75)     ' Increase saturation by 75%
 adjusted = GJ_IMGADJ_Hue&(myImage, "-", 45)            ' Shift hue by -45 degrees
 
-'$INCLUDE:'../core/adjustment_common.bas'
+'$INCLUDE:'../IMGADJ.BM'
 ```
 
 ## Core Functions
@@ -163,7 +163,7 @@ SLEEP
 _FREEIMAGE original
 _FREEIMAGE result
 
-'$INCLUDE:'../core/adjustment_common.bas'
+'$INCLUDE:'../IMGADJ.BM'
 ```
 
 ## Benefits of This API

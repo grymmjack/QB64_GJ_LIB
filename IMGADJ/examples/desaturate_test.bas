@@ -1,34 +1,58 @@
-' Desaturate (Grayscale) Test
-' Standalone test for grayscale conversion algorithm
-$CONSOLE
-_CONSOLE ON
+' Desaturate (Grayscale) Test - Using Main IMGADJ Library
+' Demonstrates the GJ_IMGADJ_Desaturate function from the main library
+
+' Include the main GJ_LIB library
+'$INCLUDE:'../IMGADJ.BI'
+
 PRINT "Desaturate (Grayscale) Test Starting..."
+PRINT "Using GJ_IMGADJ library functions"
 
-' Include our common framework
-'$INCLUDE:'../core/adjustment_common.bi'
-
-' Algorithm-specific forward declarations
-DECLARE SUB ApplyDesaturate (img AS LONG, method AS INTEGER)
-DECLARE SUB ApplyAdjustments ()
-DECLARE SUB SetupParameters ()
-
-PRINT "Initializing..."
-parameterIndex = 0
-originalImage = 0
-adjustedImage = 0
-
-PRINT "Setting up algorithm parameters..."
-CALL SetupParameters
+DIM originalImage AS LONG
+DIM desaturatedAverage AS LONG
+DIM desaturatedLuminance AS LONG
 
 PRINT "Creating test image..."
-CALL CreateComplexTestImage
+originalImage = GJ_IMGADJ_CreateComplexTestImage
 
-PRINT "Initializing graphics..."
-CALL InitializeGraphics("Desaturate (Grayscale) Test - R: reset, ESC: exit")
+PRINT "Test image created successfully!"
+PRINT
 
-PRINT "Graphics screen created successfully!"
-PRINT "Starting main loop - switch to graphics window!"
-PRINT "Controls:"
+' Test both desaturation methods
+PRINT "Testing desaturation (Average method)..."
+desaturatedAverage = GJ_IMGADJ_Desaturate(originalImage, GJ_IMGADJ_DESATURATE_AVERAGE)
+
+PRINT "Testing desaturation (Luminance method)..."
+desaturatedLuminance = GJ_IMGADJ_Desaturate(originalImage, GJ_IMGADJ_DESATURATE_LUMINANCE)
+
+IF desaturatedAverage <> 0 AND desaturatedLuminance <> 0 THEN
+    PRINT "✓ Both desaturation methods applied successfully!"
+    PRINT "Original image size:"; _WIDTH(originalImage); "x"; _HEIGHT(originalImage)
+    PRINT "Average method size:"; _WIDTH(desaturatedAverage); "x"; _HEIGHT(desaturatedAverage)
+    PRINT "Luminance method size:"; _WIDTH(desaturatedLuminance); "x"; _HEIGHT(desaturatedLuminance)
+    
+    ' Show comparisons using the library function
+    SCREEN _NEWIMAGE(800, 600, 32)
+    _TITLE "Desaturate Test - GJ_IMGADJ Library"
+    
+    CALL GJ_IMGADJ_ShowComparison(originalImage, desaturatedAverage, "Desaturate - Average Method")
+    PRINT "Average method shown. Press any key for luminance method..."
+    SLEEP
+    
+    CALL GJ_IMGADJ_ShowComparison(originalImage, desaturatedLuminance, "Desaturate - Luminance Method")
+    PRINT "Luminance method shown. Press any key to continue..."
+    SLEEP
+ELSE
+    PRINT "✗ Failed to apply desaturation effects!"
+END IF
+
+PRINT "Cleaning up..."
+IF originalImage <> 0 THEN _FREEIMAGE originalImage
+IF desaturatedAverage <> 0 THEN _FREEIMAGE desaturatedAverage
+IF desaturatedLuminance <> 0 THEN _FREEIMAGE desaturatedLuminance
+PRINT "Desaturate test completed successfully!"
+SYSTEM
+
+'$INCLUDE:'../IMGADJ.BM'
 PRINT "  R = reset (reapply grayscale)"
 PRINT "  ESC = exit"
 
@@ -121,4 +145,4 @@ SUB ApplyDesaturate (img AS LONG, method AS INTEGER)
     _MEMFREE imgBlock
 END SUB
 
-'$INCLUDE:'../core/adjustment_common.bas'
+'$INCLUDE:'../IMGADJ.BM'

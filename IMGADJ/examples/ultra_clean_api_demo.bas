@@ -170,4 +170,4 @@ SLEEP
 IF myImage <> 0 THEN _FREEIMAGE myImage
 SYSTEM
 
-'$INCLUDE:'../core/adjustment_common.bas'
+'$INCLUDE:'../IMGADJ.BM'
