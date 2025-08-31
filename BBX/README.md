@@ -36,7 +36,7 @@ See the example and screenshot for more information.
 | SUB GJ_BBX_Draw (showHUD AS INTEGER) | Draw the bounding box |
 | SUB GJ_BBX_Tick (showHUD AS INTEGER) | This is a convenience SUB for updating and drawing the bounding box |
 
-### USAGE for CONSOLE LIB (separately)
+### USAGE for BBX LIB (separately)
 ```basic
 'Insert at top of code:
 '$INCLUDE:'path_to_GJ_LIB/BBX/BBX.BI'
