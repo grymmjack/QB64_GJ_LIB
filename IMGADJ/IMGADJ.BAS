@@ -30,9 +30,9 @@ DIM myImage AS LONG, adjusted AS LONG
 
 ' Try to load test image, create one if not available
 myImage = 0
-IF _FILEEXISTS("TESTIMAGE-COMPLEX.PNG") THEN
+IF _FILEEXISTS("../TESTIMAGE-COMPLEX.PNG") THEN
     myImage = GJ_IMGADJ_LoadTestImage("complex")
-ELSEIF _FILEEXISTS("TESTIMAGE.PNG") THEN
+ELSEIF _FILEEXISTS("../TESTIMAGE.PNG") THEN
     myImage = GJ_IMGADJ_LoadTestImage("simple")
 ELSE
     PRINT "Creating test image programmatically..."
