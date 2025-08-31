@@ -15,7 +15,9 @@
 ' @example Complete demonstration of GJ_IMGADJ library capabilities
 ''
 
-
+$IF GJ_LIB_UNIFIED_TESTING = DEFINED AND GJ_LIB_INC_BI = UNDEFINED THEN
+'$INCLUDE:'../_GJ_LIB.BI'
+$END IF
 
 '$INCLUDE:'IMGADJ.BI'
 

@@ -227,3 +227,10 @@ The demonstration program showcases:
 - Consistent error handling across all functions
 - Automatic parameter validation and clamping
 - Clean resource management patterns
+
+
+### EXAMPLE 
+> Screenshot of output from [IMGADJ.BAS](IMGADJ.BAS)  
+> Down-sampled GIF to 256 colors - Actual results will be much higher quality!
+
+![](IMGADJ.gif)
