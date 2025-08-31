@@ -20,6 +20,7 @@ in it's current state.
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
 | [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
+| [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
 | [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
