@@ -27,6 +27,7 @@ The library draws inspiration from professional image editing software like Phot
 | `GJ_IMGADJ_Gamma&()` | Gamma correction | `(img&, "+"/"-", amount%)` | 100x faster with lookup tables |
 | `GJ_IMGADJ_Saturation&()` | Adjust color saturation | `(img&, "+"/"-", percentage%)` | HSV color space conversion |
 | `GJ_IMGADJ_Hue&()` | Shift hue around color wheel | `(img&, "+"/"-", degrees%)` | HSV color space conversion |
+| `GJ_IMGADJ_Colorize&()` | Apply specific hue/saturation | `(img&, hue%, saturation!)` | HSV color space conversion |
 
 ### Creative Effects
 | FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
@@ -38,6 +39,7 @@ The library draws inspiration from professional image editing software like Phot
 | `GJ_IMGADJ_Posterize&()` | Reduce color levels | `(img&, levels%)` | 100x faster with lookup tables |
 | `GJ_IMGADJ_Sepia&()` | Apply sepia tone | `(img&)` | Optimized color transformation |
 | `GJ_IMGADJ_Invert&()` | Invert all colors | `(img&)` | 50x faster with _MEMIMAGE |
+| `GJ_IMGADJ_Pixelate&()` | Create retro pixelated effect | `(img&, pixelSize%)` | Block-based image downsampling |
 
 ### Utility Functions
 | FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
@@ -132,6 +134,55 @@ artistic = GJ_IMGADJ_Contrast&(temp2, "+", 20)     ' Add contrast
 _FREEIMAGE temp1: _FREEIMAGE temp2                  ' Clean up intermediates
 ```
 
+#### Color Tinting and Colorization
+```vb
+' Apply specific color tints
+DIM sepia_tint AS LONG, blue_tint AS LONG, green_tint AS LONG
+
+' Create sepia-like effect with colorize
+sepia_tint = GJ_IMGADJ_Colorize&(original, 30, 0.4)    ' Orange hue, medium saturation
+
+' Create blue monochrome effect
+blue_tint = GJ_IMGADJ_Colorize&(original, 240, 0.6)    ' Blue hue, high saturation
+
+' Create vintage green effect
+green_tint = GJ_IMGADJ_Colorize&(original, 120, 0.3)   ' Green hue, low saturation
+
+' Interactive colorization (great for photo editing)
+DIM hue_value AS INTEGER: hue_value = 180
+DIM sat_value AS SINGLE: sat_value = 0.5
+DIM colorized AS LONG
+DO
+    IF colorized <> 0 THEN _FREEIMAGE colorized
+    colorized = GJ_IMGADJ_Colorize&(original, hue_value, sat_value)
+    ' Display result and handle user input for hue_value and sat_value...
+LOOP
+```
+
+#### Retro Pixelated Effects
+```vb
+' Create various pixel art styles
+DIM retro_8bit AS LONG, retro_16bit AS LONG, extreme_pixel AS LONG
+
+' Classic 8-bit style
+retro_8bit = GJ_IMGADJ_Pixelate&(original, 8)      ' 8x8 pixel blocks
+
+' Subtle 16-bit style  
+retro_16bit = GJ_IMGADJ_Pixelate&(original, 4)     ' 4x4 pixel blocks
+
+' Extreme pixelated effect
+extreme_pixel = GJ_IMGADJ_Pixelate&(original, 20)  ' 20x20 pixel blocks
+
+' Interactive pixelate size control
+DIM pixel_size AS INTEGER: pixel_size = 5
+DIM pixelated AS LONG
+DO
+    IF pixelated <> 0 THEN _FREEIMAGE pixelated
+    pixelated = GJ_IMGADJ_Pixelate&(original, pixel_size)
+    ' Display result and handle user input for pixel_size (1-50)...
+LOOP
+```
+
 ## MEMORY MANAGEMENT
 
 ⚠️ **CRITICAL**: All IMGADJ functions return **NEW** image handles. You must free them when done:
@@ -161,9 +212,11 @@ _FREEIMAGE adjusted  ' Always free when done!
 - **Gamma**: 0-100 (gamma multiplier = 1.0 + amount/100)
 - **Saturation**: 0-200 (percentage change)
 - **Hue**: 0-360 (degrees to shift)
+- **Colorize**: hue 0-360 (target hue in degrees), saturation 0.0-1.0 (target saturation level)
+- **Pixelate**: 1-50 (size of each pixel block)
 - **Film Grain**: 0-100 (noise intensity)
 - **Vignette**: 0.0-1.0 (edge darkening strength)
-- **Posterize**: 2-8 (number of levels per color channel)
+- **Posterize**: 2-16 (number of levels per color channel)
 
 ### Constants
 ```vb

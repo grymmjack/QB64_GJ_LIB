@@ -114,6 +114,20 @@ PRINT "Press any key to continue..."
 SLEEP
 _FREEIMAGE adjusted
 
+' Colorize - Apply specific hue and saturation
+adjusted = GJ_IMGADJ_Colorize(myImage, 220, 0.7)
+CALL GJ_IMGADJ_ShowComparison(myImage, adjusted, "Colorize Blue Hue 220° Sat 70% (HSV Color Space)")
+PRINT "Press any key to continue..."
+SLEEP
+_FREEIMAGE adjusted
+
+' Pixelate - Create retro pixel art effect
+adjusted = GJ_IMGADJ_Pixelate(myImage, 8)
+CALL GJ_IMGADJ_ShowComparison(myImage, adjusted, "Pixelate 8x8 Blocks (Retro Pixel Art Effect)")
+PRINT "Press any key to continue..."
+SLEEP
+_FREEIMAGE adjusted
+
 ' ============================================================================
 ' COLOR ADJUSTMENTS (Advanced Color Operations)
 ' ============================================================================

@@ -348,23 +348,35 @@ FUNCTION GJ_IMGADJ_Saturation (sourceImg AS LONG, direction AS STRING, amount AS
     h = _HEIGHT(resultImg)
     
     DIM x AS INTEGER, y
-    DIM hueVal AS SINGLE, satVal AS SINGLE, valVal AS SINGLE
     
     FOR y = 0 TO h - 1
         FOR x = 0 TO w - 1
             DIM pixel AS _UNSIGNED LONG
             pixel = _MEMGET(m, m.OFFSET + (y * w + x) * 4, _UNSIGNED LONG)
             
-            ' OPTIMIZED: Use native QB64PE functions instead of manual conversion!
-            hueVal = _HUE32(pixel)
-            satVal = _SATURATION32(pixel) * satMultiplier
-            valVal = _BRIGHTNESS32(pixel)
+            ' Extract RGB values
+            DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+            r = _RED32(pixel)
+            g = _GREEN32(pixel)
+            b = _BLUE32(pixel)
+            
+            ' Convert to HSV using our custom functions
+            DIM h_custom AS SINGLE, s_custom AS SINGLE, v_custom AS SINGLE
+            CALL GJ_IMGADJ_RGBtoHSV(r, g, b, h_custom, s_custom, v_custom)
+            
+            ' Apply saturation multiplier
+            s_custom = s_custom * satMultiplier
             
             ' Clamp saturation to valid range
-            IF satVal > 1.0 THEN satVal = 1.0
+            IF s_custom > 1.0 THEN s_custom = 1.0
+            IF s_custom < 0.0 THEN s_custom = 0.0
             
-            ' OPTIMIZED: Use native HSB32 function
-            pixel = _HSB32(hueVal, satVal, valVal)
+            ' Convert back to RGB
+            DIM newR AS INTEGER, newG AS INTEGER, newB AS INTEGER
+            CALL GJ_IMGADJ_HSVtoRGB(h_custom, s_custom, v_custom, newR, newG, newB)
+            
+            ' Create new pixel
+            pixel = _RGB32(newR, newG, newB)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
         NEXT x
     NEXT y
@@ -766,7 +778,7 @@ FUNCTION GJ_IMGADJ_Posterize (sourceImg AS LONG, levels AS INTEGER)
     
     ' Clamp levels to valid range
     IF levels < 2 THEN levels = 2
-    IF levels > 8 THEN levels = 8
+    IF levels > 16 THEN levels = 16
     
     DIM resultImg AS LONG
     resultImg = _COPYIMAGE(sourceImg, 32)
@@ -1150,6 +1162,172 @@ FUNCTION GJ_IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenSh
     
     _MEMFREE m
     GJ_IMGADJ_ColorBalance = resultImg
+END FUNCTION
+
+
+''
+' Apply colorize effect by shifting hue and adjusting saturation
+' @param sourceImg LONG Source image handle
+' @param hue INTEGER Target hue in degrees (0-360)
+' @param saturation SINGLE Target saturation level (0.0-1.0)
+' @return LONG New image handle with colorize effect applied
+' @example
+'   colorizedImg = GJ_IMGADJ_Colorize(originalImg, 120, 0.8)
+'   ' Creates green-tinted image with high saturation
+'
+FUNCTION GJ_IMGADJ_Colorize (sourceImg AS LONG, hue AS INTEGER, saturation AS SINGLE)
+    IF sourceImg = 0 THEN
+        PRINT "GJ_IMGADJ_Colorize: Invalid source image handle"
+        GJ_IMGADJ_Colorize = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    
+    DIM destMem AS _MEM
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM i AS LONG
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM h_hsv AS SINGLE, s_hsv AS SINGLE, v_hsv AS SINGLE
+    DIM newR AS INTEGER, newG AS INTEGER, newB AS INTEGER
+    DIM targetHue AS SINGLE
+    
+    ' Target hue should be in 0-360 range for HSV functions
+    targetHue = hue MOD 360
+    
+    FOR i = 0 TO srcMem.SIZE - 4 STEP 4
+        _MEMGET srcMem, srcMem.OFFSET + i, pixelData
+        
+        ' Extract RGBA components
+        b = pixelData AND 255
+        g = (pixelData \ 256) AND 255
+        r = (pixelData \ 65536) AND 255
+        a = (pixelData \ 16777216) AND 255
+        
+        ' Convert RGB to HSV
+        CALL GJ_IMGADJ_RGBtoHSV(r, g, b, h_hsv, s_hsv, v_hsv)
+        
+        ' Apply colorize effect:
+        ' - Replace hue with target hue (keep in 0-360 range)
+        ' - Adjust saturation to target level
+        ' - Preserve brightness (value)
+        h_hsv = targetHue
+        s_hsv = saturation
+        
+        ' Convert back to RGB
+        CALL GJ_IMGADJ_HSVtoRGB(h_hsv, s_hsv, v_hsv, newR, newG, newB)
+        
+        ' Clamp values
+        newR = _CLAMP(newR, 0, 255)
+        newG = _CLAMP(newG, 0, 255)
+        newB = _CLAMP(newB, 0, 255)
+        
+        ' Store result
+        pixelData = newB + newG * 256 + newR * 65536 + a * 16777216
+        _MEMPUT destMem, destMem.OFFSET + i, pixelData
+    NEXT
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_Colorize = resultImg
+END FUNCTION
+
+
+''
+' Apply pixelate effect by averaging pixel blocks
+' @param sourceImg LONG Source image handle
+' @param pixelSize INTEGER Size of each "pixel" block (1-50)
+' @return LONG New image handle with pixelate effect applied
+' @example
+'   pixelated = GJ_IMGADJ_Pixelate(originalImg, 8)
+'   ' Creates a retro pixelated look with 8x8 pixel blocks
+'
+FUNCTION GJ_IMGADJ_Pixelate (sourceImg AS LONG, pixelSize AS INTEGER)
+    IF sourceImg = 0 THEN
+        PRINT "GJ_IMGADJ_Pixelate: Invalid source image handle"
+        GJ_IMGADJ_Pixelate = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Clamp pixel size to reasonable range
+    DIM blockSize AS INTEGER
+    blockSize = pixelSize
+    IF blockSize < 1 THEN blockSize = 1
+    IF blockSize > 50 THEN blockSize = 50
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    
+    DIM destMem AS _MEM
+    destMem = _MEMIMAGE(resultImg)
+    
+    ' Process image in blocks
+    DIM blockX AS INTEGER, blockY AS INTEGER
+    DIM x AS INTEGER, y AS INTEGER
+    DIM avgR AS LONG, avgG AS LONG, avgB AS LONG
+    DIM pixelCount AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    
+    FOR blockY = 0 TO h - 1 STEP blockSize
+        FOR blockX = 0 TO w - 1 STEP blockSize
+            ' Calculate average color for this block
+            avgR = 0: avgG = 0: avgB = 0: pixelCount = 0
+            
+            FOR y = blockY TO _MIN(blockY + blockSize - 1, h - 1)
+                FOR x = blockX TO _MIN(blockX + blockSize - 1, w - 1)
+                    _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+                    
+                    r = _RED32(pixelData)
+                    g = _GREEN32(pixelData)
+                    b = _BLUE32(pixelData)
+                    
+                    avgR = avgR + r
+                    avgG = avgG + g
+                    avgB = avgB + b
+                    pixelCount = pixelCount + 1
+                NEXT x
+            NEXT y
+            
+            ' Calculate average
+            IF pixelCount > 0 THEN
+                avgR = avgR \ pixelCount
+                avgG = avgG \ pixelCount
+                avgB = avgB \ pixelCount
+            END IF
+            
+            ' Fill the entire block with the average color
+            DIM blockColor AS _UNSIGNED LONG
+            blockColor = _RGB32(avgR, avgG, avgB)
+            
+            FOR y = blockY TO _MIN(blockY + blockSize - 1, h - 1)
+                FOR x = blockX TO _MIN(blockX + blockSize - 1, w - 1)
+                    _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, blockColor
+                NEXT x
+            NEXT y
+        NEXT blockX
+    NEXT blockY
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_Pixelate = resultImg
 END FUNCTION
 
 
