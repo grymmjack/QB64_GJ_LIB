@@ -130,7 +130,8 @@ END SUB
 FUNCTION GJ_IMGADJ_Brightness (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Brightness: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Brightness = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -189,7 +190,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Contrast (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Contrast: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Contrast = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -251,7 +253,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Gamma (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Gamma: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Gamma = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -320,7 +323,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Saturation (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Saturation: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Saturation = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -383,7 +387,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Hue (sourceImg AS LONG, direction AS STRING, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Hue: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Hue = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -447,7 +452,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Blur: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Blur = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -526,7 +532,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Glow (sourceImg AS LONG, radius AS INTEGER, intensity AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Glow: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Glow = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -603,7 +610,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_FilmGrain (sourceImg AS LONG, amount AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_FilmGrain: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_FilmGrain = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -675,7 +683,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Vignette (sourceImg AS LONG, strength AS SINGLE)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Vignette: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Vignette = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -751,7 +760,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Posterize (sourceImg AS LONG, levels AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Posterize: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Posterize = 0
+        EXIT FUNCTION
     END IF
     
     ' Clamp levels to valid range
@@ -815,7 +825,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Sepia (sourceImg AS LONG)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Sepia: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Sepia = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg AS LONG
@@ -866,7 +877,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Invert (sourceImg AS LONG)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Invert: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Invert = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -913,7 +925,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Threshold (sourceImg AS LONG, threshold AS INTEGER, mode AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Threshold: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Threshold = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -969,7 +982,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Desaturate (sourceImg AS LONG, method AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Desaturate: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Desaturate = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -1025,7 +1039,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS INTEGER, outputMin AS INTEGER, outputMax AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_Levels: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_Levels = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -1097,7 +1112,8 @@ END FUNCTION
 FUNCTION GJ_IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenShift AS INTEGER, blueShift AS INTEGER)
     IF sourceImg = 0 THEN
         PRINT "GJ_IMGADJ_ColorBalance: Invalid source image handle"
-        SYSTEM
+        GJ_IMGADJ_ColorBalance = 0
+        EXIT FUNCTION
     END IF
     
     DIM resultImg
@@ -1161,7 +1177,8 @@ FUNCTION GJ_IMGADJ_LoadTestImage (imageType AS STRING)
     IF NOT _FILEEXISTS(filename) THEN
         PRINT "GJ_IMGADJ_LoadTestImage: Test image file '" + filename + "' not found"
         PRINT "Please ensure test images are in the current directory."
-        SYSTEM
+        GJ_IMGADJ_LoadTestImage = 0
+        EXIT FUNCTION
     END IF
     
     DIM img
@@ -1169,7 +1186,8 @@ FUNCTION GJ_IMGADJ_LoadTestImage (imageType AS STRING)
     
     IF img = -1 THEN
         PRINT "GJ_IMGADJ_LoadTestImage: Failed to load '" + filename + "'"
-        SYSTEM
+        GJ_IMGADJ_LoadTestImage = 0
+        EXIT FUNCTION
     END IF
     
     GJ_IMGADJ_LoadTestImage = img
