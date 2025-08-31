@@ -45,7 +45,7 @@ QB64_GJ_LIB uses a consistent modular include pattern that separates interface f
 
 ### Testing Architecture
 - **Test files**: Use `.BAS` extension (uppercase) in same directory as library
-- **Console testing**: Always use `$CONSOLE:ONLY` and end with `SYSTEM` for clean automation
+- **Console testing**: Always use `$CONSOLE` and end with `SYSTEM` for clean automation
 - **Unified vs Individual**: Toggle with `$LET GJ_LIB_UNIFIED_TESTING = 1` in `_GJ_LIB.BI`
 - **Pattern**: Tests typically use DUMP library to display array/object states for verification
 
@@ -144,20 +144,29 @@ $LET GJ_LIB_UNIFIED_TESTING = 1  ' Enable unified testing mode
 For debugging and automated testing:
 ```basic
 ' Console-only mode (for shell redirection and LLM analysis)
-$CONSOLE:ONLY
+$CONSOLE
 
 ' Standard debugging output
-PRINT "DEBUG: Starting test..."
-PRINT "Result:", result
 
-' Always use SYSTEM for clean console exits
+' IMPORTANT:
+' USE _ECHO ! FOR ALL CONSOLE LOGGING
+' NOT PRINT, PRINTSTRING, UPRINT, OR UPRINTSTRING TO SEND OUTPUT TO THE CONSOLE
+' SO YOU CAN SEE IT!
+' _ECHO is different than PRINT, etc. and has different rules. You cannot use:
+' , or ; in _ECHO to concatenate, everything must be + concatenated.
+_ECHO "DEBUG: Starting test..."
+_ECHO "Result:", result
+
+' Always use SYSTEM for clean console exits (if you need to act immediately)
+' If you don't, let the user press a key - if you remove SYSTEM this will
+' automatically happen in QB64PE.
 SYSTEM
 ```
 
 ## QB64-PE Specific Features
 
 ### Modern QB64-PE Capabilities (V3.12+)
-- `$CONSOLE:ONLY` directive for shell redirection
+- `$CONSOLE` directive for shell redirection
 - `_INFLATE$` for ZLIB decompression (used in ASEPRITE)
 - `_PUTIMAGE` with advanced blending modes
 - Enhanced file I/O with binary operations
@@ -165,13 +174,13 @@ SYSTEM
 
 ### Debugging Best Practices
 ```basic
-' Use $CONSOLE:ONLY for automated testing
-$CONSOLE:ONLY
+' Use $CONSOLE for automated testing
+$CONSOLE
 
 ' Structured debug output for parsing
-PRINT "=== SECTION: Test Results ==="
-PRINT "STATUS: PASS"
-PRINT "DETAILS: All tests completed successfully"
+_ECHO "=== SECTION: Test Results ==="
+_ECHO "STATUS: PASS"
+_ECHO "DETAILS: All tests completed successfully"
 
 ' Always end console programs cleanly
 SYSTEM
@@ -282,8 +291,8 @@ index = arr_str_find(my_strings(), arr_size, "Hello")
 ### ANSI Text Styling
 ```basic
 ' Using ANSI library for colored output
-PRINT ansi_color$(15, 4) + "White text on red background" + ansi_reset$
-PRINT ansi_rgb$(255, 128, 0) + "Orange text" + ansi_reset$
+_ECHO ansi_color$(15, 4) + "White text on red background" + ansi_reset$
+_ECHO ansi_rgb$(255, 128, 0) + "Orange text" + ansi_reset$
 ```
 
 ### Debug Dumping (DUMP)
@@ -334,8 +343,8 @@ index = arr_str_find(my_strings(), arr_size, "Hello")
 ### ANSI Text Styling
 ```basic
 ' Using ANSI library for colored output
-PRINT ansi_color$(15, 4) + "White text on red background" + ansi_reset$
-PRINT ansi_rgb$(255, 128, 0) + "Orange text" + ansi_reset$
+_ECHO ansi_color$(15, 4) + "White text on red background" + ansi_reset$
+_ECHO ansi_rgb$(255, 128, 0) + "Orange text" + ansi_reset$
 ```
 
 ### Debug Dumping (DUMP)
@@ -360,7 +369,7 @@ dump_var p  ' Outputs structured variable information
 **Console vs Graphics Mode Conflicts:**
 ```basic
 ' Problem: Console output not visible in graphics mode
-' Solution: Use $CONSOLE:ONLY for debug builds
+' Solution: Use $CONSOLE for debug builds
 
 ' Problem: "Press any key" prompts in automated testing  
 ' Solution: Always end with SYSTEM, not END
@@ -391,7 +400,7 @@ END IF
 **Console vs Graphics Mode Conflicts:**
 ```basic
 ' Problem: Console output not visible in graphics mode
-' Solution: Use $CONSOLE:ONLY for debug builds
+' Solution: Use $CONSOLE for debug builds
 
 ' Problem: "Press any key" prompts in automated testing  
 ' Solution: Always end with SYSTEM, not END
@@ -531,14 +540,14 @@ This project includes access to specialized QB64PE MCP (Model Context Protocol) 
 ```basic
 ' Before: Basic QB64PE code
 SCREEN _NEWIMAGE(800, 600, 32)
-PRINT "Hello World"
+_ECHO "Hello World"
 
 ' After: Enhanced with MCP tools
-$CONSOLE:ONLY                    ' Added by debugging service
+$CONSOLE                    ' Added by debugging service
 CONST DEBUG_MODE = 1            ' Added by debugging service
 SCREEN _NEWIMAGE(800, 600, 32)
 CALL DebugLog("Graphics initialized")  ' Added by debugging service
-PRINT "Hello World"
+_ECHO "Hello World"
 CALL DebugLog("Print completed")      ' Added by debugging service
 CALL AutoExit(10)                     ' Added by debugging service
 SYSTEM                                ' Added by debugging service
