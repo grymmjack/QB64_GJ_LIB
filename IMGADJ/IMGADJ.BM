@@ -119,6 +119,40 @@ END SUB
 
 
 ''
+' Clone an image
+' Creates a copy of the specified image
+' @param sourceImg LONG Source image handle
+' @return LONG New image handle | 0 if invalid source image
+'
+FUNCTION GJ_IMGADJ_CloneImage& (sourceImg AS LONG)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_CloneImage = 0
+        EXIT FUNCTION
+    END IF
+
+    ' Create a new image by copying the source image
+    DIM AS INTEGER w, h, bpp, pal
+    DIM AS LONG clonedImg, oldDest
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    bpp = _PIXELSIZE(sourceImg)
+    SELECT CASE bpp
+        CASE 0:
+            GJ_IMGADJ_CloneImage = 0
+            EXIT FUNCTION
+        CASE 1: pal = 256
+        CASE 4: pal = 32
+    END SELECT
+    clonedImg = _NEWIMAGE(w, h)
+    oldDest = _DEST
+    _DEST clonedImg
+    _SOURCE sourceImg
+    _PUTIMAGE(0, 0)
+    _DEST oldDest
+    GJ_IMGADJ_CloneImage = clonedImg
+END FUNCTION
+
+''
 ' Adjust image brightness
 ' @param sourceImg LONG Source image handle
 ' @param direction STRING "+" to increase, "-" to decrease
@@ -134,10 +168,10 @@ FUNCTION GJ_IMGADJ_Brightness (sourceImg AS LONG, direction AS STRING, amount AS
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    DIM offset
+    DIM offset AS INTEGER
     IF direction = "+" THEN
         offset = amount
     ELSE
@@ -194,10 +228,10 @@ FUNCTION GJ_IMGADJ_Contrast (sourceImg AS LONG, direction AS STRING, amount AS I
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    DIM pct
+    DIM pct AS INTEGER
     IF direction = "+" THEN
         pct = amount
     ELSE
@@ -257,8 +291,8 @@ FUNCTION GJ_IMGADJ_Gamma (sourceImg AS LONG, direction AS STRING, amount AS INTE
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM gamma AS SINGLE
     IF direction = "+" THEN
@@ -327,8 +361,8 @@ FUNCTION GJ_IMGADJ_Saturation (sourceImg AS LONG, direction AS STRING, amount AS
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM satMultiplier AS SINGLE
     IF direction = "+" THEN
@@ -403,8 +437,8 @@ FUNCTION GJ_IMGADJ_Hue (sourceImg AS LONG, direction AS STRING, amount AS INTEGE
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM hueShift AS SINGLE
     IF direction = "+" THEN
@@ -468,8 +502,8 @@ FUNCTION GJ_IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     IF radius <= 0 THEN
         GJ_IMGADJ_Blur = resultImg
@@ -478,7 +512,7 @@ FUNCTION GJ_IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
     
     ' Simple box blur implementation
     DIM tempImg
-    tempImg = _COPYIMAGE(sourceImg, 32)
+    tempImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM, tempMem AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -548,8 +582,8 @@ FUNCTION GJ_IMGADJ_Glow (sourceImg AS LONG, radius AS INTEGER, intensity AS INTE
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     IF radius <= 0 OR intensity <= 0 THEN
         GJ_IMGADJ_Glow = resultImg
@@ -626,8 +660,8 @@ FUNCTION GJ_IMGADJ_FilmGrain (sourceImg AS LONG, amount AS INTEGER)
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     IF amount <= 0 THEN
         GJ_IMGADJ_FilmGrain = resultImg
@@ -699,8 +733,8 @@ FUNCTION GJ_IMGADJ_Vignette (sourceImg AS LONG, strength AS SINGLE)
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     IF strength <= 0 THEN
         GJ_IMGADJ_Vignette = resultImg
@@ -781,7 +815,7 @@ FUNCTION GJ_IMGADJ_Posterize (sourceImg AS LONG, levels AS INTEGER)
     IF levels > 16 THEN levels = 16
     
     DIM resultImg AS LONG
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -842,7 +876,7 @@ FUNCTION GJ_IMGADJ_Sepia (sourceImg AS LONG)
     END IF
     
     DIM resultImg AS LONG
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -893,8 +927,8 @@ FUNCTION GJ_IMGADJ_Invert (sourceImg AS LONG)
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -941,8 +975,8 @@ FUNCTION GJ_IMGADJ_Threshold (sourceImg AS LONG, threshold AS INTEGER, mode AS I
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -998,8 +1032,8 @@ FUNCTION GJ_IMGADJ_Desaturate (sourceImg AS LONG, method AS INTEGER)
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -1055,8 +1089,8 @@ FUNCTION GJ_IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS I
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     ' Create lookup table for levels adjustment
     DIM levelsTable(0 TO 255)
@@ -1128,8 +1162,8 @@ FUNCTION GJ_IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenSh
         EXIT FUNCTION
     END IF
     
-    DIM resultImg
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    DIM resultImg AS LONG
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     DIM m AS _MEM
     m = _MEMIMAGE(resultImg)
@@ -1542,89 +1576,4 @@ FUNCTION GJ_IMGADJ_CreateTestImage ()
     
     _DEST oldDest
     GJ_IMGADJ_CreateTestImage = img
-END FUNCTION
-
-
-''
-' Apply pixel scaling algorithms to images
-' Uses QB64PE's built-in pixel scalers for retro-style upscaling without blurring
-' 
-' @param sourceImg LONG Source image handle
-' @param scalerType INTEGER Type of pixel scaler to apply (use GJ_IMGADJ_PIXELSCALER_* constants)
-' @return LONG New image handle with pixel scaling applied, 0 on error
-' @example
-'   scaledImg = GJ_IMGADJ_PixelScaler(myImage, GJ_IMGADJ_PIXELSCALER_SXBR2)
-'   IF scaledImg > 0 THEN _PUTIMAGE (0, 0), scaledImg
-' @version 1.0
-' @author grymmjack
-'
-FUNCTION GJ_IMGADJ_PixelScaler (sourceImg AS LONG, scalerType AS INTEGER)
-    ' Check if source image is valid
-    IF sourceImg = 0 OR sourceImg = -1 THEN
-        PRINT "GJ_IMGADJ_PixelScaler: Invalid source image handle"
-        GJ_IMGADJ_PixelScaler = 0
-        EXIT FUNCTION
-    END IF
-    
-    ' Validate scaler type
-    IF scalerType < 0 OR scalerType > 7 THEN
-        PRINT "GJ_IMGADJ_PixelScaler: Invalid scaler type (must be 0-7)"
-        GJ_IMGADJ_PixelScaler = 0
-        EXIT FUNCTION
-    END IF
-    
-    ' Map scaler type to requirements string
-    DIM requirements AS STRING
-    SELECT CASE scalerType
-        CASE GJ_IMGADJ_PIXELSCALER_SXBR2
-            requirements = "sxbr2"
-        CASE GJ_IMGADJ_PIXELSCALER_SXBR3
-            requirements = "sxbr3" 
-        CASE GJ_IMGADJ_PIXELSCALER_SXBR4
-            requirements = "sxbr4"
-        CASE GJ_IMGADJ_PIXELSCALER_MMPX2
-            requirements = "mmpx2"
-        CASE GJ_IMGADJ_PIXELSCALER_HQ2XA
-            requirements = "hq2xa"
-        CASE GJ_IMGADJ_PIXELSCALER_HQ2XB
-            requirements = "hq2xb"
-        CASE GJ_IMGADJ_PIXELSCALER_HQ3XA
-            requirements = "hq3xa"
-        CASE GJ_IMGADJ_PIXELSCALER_HQ3XB
-            requirements = "hq3xb"
-        CASE ELSE
-            PRINT "GJ_IMGADJ_PixelScaler: Unknown scaler type"
-            GJ_IMGADJ_PixelScaler = 0
-            EXIT FUNCTION
-    END SELECT
-    
-    ' Simple approach: save to temp file, load with scaler, return result
-    DIM tempFileName AS STRING
-    tempFileName = "temp_scaler_" + _TRIM$(STR$(TIMER)) + ".png"
-    
-    ' Save source image to temporary file
-    _SAVEIMAGE tempFileName, sourceImg
-    
-    ' Check if the file was saved successfully
-    IF NOT _FILEEXISTS(tempFileName) THEN
-        PRINT "GJ_IMGADJ_PixelScaler: Failed to save temporary image file"
-        GJ_IMGADJ_PixelScaler = 0
-        EXIT FUNCTION
-    END IF
-    
-    ' Load directly from file with scaler - this is the simple working method
-    DIM scaledImg AS LONG
-    scaledImg = _LOADIMAGE(tempFileName, 32, requirements)
-    
-    ' Clean up temporary file
-    KILL tempFileName
-    
-    ' Check if loading was successful and return result
-    IF scaledImg = 0 OR scaledImg = -1 THEN
-        PRINT "GJ_IMGADJ_PixelScaler: Failed to load scaled image"
-        GJ_IMGADJ_PixelScaler = 0
-        EXIT FUNCTION
-    END IF
-    
-    GJ_IMGADJ_PixelScaler = scaledImg
 END FUNCTION

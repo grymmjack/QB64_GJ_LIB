@@ -28,17 +28,7 @@ _SCREENMOVE 50, 25
 ' Load image and demonstrate all adjustment types
 DIM myImage AS LONG, adjusted AS LONG
 
-' Try to load test image, create one if not available
-myImage = 0
-IF _FILEEXISTS("examples/TESTIMAGE-COMPLEX.PNG") THEN
-    myImage = GJ_IMGADJ_LoadTestImage("complex")
-ELSEIF _FILEEXISTS("examples/TESTIMAGE.PNG") THEN
-    myImage = GJ_IMGADJ_LoadTestImage("simple")
-ELSE
-    PRINT "Creating test image programmatically..."
-    myImage = GJ_IMGADJ_CreateComplexTestImage
-    SLEEP 1
-END IF
+myImage = _LOADIMAGE("examples/TESTIMAGE-COMPLEX.PNG")
 
 CLS
 PRINT "🚀 GJ_IMGADJ LIBRARY - COMPREHENSIVE EFFECTS SHOWCASE"
@@ -51,6 +41,8 @@ PRINT ""
 PRINT "⚡ CORE ADJUSTMENTS"
 PRINT ""
 
+PRINT myImage
+SLEEP
 ' Brightness - Dramatic increase
 adjusted = GJ_IMGADJ_Brightness(myImage, "+", 80)
 CALL GJ_IMGADJ_ShowComparison(myImage, adjusted, "Brightness +80 (MEMIMAGE Optimized)")
