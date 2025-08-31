@@ -35,7 +35,7 @@ currentScaler = 0   ' Start with SXBR2
 oldScaler = -1      ' Force initial update
 
 PRINT "Creating test image..."
-originalImage = _LOADIMAGE("16color-ega-games.png", 32)
+originalImage = _LOADIMAGE("16color-ega-games.gif", 32)
 
 IF originalImage = 0 THEN
     PRINT "✗ Failed to create test image!"
