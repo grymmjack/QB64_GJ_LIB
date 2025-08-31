@@ -1543,3 +1543,88 @@ FUNCTION GJ_IMGADJ_CreateTestImage ()
     _DEST oldDest
     GJ_IMGADJ_CreateTestImage = img
 END FUNCTION
+
+
+''
+' Apply pixel scaling algorithms to images
+' Uses QB64PE's built-in pixel scalers for retro-style upscaling without blurring
+' 
+' @param sourceImg LONG Source image handle
+' @param scalerType INTEGER Type of pixel scaler to apply (use GJ_IMGADJ_PIXELSCALER_* constants)
+' @return LONG New image handle with pixel scaling applied, 0 on error
+' @example
+'   scaledImg = GJ_IMGADJ_PixelScaler(myImage, GJ_IMGADJ_PIXELSCALER_SXBR2)
+'   IF scaledImg > 0 THEN _PUTIMAGE (0, 0), scaledImg
+' @version 1.0
+' @author grymmjack
+'
+FUNCTION GJ_IMGADJ_PixelScaler (sourceImg AS LONG, scalerType AS INTEGER)
+    ' Check if source image is valid
+    IF sourceImg = 0 OR sourceImg = -1 THEN
+        PRINT "GJ_IMGADJ_PixelScaler: Invalid source image handle"
+        GJ_IMGADJ_PixelScaler = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Validate scaler type
+    IF scalerType < 0 OR scalerType > 7 THEN
+        PRINT "GJ_IMGADJ_PixelScaler: Invalid scaler type (must be 0-7)"
+        GJ_IMGADJ_PixelScaler = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Map scaler type to requirements string
+    DIM requirements AS STRING
+    SELECT CASE scalerType
+        CASE GJ_IMGADJ_PIXELSCALER_SXBR2
+            requirements = "sxbr2"
+        CASE GJ_IMGADJ_PIXELSCALER_SXBR3
+            requirements = "sxbr3" 
+        CASE GJ_IMGADJ_PIXELSCALER_SXBR4
+            requirements = "sxbr4"
+        CASE GJ_IMGADJ_PIXELSCALER_MMPX2
+            requirements = "mmpx2"
+        CASE GJ_IMGADJ_PIXELSCALER_HQ2XA
+            requirements = "hq2xa"
+        CASE GJ_IMGADJ_PIXELSCALER_HQ2XB
+            requirements = "hq2xb"
+        CASE GJ_IMGADJ_PIXELSCALER_HQ3XA
+            requirements = "hq3xa"
+        CASE GJ_IMGADJ_PIXELSCALER_HQ3XB
+            requirements = "hq3xb"
+        CASE ELSE
+            PRINT "GJ_IMGADJ_PixelScaler: Unknown scaler type"
+            GJ_IMGADJ_PixelScaler = 0
+            EXIT FUNCTION
+    END SELECT
+    
+    ' Simple approach: save to temp file, load with scaler, return result
+    DIM tempFileName AS STRING
+    tempFileName = "temp_scaler_" + _TRIM$(STR$(TIMER)) + ".png"
+    
+    ' Save source image to temporary file
+    _SAVEIMAGE tempFileName, sourceImg
+    
+    ' Check if the file was saved successfully
+    IF NOT _FILEEXISTS(tempFileName) THEN
+        PRINT "GJ_IMGADJ_PixelScaler: Failed to save temporary image file"
+        GJ_IMGADJ_PixelScaler = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Load directly from file with scaler - this is the simple working method
+    DIM scaledImg AS LONG
+    scaledImg = _LOADIMAGE(tempFileName, 32, requirements)
+    
+    ' Clean up temporary file
+    KILL tempFileName
+    
+    ' Check if loading was successful and return result
+    IF scaledImg = 0 OR scaledImg = -1 THEN
+        PRINT "GJ_IMGADJ_PixelScaler: Failed to load scaled image"
+        GJ_IMGADJ_PixelScaler = 0
+        EXIT FUNCTION
+    END IF
+    
+    GJ_IMGADJ_PixelScaler = scaledImg
+END FUNCTION

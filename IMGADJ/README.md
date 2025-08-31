@@ -49,6 +49,43 @@ The library draws inspiration from professional image editing software like Phot
 | `GJ_IMGADJ_Levels&()` | Adjust input/output levels | `(img&, inMin%, inMax%, outMin%, outMax%)` | 50x faster with lookup tables |
 | `GJ_IMGADJ_ColorBalance&()` | Adjust RGB balance | `(img&, redShift%, greenShift%, blueShift%)` | Direct channel manipulation |
 
+### Pixel Scaling (Retro Graphics)
+| FUNCTION | PURPOSE | PARAMETERS | PERFORMANCE |
+|----------|---------|------------|-------------|
+| `GJ_IMGADJ_PixelScaler&()` | Apply pixel scaling algorithms | `(img&, scalerType%)` | Hardware-accelerated scaling |
+
+> **NEW!** Advanced pixel scaling algorithms for retro game graphics and pixel art. Uses QB64PE's built-in pixel scalers for professional-quality upscaling that preserves sharp edges and pixel art characteristics.
+
+#### Pixel Scaler Types
+| CONSTANT | ALGORITHM | SCALE FACTOR | BEST FOR |
+|----------|-----------|--------------|----------|
+| `GJ_IMGADJ_PIXELSCALER_SXBR2` | xBRZ 2x | 2x | General purpose pixel art |
+| `GJ_IMGADJ_PIXELSCALER_SXBR3` | xBRZ 3x | 3x | General purpose pixel art |
+| `GJ_IMGADJ_PIXELSCALER_SXBR4` | xBRZ 4x | 4x | General purpose pixel art |
+| `GJ_IMGADJ_PIXELSCALER_MMPX2` | MMPX Style-Preserving 2x | 2x | Preserving art style |
+| `GJ_IMGADJ_PIXELSCALER_HQ2XA` | High Quality Cartoon 2x | 2x | Cartoon/anime art |
+| `GJ_IMGADJ_PIXELSCALER_HQ2XB` | High Quality Complex 2x | 2x | Complex detailed art |
+| `GJ_IMGADJ_PIXELSCALER_HQ3XA` | High Quality Cartoon 3x | 3x | Cartoon/anime art |
+| `GJ_IMGADJ_PIXELSCALER_HQ3XB` | High Quality Complex 3x | 3x | Complex detailed art |
+
+#### Algorithm Details
+
+**xBRZ (Scale by Rules) Scalers:**
+- **SXBR2/3/4**: General-purpose pixel scalers that detect patterns and enhance edges
+- **Best for**: Classic pixel art, retro game graphics, 8-bit/16-bit style artwork
+- **Features**: Sharp edge preservation, pattern recognition, anti-aliasing
+
+**MMPX (Style-Preserving) Scaler:**
+- **MMPX2**: Maintains the original artistic style and character of pixel art
+- **Best for**: Artwork where maintaining the exact visual style is critical
+- **Features**: Preserves pixel art aesthetics, minimal smoothing
+
+**HQ2X/HQ3X (High Quality) Scalers:**
+- **HQ2XA/HQ3XA**: Optimized for cartoon and anime-style artwork
+- **HQ2XB/HQ3XB**: Optimized for complex detailed artwork
+- **Best for**: Modern pixel art, detailed sprites, artwork with fine details
+- **Features**: Advanced pattern detection, smooth curves, gradient enhancement
+
 ### Test Utilities
 | FUNCTION | PURPOSE | PARAMETERS | NOTES |
 |----------|---------|------------|-------|
@@ -183,6 +220,92 @@ DO
 LOOP
 ```
 
+#### Professional Pixel Scaling
+```vb
+' Perfect for retro game graphics and pixel art
+DIM scaledImage AS LONG
+
+' Best general-purpose pixel art scaling (2x, 3x, 4x)
+scaledImage = GJ_IMGADJ_PixelScaler&(pixelArt, GJ_IMGADJ_PIXELSCALER_SXBR2)
+
+' For style-preserving scaling (maintains art characteristics)
+scaledImage = GJ_IMGADJ_PixelScaler&(pixelArt, GJ_IMGADJ_PIXELSCALER_MMPX2)
+
+' For cartoon/anime style artwork
+scaledImage = GJ_IMGADJ_PixelScaler&(animeArt, GJ_IMGADJ_PIXELSCALER_HQ2XA)
+
+' For complex detailed artwork  
+scaledImage = GJ_IMGADJ_PixelScaler&(detailedArt, GJ_IMGADJ_PIXELSCALER_HQ3XB)
+
+' Interactive scaler comparison
+DIM scaler_type AS INTEGER: scaler_type = 0
+DIM scaled AS LONG
+DO
+    IF scaled <> 0 THEN _FREEIMAGE scaled
+    scaled = GJ_IMGADJ_PixelScaler&(original, scaler_type)
+    IF scaled <> 0 THEN
+        ' Display scaled image with scaler type name
+        PRINT "Scaler:", scaler_type, "Size:", _WIDTH(scaled), "x", _HEIGHT(scaled)
+    END IF
+    ' Handle input to change scaler_type (0-7)...
+LOOP
+```
+
+#### Practical Pixel Scaling Examples
+```vb
+' Load 16x16 pixel art sprite
+DIM sprite AS LONG, scaled_sprite AS LONG
+sprite = _LOADIMAGE("character_16x16.png", 32)
+
+' Scale for modern displays (64x64)
+scaled_sprite = GJ_IMGADJ_PixelScaler&(sprite, GJ_IMGADJ_PIXELSCALER_SXBR4)
+' Result: 64x64 image with crisp, enhanced edges
+
+' Compare scaling methods for same source
+DIM xbrz_scaled AS LONG, hq_scaled AS LONG, mmpx_scaled AS LONG
+xbrz_scaled = GJ_IMGADJ_PixelScaler&(sprite, GJ_IMGADJ_PIXELSCALER_SXBR2)
+hq_scaled = GJ_IMGADJ_PixelScaler&(sprite, GJ_IMGADJ_PIXELSCALER_HQ2XA)
+mmpx_scaled = GJ_IMGADJ_PixelScaler&(sprite, GJ_IMGADJ_PIXELSCALER_MMPX2)
+
+' Display side-by-side for comparison
+CALL GJ_IMGADJ_ShowComparison(sprite, xbrz_scaled, "Original vs xBRZ 2x")
+CALL GJ_IMGADJ_ShowComparison(sprite, hq_scaled, "Original vs HQ2XA")
+CALL GJ_IMGADJ_ShowComparison(sprite, mmpx_scaled, "Original vs MMPX2")
+
+' Batch process multiple sprites
+DIM sprites(10) AS LONG, scaled_sprites(10) AS LONG
+FOR i = 0 TO 10
+    ' Scale all sprites consistently for UI elements
+    scaled_sprites(i) = GJ_IMGADJ_PixelScaler&(sprites(i), GJ_IMGADJ_PIXELSCALER_SXBR2)
+NEXT
+
+' Adaptive scaling based on image characteristics
+DIM auto_scaled AS LONG
+IF image_is_cartoon THEN
+    auto_scaled = GJ_IMGADJ_PixelScaler&(source, GJ_IMGADJ_PIXELSCALER_HQ2XA)
+ELSEIF image_is_detailed THEN
+    auto_scaled = GJ_IMGADJ_PixelScaler&(source, GJ_IMGADJ_PIXELSCALER_HQ2XB)
+ELSE
+    auto_scaled = GJ_IMGADJ_PixelScaler&(source, GJ_IMGADJ_PIXELSCALER_SXBR2)
+END IF
+```
+
+#### Pixel Scaler Requirements
+```vb
+' Requires QB64PE V3.9.0+ with pixel scaler support
+' SXBR3 and SXBR4 require QB64PE V4.1.0+
+' Function will return 0 if scaler is not supported
+
+' Check if scaling succeeded
+DIM result AS LONG
+result = GJ_IMGADJ_PixelScaler&(source, GJ_IMGADJ_PIXELSCALER_SXBR4)
+IF result = 0 THEN
+    PRINT "Pixel scaler not supported in this QB64PE version"
+    ' Fallback to regular scaling or different scaler
+    result = GJ_IMGADJ_PixelScaler&(source, GJ_IMGADJ_PIXELSCALER_SXBR2)
+END IF
+```
+
 ## MEMORY MANAGEMENT
 
 ⚠️ **CRITICAL**: All IMGADJ functions return **NEW** image handles. You must free them when done:
@@ -214,6 +337,7 @@ _FREEIMAGE adjusted  ' Always free when done!
 - **Hue**: 0-360 (degrees to shift)
 - **Colorize**: hue 0-360 (target hue in degrees), saturation 0.0-1.0 (target saturation level)
 - **Pixelate**: 1-50 (size of each pixel block)
+- **PixelScaler**: scalerType 0-7 (use GJ_IMGADJ_PIXELSCALER_* constants)
 - **Film Grain**: 0-100 (noise intensity)
 - **Vignette**: 0.0-1.0 (edge darkening strength)
 - **Posterize**: 2-16 (number of levels per color channel)
@@ -227,6 +351,16 @@ GJ_IMGADJ_DESATURATE_LUMINANCE   ' Weighted luminance formula
 ' Threshold modes  
 GJ_IMGADJ_THRESHOLD_BINARY       ' White above threshold, black below
 GJ_IMGADJ_THRESHOLD_INVERTED     ' Black above threshold, white below
+
+' Pixel Scaler Types
+GJ_IMGADJ_PIXELSCALER_SXBR2      ' xBRZ 2x pixel scaler
+GJ_IMGADJ_PIXELSCALER_SXBR3      ' xBRZ 3x pixel scaler  
+GJ_IMGADJ_PIXELSCALER_SXBR4      ' xBRZ 4x pixel scaler
+GJ_IMGADJ_PIXELSCALER_MMPX2      ' MMPX Style-Preserving 2x pixel scaler
+GJ_IMGADJ_PIXELSCALER_HQ2XA      ' High Quality Cartoon 2x pixel scaler
+GJ_IMGADJ_PIXELSCALER_HQ2XB      ' High Quality Complex 2x pixel scaler
+GJ_IMGADJ_PIXELSCALER_HQ3XA      ' High Quality Cartoon 3x pixel scaler
+GJ_IMGADJ_PIXELSCALER_HQ3XB      ' High Quality Complex 3x pixel scaler
 ```
 
 ## PERFORMANCE BENEFITS
