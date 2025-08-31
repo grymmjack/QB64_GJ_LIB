@@ -3,8 +3,8 @@
 ' GRYMMJACK'S IMAGE ADJUSTMENT (GJ_IMGADJ) LIBRARY - IMPLEMENTATION
 '
 ' USAGE:
-'   Insert '$INCLUDE:'path_to_GJ_LIB/GJ_IMGADJ/GJ_IMGADJ.BI' at the top of file
-'   Insert '$INCLUDE:'path_to_GJ_LIB/GJ_IMGADJ/GJ_IMGADJ.BM' at the bottom of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BM' at the bottom of file
 '
 ' This library provides optimized image adjustment algorithms for QB64PE.
 ' All functions work by creating new image handles - original images are preserved.
@@ -14,8 +14,6 @@
 ' @version 1.0
 ' @description Comprehensive image adjustment library for QB64PE - Implementation
 ''
-
-
 
 $INCLUDEONCE
 
@@ -34,25 +32,6 @@ SUB GJ_IMGADJ_Init
         GJ_IMGADJ_noiseInit = 1
     END IF
 END SUB
-
-
-''
-' Clamp a value between min and max
-' @param value INTEGER Value to clamp
-' @param minVal INTEGER Minimum allowed value
-' @param maxVal INTEGER Maximum allowed value
-' @return INTEGER Clamped value
-'
-FUNCTION GJ_IMGADJ_Clamp (value AS INTEGER, minVal AS INTEGER, maxVal AS INTEGER)
-    IF value < minVal THEN
-        GJ_IMGADJ_Clamp = minVal
-    ELSEIF value > maxVal THEN
-        GJ_IMGADJ_Clamp = maxVal
-    ELSE
-        GJ_IMGADJ_Clamp = value
-    END IF
-END FUNCTION
-
 
 ''
 ' Convert RGB to HSV color space
@@ -133,9 +112,9 @@ SUB GJ_IMGADJ_HSVtoRGB (hue AS SINGLE, sat AS SINGLE, value AS SINGLE, r AS INTE
     g = INT((gf + m) * 255)
     b = INT((bf + m) * 255)
     
-    r = GJ_IMGADJ_Clamp(r, 0, 255)
-    g = GJ_IMGADJ_Clamp(g, 0, 255)
-    b = GJ_IMGADJ_Clamp(b, 0, 255)
+    r = _CLAMP(r, 0, 255)
+    g = _CLAMP(g, 0, 255)
+    b = _CLAMP(b, 0, 255)
 END SUB
 
 
@@ -184,9 +163,9 @@ FUNCTION GJ_IMGADJ_Brightness (sourceImg AS LONG, direction AS STRING, amount AS
             g = _GREEN32(pixel)
             b = _BLUE32(pixel)
             
-            r = GJ_IMGADJ_Clamp(r + offset, 0, 255)
-            g = GJ_IMGADJ_Clamp(g + offset, 0, 255)
-            b = GJ_IMGADJ_Clamp(b + offset, 0, 255)
+            r = _CLAMP(r + offset, 0, 255)
+            g = _CLAMP(g + offset, 0, 255)
+            b = _CLAMP(b + offset, 0, 255)
             
             pixel = _RGB32(r, g, b)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
@@ -246,9 +225,9 @@ FUNCTION GJ_IMGADJ_Contrast (sourceImg AS LONG, direction AS STRING, amount AS I
             g = _GREEN32(pixel)
             b = _BLUE32(pixel)
             
-            r = GJ_IMGADJ_Clamp(INT(f * (r - 128) + 128), 0, 255)
-            g = GJ_IMGADJ_Clamp(INT(f * (g - 128) + 128), 0, 255)
-            b = GJ_IMGADJ_Clamp(INT(f * (b - 128) + 128), 0, 255)
+            r = _CLAMP(INT(f * (r - 128) + 128), 0, 255)
+            g = _CLAMP(INT(f * (g - 128) + 128), 0, 255)
+            b = _CLAMP(INT(f * (b - 128) + 128), 0, 255)
             
             pixel = _RGB32(r, g, b)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
@@ -291,7 +270,7 @@ FUNCTION GJ_IMGADJ_Gamma (sourceImg AS LONG, direction AS STRING, amount AS INTE
     DIM gammaTable(0 TO 255)
     DIM i
     FOR i = 0 TO 255
-        gammaTable(i) = GJ_IMGADJ_Clamp(INT(255.0 * ((i / 255.0) ^ (1.0 / gamma))), 0, 255)
+        gammaTable(i) = _CLAMP(INT(255.0 * ((i / 255.0) ^ (1.0 / gamma))), 0, 255)
     NEXT i
     
     ' Apply gamma using lookup table
@@ -596,9 +575,9 @@ FUNCTION GJ_IMGADJ_Glow (sourceImg AS LONG, radius AS INTEGER, intensity AS INTE
             b2 = _BLUE32(pixel2)
             
             ' Additive blend for glow effect
-            r = GJ_IMGADJ_Clamp(r1 + INT(r2 * blend), 0, 255)
-            g = GJ_IMGADJ_Clamp(g1 + INT(g2 * blend), 0, 255)
-            b = GJ_IMGADJ_Clamp(b1 + INT(b2 * blend), 0, 255)
+            r = _CLAMP(r1 + INT(r2 * blend), 0, 255)
+            g = _CLAMP(g1 + INT(g2 * blend), 0, 255)
+            b = _CLAMP(b1 + INT(b2 * blend), 0, 255)
             
             DIM newPixel AS _UNSIGNED LONG
             newPixel = _RGB32(r, g, b)
@@ -672,9 +651,9 @@ FUNCTION GJ_IMGADJ_FilmGrain (sourceImg AS LONG, amount AS INTEGER)
             b = _BLUE32(pixel)
             
             ' Apply grain with clamping
-            r = GJ_IMGADJ_Clamp(r + scaledNoise, 0, 255)
-            g = GJ_IMGADJ_Clamp(g + scaledNoise, 0, 255)
-            b = GJ_IMGADJ_Clamp(b + scaledNoise, 0, 255)
+            r = _CLAMP(r + scaledNoise, 0, 255)
+            g = _CLAMP(g + scaledNoise, 0, 255)
+            b = _CLAMP(b + scaledNoise, 0, 255)
             
             pixel = _RGB32(r, g, b)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
@@ -864,9 +843,9 @@ FUNCTION GJ_IMGADJ_Sepia (sourceImg AS LONG)
             b = _BLUE32(pixel)
             
             ' Apply sepia transformation
-            tr = GJ_IMGADJ_Clamp(INT((r * 0.393) + (g * 0.769) + (b * 0.189)), 0, 255)
-            tg = GJ_IMGADJ_Clamp(INT((r * 0.349) + (g * 0.686) + (b * 0.168)), 0, 255)
-            tb = GJ_IMGADJ_Clamp(INT((r * 0.272) + (g * 0.534) + (b * 0.131)), 0, 255)
+            tr = _CLAMP(INT((r * 0.393) + (g * 0.769) + (b * 0.189)), 0, 255)
+            tg = _CLAMP(INT((r * 0.349) + (g * 0.686) + (b * 0.168)), 0, 255)
+            tb = _CLAMP(INT((r * 0.272) + (g * 0.534) + (b * 0.131)), 0, 255)
             
             pixel = _RGB32(tr, tg, tb)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
@@ -1069,7 +1048,7 @@ FUNCTION GJ_IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS I
         ELSE
             levelsTable(i) = outputMin + INT(((i - inputMin) * outputRange) / inputRange)
         END IF
-        levelsTable(i) = GJ_IMGADJ_Clamp(levelsTable(i), 0, 255)
+        levelsTable(i) = _CLAMP(levelsTable(i), 0, 255)
     NEXT i
     
     ' Apply levels using lookup table
@@ -1145,9 +1124,9 @@ FUNCTION GJ_IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenSh
             b = _BLUE32(pixel)
             
             ' Apply color balance shifts
-            r = GJ_IMGADJ_Clamp(r + redShift, 0, 255)
-            g = GJ_IMGADJ_Clamp(g + greenShift, 0, 255)
-            b = GJ_IMGADJ_Clamp(b + blueShift, 0, 255)
+            r = _CLAMP(r + redShift, 0, 255)
+            g = _CLAMP(g + greenShift, 0, 255)
+            b = _CLAMP(b + blueShift, 0, 255)
             
             pixel = _RGB32(r, g, b)
             _MEMPUT m, m.OFFSET + (y * w + x) * 4, pixel
@@ -1298,9 +1277,9 @@ FUNCTION GJ_IMGADJ_CreateComplexTestImage ()
             g = g + (RND * 20) - 10
             b = b + (RND * 20) - 10
             
-            r = GJ_IMGADJ_Clamp(r, 0, 255)
-            g = GJ_IMGADJ_Clamp(g, 0, 255)
-            b = GJ_IMGADJ_Clamp(b, 0, 255)
+            r = _CLAMP(r, 0, 255)
+            g = _CLAMP(g, 0, 255)
+            b = _CLAMP(b, 0, 255)
             
             PSET (x, y), _RGB32(r, g, b)
         NEXT
@@ -1369,4 +1348,3 @@ FUNCTION GJ_IMGADJ_CreateTestImage ()
     _DEST oldDest
     GJ_IMGADJ_CreateTestImage = img
 END FUNCTION
-

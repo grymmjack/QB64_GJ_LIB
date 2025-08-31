@@ -3,8 +3,8 @@
 ' GRYMMJACK'S IMAGE ADJUSTMENT (GJ_IMGADJ) LIBRARY
 '
 ' USAGE:
-'   Insert '$INCLUDE:'path_to_GJ_LIB/GJ_IMGADJ/GJ_IMGADJ.BI' at the top of file
-'   Insert '$INCLUDE:'path_to_GJ_LIB/GJ_IMGADJ/GJ_IMGADJ.BM' at the bottom of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BI' at the top of file
+'   Insert '$INCLUDE:'path_to_GJ_LIB/IMGADJ/IMGADJ.BM' at the bottom of file
 '
 ' This library provides optimized image adjustment algorithms for QB64PE.
 ' All functions work by creating new image handles - original images are preserved.
@@ -21,8 +21,6 @@
 ' @version 1.0
 ' @description Comprehensive image adjustment library for QB64PE
 ''
-
-
 
 $INCLUDEONCE
 
@@ -48,7 +46,6 @@ DIM SHARED GJ_IMGADJ_currentGamma AS SINGLE
 DECLARE SUB GJ_IMGADJ_Init
 DECLARE SUB GJ_IMGADJ_RGBtoHSV (r AS INTEGER, g AS INTEGER, b AS INTEGER, hue AS SINGLE, sat AS SINGLE, value AS SINGLE)
 DECLARE SUB GJ_IMGADJ_HSVtoRGB (hue AS SINGLE, sat AS SINGLE, value AS SINGLE, r AS INTEGER, g AS INTEGER, b AS INTEGER)
-DECLARE FUNCTION GJ_IMGADJ_Clamp (value AS INTEGER, minVal AS INTEGER, maxVal AS INTEGER) AS INTEGER
 DECLARE FUNCTION GJ_IMGADJ_CreateTestImage AS LONG
 DECLARE FUNCTION GJ_IMGADJ_CreateComplexTestImage AS LONG
 DECLARE FUNCTION GJ_IMGADJ_CreateGradientTestImage AS LONG
@@ -70,5 +67,3 @@ DECLARE FUNCTION GJ_IMGADJ_Threshold (sourceImg AS LONG, threshold AS INTEGER, m
 DECLARE FUNCTION GJ_IMGADJ_Desaturate (sourceImg AS LONG, method AS INTEGER) AS LONG
 DECLARE FUNCTION GJ_IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS INTEGER, outputMin AS INTEGER, outputMax AS INTEGER) AS LONG
 DECLARE FUNCTION GJ_IMGADJ_ColorBalance (sourceImg AS LONG, redShift AS INTEGER, greenShift AS INTEGER, blueShift AS INTEGER) AS LONG
-
-
