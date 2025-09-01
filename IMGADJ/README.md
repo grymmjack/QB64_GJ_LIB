@@ -14,8 +14,25 @@ Image adjustment is a common need in graphics programming, but implementing effi
 - **Memory safety** - clear ownership of returned image handles
 - **Performance** - 10-200x faster than naive implementations
 - **Real-time capability** - suitable for interactive applications
+- **Selective processing** - NEW! Non-black adjustments preserve pure black pixels
 
 The library draws inspiration from professional image editing software like Photoshop and GIMP, providing similar adjustment capabilities in a QB64PE-friendly format.
+
+### **NEW!** Selective Black Preservation
+
+The `GJ_IMGADJ_BrightnessContrastNonBlack&()` function addresses a common problem in image processing: maintaining pure black elements while adjusting the rest of the image.
+
+**Problem Solved:**
+- Traditional brightness adjustments turn black (RGB 0,0,0) pixels gray
+- Black text, outlines, borders, and UI elements lose their crispness
+- Logos and graphics with black elements become muddy
+
+**Solution Benefits:**
+- **Preserves text readability** - Black text stays perfectly black
+- **Maintains UI crispness** - Black borders and outlines remain sharp
+- **Artistic control** - Keep pure black shadows and artistic elements
+- **Logo processing** - Enhance colored portions without affecting black elements
+- **Efficient processing** - Single function combines brightness + contrast with pixel selection
 
 ## WHAT'S IN THE LIBRARY
 
@@ -24,6 +41,7 @@ The library draws inspiration from professional image editing software like Phot
 |----------|---------|------------|-------------|
 | `GJ_IMGADJ_Brightness&()` | Adjust image brightness | `(img&, "+"/"-", amount%)` | 10-50x faster with _MEMIMAGE |
 | `GJ_IMGADJ_Contrast&()` | Adjust image contrast | `(img&, "+"/"-", percentage%)` | 10-50x faster with _MEMIMAGE |
+| `GJ_IMGADJ_BrightnessContrastNonBlack&()` | **NEW!** Adjust brightness/contrast while preserving black pixels | `(img&, brightDir$, brightAmt%, contrastDir$, contrastAmt%)` | Selective pixel processing |
 | `GJ_IMGADJ_Gamma&()` | Gamma correction | `(img&, "+"/"-", amount%)` | 100x faster with lookup tables |
 | `GJ_IMGADJ_Saturation&()` | Adjust color saturation | `(img&, "+"/"-", percentage%)` | HSV color space conversion |
 | `GJ_IMGADJ_Hue&()` | Shift hue around color wheel | `(img&, "+"/"-", degrees%)` | HSV color space conversion |
@@ -94,6 +112,7 @@ The library draws inspiration from professional image editing software like Phot
 | `GJ_IMGADJ_CreateComplexTestImage&()` | Generate test image | `()` | Complex pattern for testing |
 | `GJ_IMGADJ_CreateGradientTestImage&()` | Generate gradient | `()` | RGB gradient pattern |
 | `GJ_IMGADJ_CreateSimpleTestImage&()` | Generate simple image | `()` | Basic shapes and colors |
+| `GJ_IMGADJ_CreateTestImageWithBlack&()` | **NEW!** Generate test image with black areas | `()` | Specifically for testing non-black adjustments |
 
 ## USAGE
 
@@ -147,6 +166,33 @@ DO
     CALL GJ_IMGADJ_ShowComparison(original, adjusted, "Brightness: " + STR$(adjustment))
     ' Handle input to change adjustment value...
 LOOP
+```
+
+#### Non-Black Brightness/Contrast (Selective Adjustment)
+```vb
+' Perfect for preserving black text, outlines, or UI elements
+DIM imageWithBlackElements AS LONG, selectively_adjusted AS LONG
+
+' Load image with black text or graphics
+imageWithBlackElements = GJ_IMGADJ_CreateTestImageWithBlack&()
+
+' Apply strong adjustments while preserving pure black pixels
+selectively_adjusted = GJ_IMGADJ_BrightnessContrastNonBlack&(imageWithBlackElements, "+", 60, "+", 40)
+
+' Compare with regular adjustment (affects all pixels including black)
+DIM regular_adjusted AS LONG, temp AS LONG
+temp = GJ_IMGADJ_Brightness&(imageWithBlackElements, "+", 60)
+regular_adjusted = GJ_IMGADJ_Contrast&(temp, "+", 40)
+_FREEIMAGE temp
+
+' Side-by-side comparison shows black preservation
+CALL GJ_IMGADJ_ShowComparison(regular_adjusted, selectively_adjusted, "Regular vs Non-Black Adjustment")
+
+' Use cases for non-black adjustment:
+' • Photo editing with black text overlay
+' • UI graphics with black borders/outlines  
+' • Logo enhancement while preserving black elements
+' • Artistic effects maintaining pure black shadows
 ```
 
 #### Batch Processing
@@ -332,6 +378,10 @@ _FREEIMAGE adjusted  ' Always free when done!
 ### Amount/Percentage Parameters
 - **Brightness**: 0-255 (amount to add/subtract)
 - **Contrast**: 0-100 (percentage change)
+- **BrightnessContrastNonBlack**: 
+  - brightDir/contrastDir: "+" or "-" (direction for each adjustment)
+  - brightAmt: 0-255 (brightness amount), contrastAmt: 0-100 (contrast percentage)
+  - Only affects pixels that are NOT pure black (RGB 0,0,0)
 - **Gamma**: 0-100 (gamma multiplier = 1.0 + amount/100)
 - **Saturation**: 0-200 (percentage change)
 - **Hue**: 0-360 (degrees to shift)
