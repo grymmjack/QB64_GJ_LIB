@@ -295,7 +295,7 @@ FUNCTION GJ_IMGADJ_BrightnessContrastNonBlack (sourceImg AS LONG, brightnessDir 
     END IF
     
     DIM resultImg AS LONG
-    resultImg = _COPYIMAGE(sourceImg, 32)
+    resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
     ' Calculate brightness offset
     DIM brightnessOffset AS INTEGER
