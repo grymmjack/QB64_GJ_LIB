@@ -1809,3 +1809,928 @@ FUNCTION GJ_IMGADJ_CreateTestImageWithBlack ()
     _DEST 0
     GJ_IMGADJ_CreateTestImageWithBlack = img
 END FUNCTION
+
+
+''
+' ==========================
+' DITHERING FUNCTIONS SECTION
+' ==========================
+' 
+' This section contains advanced dithering algorithms for converting full-color images
+' to reduced color palettes with high quality visual results. All dithering functions
+' work with 32-bit color images and create grayscale or posterized outputs.
+'
+
+
+''
+' Initialize dithering system
+' Sets up color lookup cache for faster nearest-color matching
+'
+SUB GJ_IMGADJ_InitDither
+    ' Initialize dithering color cache
+    GJ_IMGADJ_dither_cache_valid = 0
+    
+    ' Initialize noise array if not already done
+    CALL GJ_IMGADJ_Init
+END SUB
+
+
+''
+' Find nearest grayscale value for dithering
+' Simple conversion to grayscale with 8-bit quantization
+' @param r INTEGER Red component (0-255)
+' @param g INTEGER Green component (0-255) 
+' @param b INTEGER Blue component (0-255)
+' @return INTEGER Grayscale value (0-255)
+'
+FUNCTION GJ_IMGADJ_NearestGrayscale% (r AS INTEGER, g AS INTEGER, b AS INTEGER)
+    ' Use luminance formula for perceptually accurate grayscale
+    GJ_IMGADJ_NearestGrayscale% = INT(0.299 * r + 0.587 * g + 0.114 * b)
+END FUNCTION
+
+
+''
+' Apply ordered dithering matrix to image
+' @param sourceImg LONG Source image handle
+' @param matrix() INTEGER Dithering matrix values
+' @param matW INTEGER Matrix width
+' @param matH INTEGER Matrix height  
+' @param maxVal INTEGER Maximum matrix value for normalization
+' @param amount SINGLE Dithering strength (0.0-1.0)
+' @return LONG New image handle with dithering applied
+'
+FUNCTION GJ_IMGADJ_ApplyOrderedMatrix& (sourceImg AS LONG, matrix() AS INTEGER, matW AS INTEGER, matH AS INTEGER, maxVal AS INTEGER, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_ApplyOrderedMatrix = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM threshold AS SINGLE, gray AS INTEGER, newGray AS INTEGER
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Apply ordered dithering threshold
+            threshold = ((matrix(x MOD matW, y MOD matH) / maxVal) - 0.5) * 128 * amount
+            newGray = gray + threshold
+            newGray = _CLAMP(newGray, 0, 255)
+            
+            ' Quantize to binary (0 or 255) for dithering effect
+            IF newGray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_ApplyOrderedMatrix = resultImg
+END FUNCTION
+
+
+''
+' Apply error diffusion dithering algorithm
+' @param sourceImg LONG Source image handle
+' @param algorithm INTEGER Algorithm type (0=Floyd-Steinberg, 1=Jarvis, etc.)
+' @param amount SINGLE Dithering strength (0.0-1.0)
+' @return LONG New image handle with dithering applied
+'
+FUNCTION GJ_IMGADJ_ApplyErrorDiffusion& (sourceImg AS LONG, algorithm AS INTEGER, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_ApplyErrorDiffusion = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    ' Error buffers for current and next rows
+    DIM err1(0 TO w + 2) AS SINGLE  ' Current row errors (with padding)
+    DIM err2(0 TO w + 2) AS SINGLE  ' Next row errors (with padding)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER, errorVal AS SINGLE
+    
+    ' Initialize error buffers
+    FOR x = 0 TO w + 2
+        err1(x) = 0
+        err2(x) = 0
+    NEXT x
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale and add accumulated error
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b) + err1(x + 1)
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Calculate error
+            errorVal = (gray - newGray) * amount
+            
+            ' Distribute error based on algorithm
+            SELECT CASE algorithm
+                CASE 0 ' Floyd-Steinberg
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.4375     ' Right: 7/16
+                    err2(x) = err2(x) + errorVal * 0.1875             ' Below-left: 3/16
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.3125     ' Below: 5/16
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.0625     ' Below-right: 1/16
+                
+                CASE 1 ' Jarvis-Judice-Ninke
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.146      ' 7/48
+                    err1(x + 3) = err1(x + 3) + errorVal * 0.104      ' 5/48
+                    err2(x) = err2(x) + errorVal * 0.063              ' 3/48
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.104      ' 5/48
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.146      ' 7/48
+                    err2(x + 3) = err2(x + 3) + errorVal * 0.104      ' 5/48
+                
+                CASE 2 ' Stucki
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.1905     ' 8/42
+                    err1(x + 3) = err1(x + 3) + errorVal * 0.0952     ' 4/42
+                    err2(x) = err2(x) + errorVal * 0.0476             ' 2/42
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.0952     ' 4/42
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.1905     ' 8/42
+                    err2(x + 3) = err2(x + 3) + errorVal * 0.0952     ' 4/42
+                
+                CASE 3 ' Burkes
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.25       ' 8/32
+                    err1(x + 3) = err1(x + 3) + errorVal * 0.125      ' 4/32
+                    err2(x) = err2(x) + errorVal * 0.0625             ' 2/32
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.125      ' 4/32
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.25       ' 8/32
+                    err2(x + 3) = err2(x + 3) + errorVal * 0.125      ' 4/32
+                    
+                CASE 4 ' Sierra
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.15625    ' 5/32
+                    err1(x + 3) = err1(x + 3) + errorVal * 0.09375    ' 3/32
+                    err2(x) = err2(x) + errorVal * 0.0625             ' 2/32
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.125      ' 4/32
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.15625    ' 5/32
+                    err2(x + 3) = err2(x + 3) + errorVal * 0.125      ' 4/32
+                    
+                CASE 5 ' Sierra Lite
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.5        ' 2/4
+                    err2(x) = err2(x) + errorVal * 0.25               ' 1/4
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.25       ' 1/4
+                    
+                CASE 6 ' Atkinson
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.125      ' 1/8
+                    err1(x + 3) = err1(x + 3) + errorVal * 0.125      ' 1/8
+                    err2(x) = err2(x) + errorVal * 0.125              ' 1/8
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.125      ' 1/8
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.125      ' 1/8
+                    
+                CASE ELSE ' Default to Floyd-Steinberg
+                    err1(x + 2) = err1(x + 2) + errorVal * 0.4375
+                    err2(x) = err2(x) + errorVal * 0.1875
+                    err2(x + 1) = err2(x + 1) + errorVal * 0.3125
+                    err2(x + 2) = err2(x + 2) + errorVal * 0.0625
+            END SELECT
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+        
+        ' Swap error buffers for next row
+        FOR x = 0 TO w + 2
+            err1(x) = err2(x)
+            err2(x) = 0
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_ApplyErrorDiffusion = resultImg
+END FUNCTION
+
+
+''
+' Apply 2x2 ordered (Bayer) dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherOrdered2x2(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherOrdered2x2& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherOrdered2x2 = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM bayer(0 TO 1, 0 TO 1) AS INTEGER
+    bayer(0, 0) = 0: bayer(0, 1) = 2
+    bayer(1, 0) = 3: bayer(1, 1) = 1
+    
+    GJ_IMGADJ_DitherOrdered2x2 = GJ_IMGADJ_ApplyOrderedMatrix(sourceImg, bayer(), 2, 2, 4, amount)
+END FUNCTION
+
+
+''
+' Apply 4x4 ordered (Bayer) dithering  
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherOrdered4x4(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherOrdered4x4& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherOrdered4x4 = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM bayer(0 TO 3, 0 TO 3) AS INTEGER
+    bayer(0, 0) = 0: bayer(0, 1) = 8: bayer(0, 2) = 2: bayer(0, 3) = 10
+    bayer(1, 0) = 12: bayer(1, 1) = 4: bayer(1, 2) = 14: bayer(1, 3) = 6
+    bayer(2, 0) = 3: bayer(2, 1) = 11: bayer(2, 2) = 1: bayer(2, 3) = 9
+    bayer(3, 0) = 15: bayer(3, 1) = 7: bayer(3, 2) = 13: bayer(3, 3) = 5
+    
+    GJ_IMGADJ_DitherOrdered4x4 = GJ_IMGADJ_ApplyOrderedMatrix(sourceImg, bayer(), 4, 4, 16, amount)
+END FUNCTION
+
+
+''
+' Apply 8x8 ordered (Bayer) dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherOrdered8x8(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherOrdered8x8& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherOrdered8x8 = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM bayer(0 TO 7, 0 TO 7) AS INTEGER
+    ' 8x8 Bayer matrix
+    bayer(0, 0) = 0: bayer(0, 1) = 32: bayer(0, 2) = 8: bayer(0, 3) = 40: bayer(0, 4) = 2: bayer(0, 5) = 34: bayer(0, 6) = 10: bayer(0, 7) = 42
+    bayer(1, 0) = 48: bayer(1, 1) = 16: bayer(1, 2) = 56: bayer(1, 3) = 24: bayer(1, 4) = 50: bayer(1, 5) = 18: bayer(1, 6) = 58: bayer(1, 7) = 26
+    bayer(2, 0) = 12: bayer(2, 1) = 44: bayer(2, 2) = 4: bayer(2, 3) = 36: bayer(2, 4) = 14: bayer(2, 5) = 46: bayer(2, 6) = 6: bayer(2, 7) = 38
+    bayer(3, 0) = 60: bayer(3, 1) = 28: bayer(3, 2) = 52: bayer(3, 3) = 20: bayer(3, 4) = 62: bayer(3, 5) = 30: bayer(3, 6) = 54: bayer(3, 7) = 22
+    bayer(4, 0) = 3: bayer(4, 1) = 35: bayer(4, 2) = 11: bayer(4, 3) = 43: bayer(4, 4) = 1: bayer(4, 5) = 33: bayer(4, 6) = 9: bayer(4, 7) = 41
+    bayer(5, 0) = 51: bayer(5, 1) = 19: bayer(5, 2) = 59: bayer(5, 3) = 27: bayer(5, 4) = 49: bayer(5, 5) = 17: bayer(5, 6) = 57: bayer(5, 7) = 25
+    bayer(6, 0) = 15: bayer(6, 1) = 47: bayer(6, 2) = 7: bayer(6, 3) = 39: bayer(6, 4) = 13: bayer(6, 5) = 45: bayer(6, 6) = 5: bayer(6, 7) = 37
+    bayer(7, 0) = 63: bayer(7, 1) = 31: bayer(7, 2) = 55: bayer(7, 3) = 23: bayer(7, 4) = 61: bayer(7, 5) = 29: bayer(7, 6) = 53: bayer(7, 7) = 21
+    
+    GJ_IMGADJ_DitherOrdered8x8 = GJ_IMGADJ_ApplyOrderedMatrix(sourceImg, bayer(), 8, 8, 64, amount)
+END FUNCTION
+
+
+''
+' Apply 16x16 ordered (Bayer) dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherOrdered16x16(originalImg, 0.5)
+'
+FUNCTION GJ_IMGADJ_DitherOrdered16x16& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherOrdered16x16 = 0
+        EXIT FUNCTION
+    END IF
+    
+    ' Generate 16x16 Bayer matrix programmatically (saves space)
+    DIM bayer(0 TO 15, 0 TO 15) AS INTEGER
+    DIM x AS INTEGER, y AS INTEGER
+    
+    FOR y = 0 TO 15
+        FOR x = 0 TO 15
+            ' Generate Bayer matrix values using bit-reverse pattern
+            DIM matrixVal AS INTEGER
+            matrixVal = 0
+            DIM bitX AS INTEGER, bitY AS INTEGER
+            bitX = x: bitY = y
+            DIM i AS INTEGER
+            FOR i = 0 TO 3
+                matrixVal = matrixVal * 4 + (bitX AND 1) * 2 + (bitY AND 1)
+                bitX = bitX \ 2
+                bitY = bitY \ 2
+            NEXT i
+            bayer(x, y) = matrixVal
+        NEXT x
+    NEXT y
+    
+    GJ_IMGADJ_DitherOrdered16x16 = GJ_IMGADJ_ApplyOrderedMatrix(sourceImg, bayer(), 16, 16, 256, amount)
+END FUNCTION
+
+
+''
+' Apply Floyd-Steinberg error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherFloydSteinberg(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherFloydSteinberg& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherFloydSteinberg = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 0, amount)
+END FUNCTION
+
+
+''
+' Apply Jarvis-Judice-Ninke error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherJarvisJudiceNinke(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherJarvisJudiceNinke& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherJarvisJudiceNinke = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 1, amount)
+END FUNCTION
+
+
+''
+' Apply Stucki error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherStucki(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherStucki& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherStucki = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 2, amount)
+END FUNCTION
+
+
+''
+' Apply Burkes error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherBurkes(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherBurkes& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherBurkes = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 3, amount)
+END FUNCTION
+
+
+''
+' Apply Sierra error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherSierra(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherSierra& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherSierra = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 4, amount)
+END FUNCTION
+
+
+''
+' Apply Sierra Lite error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherSierraLite(originalImg, 0.9)
+'
+FUNCTION GJ_IMGADJ_DitherSierraLite& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherSierraLite = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 5, amount)
+END FUNCTION
+
+
+''
+' Apply Atkinson error diffusion dithering (Classic Mac algorithm)
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherAtkinson(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherAtkinson& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherAtkinson = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 6, amount)
+END FUNCTION
+
+
+''
+' Apply False Floyd-Steinberg error diffusion dithering  
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherFalseFloydSteinberg(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherFalseFloydSteinberg& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherFalseFloydSteinberg = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    ' Error buffer for next pixel
+    DIM errorVal AS SINGLE
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER
+    
+    FOR y = 0 TO h - 1
+        errorVal = 0  ' Reset error at start of each row
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale and add error
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b) + errorVal
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Calculate error for next pixel (simplified propagation)
+            errorVal = (gray - newGray) * amount * 0.5
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherFalseFloydSteinberg = resultImg
+END FUNCTION
+
+
+''
+' Apply Fan error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherFan(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherFan& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherFan = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 8, amount)
+END FUNCTION
+
+
+''
+' Apply Stevenson-Arce error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherStevensonArce(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherStevensonArce& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherStevensonArce = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 9, amount)
+END FUNCTION
+
+
+''
+' Apply Two-Row Sierra error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherTwoRowSierra(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherTwoRowSierra& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherTwoRowSierra = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 10, amount)
+END FUNCTION
+
+
+''
+' Apply Shiau-Fan error diffusion dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherShiauFan(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherShiauFan& (sourceImg AS LONG, amount AS SINGLE)
+    GJ_IMGADJ_DitherShiauFan = GJ_IMGADJ_ApplyErrorDiffusion(sourceImg, 11, amount)
+END FUNCTION
+
+
+''
+' Apply random dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherRandom(originalImg, 0.5)
+'
+FUNCTION GJ_IMGADJ_DitherRandom& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherRandom = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    RANDOMIZE TIMER
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER, noise AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Add random noise
+            noise = (RND * 128 - 64) * amount
+            gray = gray + noise
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherRandom = resultImg
+END FUNCTION
+
+
+''
+' Apply blue noise dithering (coordinate-based hash approximation)
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherBlueNoise(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherBlueNoise& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherBlueNoise = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER, noise AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Generate blue noise approximation using coordinate hash
+            noise = (((x * 1234 + y * 5678) MOD 255) - 127) * amount
+            gray = gray + noise
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherBlueNoise = resultImg
+END FUNCTION
+
+
+''
+' Apply clustered dot (newspaper-style) dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherClusteredDot(originalImg, 0.8)
+'
+FUNCTION GJ_IMGADJ_DitherClusteredDot& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherClusteredDot = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM clustered(0 TO 3, 0 TO 3) AS INTEGER
+    ' Clustered dot matrix (creates larger dots instead of ordered patterns)
+    clustered(0, 0) = 12: clustered(0, 1) = 5: clustered(0, 2) = 6: clustered(0, 3) = 13
+    clustered(1, 0) = 4: clustered(1, 1) = 0: clustered(1, 2) = 1: clustered(1, 3) = 7
+    clustered(2, 0) = 11: clustered(2, 1) = 3: clustered(2, 2) = 2: clustered(2, 3) = 8
+    clustered(3, 0) = 15: clustered(3, 1) = 10: clustered(3, 2) = 9: clustered(3, 3) = 14
+    
+    GJ_IMGADJ_DitherClusteredDot = GJ_IMGADJ_ApplyOrderedMatrix(sourceImg, clustered(), 4, 4, 16, amount)
+END FUNCTION
+
+
+''
+' Apply halftone dithering (circular dot pattern)
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherHalftone(originalImg, 0.7)
+'
+FUNCTION GJ_IMGADJ_DitherHalftone& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherHalftone = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER
+    DIM dotRadius AS SINGLE, distance AS SINGLE
+    DIM centerX AS SINGLE, centerY AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Calculate halftone dot size based on brightness
+            dotRadius = (gray / 255.0) * 3.0 * amount + (1.0 - amount)
+            
+            ' Find center of current 4x4 cell
+            centerX = (x \ 4) * 4 + 2
+            centerY = (y \ 4) * 4 + 2
+            
+            ' Calculate distance from cell center
+            distance = SQR((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY))
+            
+            ' Create dot pattern
+            IF distance <= dotRadius THEN newGray = 0 ELSE newGray = 255
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherHalftone = resultImg
+END FUNCTION
+
+
+''
+' Apply spiral dithering (unique spiral pattern)
+' @param sourceImg LONG Source image handle  
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherSpiral(originalImg, 0.6)
+'
+FUNCTION GJ_IMGADJ_DitherSpiral& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherSpiral = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER
+    DIM angle AS SINGLE, radius AS SINGLE, threshold AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Calculate spiral pattern
+            radius = SQR(x * x + y * y)
+            angle = _ATAN2(y, x)
+            threshold = (SIN(radius * 0.5 + angle * 3) + 1) * 0.5 * 128 * amount
+            
+            gray = gray + threshold - 64 * amount
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherSpiral = resultImg
+END FUNCTION
+
+
+''
+' Apply interleaved gradient noise dithering
+' @param sourceImg LONG Source image handle
+' @param amount SINGLE Dithering strength (0.0-1.0, where 1.0 is full effect)
+' @return LONG New image handle with dithering applied
+' @example
+'   dithered = GJ_IMGADJ_DitherInterleavedGradientNoise(originalImg, 0.5)
+'
+FUNCTION GJ_IMGADJ_DitherInterleavedGradientNoise& (sourceImg AS LONG, amount AS SINGLE)
+    IF sourceImg = 0 THEN
+        GJ_IMGADJ_DitherInterleavedGradientNoise = 0
+        EXIT FUNCTION
+    END IF
+    
+    DIM w AS INTEGER, h AS INTEGER
+    w = _WIDTH(sourceImg)
+    h = _HEIGHT(sourceImg)
+    
+    DIM resultImg AS LONG
+    resultImg = _NEWIMAGE(w, h, 32)
+    
+    DIM srcMem AS _MEM, destMem AS _MEM
+    srcMem = _MEMIMAGE(sourceImg)
+    destMem = _MEMIMAGE(resultImg)
+    
+    DIM x AS INTEGER, y AS INTEGER
+    DIM pixelData AS _UNSIGNED LONG
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER, a AS INTEGER
+    DIM gray AS SINGLE, newGray AS INTEGER, noise AS SINGLE
+    DIM gradient AS SINGLE
+    
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            ' Get source pixel
+            _MEMGET srcMem, srcMem.OFFSET + (y * w + x) * 4, pixelData
+            
+            ' Extract RGBA components
+            b = pixelData AND 255
+            g = (pixelData \ 256) AND 255
+            r = (pixelData \ 65536) AND 255
+            a = (pixelData \ 16777216) AND 255
+            
+            ' Convert to grayscale
+            gray = GJ_IMGADJ_NearestGrayscale%(r, g, b)
+            
+            ' Generate interleaved gradient noise
+            gradient = ((x + y * 52.9829189) MOD 1000) / 1000.0
+            noise = (gradient - 0.5) * 128 * amount
+            
+            gray = gray + noise
+            gray = _CLAMP(gray, 0, 255)
+            
+            ' Quantize to binary
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
+            
+            ' Store result
+            pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
+            _MEMPUT destMem, destMem.OFFSET + (y * w + x) * 4, pixelData
+        NEXT x
+    NEXT y
+    
+    _MEMFREE srcMem
+    _MEMFREE destMem
+    GJ_IMGADJ_DitherInterleavedGradientNoise = resultImg
+END FUNCTION
