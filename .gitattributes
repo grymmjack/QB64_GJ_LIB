@@ -5,3 +5,9 @@
 # Except these files will always be checked out with CRLFs (regardless of the
 # OS they were checked out on).
 **/*.ans text eol=crlf
+
+# Override GitHub language detection
+*.bas linguist-language=qb64
+*.bi linguist-language=qb64
+*.bm linguist-language=qb64
+*.frm linguist-language=qb64
