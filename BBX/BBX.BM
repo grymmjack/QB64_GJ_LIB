@@ -48,9 +48,9 @@ $INCLUDEONCE
 '
 SUB GJ_BBX_InitDefaults
     ' Default config
-    GJ_BBX_CFG.HandleHalfSize       = 6
+    GJ_BBX_CFG.HandleHalfSize       = 3
     GJ_BBX_CFG.HandleFullSize       = GJ_BBX_CFG.HandleHalfSize * 2
-    GJ_BBX_CFG.EdgeHalfSize         = 4
+    GJ_BBX_CFG.EdgeHalfSize         = 3
     GJ_BBX_CFG.EdgeFullSize         = GJ_BBX_CFG.EdgeHalfSize * 2
     GJ_BBX_CFG.HandleCornerSize     = GJ_BBX_CFG.HandleFullSize
     GJ_BBX_CFG.HandleEdgeSize       = GJ_BBX_CFG.EdgeFullSize
@@ -128,58 +128,68 @@ SUB GJ_BBX_Update
     GJ_BBX_PollMouse GJ_BBX_mouse, _FALSE
     GJ_BBX_box.hoverHandle = GJ_BBX_GetHoverHandle%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box)
 
+    DIM justStartedAction AS INTEGER: justStartedAction = _FALSE
+
     IF GJ_BBX_box.state < GJ_BBX_STATE_RESIZE_BASE AND GJ_BBX_box.hoverHandle AND GJ_BBX_mouse.clicked THEN
         GJ_BBX_box.activeHandle = GJ_BBX_box.hoverHandle
         GJ_BBX_box.state = GJ_BBX_STATE_RESIZE_BASE + GJ_BBX_box.activeHandle
         GJ_BBX_box.selected = _TRUE
         GJ_BBX_box.wasClickedInside = _FALSE
+        justStartedAction = _TRUE
+        ' Start resizing immediately on click
+        GJ_BBX_ResizeFromHandle GJ_BBX_box, GJ_BBX_mouse
+        IF GJ_BBX_box.w < GJ_BBX_CFG.MinBoxWidth THEN GJ_BBX_box.w = GJ_BBX_CFG.MinBoxWidth
+        IF GJ_BBX_box.h < GJ_BBX_CFG.MinBoxHeight THEN GJ_BBX_box.h = GJ_BBX_CFG.MinBoxHeight
     ELSEIF GJ_BBX_box.state < GJ_BBX_STATE_RESIZE_BASE AND GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) AND GJ_BBX_mouse.clicked THEN
         GJ_BBX_box.offsetX = GJ_BBX_mouse.x - GJ_BBX_box.x
         GJ_BBX_box.offsetY = GJ_BBX_mouse.y - GJ_BBX_box.y
         GJ_BBX_box.state = GJ_BBX_STATE_DRAG
         GJ_BBX_box.selected = _TRUE
         GJ_BBX_box.wasClickedInside = _TRUE
+        justStartedAction = _TRUE
     END IF
 
-    IF GJ_BBX_box.state >= GJ_BBX_STATE_RESIZE_BASE THEN
-        IF GJ_BBX_mouse.held THEN
-            GJ_BBX_ResizeFromHandle GJ_BBX_box, GJ_BBX_mouse
-            IF GJ_BBX_box.w < GJ_BBX_CFG.MinBoxWidth THEN GJ_BBX_box.w = GJ_BBX_CFG.MinBoxWidth
-            IF GJ_BBX_box.h < GJ_BBX_CFG.MinBoxHeight THEN GJ_BBX_box.h = GJ_BBX_CFG.MinBoxHeight
-        ELSE
-            GJ_BBX_box.state = GJ_BBX_STATE_SELECTED
-        END IF
-    ELSEIF GJ_BBX_box.state = GJ_BBX_STATE_DRAG THEN
-        IF GJ_BBX_mouse.held THEN
-            GJ_BBX_box.x = GJ_BBX_mouse.x - GJ_BBX_box.offsetX
-            GJ_BBX_box.y = GJ_BBX_mouse.y - GJ_BBX_box.offsetY
-        ELSE
-            GJ_BBX_box.state = GJ_BBX_STATE_SELECTED
-            GJ_BBX_box.selected = _TRUE
-        END IF
-    ELSE
-        IF GJ_BBX_mouse.released THEN
-            IF GJ_BBX_box.wasClickedInside THEN
-                GJ_BBX_box.selected = _TRUE
-                GJ_BBX_box.wasClickedInside = _FALSE
-            ELSEIF NOT GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
-                GJ_BBX_box.selected = _FALSE
-                GJ_BBX_box.state = GJ_BBX_STATE_IDLE
-                GJ_BBX_box.wasClickedInside = _FALSE
-            END IF
-        END IF
-
-        IF GJ_BBX_box.selected THEN
-            IF GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
-                GJ_BBX_box.state = GJ_BBX_STATE_SELECTED_HOVER
+    IF NOT justStartedAction THEN
+        IF GJ_BBX_box.state >= GJ_BBX_STATE_RESIZE_BASE THEN
+            IF GJ_BBX_mouse.held THEN
+                GJ_BBX_ResizeFromHandle GJ_BBX_box, GJ_BBX_mouse
+                IF GJ_BBX_box.w < GJ_BBX_CFG.MinBoxWidth THEN GJ_BBX_box.w = GJ_BBX_CFG.MinBoxWidth
+                IF GJ_BBX_box.h < GJ_BBX_CFG.MinBoxHeight THEN GJ_BBX_box.h = GJ_BBX_CFG.MinBoxHeight
             ELSE
                 GJ_BBX_box.state = GJ_BBX_STATE_SELECTED
             END IF
-        ELSE
-            IF GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
-                GJ_BBX_box.state = GJ_BBX_STATE_HOVER
+        ELSEIF GJ_BBX_box.state = GJ_BBX_STATE_DRAG THEN
+            IF GJ_BBX_mouse.held THEN
+                GJ_BBX_box.x = GJ_BBX_mouse.x - GJ_BBX_box.offsetX
+                GJ_BBX_box.y = GJ_BBX_mouse.y - GJ_BBX_box.offsetY
             ELSE
-                GJ_BBX_box.state = GJ_BBX_STATE_IDLE
+                GJ_BBX_box.state = GJ_BBX_STATE_SELECTED
+                GJ_BBX_box.selected = _TRUE
+            END IF
+        ELSE
+            IF GJ_BBX_mouse.released THEN
+                IF GJ_BBX_box.wasClickedInside THEN
+                    GJ_BBX_box.selected = _TRUE
+                    GJ_BBX_box.wasClickedInside = _FALSE
+                ELSEIF NOT GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
+                    GJ_BBX_box.selected = _FALSE
+                    GJ_BBX_box.state = GJ_BBX_STATE_IDLE
+                    GJ_BBX_box.wasClickedInside = _FALSE
+                END IF
+            END IF
+
+            IF GJ_BBX_box.selected THEN
+                IF GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
+                    GJ_BBX_box.state = GJ_BBX_STATE_SELECTED_HOVER
+                ELSE
+                    GJ_BBX_box.state = GJ_BBX_STATE_SELECTED
+                END IF
+            ELSE
+                IF GJ_BBX_PointInBox%(GJ_BBX_mouse.x, GJ_BBX_mouse.y, GJ_BBX_box) THEN
+                    GJ_BBX_box.state = GJ_BBX_STATE_HOVER
+                ELSE
+                    GJ_BBX_box.state = GJ_BBX_STATE_IDLE
+                END IF
             END IF
         END IF
     END IF
@@ -365,6 +375,12 @@ SUB GJ_BBX_Draw (showHUD AS INTEGER)
         COLOR _RGB32(255, 255, 255)
         LOCATE 2, 2
         PRINT "State:"; GJ_BBX_box.state; "  HoverHandle:"; GJ_BBX_box.hoverHandle; "  Selected:"; GJ_BBX_box.selected
+        LOCATE 3, 2
+        PRINT "Mouse- X:"; GJ_BBX_mouse.x; "Y:"; GJ_BBX_mouse.y; "Held:"; GJ_BBX_mouse.held; "Clicked:"; GJ_BBX_mouse.clicked
+        LOCATE 4, 2
+        PRINT "Box- X:"; GJ_BBX_box.x; "Y:"; GJ_BBX_box.y; "W:"; GJ_BBX_box.w; "H:"; GJ_BBX_box.h
+        LOCATE 5, 2
+        PRINT "ActiveHandle:"; GJ_BBX_box.activeHandle; "  wasClickedInside:"; GJ_BBX_box.wasClickedInside
     END IF
 END SUB
 
@@ -389,6 +405,7 @@ SUB GJ_BBX_PollMouse (m AS GJ_BBX_MouseState, init AS INTEGER)
     STATIC lastX AS INTEGER, lastY AS INTEGER, lastHeld AS INTEGER
 
     IF init THEN
+        WHILE _MOUSEINPUT: WEND
         lastX = _MOUSEX: lastY = _MOUSEY: lastHeld = _MOUSEBUTTON(1)
         m.x = lastX: m.y = lastY: m.dx = 0: m.dy = 0
         m.held = lastHeld: m.clicked = _FALSE: m.released = _FALSE
