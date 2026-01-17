@@ -1,0 +1,371 @@
+''
+' VIDEO_MODES.BM - Video Mode and Resolution Management Library Implementation
+' 
+' @author grymmjack
+' @version 1.0
+' @description Implementation of video mode detection, resolution management,
+'              and retro palette support.
+''
+
+
+
+$INCLUDEONCE
+
+
+
+' ========================================================================================
+' INITIALIZATION
+' ========================================================================================
+
+''
+' Initializes the predefined video modes database
+'
+' @private
+''
+SUB vm_init_modes
+    IF VM_MODES_INITIALIZED THEN EXIT SUB
+    
+    VM_MODES_COUNT = 0
+    
+    ' CGA Modes
+    vm_add_mode "CGA Text 40x25", 320, 200, 16, VM_TEXT, VM_SYS_CGA, VM_ASPECT_4_3, 0
+    vm_add_mode "CGA Text 80x25", 640, 200, 16, VM_TEXT, VM_SYS_CGA, VM_ASPECT_4_3, 0
+    vm_add_mode "CGA 320x200 4-color", 320, 200, 4, VM_GRAPHICS, VM_SYS_CGA, VM_ASPECT_4_3, 1
+    vm_add_mode "CGA 640x200 2-color", 640, 200, 2, VM_GRAPHICS, VM_SYS_CGA, VM_ASPECT_4_3, 2
+    
+    ' EGA Modes
+    vm_add_mode "EGA 640x350 16-color", 640, 350, 16, VM_GRAPHICS, VM_SYS_EGA, 1370, 9
+    vm_add_mode "EGA 640x200 16-color", 640, 200, 16, VM_GRAPHICS, VM_SYS_EGA, 2400, 7
+    vm_add_mode "EGA 320x200 16-color", 320, 200, 16, VM_GRAPHICS, VM_SYS_EGA, 1200, 7
+    
+    ' VGA Modes
+    vm_add_mode "VGA 640x480 16-color", 640, 480, 16, VM_GRAPHICS, VM_SYS_VGA, VM_ASPECT_4_3, 12
+    vm_add_mode "VGA 640x350 16-color", 640, 350, 16, VM_GRAPHICS, VM_SYS_VGA, 1370, 10
+    vm_add_mode "VGA 320x200 256-color", 320, 200, 256, VM_GRAPHICS, VM_SYS_VGA, VM_ASPECT_4_3, 13
+    vm_add_mode "VGA Text 80x25", 720, 400, 16, VM_TEXT, VM_SYS_VGA, 1800, 0
+    vm_add_mode "VGA Text 80x50", 720, 400, 16, VM_TEXT, VM_SYS_VGA, 1800, 0
+    
+    ' Commodore 64
+    vm_add_mode "C64 Standard", 320, 200, 16, VM_GRAPHICS, VM_SYS_C64, VM_ASPECT_4_3, 0
+    vm_add_mode "C64 Multicolor", 160, 200, 16, VM_GRAPHICS, VM_SYS_C64, 800, 0
+    vm_add_mode "C64 Text", 320, 200, 16, VM_TEXT, VM_SYS_C64, VM_ASPECT_4_3, 0
+    
+    ' Apple II
+    vm_add_mode "Apple II Lo-Res", 40, 48, 16, VM_GRAPHICS, VM_SYS_APPLE2, 833, 0
+    vm_add_mode "Apple II Hi-Res", 280, 192, 6, VM_GRAPHICS, VM_SYS_APPLE2, 686, 0
+    vm_add_mode "Apple II Text", 280, 192, 16, VM_TEXT, VM_SYS_APPLE2, 686, 0
+    
+    ' ZX Spectrum
+    vm_add_mode "ZX Spectrum", 256, 192, 16, VM_GRAPHICS, VM_SYS_ZX, VM_ASPECT_4_3, 0
+    
+    ' NES
+    vm_add_mode "NES Standard", 256, 240, 64, VM_GRAPHICS, VM_SYS_NES, 1067, 0
+    
+    ' Game Boy
+    vm_add_mode "Game Boy", 160, 144, 4, VM_GRAPHICS, VM_SYS_GB, 1111, 0
+    
+    ' SNES
+    vm_add_mode "SNES Lo-Res", 256, 224, 256, VM_GRAPHICS, VM_SYS_SNES, 1143, 0
+    vm_add_mode "SNES Hi-Res", 512, 224, 256, VM_GRAPHICS, VM_SYS_SNES, 2286, 0
+    
+    ' Sega Master System
+    vm_add_mode "SMS Standard", 256, 192, 32, VM_GRAPHICS, VM_SYS_SMS, VM_ASPECT_4_3, 0
+    
+    ' Sega Genesis
+    vm_add_mode "Genesis Standard", 320, 224, 512, VM_GRAPHICS, VM_SYS_GENESIS, 1429, 0
+    
+    ' TurboGrafx-16
+    vm_add_mode "TG-16 Standard", 256, 240, 512, VM_GRAPHICS, VM_SYS_TG16, 1067, 0
+    
+    ' Atari 8-bit
+    vm_add_mode "Atari 8-bit Standard", 320, 192, 256, VM_GRAPHICS, VM_SYS_ATARI8, VM_ASPECT_4_3, 0
+    
+    VM_MODES_INITIALIZED = TRUE
+END SUB
+
+
+''
+' Adds a mode to the internal database
+'
+' @private
+''
+SUB vm_add_mode (n AS STRING, w AS INTEGER, h AS INTEGER, c AS INTEGER, mt AS INTEGER, sys AS INTEGER, asp AS INTEGER, qb AS INTEGER)
+    VM_MODES_DATA(VM_MODES_COUNT).name = n
+    VM_MODES_DATA(VM_MODES_COUNT).width = w
+    VM_MODES_DATA(VM_MODES_COUNT).height = h
+    VM_MODES_DATA(VM_MODES_COUNT).colors = c
+    VM_MODES_DATA(VM_MODES_COUNT).mode_type = mt
+    VM_MODES_DATA(VM_MODES_COUNT).system_id = sys
+    VM_MODES_DATA(VM_MODES_COUNT).aspect = asp
+    VM_MODES_DATA(VM_MODES_COUNT).qb64_mode = qb
+    VM_MODES_COUNT = VM_MODES_COUNT + 1
+END SUB
+
+
+
+' ========================================================================================
+' SCREEN INFORMATION FUNCTIONS
+' ========================================================================================
+
+SUB vm_get_screen_info (info AS VM_SCREEN_INFO)
+    info.width = _WIDTH
+    info.height = _HEIGHT
+    info.depth = _PIXELSIZE
+    info.handle = _DEST
+END SUB
+
+
+FUNCTION vm_screen_width%
+    vm_screen_width% = _WIDTH
+END FUNCTION
+
+
+FUNCTION vm_screen_height%
+    vm_screen_height% = _HEIGHT
+END FUNCTION
+
+
+FUNCTION vm_screen_depth%
+    vm_screen_depth% = _PIXELSIZE
+END FUNCTION
+
+
+FUNCTION vm_calc_aspect% (w AS INTEGER, h AS INTEGER)
+    IF h = 0 THEN
+        vm_calc_aspect% = 0
+        EXIT FUNCTION
+    END IF
+    vm_calc_aspect% = INT((w / h) * 1000)
+END FUNCTION
+
+
+
+' ========================================================================================
+' VIDEO MODE DATABASE FUNCTIONS
+' ========================================================================================
+
+SUB vm_get_mode (index AS INTEGER, mode AS VM_MODE)
+    CALL vm_init_modes
+    
+    IF index < 0 OR index >= VM_MODES_COUNT THEN
+        mode.name = "Invalid"
+        EXIT SUB
+    END IF
+    
+    mode = VM_MODES_DATA(index)
+END SUB
+
+
+FUNCTION vm_mode_count%
+    CALL vm_init_modes
+    vm_mode_count% = VM_MODES_COUNT
+END FUNCTION
+
+
+
+' ========================================================================================
+' PALETTE FUNCTIONS
+' ========================================================================================
+
+SUB vm_cga_palette (palette_num AS INTEGER, intensity AS INTEGER, pal AS VM_PALETTE)
+    DIM colors(0 TO 3) AS VM_COLOR
+    
+    SELECT CASE palette_num
+        CASE 0 ' Red, Yellow, Green, Black
+            IF intensity = 1 THEN
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 255, 85, 85, colors(1)   ' Light Red
+                vm_rgb 255, 255, 85, colors(2)  ' Light Yellow
+                vm_rgb 85, 255, 85, colors(3)   ' Light Green
+                pal.name = "CGA Palette 0 High"
+            ELSE
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 170, 0, 0, colors(1)     ' Dark Red
+                vm_rgb 170, 85, 0, colors(2)    ' Brown (Yellow)
+                vm_rgb 0, 170, 0, colors(3)     ' Dark Green
+                pal.name = "CGA Palette 0 Low"
+            END IF
+            
+        CASE 1 ' Cyan, Magenta, White, Black
+            IF intensity = 1 THEN
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 85, 255, 255, colors(1)  ' Light Cyan
+                vm_rgb 255, 85, 255, colors(2)  ' Light Magenta
+                vm_rgb 255, 255, 255, colors(3) ' White
+                pal.name = "CGA Palette 1 High"
+            ELSE
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 0, 170, 170, colors(1)   ' Dark Cyan
+                vm_rgb 170, 0, 170, colors(2)   ' Dark Magenta
+                vm_rgb 170, 170, 170, colors(3) ' Light Gray
+                pal.name = "CGA Palette 1 Low"
+            END IF
+            
+        CASE ELSE ' Palette 2: Cyan, Red, White, Black
+            IF intensity = 1 THEN
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 85, 255, 255, colors(1)  ' Light Cyan
+                vm_rgb 255, 85, 85, colors(2)   ' Light Red
+                vm_rgb 255, 255, 255, colors(3) ' White
+                pal.name = "CGA Palette 2 High"
+            ELSE
+                vm_rgb 0, 0, 0, colors(0)       ' Black
+                vm_rgb 0, 170, 170, colors(1)   ' Dark Cyan
+                vm_rgb 170, 0, 0, colors(2)     ' Dark Red
+                vm_rgb 170, 170, 170, colors(3) ' Light Gray
+                pal.name = "CGA Palette 2 Low"
+            END IF
+    END SELECT
+    
+    pal.size = 4
+    pal.colors = vm_serialize_colors(colors(), 4)
+END SUB
+
+
+SUB vm_get_palette_color (pal AS VM_PALETTE, index AS INTEGER, c AS VM_COLOR)
+    IF index < 0 OR index >= pal.size THEN
+        c.r = 0: c.g = 0: c.b = 0
+        EXIT SUB
+    END IF
+    
+    ' Deserialize color from palette data
+    DIM color_pos AS INTEGER
+    color_pos = (index * 9) + 1
+    
+    c.r = VAL(MID$(pal.colors, color_pos, 3))
+    c.g = VAL(MID$(pal.colors, color_pos + 3, 3))
+    c.b = VAL(MID$(pal.colors, color_pos + 6, 3))
+END SUB
+
+
+FUNCTION vm_color_to_rgb32& (c AS VM_COLOR)
+    vm_color_to_rgb32& = _RGB32(c.r, c.g, c.b)
+END FUNCTION
+
+
+SUB vm_rgb (r AS INTEGER, g AS INTEGER, b AS INTEGER, c AS VM_COLOR)
+    c.r = r
+    c.g = g
+    c.b = b
+END SUB
+
+
+''
+' Serializes color array to string for storage
+'
+' @private
+''
+FUNCTION vm_serialize_colors$ (colors() AS VM_COLOR, count AS INTEGER)
+    DIM result AS STRING
+    DIM i AS INTEGER
+    
+    result = ""
+    FOR i = 0 TO count - 1
+        result = result + RIGHT$("000" + LTRIM$(STR$(colors(i).r)), 3)
+        result = result + RIGHT$("000" + LTRIM$(STR$(colors(i).g)), 3)
+        result = result + RIGHT$("000" + LTRIM$(STR$(colors(i).b)), 3)
+    NEXT i
+    
+    vm_serialize_colors$ = result
+END FUNCTION
+
+
+
+' ========================================================================================
+' UTILITY FUNCTIONS
+' ========================================================================================
+
+FUNCTION vm_mode_type_name$ (mode_type AS INTEGER)
+    SELECT CASE mode_type
+        CASE VM_TEXT: vm_mode_type_name$ = "Text"
+        CASE VM_GRAPHICS: vm_mode_type_name$ = "Graphics"
+        CASE VM_MIXED: vm_mode_type_name$ = "Mixed"
+        CASE ELSE: vm_mode_type_name$ = "Unknown"
+    END SELECT
+END FUNCTION
+
+
+FUNCTION vm_system_name$ (system_id AS INTEGER)
+    SELECT CASE system_id
+        CASE VM_SYS_CGA: vm_system_name$ = "CGA"
+        CASE VM_SYS_EGA: vm_system_name$ = "EGA"
+        CASE VM_SYS_VGA: vm_system_name$ = "VGA"
+        CASE VM_SYS_MCGA: vm_system_name$ = "MCGA"
+        CASE VM_SYS_C64: vm_system_name$ = "Commodore 64"
+        CASE VM_SYS_APPLE2: vm_system_name$ = "Apple II"
+        CASE VM_SYS_ZX: vm_system_name$ = "ZX Spectrum"
+        CASE VM_SYS_NES: vm_system_name$ = "NES"
+        CASE VM_SYS_GB: vm_system_name$ = "Game Boy"
+        CASE VM_SYS_SNES: vm_system_name$ = "SNES"
+        CASE VM_SYS_SMS: vm_system_name$ = "Sega Master System"
+        CASE VM_SYS_GENESIS: vm_system_name$ = "Sega Genesis"
+        CASE VM_SYS_TG16: vm_system_name$ = "TurboGrafx-16"
+        CASE VM_SYS_ATARI8: vm_system_name$ = "Atari 8-bit"
+        CASE ELSE: vm_system_name$ = "Unknown"
+    END SELECT
+END FUNCTION
+
+
+FUNCTION vm_aspect_string$ (aspect AS INTEGER)
+    SELECT CASE aspect
+        CASE VM_ASPECT_1_1: vm_aspect_string$ = "1:1"
+        CASE VM_ASPECT_4_3: vm_aspect_string$ = "4:3"
+        CASE VM_ASPECT_16_9: vm_aspect_string$ = "16:9"
+        CASE VM_ASPECT_16_10: vm_aspect_string$ = "16:10"
+        CASE VM_ASPECT_5_4: vm_aspect_string$ = "5:4"
+        CASE ELSE
+            ' Calculate approximate ratio
+            DIM a AS SINGLE
+            a = aspect / 1000.0
+            vm_aspect_string$ = LTRIM$(STR$(a)) + ":1"
+    END SELECT
+END FUNCTION
+
+
+FUNCTION vm_find_aspect$ (w AS INTEGER, h AS INTEGER)
+    DIM asp AS INTEGER
+    asp = vm_calc_aspect(w, h)
+    
+    ' Find closest standard aspect ratio
+    DIM diff AS INTEGER
+    DIM best_diff AS INTEGER
+    DIM best_name AS STRING
+    
+    best_diff = 999999
+    best_name = vm_aspect_string$(asp)
+    
+    ' Check against standard ratios
+    diff = ABS(asp - VM_ASPECT_1_1)
+    IF diff < best_diff THEN
+        best_diff = diff
+        best_name = "1:1"
+    END IF
+    
+    diff = ABS(asp - VM_ASPECT_4_3)
+    IF diff < best_diff THEN
+        best_diff = diff
+        best_name = "4:3"
+    END IF
+    
+    diff = ABS(asp - VM_ASPECT_16_9)
+    IF diff < best_diff THEN
+        best_diff = diff
+        best_name = "16:9"
+    END IF
+    
+    diff = ABS(asp - VM_ASPECT_16_10)
+    IF diff < best_diff THEN
+        best_diff = diff
+        best_name = "16:10"
+    END IF
+    
+    diff = ABS(asp - VM_ASPECT_5_4)
+    IF diff < best_diff THEN
+        best_diff = diff
+        best_name = "5:4"
+    END IF
+    
+    vm_find_aspect$ = best_name
+END FUNCTION
+
+
