@@ -1,0 +1,938 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - CSS PARSER
+'
+' Parses CSS Level 1 files: selectors, property blocks, shorthand expansion,
+' color parsing (#hex, rgb(), named), unit parsing (px, %, em), custom vars.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Parse a CSS file and populate HTMLGUI_RULES().
+'
+' @param STRING filename$ path to .css file
+' @return INTEGER TRUE on success
+'
+FUNCTION HTMLGUI_parse_css% (filename$)
+    HTMLGUI_parse_css% = FALSE
+
+    IF NOT _FILEEXISTS(filename$) THEN EXIT FUNCTION
+
+    ' Read entire file
+    DIM fh%, fileLen&, rawCss$
+    fh% = FREEFILE
+    OPEN filename$ FOR BINARY AS #fh%
+    fileLen& = LOF(fh%)
+    IF fileLen& = 0 THEN CLOSE #fh%: EXIT FUNCTION
+    rawCss$ = SPACE$(fileLen&)
+    GET #fh%, 1, rawCss$
+    CLOSE #fh%
+
+    ' Strip comments /* ... */
+    rawCss$ = HTMLGUI_css_strip_comments$(rawCss$)
+
+    ' Normalize whitespace (replace ALL occurrences, not just first)
+    DIM tempPos&
+    DO
+        tempPos& = INSTR(rawCss$, CHR$(13) + CHR$(10))
+        IF tempPos& = 0 THEN EXIT DO
+        MID$(rawCss$, tempPos&, 2) = "  "
+    LOOP
+    DO
+        tempPos& = INSTR(rawCss$, CHR$(10))
+        IF tempPos& = 0 THEN EXIT DO
+        MID$(rawCss$, tempPos&, 1) = " "
+    LOOP
+    DO
+        tempPos& = INSTR(rawCss$, CHR$(9))
+        IF tempPos& = 0 THEN EXIT DO
+        MID$(rawCss$, tempPos&, 1) = " "
+    LOOP
+
+    ' Reset rule count
+    HTMLGUI.ruleCount = 0
+    HTMLGUI.customVarCount = 0
+
+    ' Parse rule blocks: selector { prop: val; prop: val; }
+    DIM pPos&, blockStart&, blockEnd&, selectorText$, blockText$
+
+    pPos& = 1
+    DO WHILE pPos& <= LEN(rawCss$)
+        ' Find next {
+        blockStart& = INSTR(pPos&, rawCss$, "{")
+        IF blockStart& = 0 THEN EXIT DO
+
+        ' Extract selector (everything before {)
+        selectorText$ = _TRIM$(MID$(rawCss$, pPos&, blockStart& - pPos&))
+
+        ' Find matching }
+        blockEnd& = INSTR(blockStart& + 1, rawCss$, "}")
+        IF blockEnd& = 0 THEN EXIT DO
+
+        ' Extract property block
+        blockText$ = _TRIM$(MID$(rawCss$, blockStart& + 1, blockEnd& - blockStart& - 1))
+
+        ' Handle grouped selectors (h1, h2, h3 { ... })
+        IF INSTR(selectorText$, ",") > 0 THEN
+            REDIM selParts$(0 TO 15)
+            DIM selCount%
+            selCount% = 0
+            STR.explode selectorText$, ",", selParts$(), selCount%
+            DIM si%
+            FOR si% = 0 TO selCount% - 1
+                DIM oneSelector$
+                oneSelector$ = _TRIM$(selParts$(si%))
+                IF LEN(oneSelector$) > 0 THEN
+                    HTMLGUI_parse_css_block oneSelector$, blockText$
+                END IF
+            NEXT si%
+        ELSE
+            IF LEN(selectorText$) > 0 THEN
+                HTMLGUI_parse_css_block selectorText$, blockText$
+            END IF
+        END IF
+
+        pPos& = blockEnd& + 1
+    LOOP
+
+    HTMLGUI.cssLoaded = TRUE
+    HTMLGUI_parse_css% = TRUE
+END FUNCTION
+
+
+''
+' Strip CSS comments /* ... */ from source text
+'
+' @param STRING css$ raw CSS text
+' @return STRING CSS with comments removed
+'
+FUNCTION HTMLGUI_css_strip_comments$ (css$)
+    DIM result$, pPos&, commentStart&, commentEnd&
+    result$ = ""
+    pPos& = 1
+    DO WHILE pPos& <= LEN(css$)
+        commentStart& = INSTR(pPos&, css$, "/*")
+        IF commentStart& = 0 THEN
+            result$ = result$ + MID$(css$, pPos&)
+            EXIT DO
+        END IF
+        result$ = result$ + MID$(css$, pPos&, commentStart& - pPos&)
+        commentEnd& = INSTR(commentStart& + 2, css$, "*/")
+        IF commentEnd& = 0 THEN EXIT DO ' Unclosed comment
+        pPos& = commentEnd& + 2
+    LOOP
+    HTMLGUI_css_strip_comments$ = result$
+END FUNCTION
+
+
+''
+' Parse a single CSS rule block (selector + properties)
+'
+' @param STRING selector$ CSS selector
+' @param STRING block$ property declarations (semicolon-separated)
+'
+SUB HTMLGUI_parse_css_block (selector$, block$)
+    IF HTMLGUI.ruleCount >= HTMLGUI_MAX_RULES THEN EXIT SUB
+
+    DIM ruleIdx%
+    ruleIdx% = HTMLGUI.ruleCount
+
+    HTMLGUI_RULES(ruleIdx%).selector = selector$
+    HTMLGUI_RULES(ruleIdx%).specificity = HTMLGUI_calc_specificity&(selector$)
+    HTMLGUI_RULES(ruleIdx%).propCount = 0
+
+    ' Split block by semicolons
+    REDIM props$(0 TO 63)
+    DIM propCount%
+    propCount% = 0
+    STR.explode block$, ";", props$(), propCount%
+
+    DIM pi%
+    FOR pi% = 0 TO propCount% - 1
+        DIM prop$
+        prop$ = _TRIM$(props$(pi%))
+        IF LEN(prop$) = 0 THEN _CONTINUE
+
+        ' Split property: value at first colon
+        DIM colonPos%
+        colonPos% = INSTR(prop$, ":")
+        IF colonPos% = 0 THEN _CONTINUE
+
+        DIM propName$, propValue$
+        propName$ = _TRIM$(LCASE$(MID$(prop$, 1, colonPos% - 1)))
+        propValue$ = _TRIM$(MID$(prop$, colonPos% + 1))
+
+        ' Handle CSS custom properties (--qb64pe-*)
+        IF LEFT$(propName$, 2) = "--" THEN
+            HTMLGUI_add_custom_var propName$, propValue$
+            _CONTINUE
+        END IF
+
+        ' Expand shorthands, then add properties
+        HTMLGUI_css_expand_shorthand ruleIdx%, propName$, propValue$
+    NEXT pi%
+
+    HTMLGUI.ruleCount = HTMLGUI.ruleCount + 1
+END SUB
+
+
+''
+' Add a raw property to a rule
+'
+' @param INTEGER ruleIdx% rule index
+' @param STRING propName$ property name
+' @param STRING propValue$ property value
+'
+SUB HTMLGUI_css_add_prop (ruleIdx%, propName$, propValue$)
+    DIM pc%
+    pc% = HTMLGUI_RULES(ruleIdx%).propCount
+    IF pc% >= HTMLGUI_MAX_PROPS THEN EXIT SUB
+
+    ' Check for existing property and overwrite
+    DIM i%
+    FOR i% = 0 TO pc% - 1
+        IF _TRIM$(HTMLGUI_RULE_NAMES(ruleIdx%, i%)) = propName$ THEN
+            HTMLGUI_RULE_VALS(ruleIdx%, i%) = propValue$
+            EXIT SUB
+        END IF
+    NEXT i%
+
+    HTMLGUI_RULE_NAMES(ruleIdx%, pc%) = propName$
+    HTMLGUI_RULE_VALS(ruleIdx%, pc%) = propValue$
+    HTMLGUI_RULES(ruleIdx%).propCount = pc% + 1
+END SUB
+
+
+''
+' Expand CSS shorthand properties into their longhand forms
+'
+' @param INTEGER ruleIdx% rule index
+' @param STRING prop$ property name
+' @param STRING cssVal$ property value
+'
+SUB HTMLGUI_css_expand_shorthand (ruleIdx%, prop$, cssVal$)
+    SELECT CASE prop$
+        ' =====================================================================
+        ' Margin shorthand
+        ' =====================================================================
+        CASE "margin"
+            REDIM mParts$(0 TO 3)
+            DIM mCount%
+            mCount% = 0
+            HTMLGUI_split_values cssVal$, mParts$(), mCount%
+            SELECT CASE mCount%
+                CASE 1 ' all sides
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-top", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-right", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-bottom", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-left", mParts$(0)
+                CASE 2 ' vertical horizontal
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-top", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-right", mParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-bottom", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-left", mParts$(1)
+                CASE 3 ' top horizontal bottom
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-top", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-right", mParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-bottom", mParts$(2)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-left", mParts$(1)
+                CASE 4 ' top right bottom left
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-top", mParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-right", mParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-bottom", mParts$(2)
+                    HTMLGUI_css_add_prop ruleIdx%, "margin-left", mParts$(3)
+            END SELECT
+
+        ' =====================================================================
+        ' Padding shorthand
+        ' =====================================================================
+        CASE "padding"
+            REDIM pParts$(0 TO 3)
+            DIM pCount%
+            pCount% = 0
+            HTMLGUI_split_values cssVal$, pParts$(), pCount%
+            SELECT CASE pCount%
+                CASE 1
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-top", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-right", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-bottom", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-left", pParts$(0)
+                CASE 2
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-top", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-right", pParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-bottom", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-left", pParts$(1)
+                CASE 3
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-top", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-right", pParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-bottom", pParts$(2)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-left", pParts$(1)
+                CASE 4
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-top", pParts$(0)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-right", pParts$(1)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-bottom", pParts$(2)
+                    HTMLGUI_css_add_prop ruleIdx%, "padding-left", pParts$(3)
+            END SELECT
+
+        ' =====================================================================
+        ' Border shorthand: border: 1px solid #fff
+        ' =====================================================================
+        CASE "border"
+            DIM bWidth$, bStyle$, bColor$
+            HTMLGUI_parse_border_shorthand cssVal$, bWidth$, bStyle$, bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-top-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-right-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-bottom-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-left-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-top-color", bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-right-color", bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-bottom-color", bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-left-color", bColor$
+
+        ' Border-top/right/bottom/left shorthand
+        CASE "border-top"
+            HTMLGUI_parse_border_shorthand cssVal$, bWidth$, bStyle$, bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-top-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-top-color", bColor$
+
+        CASE "border-right"
+            HTMLGUI_parse_border_shorthand cssVal$, bWidth$, bStyle$, bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-right-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-right-color", bColor$
+
+        CASE "border-bottom"
+            HTMLGUI_parse_border_shorthand cssVal$, bWidth$, bStyle$, bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-bottom-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-bottom-color", bColor$
+
+        CASE "border-left"
+            HTMLGUI_parse_border_shorthand cssVal$, bWidth$, bStyle$, bColor$
+            HTMLGUI_css_add_prop ruleIdx%, "border-left-width", bWidth$
+            HTMLGUI_css_add_prop ruleIdx%, "border-left-color", bColor$
+
+        ' =====================================================================
+        ' Background shorthand: supports color, url(), gradients, position, size, repeat
+        ' e.g. background: linear-gradient(to right, red, blue)
+        ' e.g. background: url(image.png) no-repeat center / cover
+        ' e.g. background: #ff0000
+        ' =====================================================================
+        CASE "background"
+            HTMLGUI_css_expand_background ruleIdx%, cssVal$
+
+        ' =====================================================================
+        ' Font shorthand: font: italic bold 12px Arial, sans-serif
+        ' =====================================================================
+        CASE "font"
+            HTMLGUI_parse_font_shorthand ruleIdx%, cssVal$
+
+        ' =====================================================================
+        ' Flex shorthand: flex: grow shrink basis
+        ' =====================================================================
+        CASE "flex"
+            REDIM fParts$(0 TO 2)
+            DIM fCount%
+            fCount% = 0
+            HTMLGUI_split_values cssVal$, fParts$(), fCount%
+            IF fCount% >= 1 THEN HTMLGUI_css_add_prop ruleIdx%, "flex-grow", fParts$(0)
+            IF fCount% >= 2 THEN HTMLGUI_css_add_prop ruleIdx%, "flex-shrink", fParts$(1)
+
+        ' =====================================================================
+        ' Gap shorthand: gap: row col (or single value)
+        ' =====================================================================
+        CASE "gap"
+            HTMLGUI_css_add_prop ruleIdx%, "gap", cssVal$
+
+        ' =====================================================================
+        ' All longhand properties — pass through directly
+        ' =====================================================================
+        CASE ELSE
+            HTMLGUI_css_add_prop ruleIdx%, prop$, cssVal$
+    END SELECT
+END SUB
+
+
+''
+' Parse border shorthand: "1px solid #fff" -> width, style, color
+'
+' @param STRING cssVal$ the shorthand value
+' @param STRING outWidth$ (BYREF) border width
+' @param STRING outStyle$ (BYREF) border style
+' @param STRING outColor$ (BYREF) border color
+'
+SUB HTMLGUI_parse_border_shorthand (cssVal$, outWidth$, outStyle$, outColor$)
+    outWidth$ = "1"
+    outStyle$ = "solid"
+    outColor$ = "#000000"
+
+    REDIM parts$(0 TO 5)
+    DIM partCount%
+    partCount% = 0
+    HTMLGUI_split_values cssVal$, parts$(), partCount%
+
+    DIM i%
+    FOR i% = 0 TO partCount% - 1
+        DIM p$
+        p$ = _TRIM$(LCASE$(parts$(i%)))
+        IF LEN(p$) = 0 THEN _CONTINUE
+
+        ' Is it a border style keyword?
+        IF p$ = "solid" OR p$ = "dashed" OR p$ = "dotted" OR p$ = "double" OR p$ = "none" OR p$ = "hidden" OR p$ = "groove" OR p$ = "ridge" OR p$ = "inset" OR p$ = "outset" THEN
+            outStyle$ = p$
+            ' none/hidden = no visible border, force width 0
+            IF p$ = "none" OR p$ = "hidden" THEN outWidth$ = "0"
+        ' Is it a color value?
+        ELSEIF LEFT$(p$, 1) = "#" OR LEFT$(p$, 4) = "rgb(" OR HTMLGUI_is_named_color%(p$) THEN
+            outColor$ = parts$(i%)
+        ' Assume width
+        ELSE
+            outWidth$ = p$
+        END IF
+    NEXT i%
+END SUB
+
+
+''
+' Parse font shorthand: "italic bold 12px Arial, sans-serif"
+'
+' @param INTEGER ruleIdx% rule index
+' @param STRING cssVal$ font shorthand value
+'
+SUB HTMLGUI_parse_font_shorthand (ruleIdx%, cssVal$)
+    ' Simple approach: scan for known tokens
+    REDIM parts$(0 TO 7)
+    DIM partCount%, i%
+    partCount% = 0
+    HTMLGUI_split_values cssVal$, parts$(), partCount%
+
+    DIM foundSize%, foundFamily%
+    foundSize% = FALSE
+    foundFamily% = FALSE
+
+    FOR i% = 0 TO partCount% - 1
+        DIM p$
+        p$ = _TRIM$(LCASE$(parts$(i%)))
+        IF LEN(p$) = 0 THEN _CONTINUE
+
+        IF p$ = "italic" OR p$ = "oblique" THEN
+            HTMLGUI_css_add_prop ruleIdx%, "font-style", p$
+        ELSEIF p$ = "bold" OR p$ = "bolder" OR LEFT$(p$, 1) >= "1" AND LEFT$(p$, 1) <= "9" AND INSTR(p$, "px") = 0 AND INSTR(p$, "em") = 0 AND INSTR(p$, "%") = 0 THEN
+            HTMLGUI_css_add_prop ruleIdx%, "font-weight", p$
+        ELSEIF p$ = "normal" THEN
+            ' Could be style or weight - skip (handled by defaults)
+        ELSEIF NOT foundSize% AND (INSTR(p$, "px") > 0 OR INSTR(p$, "em") > 0 OR INSTR(p$, "%") > 0 OR INSTR(p$, "pt") > 0) THEN
+            HTMLGUI_css_add_prop ruleIdx%, "font-size", parts$(i%)
+            foundSize% = TRUE
+        ELSEIF foundSize% AND NOT foundFamily% THEN
+            ' Everything after size is font-family (may include commas)
+            DIM familyStr$
+            familyStr$ = parts$(i%)
+            DIM j%
+            FOR j% = i% + 1 TO partCount% - 1
+                familyStr$ = familyStr$ + " " + parts$(j%)
+            NEXT j%
+            HTMLGUI_css_add_prop ruleIdx%, "font-family", familyStr$
+            foundFamily% = TRUE
+            EXIT FOR
+        END IF
+    NEXT i%
+END SUB
+
+
+''
+' Split a CSS value string by whitespace (respecting parentheses for rgb())
+'
+' @param STRING cssVal$ the value to split
+' @param STRING parts$() output array (BYREF)
+' @param INTEGER count% number of parts (BYREF)
+'
+SUB HTMLGUI_split_values (cssVal$, parts$(), count%)
+    count% = 0
+    DIM i&, parenDepth%, current$, ch$
+    parenDepth% = 0
+    current$ = ""
+
+    FOR i& = 1 TO LEN(cssVal$)
+        ch$ = MID$(cssVal$, i&, 1)
+        IF ch$ = "(" THEN
+            parenDepth% = parenDepth% + 1
+            current$ = current$ + ch$
+        ELSEIF ch$ = ")" THEN
+            parenDepth% = parenDepth% - 1
+            IF parenDepth% < 0 THEN parenDepth% = 0
+            current$ = current$ + ch$
+        ELSEIF (ch$ = " " OR ch$ = CHR$(9)) AND parenDepth% = 0 THEN
+            IF LEN(_TRIM$(current$)) > 0 THEN
+                IF count% <= UBOUND(parts$) THEN
+                    parts$(count%) = _TRIM$(current$)
+                    count% = count% + 1
+                END IF
+            END IF
+            current$ = ""
+        ELSE
+            current$ = current$ + ch$
+        END IF
+    NEXT i&
+
+    IF LEN(_TRIM$(current$)) > 0 THEN
+        IF count% <= UBOUND(parts$) THEN
+            parts$(count%) = _TRIM$(current$)
+            count% = count% + 1
+        END IF
+    END IF
+END SUB
+
+
+''
+' Parse a CSS color value to _UNSIGNED LONG (QB64 _RGB32 format)
+' Supports: #RGB, #RRGGBB, #RRGGBBAA, rgb(r,g,b), rgba(r,g,b,a),
+'           named colors (CSS Level 1 + common extras), transparent
+'
+' @param STRING cssVal$ color value string
+' @return _UNSIGNED LONG color in QB64 _RGB32/_RGBA32 format
+'
+FUNCTION HTMLGUI_parse_color~& (cssVal$)
+    DIM v$
+    v$ = _TRIM$(LCASE$(cssVal$))
+
+    ' transparent keyword
+    IF v$ = "transparent" THEN
+        HTMLGUI_parse_color~& = HTMLGUI_COLOR_TRANSPARENT~&
+        EXIT FUNCTION
+    END IF
+
+    ' Named colors (CSS Level 1 + common additions)
+    IF HTMLGUI_is_named_color%(v$) THEN
+        HTMLGUI_parse_color~& = HTMLGUI_named_color~&(v$)
+        EXIT FUNCTION
+    END IF
+
+    ' Hex colors
+    IF LEFT$(v$, 1) = "#" THEN
+        DIM hexStr$
+        hexStr$ = MID$(v$, 2)
+        SELECT CASE LEN(hexStr$)
+            CASE 3 ' #RGB -> #RRGGBB
+                DIM r3%, g3%, b3%
+                r3% = VAL("&H" + MID$(hexStr$, 1, 1) + MID$(hexStr$, 1, 1))
+                g3% = VAL("&H" + MID$(hexStr$, 2, 1) + MID$(hexStr$, 2, 1))
+                b3% = VAL("&H" + MID$(hexStr$, 3, 1) + MID$(hexStr$, 3, 1))
+                HTMLGUI_parse_color~& = _RGB32(r3%, g3%, b3%)
+            CASE 6 ' #RRGGBB
+                DIM r6%, g6%, b6%
+                r6% = VAL("&H" + MID$(hexStr$, 1, 2))
+                g6% = VAL("&H" + MID$(hexStr$, 3, 2))
+                b6% = VAL("&H" + MID$(hexStr$, 5, 2))
+                HTMLGUI_parse_color~& = _RGB32(r6%, g6%, b6%)
+            CASE 8 ' #RRGGBBAA
+                DIM r8%, g8%, b8%, a8%
+                r8% = VAL("&H" + MID$(hexStr$, 1, 2))
+                g8% = VAL("&H" + MID$(hexStr$, 3, 2))
+                b8% = VAL("&H" + MID$(hexStr$, 5, 2))
+                a8% = VAL("&H" + MID$(hexStr$, 7, 2))
+                HTMLGUI_parse_color~& = _RGBA32(r8%, g8%, b8%, a8%)
+            CASE ELSE
+                HTMLGUI_parse_color~& = HTMLGUI_COLOR_BLACK~&
+        END SELECT
+        EXIT FUNCTION
+    END IF
+
+    ' rgb(r, g, b) / rgba(r, g, b, a)
+    IF LEFT$(v$, 4) = "rgb(" OR LEFT$(v$, 5) = "rgba(" THEN
+        DIM parenStart&, parenEnd&, inner$
+        parenStart& = INSTR(v$, "(")
+        parenEnd& = INSTR(v$, ")")
+        IF parenStart& > 0 AND parenEnd& > parenStart& THEN
+            inner$ = MID$(v$, parenStart& + 1, parenEnd& - parenStart& - 1)
+            REDIM cParts$(0 TO 3)
+            DIM cCount%
+            cCount% = 0
+            STR.explode inner$, ",", cParts$(), cCount%
+            DIM rc%, gc%, bc%, ac%
+            rc% = 0: gc% = 0: bc% = 0: ac% = 255
+            IF cCount% >= 1 THEN rc% = VAL(_TRIM$(cParts$(0)))
+            IF cCount% >= 2 THEN gc% = VAL(_TRIM$(cParts$(1)))
+            IF cCount% >= 3 THEN bc% = VAL(_TRIM$(cParts$(2)))
+            IF cCount% >= 4 THEN
+                DIM aVal!
+                aVal! = VAL(_TRIM$(cParts$(3)))
+                IF aVal! <= 1.0 THEN ac% = INT(aVal! * 255) ELSE ac% = INT(aVal!)
+            END IF
+            IF rc% > 255 THEN rc% = 255
+            IF gc% > 255 THEN gc% = 255
+            IF bc% > 255 THEN bc% = 255
+            IF ac% > 255 THEN ac% = 255
+            IF rc% < 0 THEN rc% = 0
+            IF gc% < 0 THEN gc% = 0
+            IF bc% < 0 THEN bc% = 0
+            IF ac% < 0 THEN ac% = 0
+            HTMLGUI_parse_color~& = _RGBA32(rc%, gc%, bc%, ac%)
+        ELSE
+            HTMLGUI_parse_color~& = HTMLGUI_COLOR_BLACK~&
+        END IF
+        EXIT FUNCTION
+    END IF
+
+    ' Fallback
+    HTMLGUI_parse_color~& = HTMLGUI_COLOR_BLACK~&
+END FUNCTION
+
+
+''
+' Check if a string is a recognized CSS color name
+'
+' @param STRING colorName$ color name (lowercase)
+' @return INTEGER TRUE if recognized
+'
+FUNCTION HTMLGUI_is_named_color% (colorName$)
+    SELECT CASE _TRIM$(LCASE$(colorName$))
+        CASE "black", "white", "red", "green", "blue", "yellow", "cyan", "magenta"
+            HTMLGUI_is_named_color% = TRUE
+        CASE "orange", "purple", "pink", "brown", "gray", "grey", "silver"
+            HTMLGUI_is_named_color% = TRUE
+        CASE "maroon", "olive", "lime", "aqua", "teal", "navy", "fuchsia"
+            HTMLGUI_is_named_color% = TRUE
+        CASE "darkgray", "darkgrey", "lightgray", "lightgrey"
+            HTMLGUI_is_named_color% = TRUE
+        CASE "transparent"
+            HTMLGUI_is_named_color% = TRUE
+        CASE ELSE
+            HTMLGUI_is_named_color% = FALSE
+    END SELECT
+END FUNCTION
+
+
+''
+' Get the _RGB32 value for a named CSS color
+'
+' @param STRING colorName$ color name (lowercase)
+' @return _UNSIGNED LONG color value
+'
+FUNCTION HTMLGUI_named_color~& (colorName$)
+    SELECT CASE _TRIM$(LCASE$(colorName$))
+        CASE "black":       HTMLGUI_named_color~& = _RGB32(0, 0, 0)
+        CASE "white":       HTMLGUI_named_color~& = _RGB32(255, 255, 255)
+        CASE "red":         HTMLGUI_named_color~& = _RGB32(255, 0, 0)
+        CASE "green":       HTMLGUI_named_color~& = _RGB32(0, 128, 0)
+        CASE "blue":        HTMLGUI_named_color~& = _RGB32(0, 0, 255)
+        CASE "yellow":      HTMLGUI_named_color~& = _RGB32(255, 255, 0)
+        CASE "cyan", "aqua": HTMLGUI_named_color~& = _RGB32(0, 255, 255)
+        CASE "magenta", "fuchsia": HTMLGUI_named_color~& = _RGB32(255, 0, 255)
+        CASE "orange":      HTMLGUI_named_color~& = _RGB32(255, 165, 0)
+        CASE "purple":      HTMLGUI_named_color~& = _RGB32(128, 0, 128)
+        CASE "pink":        HTMLGUI_named_color~& = _RGB32(255, 192, 203)
+        CASE "brown":       HTMLGUI_named_color~& = _RGB32(165, 42, 42)
+        CASE "gray", "grey": HTMLGUI_named_color~& = _RGB32(128, 128, 128)
+        CASE "silver":      HTMLGUI_named_color~& = _RGB32(192, 192, 192)
+        CASE "maroon":      HTMLGUI_named_color~& = _RGB32(128, 0, 0)
+        CASE "olive":       HTMLGUI_named_color~& = _RGB32(128, 128, 0)
+        CASE "lime":        HTMLGUI_named_color~& = _RGB32(0, 255, 0)
+        CASE "teal":        HTMLGUI_named_color~& = _RGB32(0, 128, 128)
+        CASE "navy":        HTMLGUI_named_color~& = _RGB32(0, 0, 128)
+        CASE "darkgray", "darkgrey": HTMLGUI_named_color~& = _RGB32(169, 169, 169)
+        CASE "lightgray", "lightgrey": HTMLGUI_named_color~& = _RGB32(211, 211, 211)
+        CASE "transparent": HTMLGUI_named_color~& = HTMLGUI_COLOR_TRANSPARENT~&
+        CASE ELSE:          HTMLGUI_named_color~& = HTMLGUI_COLOR_BLACK~&
+    END SELECT
+END FUNCTION
+
+
+''
+' Parse a CSS dimension value (e.g. "10px", "2em", "50%", "auto")
+' Returns the numeric value in pixels. For %, returns the raw number
+' (caller must resolve against parent). For "auto", returns HTMLGUI_AUTO!
+'
+' @param STRING cssVal$ the CSS value
+' @param SINGLE baseFontSize! base font size for em calculation (default 16)
+' @return SINGLE pixel value, or HTMLGUI_AUTO! for auto
+'
+FUNCTION HTMLGUI_parse_dimension! (cssVal$, baseFontSize!)
+    DIM v$
+    v$ = _TRIM$(LCASE$(cssVal$))
+
+    IF v$ = "auto" OR v$ = "none" OR LEN(v$) = 0 THEN
+        HTMLGUI_parse_dimension! = HTMLGUI_AUTO!
+        EXIT FUNCTION
+    END IF
+
+    ' Check for % — return negative to indicate percentage
+    IF RIGHT$(v$, 1) = "%" THEN
+        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 1))
+        EXIT FUNCTION
+    END IF
+
+    ' Strip unit suffix and convert
+    IF RIGHT$(v$, 2) = "px" THEN
+        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 2))
+    ELSEIF RIGHT$(v$, 2) = "em" THEN
+        DIM fs!
+        IF baseFontSize! <= 0 THEN fs! = 16 ELSE fs! = baseFontSize!
+        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 2)) * fs!
+    ELSEIF RIGHT$(v$, 2) = "pt" THEN
+        ' 1pt = 1.333px (96 DPI)
+        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 2)) * 1.333
+    ELSEIF RIGHT$(v$, 2) = "vw" OR RIGHT$(v$, 2) = "vh" THEN
+        ' Viewport units — approximate using screen size
+        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 2))
+    ELSE
+        ' Unitless number — treat as pixels
+        HTMLGUI_parse_dimension! = VAL(v$)
+    END IF
+END FUNCTION
+
+
+''
+' Calculate CSS specificity for a selector.
+' Packed as: id_count * 10000 + class_count * 100 + tag_count
+'
+' @param STRING selector$ CSS selector
+' @return LONG packed specificity value
+'
+FUNCTION HTMLGUI_calc_specificity& (selector$)
+    DIM s$, i&, idCount%, classCount%, tagCount%, inWord%
+    s$ = _TRIM$(selector$)
+    idCount% = 0
+    classCount% = 0
+    tagCount% = 0
+    inWord% = FALSE
+
+    FOR i& = 1 TO LEN(s$)
+        DIM c$
+        c$ = MID$(s$, i&, 1)
+        SELECT CASE c$
+            CASE "#"
+                idCount% = idCount% + 1
+                inWord% = FALSE
+            CASE "."
+                classCount% = classCount% + 1
+                inWord% = FALSE
+            CASE ":", "["
+                classCount% = classCount% + 1
+                inWord% = FALSE
+            CASE " ", ">", "+", "~"
+                inWord% = FALSE
+            CASE ELSE
+                IF NOT inWord% THEN
+                    ' Start of a word - only count as tag if it's not after #/.
+                    DIM prevChar$
+                    IF i& > 1 THEN prevChar$ = MID$(s$, i& - 1, 1) ELSE prevChar$ = ""
+                    IF prevChar$ <> "#" AND prevChar$ <> "." AND prevChar$ <> ":" AND prevChar$ <> "[" THEN
+                        IF c$ <> "*" THEN ' Universal selector has 0 specificity
+                            tagCount% = tagCount% + 1
+                        END IF
+                    END IF
+                    inWord% = TRUE
+                END IF
+        END SELECT
+    NEXT i&
+
+    HTMLGUI_calc_specificity& = idCount% * 10000 + classCount% * 100 + tagCount%
+END FUNCTION
+
+
+''
+' Store a CSS custom variable (--name: value)
+'
+' @param STRING varName$ variable name (including --)
+' @param STRING varValue$ variable value
+'
+SUB HTMLGUI_add_custom_var (varName$, varValue$)
+    ' Check if exists and update
+    DIM i%
+    FOR i% = 0 TO HTMLGUI.customVarCount - 1
+        IF _TRIM$(LCASE$(HTMLGUI_CUSTOM_VARS(i%).varName)) = LCASE$(_TRIM$(varName$)) THEN
+            HTMLGUI_CUSTOM_VARS(i%).varValue = varValue$
+            EXIT SUB
+        END IF
+    NEXT i%
+
+    IF HTMLGUI.customVarCount >= HTMLGUI_MAX_CUSTOM_VARS THEN EXIT SUB
+
+    HTMLGUI_CUSTOM_VARS(HTMLGUI.customVarCount).varName = varName$
+    HTMLGUI_CUSTOM_VARS(HTMLGUI.customVarCount).varValue = varValue$
+    HTMLGUI.customVarCount = HTMLGUI.customVarCount + 1
+END SUB
+
+
+''
+' Get the value of a CSS custom variable
+'
+' @param STRING varName$ variable name (with or without --)
+' @return STRING variable value, or "" if not found
+'
+FUNCTION HTMLGUI_get_custom_var$ (varName$)
+    DIM searchName$
+    searchName$ = LCASE$(_TRIM$(varName$))
+    IF LEFT$(searchName$, 2) <> "--" THEN searchName$ = "--" + searchName$
+
+    DIM i%
+    FOR i% = 0 TO HTMLGUI.customVarCount - 1
+        IF _TRIM$(LCASE$(HTMLGUI_CUSTOM_VARS(i%).varName)) = searchName$ THEN
+            HTMLGUI_get_custom_var$ = _TRIM$(HTMLGUI_CUSTOM_VARS(i%).varValue)
+            EXIT FUNCTION
+        END IF
+    NEXT i%
+    HTMLGUI_get_custom_var$ = ""
+END FUNCTION
+
+
+''
+' Debug: dump all parsed CSS rules to log
+'
+SUB HTMLGUI_dump_css_rules ()
+    DIM ri%
+    FOR ri% = 0 TO HTMLGUI.ruleCount - 1
+        DIM info$
+        info$ = "Rule " + _TRIM$(STR$(ri%)) + ": " + _TRIM$(HTMLGUI_RULES(ri%).selector)
+        info$ = info$ + " (specificity=" + _TRIM$(STR$(HTMLGUI_RULES(ri%).specificity)) + ")"
+        _LOGINFO info$
+
+        DIM pi%
+        FOR pi% = 0 TO HTMLGUI_RULES(ri%).propCount - 1
+            DIM propInfo$
+            propInfo$ = "  " + _TRIM$(HTMLGUI_RULE_NAMES(ri%, pi%)) + ": "
+            propInfo$ = propInfo$ + _TRIM$(HTMLGUI_RULE_VALS(ri%, pi%))
+            _LOGINFO propInfo$
+        NEXT pi%
+    NEXT ri%
+
+    ' Dump custom vars
+    IF HTMLGUI.customVarCount > 0 THEN
+        _LOGINFO "CSS Custom Variables:"
+        DIM ci%
+        FOR ci% = 0 TO HTMLGUI.customVarCount - 1
+            _LOGINFO "  " + _TRIM$(HTMLGUI_CUSTOM_VARS(ci%).varName) + ": " + _TRIM$(HTMLGUI_CUSTOM_VARS(ci%).varValue)
+        NEXT ci%
+    END IF
+END SUB
+
+
+''
+' Expand the background shorthand property into constituent properties.
+' Handles: color, url(), linear-gradient(), radial-gradient(),
+'          no-repeat/repeat-x/repeat-y, center/top/left/right/bottom,
+'          cover/contain, and position/size with / separator.
+'
+' @param INTEGER ruleIdx% rule index to add properties to
+' @param STRING cssVal$ the background shorthand value
+'
+SUB HTMLGUI_css_expand_background (ruleIdx%, cssVal$)
+    DIM v$
+    v$ = _TRIM$(cssVal$)
+    DIM lv$
+    lv$ = LCASE$(v$)
+
+    ' Check for gradient functions first (they contain commas, can't split)
+    IF LEFT$(lv$, 16) = "linear-gradient(" OR LEFT$(lv$, 16) = "radial-gradient(" THEN
+        HTMLGUI_css_add_prop ruleIdx%, "background-image", v$
+        EXIT SUB
+    END IF
+
+    ' Check for url()
+    IF LEFT$(lv$, 4) = "url(" THEN
+        ' Extract url() portion (may have params after it)
+        DIM urlEnd&
+        urlEnd& = INSTR(lv$, ")")
+        IF urlEnd& > 0 THEN
+            HTMLGUI_css_add_prop ruleIdx%, "background-image", LEFT$(v$, urlEnd&)
+            ' Parse remaining tokens after url()
+            DIM remaining$
+            remaining$ = _TRIM$(MID$(v$, urlEnd& + 1))
+            IF LEN(remaining$) > 0 THEN
+                HTMLGUI_css_parse_bg_tokens ruleIdx%, remaining$
+            END IF
+        ELSE
+            HTMLGUI_css_add_prop ruleIdx%, "background-image", v$
+        END IF
+        EXIT SUB
+    END IF
+
+    ' No gradient or url — parse as tokens (color + repeat + position + size)
+    HTMLGUI_css_parse_bg_tokens ruleIdx%, v$
+END SUB
+
+
+''
+' Parse background shorthand tokens (excluding gradient/url which are handled above).
+' Recognizes: color values, repeat keywords, position keywords, size keywords (after /).
+'
+' @param INTEGER ruleIdx% rule index
+' @param STRING tokens$ space-separated token string
+'
+SUB HTMLGUI_css_parse_bg_tokens (ruleIdx%, tokens$)
+    REDIM parts$(0 TO 15)
+    DIM partCount%
+    partCount% = 0
+    HTMLGUI_split_values tokens$, parts$(), partCount%
+
+    DIM foundRepeat%, foundPosition%, foundSize%, foundColor%
+    foundRepeat% = FALSE
+    foundPosition% = FALSE
+    foundSize% = FALSE
+    foundColor% = FALSE
+
+    DIM posTokens$
+    posTokens$ = ""
+    DIM sizeTokens$
+    sizeTokens$ = ""
+    DIM afterSlash%
+    afterSlash% = FALSE
+
+    DIM ti%
+    FOR ti% = 0 TO partCount% - 1
+        DIM tok$
+        tok$ = LCASE$(parts$(ti%))
+
+        ' Check for / separator (position / size)
+        IF tok$ = "/" THEN
+            afterSlash% = TRUE
+            _CONTINUE
+        END IF
+
+        IF afterSlash% THEN
+            ' After / = background-size
+            IF LEN(sizeTokens$) > 0 THEN sizeTokens$ = sizeTokens$ + " "
+            sizeTokens$ = sizeTokens$ + parts$(ti%)
+            foundSize% = TRUE
+            _CONTINUE
+        END IF
+
+        ' Check for repeat keywords
+        IF tok$ = "no-repeat" OR tok$ = "repeat" OR tok$ = "repeat-x" OR tok$ = "repeat-y" THEN
+            HTMLGUI_css_add_prop ruleIdx%, "background-repeat", tok$
+            foundRepeat% = TRUE
+            _CONTINUE
+        END IF
+
+        ' Check for position keywords
+        IF tok$ = "center" OR tok$ = "top" OR tok$ = "bottom" OR tok$ = "left" OR tok$ = "right" THEN
+            IF LEN(posTokens$) > 0 THEN posTokens$ = posTokens$ + " "
+            posTokens$ = posTokens$ + tok$
+            foundPosition% = TRUE
+            _CONTINUE
+        END IF
+
+        ' Check for size keywords that might appear without /
+        IF tok$ = "cover" OR tok$ = "contain" THEN
+            HTMLGUI_css_add_prop ruleIdx%, "background-size", tok$
+            foundSize% = TRUE
+            _CONTINUE
+        END IF
+
+        ' Everything else = treat as color
+        IF NOT foundColor% THEN
+            HTMLGUI_css_add_prop ruleIdx%, "background-color", parts$(ti%)
+            foundColor% = TRUE
+        END IF
+    NEXT ti%
+
+    IF foundPosition% AND LEN(posTokens$) > 0 THEN
+        HTMLGUI_css_add_prop ruleIdx%, "background-position", posTokens$
+    END IF
+    IF foundSize% AND LEN(sizeTokens$) > 0 THEN
+        HTMLGUI_css_add_prop ruleIdx%, "background-size", sizeTokens$
+    END IF
+END SUB

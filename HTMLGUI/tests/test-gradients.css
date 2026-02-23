@@ -1,0 +1,81 @@
+body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    padding: 10px;
+}
+
+h1 {
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #aabbcc;
+    margin-bottom: 8px;
+    margin-top: 4px;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.gradient-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.grad-box {
+    width: 120px;
+    height: 80px;
+    border: 1px solid #555;
+    color: #ffffff;
+    padding: 4px;
+}
+
+/* Linear gradients */
+.grad-lr {
+    background-image: linear-gradient(to right, #ff0000, #0000ff);
+}
+
+.grad-tb {
+    background-image: linear-gradient(to bottom, #00ff00, #000066);
+}
+
+.grad-diag {
+    background-image: linear-gradient(to bottom right, #ff6600, #6600ff);
+}
+
+.grad-angle {
+    background-image: linear-gradient(45deg, #ff0066, #00ffcc);
+}
+
+/* Multi-stop linear gradients */
+.grad-rainbow {
+    background-image: linear-gradient(to right, red, orange, yellow, green, blue, purple);
+    width: 250px;
+}
+
+.grad-sunset {
+    background-image: linear-gradient(to bottom, #ff6b35, #f7c59f, #efefd0, #004e89, #1a659e);
+    width: 250px;
+}
+
+/* Radial gradients */
+.grad-radial {
+    background-image: radial-gradient(ellipse, #ffcc00, #ff0000, #660000);
+}
+
+.grad-circle {
+    background-image: radial-gradient(circle, #00ffff, #0066ff, #000033);
+}
+
+.grad-offcenter {
+    background-image: radial-gradient(circle at 25% 25%, #ffffff, #ff00ff, #000000);
+}
+
+/* Background shorthand with gradient */
+.grad-shorthand {
+    background: linear-gradient(to right, #00cc00, #006600);
+    width: 250px;
+}

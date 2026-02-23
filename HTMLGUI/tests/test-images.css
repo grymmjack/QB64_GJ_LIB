@@ -1,0 +1,108 @@
+body {
+    background-color: #1e1e2e;
+    color: #cdd6f4;
+    padding: 10px;
+}
+
+h1 {
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #89b4fa;
+    margin-bottom: 6px;
+    margin-top: 4px;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.img-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.box {
+    width: 150px;
+    height: 100px;
+    border: 1px solid #585b70;
+    color: #ffffff;
+    padding: 4px;
+}
+
+/* Background image tests using test-basic.png as source */
+.bg-norepeat {
+    background-image: url(test-basic.png);
+    background-repeat: no-repeat;
+    background-size: 60px 40px;
+}
+
+.bg-repeat {
+    background-image: url(test-basic.png);
+    background-size: 40px 30px;
+}
+
+.bg-cover {
+    background-image: url(test-basic.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Position tests */
+.bg-center {
+    background-image: url(test-basic.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50px 35px;
+}
+
+.bg-topright {
+    background-image: url(test-basic.png);
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 50px 35px;
+}
+
+.bg-bottomleft {
+    background-image: url(test-basic.png);
+    background-repeat: no-repeat;
+    background-position: left bottom;
+    background-size: 50px 35px;
+}
+
+/* Gradient with fallback color */
+.bg-grad-color {
+    background-color: #333355;
+    background-image: linear-gradient(to bottom, rgba(255,100,0,200), rgba(100,0,255,200));
+}
+
+.bg-repeat-x {
+    background-image: url(test-basic.png);
+    background-repeat: repeat-x;
+    background-size: 40px 30px;
+    background-position: left top;
+}
+
+.bg-repeat-y {
+    background-image: url(test-basic.png);
+    background-repeat: repeat-y;
+    background-size: 40px 30px;
+    background-position: left top;
+}
+
+/* Combined gradient with text */
+.combined-box {
+    width: 400px;
+    height: 80px;
+    background: linear-gradient(to right, #1e3a5f, #4a90d9, #1e3a5f);
+    border: 2px solid #4a90d9;
+    padding: 10px;
+    color: #ffffff;
+}
+
+.combined-box p {
+    margin: 0;
+}

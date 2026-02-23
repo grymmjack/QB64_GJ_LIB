@@ -1,0 +1,917 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - LAYOUT ENGINE
+'
+' Flexbox-inspired layout engine. Computes absolute positions and sizes
+' for all DOM nodes based on their computed styles.
+'
+' Layout modes:
+'   - Block: children stack vertically, fill parent width
+'   - Inline: children flow horizontally, wrap at parent width
+'   - Flex: children distributed along main axis (row/column)
+'   - Table: simplified auto column-width table layout
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Main entry point: compute layout for the entire DOM tree
+'
+' @param INTEGER w% available width
+' @param INTEGER h% available height
+'
+SUB HTMLGUI_layout (w%, h%)
+    IF HTMLGUI.rootNodeIdx < 0 THEN EXIT SUB
+
+    ' Set the root node's available area
+    HTMLGUI_NODES(HTMLGUI.rootNodeIdx).layoutX = 0
+    HTMLGUI_NODES(HTMLGUI.rootNodeIdx).layoutY = 0
+
+    ' Compute layout recursively
+    DIM rootW!, rootH!
+    rootW! = w%
+    rootH! = h%
+    HTMLGUI_layout_node HTMLGUI.rootNodeIdx, 0, 0, rootW!, rootH!
+
+    HTMLGUI.layoutDone = TRUE
+    HTMLGUI.needsRelayout = FALSE
+END SUB
+
+
+''
+' Layout a single node and its children recursively
+'
+' @param INTEGER nodeIdx% node to layout
+' @param SINGLE startX! absolute X position
+' @param SINGLE startY! absolute Y position
+' @param SINGLE availW! available width from parent
+' @param SINGLE availH! available height from parent
+'
+SUB HTMLGUI_layout_node (nodeIdx%, startX!, startY!, availW!, availH!)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+
+    ' Skip display:none
+    IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN
+        HTMLGUI_NODES(nodeIdx%).visible = FALSE
+        EXIT SUB
+    END IF
+    HTMLGUI_NODES(nodeIdx%).visible = TRUE
+
+    DIM style AS HTMLGUI_STYLE
+    style = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Resolve margins
+    DIM mTop!, mRight!, mBottom!, mLeft!
+    mTop! = style.marginTop
+    mRight! = style.marginRight
+    mBottom! = style.marginBottom
+    mLeft! = style.marginLeft
+    IF mTop! = HTMLGUI_AUTO! THEN mTop! = 0
+    IF mRight! = HTMLGUI_AUTO! THEN mRight! = 0
+    IF mBottom! = HTMLGUI_AUTO! THEN mBottom! = 0
+    IF mLeft! = HTMLGUI_AUTO! THEN mLeft! = 0
+
+    ' Position = startX + margin
+    DIM boxX!, boxY!
+    boxX! = startX! + mLeft!
+    boxY! = startY! + mTop!
+
+    ' Resolve explicit width/height
+    DIM boxW!, boxH!, autoW%, autoH%
+    autoW% = FALSE: autoH% = FALSE
+
+    IF style.width <> HTMLGUI_AUTO! AND style.width >= 0 THEN
+        boxW! = style.width
+    ELSE
+        ' Auto width = available width minus margins and borders/padding
+        boxW! = availW! - mLeft! - mRight!
+        autoW% = TRUE
+    END IF
+
+    IF style.height <> HTMLGUI_AUTO! AND style.height >= 0 THEN
+        boxH! = style.height
+    ELSE
+        boxH! = 0 ' Will be determined by content
+        autoH% = TRUE
+    END IF
+
+    ' Add border and padding to get content area
+    DIM contentX!, contentY!, contentW!, contentH!
+    contentX! = boxX! + style.borderLeftWidth + style.paddingLeft
+    contentY! = boxY! + style.borderTopWidth + style.paddingTop
+    contentW! = boxW! - style.borderLeftWidth - style.borderRightWidth - style.paddingLeft - style.paddingRight
+    IF contentW! < 0 THEN contentW! = 0
+    contentH! = boxH! - style.borderTopWidth - style.borderBottomWidth - style.paddingTop - style.paddingBottom
+    IF contentH! < 0 THEN contentH! = 0
+
+    ' Store initial layout values
+    HTMLGUI_NODES(nodeIdx%).layoutX = boxX!
+    HTMLGUI_NODES(nodeIdx%).layoutY = boxY!
+    HTMLGUI_NODES(nodeIdx%).contentX = contentX!
+    HTMLGUI_NODES(nodeIdx%).contentY = contentY!
+    HTMLGUI_NODES(nodeIdx%).contentW = contentW!
+
+    ' Layout children based on display type
+    DIM childContentH!
+    childContentH! = 0
+
+    IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+        ' Text node: compute text dimensions
+        DIM textW!, textH!
+        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), contentW!, style.fontSize, textW!, textH!
+        IF autoW% THEN contentW! = textW!
+        childContentH! = textH!
+    ELSEIF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
+        SELECT CASE style.display
+            CASE HTMLGUI_DISPLAY_FLEX, HTMLGUI_DISPLAY_INLINE_FLEX
+                childContentH! = HTMLGUI_layout_flex_children!(nodeIdx%, contentX!, contentY!, contentW!, contentH!, autoH%)
+            CASE HTMLGUI_DISPLAY_TABLE
+                childContentH! = HTMLGUI_layout_table_children!(nodeIdx%, contentX!, contentY!, contentW!)
+            CASE HTMLGUI_DISPLAY_INLINE
+                childContentH! = HTMLGUI_layout_inline_children!(nodeIdx%, contentX!, contentY!, contentW!)
+            CASE ELSE ' BLOCK or default
+                childContentH! = HTMLGUI_layout_block_children!(nodeIdx%, contentX!, contentY!, contentW!)
+        END SELECT
+    END IF
+
+    ' Resolve auto height
+    IF autoH% THEN
+        contentH! = childContentH!
+        boxH! = contentH! + style.borderTopWidth + style.borderBottomWidth + style.paddingTop + style.paddingBottom
+    END IF
+
+    ' Apply min/max constraints
+    IF style.minWidth > 0 AND boxW! < style.minWidth THEN boxW! = style.minWidth
+    IF style.minHeight > 0 AND boxH! < style.minHeight THEN boxH! = style.minHeight
+    IF style.maxWidth <> HTMLGUI_AUTO! AND style.maxWidth >= 0 AND boxW! > style.maxWidth THEN boxW! = style.maxWidth
+    IF style.maxHeight <> HTMLGUI_AUTO! AND style.maxHeight >= 0 AND boxH! > style.maxHeight THEN boxH! = style.maxHeight
+
+    ' Store final layout
+    HTMLGUI_NODES(nodeIdx%).layoutW = boxW!
+    HTMLGUI_NODES(nodeIdx%).layoutH = boxH!
+    HTMLGUI_NODES(nodeIdx%).contentX = contentX!
+    HTMLGUI_NODES(nodeIdx%).contentY = contentY!
+    HTMLGUI_NODES(nodeIdx%).contentW = contentW!
+    HTMLGUI_NODES(nodeIdx%).contentH = contentH!
+    HTMLGUI_NODES(nodeIdx%).scrollContentH = childContentH!
+
+    ' Apply position: relative offset
+    IF style.position = HTMLGUI_POS_RELATIVE THEN
+        IF style.posLeft <> HTMLGUI_AUTO! THEN
+            HTMLGUI_NODES(nodeIdx%).layoutX = HTMLGUI_NODES(nodeIdx%).layoutX + style.posLeft
+            HTMLGUI_NODES(nodeIdx%).contentX = HTMLGUI_NODES(nodeIdx%).contentX + style.posLeft
+        END IF
+        IF style.posTop <> HTMLGUI_AUTO! THEN
+            HTMLGUI_NODES(nodeIdx%).layoutY = HTMLGUI_NODES(nodeIdx%).layoutY + style.posTop
+            HTMLGUI_NODES(nodeIdx%).contentY = HTMLGUI_NODES(nodeIdx%).contentY + style.posTop
+        END IF
+    END IF
+
+    HTMLGUI_NODES(nodeIdx%).layoutDirty = FALSE
+END SUB
+
+
+''
+' Layout children in block flow (vertical stacking)
+'
+' @param INTEGER parentIdx% parent node index
+' @param SINGLE cx! content area X
+' @param SINGLE cy! content area Y
+' @param SINGLE cw! content area width
+' @return SINGLE total content height
+'
+FUNCTION HTMLGUI_layout_block_children! (parentIdx%, cx!, cy!, cw!)
+    DIM curY!, childIdx%
+    curY! = cy!
+
+    ' Float tracking
+    DIM floatX!, floatY!, floatRowH!, inFloatRow%
+    floatX! = cx!
+    floatY! = cy!
+    floatRowH! = 0
+    inFloatRow% = FALSE
+
+    childIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN
+            HTMLGUI_NODES(childIdx%).visible = FALSE
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            _CONTINUE
+        END IF
+
+        ' Skip whitespace-only text nodes
+        IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            IF HTMLGUI_is_whitespace_node%(childIdx%) THEN
+                HTMLGUI_NODES(childIdx%).visible = FALSE
+                childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+                _CONTINUE
+            END IF
+        END IF
+
+        ' Position: absolute children are laid out separately
+        IF HTMLGUI_STYLES(childIdx%).position = HTMLGUI_POS_ABSOLUTE THEN
+            HTMLGUI_layout_absolute_child parentIdx%, childIdx%, cx!, cy!, cw!
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            _CONTINUE
+        END IF
+
+        ' --- Float layout ---
+        IF HTMLGUI_STYLES(childIdx%).cssFloat <> HTMLGUI_FLOAT_NONE THEN
+            ' Start float row if not already in one
+            IF NOT inFloatRow% THEN
+                floatX! = cx!
+                floatY! = curY!
+                floatRowH! = 0
+                inFloatRow% = TRUE
+            END IF
+
+            ' Measure the child to get its natural width
+            DIM fChildW!, fChildH!
+            IF HTMLGUI_STYLES(childIdx%).width <> HTMLGUI_AUTO! AND HTMLGUI_STYLES(childIdx%).width >= 0 THEN
+                fChildW! = HTMLGUI_STYLES(childIdx%).width
+            ELSE
+                ' Auto width: measure content
+                HTMLGUI_measure_node_content childIdx%, cw!, fChildW!, fChildH!
+                fChildW! = fChildW! + HTMLGUI_STYLES(childIdx%).paddingLeft + HTMLGUI_STYLES(childIdx%).paddingRight
+                fChildW! = fChildW! + HTMLGUI_STYLES(childIdx%).borderLeftWidth + HTMLGUI_STYLES(childIdx%).borderRightWidth
+            END IF
+
+            ' Add margins
+            DIM fml!, fmr!
+            fml! = HTMLGUI_STYLES(childIdx%).marginLeft
+            IF fml! = HTMLGUI_AUTO! THEN fml! = 0
+            fmr! = HTMLGUI_STYLES(childIdx%).marginRight
+            IF fmr! = HTMLGUI_AUTO! THEN fmr! = 0
+
+            ' Check if it fits on the current float row
+            IF floatX! + fml! + fChildW! + fmr! > cx! + cw! AND floatX! > cx! THEN
+                ' Wrap to next row
+                curY! = curY! + floatRowH!
+                floatX! = cx!
+                floatY! = curY!
+                floatRowH! = 0
+            END IF
+
+            ' Layout child at float position
+            ' Pass floatX (not floatX+margin) — let layout_node handle margins.
+            ' Available width = measured width + margins so layout_node subtracts them to get boxW.
+            HTMLGUI_layout_node childIdx%, floatX!, floatY!, fChildW! + fml! + fmr!, 0
+
+            DIM fTotalW!
+            fTotalW! = fml! + HTMLGUI_NODES(childIdx%).layoutW + fmr!
+            floatX! = floatX! + fTotalW!
+
+            IF HTMLGUI_NODES(childIdx%).layoutH > floatRowH! THEN
+                floatRowH! = HTMLGUI_NODES(childIdx%).layoutH
+            END IF
+
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            _CONTINUE
+        END IF
+
+        ' --- Non-floated child after floats: drop below float row ---
+        IF inFloatRow% THEN
+            curY! = curY! + floatRowH!
+            inFloatRow% = FALSE
+        END IF
+
+        ' Inline children get inline layout
+        IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_INLINE OR HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            ' Collect consecutive inline children / text nodes into a line
+            DIM lineH!
+            lineH! = HTMLGUI_layout_inline_run!(childIdx%, cx!, curY!, cw!)
+            curY! = curY! + lineH!
+            ' Skip past all inline children we just laid out
+            DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+                IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+                    childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+                    _CONTINUE
+                END IF
+                IF HTMLGUI_STYLES(childIdx%).display <> HTMLGUI_DISPLAY_INLINE THEN EXIT DO
+                IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT DO
+                childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            LOOP
+            _CONTINUE
+        END IF
+
+        ' Block child gets full width
+        HTMLGUI_layout_node childIdx%, cx!, curY!, cw!, 0
+
+        DIM childTotalH!
+        childTotalH! = HTMLGUI_STYLES(childIdx%).marginTop
+        IF childTotalH! = HTMLGUI_AUTO! THEN childTotalH! = 0
+        childTotalH! = childTotalH! + HTMLGUI_NODES(childIdx%).layoutH
+        DIM mBot!
+        mBot! = HTMLGUI_STYLES(childIdx%).marginBottom
+        IF mBot! = HTMLGUI_AUTO! THEN mBot! = 0
+        childTotalH! = childTotalH! + mBot!
+
+        curY! = curY! + childTotalH!
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    ' Close any remaining float row
+    IF inFloatRow% THEN
+        curY! = curY! + floatRowH!
+    END IF
+
+    HTMLGUI_layout_block_children! = curY! - cy!
+END FUNCTION
+
+
+''
+' Layout a run of consecutive inline elements
+'
+' @param INTEGER firstIdx% first inline child index
+' @param SINGLE cx! line start X
+' @param SINGLE cy! line start Y
+' @param SINGLE cw! available width
+' @return SINGLE line height used
+'
+FUNCTION HTMLGUI_layout_inline_run! (firstIdx%, cx!, cy!, cw!)
+    DIM curX!, maxH!, childIdx%, totalH!, lineY!
+    curX! = cx!
+    maxH! = 0
+    totalH! = 0
+    lineY! = cy!
+
+    childIdx% = firstIdx%
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        ' Accept text nodes and inline elements; stop at block elements
+        IF HTMLGUI_NODES(childIdx%).nodeType <> HTMLGUI_NODE_TEXT THEN
+            IF HTMLGUI_STYLES(childIdx%).display <> HTMLGUI_DISPLAY_INLINE THEN EXIT DO
+        END IF
+        IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT DO
+
+        ' Skip whitespace-only text nodes
+        IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            IF HTMLGUI_is_whitespace_node%(childIdx%) THEN
+                HTMLGUI_NODES(childIdx%).visible = FALSE
+                childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+                _CONTINUE
+            END IF
+        END IF
+
+        ' Measure inline element width
+        DIM inlineW!, inlineH!
+        IF HTMLGUI_STYLES(childIdx%).width <> HTMLGUI_AUTO! THEN
+            inlineW! = HTMLGUI_STYLES(childIdx%).width
+        ELSE
+            ' Size to content
+            HTMLGUI_measure_node_content childIdx%, cw!, inlineW!, inlineH!
+            ' Add padding + border
+            inlineW! = inlineW! + HTMLGUI_STYLES(childIdx%).paddingLeft + HTMLGUI_STYLES(childIdx%).paddingRight
+            inlineW! = inlineW! + HTMLGUI_STYLES(childIdx%).borderLeftWidth + HTMLGUI_STYLES(childIdx%).borderRightWidth
+        END IF
+
+        ' Add margin
+        DIM ml!
+        ml! = HTMLGUI_STYLES(childIdx%).marginLeft
+        IF ml! = HTMLGUI_AUTO! THEN ml! = 0
+
+        DIM mr!
+        mr! = HTMLGUI_STYLES(childIdx%).marginRight
+        IF mr! = HTMLGUI_AUTO! THEN mr! = 0
+
+        ' Check for line wrap: if element does not fit and line is not empty
+        DIM itemTotalW!
+        itemTotalW! = ml! + inlineW! + mr!
+        IF curX! + itemTotalW! > cx! + cw! AND curX! > cx! THEN
+            ' Wrap to next line
+            DIM lineH!
+            lineH! = maxH!
+            IF lineH! <= 0 THEN lineH! = 16
+            totalH! = totalH! + lineH!
+            lineY! = lineY! + lineH!
+            curX! = cx!
+            maxH! = 0
+        END IF
+
+        curX! = curX! + ml!
+        HTMLGUI_layout_node childIdx%, curX!, lineY!, inlineW!, 0
+        curX! = curX! + HTMLGUI_NODES(childIdx%).layoutW + mr!
+
+        IF HTMLGUI_NODES(childIdx%).layoutH > maxH! THEN
+            maxH! = HTMLGUI_NODES(childIdx%).layoutH
+        END IF
+
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    ' Add final line height
+    IF maxH! = 0 THEN maxH! = 16 ' Minimum line height
+    totalH! = totalH! + maxH!
+    HTMLGUI_layout_inline_run! = totalH!
+END FUNCTION
+
+
+''
+' Layout children as inline flow (alternative entry for display:inline containers)
+'
+FUNCTION HTMLGUI_layout_inline_children! (parentIdx%, cx!, cy!, cw!)
+    HTMLGUI_layout_inline_children! = HTMLGUI_layout_inline_run!(HTMLGUI_NODES(parentIdx%).firstChildIdx, cx!, cy!, cw!)
+END FUNCTION
+
+
+''
+' Layout children in flexbox mode
+'
+' @param INTEGER parentIdx% parent node index
+' @param SINGLE cx! content area X
+' @param SINGLE cy! content area Y
+' @param SINGLE cw! content area width
+' @param SINGLE ch! content area height (0 if auto)
+' @param INTEGER autoH% TRUE if parent height is auto
+' @return SINGLE total content height
+'
+FUNCTION HTMLGUI_layout_flex_children! (parentIdx%, cx!, cy!, cw!, ch!, autoH%)
+    DIM style AS HTMLGUI_STYLE
+    style = HTMLGUI_STYLES(parentIdx%)
+
+    DIM isRow%
+    isRow% = (style.flexDirection = HTMLGUI_FLEX_ROW OR style.flexDirection = HTMLGUI_FLEX_ROW_REVERSE)
+
+    ' Count flex children and measure their natural sizes
+    DIM childCount%, childIdx%
+    REDIM childIndices%(0 TO 63) ' max 64 flex children
+    REDIM childNaturalMain!(0 TO 63)
+    REDIM childNaturalCross!(0 TO 63)
+    REDIM childFlexGrow!(0 TO 63)
+    REDIM childFlexShrink!(0 TO 63)
+
+    childCount% = 0
+    childIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN
+            HTMLGUI_NODES(childIdx%).visible = FALSE
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            _CONTINUE
+        END IF
+        IF HTMLGUI_STYLES(childIdx%).position = HTMLGUI_POS_ABSOLUTE THEN
+            HTMLGUI_layout_absolute_child parentIdx%, childIdx%, cx!, cy!, cw!
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+            _CONTINUE
+        END IF
+
+        childIndices%(childCount%) = childIdx%
+
+        ' Measure natural size
+        DIM natW!, natH!
+        IF HTMLGUI_STYLES(childIdx%).width <> HTMLGUI_AUTO! THEN
+            natW! = HTMLGUI_STYLES(childIdx%).width
+        ELSE
+            HTMLGUI_measure_node_content childIdx%, cw!, natW!, natH!
+            natW! = natW! + HTMLGUI_STYLES(childIdx%).paddingLeft + HTMLGUI_STYLES(childIdx%).paddingRight
+            natW! = natW! + HTMLGUI_STYLES(childIdx%).borderLeftWidth + HTMLGUI_STYLES(childIdx%).borderRightWidth
+        END IF
+        IF HTMLGUI_STYLES(childIdx%).height <> HTMLGUI_AUTO! THEN
+            natH! = HTMLGUI_STYLES(childIdx%).height
+        ELSE
+            natH! = HTMLGUI_STYLES(childIdx%).fontSize
+            IF natH! <= 0 THEN natH! = 16
+            natH! = natH! + HTMLGUI_STYLES(childIdx%).paddingTop + HTMLGUI_STYLES(childIdx%).paddingBottom
+            natH! = natH! + HTMLGUI_STYLES(childIdx%).borderTopWidth + HTMLGUI_STYLES(childIdx%).borderBottomWidth
+        END IF
+
+        ' Add margins to natural size
+        DIM cmTop!, cmRight!, cmBot!, cmLeft!
+        cmTop! = HTMLGUI_STYLES(childIdx%).marginTop
+        cmRight! = HTMLGUI_STYLES(childIdx%).marginRight
+        cmBot! = HTMLGUI_STYLES(childIdx%).marginBottom
+        cmLeft! = HTMLGUI_STYLES(childIdx%).marginLeft
+        IF cmTop! = HTMLGUI_AUTO! THEN cmTop! = 0
+        IF cmRight! = HTMLGUI_AUTO! THEN cmRight! = 0
+        IF cmBot! = HTMLGUI_AUTO! THEN cmBot! = 0
+        IF cmLeft! = HTMLGUI_AUTO! THEN cmLeft! = 0
+
+        IF isRow% THEN
+            childNaturalMain!(childCount%) = natW! + cmLeft! + cmRight!
+            childNaturalCross!(childCount%) = natH! + cmTop! + cmBot!
+        ELSE
+            childNaturalMain!(childCount%) = natH! + cmTop! + cmBot!
+            childNaturalCross!(childCount%) = natW! + cmLeft! + cmRight!
+        END IF
+
+        childFlexGrow!(childCount%) = HTMLGUI_STYLES(childIdx%).flexGrow
+        childFlexShrink!(childCount%) = HTMLGUI_STYLES(childIdx%).flexShrink
+
+        childCount% = childCount% + 1
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    IF childCount% = 0 THEN
+        HTMLGUI_layout_flex_children! = 0
+        EXIT FUNCTION
+    END IF
+
+    ' Calculate total natural main size and gaps
+    DIM totalNatural!, mainSize!, gapTotal!
+    totalNatural! = 0
+    gapTotal! = style.gap * (childCount% - 1)
+    DIM fi%
+    FOR fi% = 0 TO childCount% - 1
+        totalNatural! = totalNatural! + childNaturalMain!(fi%)
+    NEXT fi%
+
+    IF isRow% THEN mainSize! = cw! ELSE IF ch! > 0 THEN mainSize! = ch! ELSE mainSize! = totalNatural! + gapTotal!
+
+    ' Distribute flex space
+    DIM freeSpace!, totalGrow!, totalShrink!
+    freeSpace! = mainSize! - totalNatural! - gapTotal!
+    totalGrow! = 0: totalShrink! = 0
+    FOR fi% = 0 TO childCount% - 1
+        totalGrow! = totalGrow! + childFlexGrow!(fi%)
+        totalShrink! = totalShrink! + childFlexShrink!(fi%)
+    NEXT fi%
+
+    REDIM childMainSizes!(0 TO 63)
+    FOR fi% = 0 TO childCount% - 1
+        childMainSizes!(fi%) = childNaturalMain!(fi%)
+        IF freeSpace! > 0 AND totalGrow! > 0 THEN
+            childMainSizes!(fi%) = childMainSizes!(fi%) + (freeSpace! * childFlexGrow!(fi%) / totalGrow!)
+        ELSEIF freeSpace! < 0 AND totalShrink! > 0 THEN
+            childMainSizes!(fi%) = childMainSizes!(fi%) + (freeSpace! * childFlexShrink!(fi%) / totalShrink!)
+        END IF
+        IF childMainSizes!(fi%) < 0 THEN childMainSizes!(fi%) = 0
+    NEXT fi%
+
+    ' Calculate justify-content offsets
+    DIM mainOffset!, gap!
+    mainOffset! = 0
+    gap! = style.gap
+
+    IF freeSpace! > 0 AND totalGrow! = 0 THEN
+        ' No flex-grow items — apply justify-content
+        SELECT CASE style.justifyContent
+            CASE HTMLGUI_JUSTIFY_CENTER
+                mainOffset! = freeSpace! / 2
+            CASE HTMLGUI_JUSTIFY_END
+                mainOffset! = freeSpace!
+            CASE HTMLGUI_JUSTIFY_SPACE_BETWEEN
+                IF childCount% > 1 THEN
+                    gap! = freeSpace! / (childCount% - 1) + style.gap
+                END IF
+            CASE HTMLGUI_JUSTIFY_SPACE_AROUND
+                DIM spaceAround!
+                spaceAround! = freeSpace! / childCount%
+                mainOffset! = spaceAround! / 2
+                gap! = spaceAround! + style.gap
+        END SELECT
+    END IF
+
+    ' Position children
+    DIM curMain!, maxCross!
+    IF isRow% THEN curMain! = cx! + mainOffset! ELSE curMain! = cy! + mainOffset!
+    maxCross! = 0
+
+    FOR fi% = 0 TO childCount% - 1
+        DIM ci%
+        ci% = childIndices%(fi%)
+
+        DIM cChildW!, cChildH!, cChildX!, cChildY!
+        IF isRow% THEN
+            cChildX! = curMain!
+            cChildY! = cy!
+            cChildW! = childMainSizes!(fi%)
+            cChildH! = 0 ' auto
+
+            ' Align items on cross axis
+            IF style.alignItems = HTMLGUI_ALIGN_STRETCH AND ch! > 0 THEN
+                cChildH! = ch!
+            ELSEIF style.alignItems = HTMLGUI_ALIGN_CENTER AND ch! > 0 THEN
+                cChildY! = cy! + (ch! - childNaturalCross!(fi%)) / 2
+            ELSEIF style.alignItems = HTMLGUI_ALIGN_END AND ch! > 0 THEN
+                cChildY! = cy! + ch! - childNaturalCross!(fi%)
+            END IF
+
+            HTMLGUI_layout_node ci%, cChildX!, cChildY!, cChildW!, cChildH!
+            curMain! = curMain! + HTMLGUI_NODES(ci%).layoutW
+            DIM cmr!
+            cmr! = HTMLGUI_STYLES(ci%).marginLeft
+            IF cmr! = HTMLGUI_AUTO! THEN cmr! = 0
+            DIM cmr2!
+            cmr2! = HTMLGUI_STYLES(ci%).marginRight
+            IF cmr2! = HTMLGUI_AUTO! THEN cmr2! = 0
+            curMain! = curMain! + cmr! + cmr2! + gap!
+
+            IF HTMLGUI_NODES(ci%).layoutH > maxCross! THEN
+                maxCross! = HTMLGUI_NODES(ci%).layoutH
+            END IF
+        ELSE
+            cChildX! = cx!
+            cChildY! = curMain!
+            cChildW! = cw!
+            cChildH! = childMainSizes!(fi%)
+
+            ' Align items on cross axis
+            IF style.alignItems = HTMLGUI_ALIGN_CENTER THEN
+                cChildX! = cx! + (cw! - childNaturalCross!(fi%)) / 2
+            ELSEIF style.alignItems = HTMLGUI_ALIGN_END THEN
+                cChildX! = cx! + cw! - childNaturalCross!(fi%)
+            END IF
+
+            HTMLGUI_layout_node ci%, cChildX!, cChildY!, cChildW!, cChildH!
+            curMain! = curMain! + HTMLGUI_NODES(ci%).layoutH
+            DIM cmt!
+            cmt! = HTMLGUI_STYLES(ci%).marginTop
+            IF cmt! = HTMLGUI_AUTO! THEN cmt! = 0
+            DIM cmb!
+            cmb! = HTMLGUI_STYLES(ci%).marginBottom
+            IF cmb! = HTMLGUI_AUTO! THEN cmb! = 0
+            curMain! = curMain! + cmt! + cmb! + gap!
+
+            IF HTMLGUI_NODES(ci%).layoutW > maxCross! THEN
+                maxCross! = HTMLGUI_NODES(ci%).layoutW
+            END IF
+        END IF
+    NEXT fi%
+
+    ' Return total content height
+    DIM resultH!
+    IF isRow% THEN
+        resultH! = maxCross!
+    ELSE
+        resultH! = curMain! - cy! - gap! ' remove trailing gap
+        IF resultH! < 0 THEN resultH! = 0
+    END IF
+    HTMLGUI_layout_flex_children! = resultH!
+END FUNCTION
+
+
+''
+' Layout a child with position:absolute relative to its parent
+'
+' @param INTEGER parentIdx% containing block node
+' @param INTEGER childIdx% absolute-positioned child
+' @param SINGLE cx! parent content X
+' @param SINGLE cy! parent content Y
+' @param SINGLE cw! parent content width
+'
+SUB HTMLGUI_layout_absolute_child (parentIdx%, childIdx%, cx!, cy!, cw!)
+    DIM absX!, absY!, absW!
+    absX! = cx!
+    absY! = cy!
+
+    IF HTMLGUI_STYLES(childIdx%).posLeft <> HTMLGUI_AUTO! THEN
+        absX! = cx! + HTMLGUI_STYLES(childIdx%).posLeft
+    ELSEIF HTMLGUI_STYLES(childIdx%).posRight <> HTMLGUI_AUTO! THEN
+        ' Need element width to position from right — use auto for now
+        absX! = cx!
+    END IF
+
+    IF HTMLGUI_STYLES(childIdx%).posTop <> HTMLGUI_AUTO! THEN
+        absY! = cy! + HTMLGUI_STYLES(childIdx%).posTop
+    END IF
+
+    IF HTMLGUI_STYLES(childIdx%).width <> HTMLGUI_AUTO! THEN
+        absW! = HTMLGUI_STYLES(childIdx%).width
+    ELSE
+        absW! = cw!
+    END IF
+
+    HTMLGUI_layout_node childIdx%, absX!, absY!, absW!, 0
+END SUB
+
+
+''
+' Layout table children (simplified: auto column widths)
+'
+' @param INTEGER parentIdx% table node
+' @param SINGLE cx! content X
+' @param SINGLE cy! content Y
+' @param SINGLE cw! content width
+' @return SINGLE total table height
+'
+FUNCTION HTMLGUI_layout_table_children! (parentIdx%, cx!, cy!, cw!)
+    ' First pass: find max column count and widths
+    DIM maxCols%, rowIdx%
+    REDIM colWidths!(0 TO 31)
+    maxCols% = 0
+
+    ' Initialize column widths
+    DIM wi%
+    FOR wi% = 0 TO 31
+        colWidths!(wi%) = 0
+    NEXT wi%
+
+    ' Scan rows to find column count and natural widths
+    rowIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
+    DO WHILE rowIdx% >= 0 AND rowIdx% < HTMLGUI.nodeCount
+        IF _TRIM$(LCASE$(HTMLGUI_NODES(rowIdx%).tag)) = "tr" OR HTMLGUI_STYLES(rowIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW THEN
+            DIM colIdx%, cellIdx%
+            colIdx% = 0
+            cellIdx% = HTMLGUI_NODES(rowIdx%).firstChildIdx
+            DO WHILE cellIdx% >= 0 AND cellIdx% < HTMLGUI.nodeCount
+                IF colIdx% <= 31 THEN
+                    DIM cellW!, cellH!
+                    HTMLGUI_measure_node_content cellIdx%, cw!, cellW!, cellH!
+                    cellW! = cellW! + HTMLGUI_STYLES(cellIdx%).paddingLeft + HTMLGUI_STYLES(cellIdx%).paddingRight
+                    cellW! = cellW! + HTMLGUI_STYLES(cellIdx%).borderLeftWidth + HTMLGUI_STYLES(cellIdx%).borderRightWidth
+                    IF cellW! > colWidths!(colIdx%) THEN colWidths!(colIdx%) = cellW!
+                    colIdx% = colIdx% + 1
+                END IF
+                cellIdx% = HTMLGUI_NODES(cellIdx%).nextSiblingIdx
+            LOOP
+            IF colIdx% > maxCols% THEN maxCols% = colIdx%
+        END IF
+        rowIdx% = HTMLGUI_NODES(rowIdx%).nextSiblingIdx
+    LOOP
+
+    IF maxCols% = 0 THEN
+        HTMLGUI_layout_table_children! = 0
+        EXIT FUNCTION
+    END IF
+
+    ' Distribute remaining width proportionally
+    DIM totalNatW!, remaining!
+    totalNatW! = 0
+    FOR wi% = 0 TO maxCols% - 1
+        totalNatW! = totalNatW! + colWidths!(wi%)
+    NEXT wi%
+    remaining! = cw! - totalNatW!
+    IF remaining! > 0 THEN
+        DIM extra!
+        extra! = remaining! / maxCols%
+        FOR wi% = 0 TO maxCols% - 1
+            colWidths!(wi%) = colWidths!(wi%) + extra!
+        NEXT wi%
+    END IF
+
+    ' Second pass: layout rows and cells
+    DIM curY!
+    curY! = cy!
+
+    rowIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
+    DO WHILE rowIdx% >= 0 AND rowIdx% < HTMLGUI.nodeCount
+        IF _TRIM$(LCASE$(HTMLGUI_NODES(rowIdx%).tag)) = "tr" OR HTMLGUI_STYLES(rowIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW THEN
+            DIM curX!, rowH!
+            curX! = cx!
+            rowH! = 0
+            colIdx% = 0
+
+            ' Position row
+            HTMLGUI_NODES(rowIdx%).layoutX = cx!
+            HTMLGUI_NODES(rowIdx%).layoutY = curY!
+            HTMLGUI_NODES(rowIdx%).layoutW = cw!
+
+            cellIdx% = HTMLGUI_NODES(rowIdx%).firstChildIdx
+            DO WHILE cellIdx% >= 0 AND cellIdx% < HTMLGUI.nodeCount
+                IF colIdx% <= 31 THEN
+                    HTMLGUI_layout_node cellIdx%, curX!, curY!, colWidths!(colIdx%), 0
+                    IF HTMLGUI_NODES(cellIdx%).layoutH > rowH! THEN
+                        rowH! = HTMLGUI_NODES(cellIdx%).layoutH
+                    END IF
+                    curX! = curX! + colWidths!(colIdx%)
+                    colIdx% = colIdx% + 1
+                END IF
+                cellIdx% = HTMLGUI_NODES(cellIdx%).nextSiblingIdx
+            LOOP
+
+            HTMLGUI_NODES(rowIdx%).layoutH = rowH!
+            HTMLGUI_NODES(rowIdx%).visible = TRUE
+            curY! = curY! + rowH!
+        END IF
+        rowIdx% = HTMLGUI_NODES(rowIdx%).nextSiblingIdx
+    LOOP
+
+    HTMLGUI_layout_table_children! = curY! - cy!
+END FUNCTION
+
+
+''
+' Measure text dimensions given a max width and font size
+'
+' @param STRING text$ text content
+' @param SINGLE maxW! max width for wrapping
+' @param SINGLE fontSize! font size in pixels
+' @param SINGLE outW! (BYREF) measured width
+' @param SINGLE outH! (BYREF) measured height
+'
+SUB HTMLGUI_measure_text (text$, maxW!, fontSize!, outW!, outH!)
+    ' Truncate at first null (STRING * 256 padding) then normalize whitespace
+    DIM rawText$
+    rawText$ = text$
+    DIM nullPos&
+    nullPos& = INSTR(rawText$, CHR$(0))
+    IF nullPos& > 0 THEN rawText$ = LEFT$(rawText$, nullPos& - 1)
+
+    DIM normalized$, i%, c%
+    normalized$ = ""
+    FOR i% = 1 TO LEN(rawText$)
+        c% = ASC(rawText$, i%)
+        IF c% = 10 OR c% = 13 OR c% = 9 THEN
+            normalized$ = normalized$ + " "
+        ELSE
+            normalized$ = normalized$ + CHR$(c%)
+        END IF
+    NEXT i%
+    normalized$ = _TRIM$(normalized$)
+
+    IF LEN(normalized$) = 0 THEN
+        outW! = 0
+        outH! = fontSize!
+        IF outH! <= 0 THEN outH! = 16
+        EXIT SUB
+    END IF
+
+    ' Use _PRINTWIDTH for measurement (requires a font to be active)
+    DIM pw%
+    pw% = _PRINTWIDTH(normalized$)
+    outW! = pw%
+
+    ' Estimate height as font size (or _FONTHEIGHT)
+    DIM fh%
+    fh% = _FONTHEIGHT
+    IF fh% <= 0 THEN fh% = 16
+    outH! = fh%
+
+    ' Simple word-wrapping height estimation
+    IF outW! > maxW! AND maxW! > 0 THEN
+        DIM lines%
+        lines% = INT(outW! / maxW!) + 1
+        outH! = outH! * lines%
+        IF outW! > maxW! THEN outW! = maxW!
+    END IF
+END SUB
+
+
+''
+' Check if a text node contains only whitespace (spaces, tabs, newlines)
+'
+' @param INTEGER nodeIdx% text node index
+' @return INTEGER TRUE if only whitespace, FALSE otherwise
+'
+FUNCTION HTMLGUI_is_whitespace_node% (nodeIdx%)
+    DIM text$, i%, c%, textLen&
+    text$ = HTMLGUI_NODES(nodeIdx%).textContent
+    ' Find actual text length (ignore STRING*256 null padding)
+    textLen& = INSTR(text$, CHR$(0))
+    IF textLen& = 0 THEN textLen& = LEN(text$) ELSE textLen& = textLen& - 1
+    IF textLen& = 0 THEN
+        HTMLGUI_is_whitespace_node% = TRUE
+        EXIT FUNCTION
+    END IF
+    FOR i% = 1 TO textLen&
+        c% = ASC(text$, i%)
+        IF c% <> 32 AND c% <> 9 AND c% <> 10 AND c% <> 13 THEN
+            HTMLGUI_is_whitespace_node% = FALSE
+            EXIT FUNCTION
+        END IF
+    NEXT i%
+    HTMLGUI_is_whitespace_node% = TRUE
+END FUNCTION
+''
+' Measure a node's content size (text children + element children)
+'
+' @param INTEGER nodeIdx% node index
+' @param SINGLE maxW! max available width
+' @param SINGLE outW! (BYREF) content width
+' @param SINGLE outH! (BYREF) content height
+'
+SUB HTMLGUI_measure_node_content (nodeIdx%, maxW!, outW!, outH!)
+    outW! = 0
+    outH! = 0
+
+    IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), maxW!, HTMLGUI_STYLES(nodeIdx%).fontSize, outW!, outH!
+        EXIT SUB
+    END IF
+
+    ' For elements, measure children
+    DIM childIdx%, totalW!, totalH!
+    totalW! = 0: totalH! = 0
+
+    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        DIM cw!, ch!
+        HTMLGUI_measure_node_content childIdx%, maxW!, cw!, ch!
+        ' Include child element's own padding + border in width measurement
+        IF HTMLGUI_NODES(childIdx%).nodeType <> HTMLGUI_NODE_TEXT THEN
+            cw! = cw! + HTMLGUI_STYLES(childIdx%).paddingLeft + HTMLGUI_STYLES(childIdx%).paddingRight
+            cw! = cw! + HTMLGUI_STYLES(childIdx%).borderLeftWidth + HTMLGUI_STYLES(childIdx%).borderRightWidth
+        END IF
+        IF cw! > totalW! THEN totalW! = cw!
+        totalH! = totalH! + ch!
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    outW! = totalW!
+    outH! = totalH!
+
+    ' Minimum sizes for form elements
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+    IF tag$ = "button" THEN
+        IF outW! < 40 THEN outW! = 40
+        IF outH! < 20 THEN outH! = 20
+    ELSEIF tag$ = "input" THEN
+        IF outW! < 100 THEN outW! = 100
+        IF outH! < 20 THEN outH! = 20
+    ELSEIF tag$ = "select" THEN
+        IF outW! < 80 THEN outW! = 80
+        IF outH! < 20 THEN outH! = 20
+    END IF
+END SUB

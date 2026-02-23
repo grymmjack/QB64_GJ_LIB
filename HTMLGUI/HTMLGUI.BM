@@ -1,0 +1,206 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - MASTER INCLUDE
+'
+' Includes all HTMLGUI sub-modules in dependency order and provides
+' the top-level lifecycle API: init, load, render, process_input, cleanup.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI (must be included first)
+'
+$INCLUDEONCE
+
+' =============================================================================
+' INCLUDE SUB-MODULES (order matters: parser -> CSS -> style -> layout -> ...)
+' =============================================================================
+'$INCLUDE:'HTMLGUI-PARSER.BM'
+'$INCLUDE:'HTMLGUI-CSS.BM'
+'$INCLUDE:'HTMLGUI-STYLE.BM'
+'$INCLUDE:'HTMLGUI-LAYOUT.BM'
+'$INCLUDE:'HTMLGUI-RENDER.BM'
+'$INCLUDE:'HTMLGUI-EVENTS.BM'
+'$INCLUDE:'HTMLGUI-FORMS.BM'
+
+
+''
+' Initialize the HTMLGUI framework
+'
+' @param INTEGER w% viewport width in pixels
+' @param INTEGER h% viewport height in pixels
+'
+SUB HTMLGUI_init (w%, h%)
+    ' Reset context
+    HTMLGUI.nodeCount = 0
+    HTMLGUI.ruleCount = 0
+    HTMLGUI.eventQueueCount = 0
+    HTMLGUI.fontCount = 0
+    HTMLGUI.customVarCount = 0
+    HTMLGUI.rootNodeIdx = -1
+    HTMLGUI.focusNodeIdx = -1
+    HTMLGUI.hoverNodeIdx = -1
+    HTMLGUI.pressedNodeIdx = -1
+    HTMLGUI.prevHoveredIdx = -1
+    HTMLGUI.lastMouseX = 0
+    HTMLGUI.lastMouseY = 0
+    HTMLGUI.lastMouseB1 = FALSE
+    HTMLGUI.lastMouseB2 = FALSE
+    HTMLGUI.offsetX = 0
+    HTMLGUI.offsetY = 0
+    HTMLGUI.screenW = w%
+    HTMLGUI.screenH = h%
+    HTMLGUI.needsRepaint = TRUE
+    HTMLGUI.needsRelayout = TRUE
+    HTMLGUI.layoutDone = FALSE
+    HTMLGUI.htmlLoaded = FALSE
+    HTMLGUI.cssLoaded = FALSE
+    HTMLGUI.renderTarget = 0
+
+    ' Initialize all nodes
+    DIM ni%
+    FOR ni% = 0 TO HTMLGUI_MAX_NODES - 1
+        HTMLGUI_node_init ni%
+        HTMLGUI_style_init ni%
+    NEXT ni%
+
+    HTMLGUI.initialized = TRUE
+END SUB
+
+
+''
+' Load and process HTML + CSS files, resolve styles, compute layout.
+'
+' @param STRING htmlFile$ path to .html file
+' @param STRING cssFile$ path to .css file (can be "" to skip)
+' @return INTEGER TRUE on success, FALSE on failure
+'
+FUNCTION HTMLGUI_load% (htmlFile$, cssFile$)
+    HTMLGUI_load% = FALSE
+
+    IF NOT HTMLGUI.initialized THEN
+        _LOGWARN "HTMLGUI_load: not initialized, call HTMLGUI_init first"
+        EXIT FUNCTION
+    END IF
+
+    ' Store base path for relative URL resolution
+    DIM lastSlash%
+    lastSlash% = _INSTRREV(htmlFile$, "/")
+    IF lastSlash% = 0 THEN lastSlash% = _INSTRREV(htmlFile$, "\")
+    IF lastSlash% > 0 THEN
+        HTMLGUI.basePath = LEFT$(htmlFile$, lastSlash%)
+    ELSE
+        HTMLGUI.basePath = "./"
+    END IF
+
+    ' Parse the HTML document
+    IF NOT HTMLGUI_parse_html%(htmlFile$) THEN
+        _LOGERROR "HTMLGUI_load: failed to parse HTML: " + htmlFile$
+        EXIT FUNCTION
+    END IF
+    HTMLGUI.htmlLoaded = TRUE
+
+    ' Parse CSS if provided
+    IF LEN(cssFile$) > 0 THEN
+        IF NOT HTMLGUI_parse_css%(cssFile$) THEN
+            _LOGWARN "HTMLGUI_load: failed to parse CSS: " + cssFile$ + " (continuing without styles)"
+        ELSE
+            HTMLGUI.cssLoaded = TRUE
+        END IF
+    END IF
+
+    ' Resolve styles (UA defaults + CSS cascade + inheritance)
+    HTMLGUI_resolve_styles
+
+    ' Compute layout
+    HTMLGUI_layout HTMLGUI.screenW, HTMLGUI.screenH
+
+    _LOGINFO "HTMLGUI_load: loaded " + _TRIM$(STR$(HTMLGUI.nodeCount)) + " nodes, " + _TRIM$(STR$(HTMLGUI.ruleCount)) + " CSS rules"
+
+    HTMLGUI_load% = TRUE
+END FUNCTION
+
+
+''
+' Main frame update: process input, relayout if dirty, render if needed.
+' Call this once per frame in the main loop.
+'
+SUB HTMLGUI_update
+    IF NOT HTMLGUI.initialized THEN EXIT SUB
+
+    ' Process input events
+    HTMLGUI_process_input
+
+    ' Relayout if needed
+    IF HTMLGUI.needsRelayout AND HTMLGUI.htmlLoaded THEN
+        HTMLGUI_layout HTMLGUI.screenW, HTMLGUI.screenH
+    END IF
+
+    ' Render if needed
+    IF HTMLGUI.needsRepaint THEN
+        HTMLGUI_render
+    END IF
+END SUB
+
+
+''
+' Cleanup: free fonts, images, and reset state
+'
+SUB HTMLGUI_cleanup
+    ' Reset to default built-in font before freeing any fonts
+    _FONT 16
+
+    ' Free cached fonts
+    DIM fi%
+    FOR fi% = 0 TO HTMLGUI.fontCount - 1
+        IF HTMLGUI_FONT_CACHE(fi%).handle > 0 THEN
+            _FREEFONT HTMLGUI_FONT_CACHE(fi%).handle
+            HTMLGUI_FONT_CACHE(fi%).handle = 0
+            HTMLGUI_FONT_CACHE(fi%).inUse = FALSE
+        END IF
+    NEXT fi%
+    HTMLGUI.fontCount = 0
+
+    ' Clear any font handles stored on style nodes
+    DIM ni%
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        HTMLGUI_STYLES(ni%).fontHandle = 0
+    NEXT ni%
+
+    ' Free loaded images on nodes
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_NODES(ni%).imgHandle < -1 THEN
+            _FREEIMAGE HTMLGUI_NODES(ni%).imgHandle
+            HTMLGUI_NODES(ni%).imgHandle = 0
+        END IF
+    NEXT ni%
+
+    ' Free cached background images on styles
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_STYLES(ni%).bgCacheHandle < -1 THEN
+            _FREEIMAGE HTMLGUI_STYLES(ni%).bgCacheHandle
+            HTMLGUI_STYLES(ni%).bgCacheHandle = 0
+        END IF
+    NEXT ni%
+
+    ' Reset gradient storage
+    HTMLGUI_GRADIENT_COUNT = 0
+
+    ' Free render target if we created one
+    IF HTMLGUI.renderTarget < -1 THEN
+        _FREEIMAGE HTMLGUI.renderTarget
+        HTMLGUI.renderTarget = 0
+    END IF
+
+    ' Reset all state
+    HTMLGUI.nodeCount = 0
+    HTMLGUI.ruleCount = 0
+    HTMLGUI.eventQueueCount = 0
+    HTMLGUI.customVarCount = 0
+    HTMLGUI.rootNodeIdx = -1
+    HTMLGUI.focusNodeIdx = -1
+    HTMLGUI.hoverNodeIdx = -1
+    HTMLGUI.pressedNodeIdx = -1
+    HTMLGUI.initialized = FALSE
+    HTMLGUI.layoutDone = FALSE
+    HTMLGUI.htmlLoaded = FALSE
+    HTMLGUI.cssLoaded = FALSE
+END SUB

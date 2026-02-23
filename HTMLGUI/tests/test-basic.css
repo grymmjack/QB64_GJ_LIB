@@ -1,0 +1,40 @@
+body {
+  background-color: #333;
+  color: #fff;
+}
+
+nav {
+  background-color: #444;
+  padding: 10px;
+  width: auto;
+  float: left;
+  margin-right: 20px;
+}
+
+#controls {
+  float: left;
+  position: relative;
+  background-color: #000;
+  color: #fff;
+  width: 100px;
+  height: 32px;
+  border: 1px solid #fff;
+  border-top: 1px solid #f00;
+  padding: 10px;
+}
+
+button {
+  background-color: #555;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#output {
+  float: left;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #222;
+  border: 1px solid #fff;
+}

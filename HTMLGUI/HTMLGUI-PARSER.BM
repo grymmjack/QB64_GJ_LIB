@@ -1,0 +1,787 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - HTML PARSER
+'
+' Tokenizes HTML files and builds a flat-array DOM tree.
+' Supports: elements, attributes, text nodes, self-closing tags,
+' comments (skipped), inline scripts (extracted for event binding).
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Initialize a DOM node to safe defaults
+'
+' @param INTEGER idx% node index in HTMLGUI_NODES()
+'
+SUB HTMLGUI_node_init (idx%)
+    HTMLGUI_NODES(idx%).nodeType = 0
+    HTMLGUI_NODES(idx%).parentIdx = -1
+    HTMLGUI_NODES(idx%).firstChildIdx = -1
+    HTMLGUI_NODES(idx%).lastChildIdx = -1
+    HTMLGUI_NODES(idx%).nextSiblingIdx = -1
+    HTMLGUI_NODES(idx%).prevSiblingIdx = -1
+    HTMLGUI_NODES(idx%).childCount = 0
+    HTMLGUI_NODES(idx%).depth = 0
+    HTMLGUI_NODES(idx%).tag = ""
+    HTMLGUI_NODES(idx%).id = ""
+    HTMLGUI_NODES(idx%).className = ""
+    HTMLGUI_NODES(idx%).textContent = ""
+    HTMLGUI_NODES(idx%).attrCount = 0
+    HTMLGUI_NODES(idx%).formType = HTMLGUI_INPUT_TEXT
+    HTMLGUI_NODES(idx%).formValue = ""
+    HTMLGUI_NODES(idx%).formPlaceholder = ""
+    HTMLGUI_NODES(idx%).formChecked = FALSE
+    HTMLGUI_NODES(idx%).formDisabled = FALSE
+    HTMLGUI_NODES(idx%).formCursorPos = 0
+    HTMLGUI_NODES(idx%).formSelectOpen = FALSE
+    HTMLGUI_NODES(idx%).isHovered = FALSE
+    HTMLGUI_NODES(idx%).isActive = FALSE
+    HTMLGUI_NODES(idx%).isFocused = FALSE
+    HTMLGUI_NODES(idx%).visible = TRUE
+    HTMLGUI_NODES(idx%).layoutX = 0
+    HTMLGUI_NODES(idx%).layoutY = 0
+    HTMLGUI_NODES(idx%).layoutW = 0
+    HTMLGUI_NODES(idx%).layoutH = 0
+    HTMLGUI_NODES(idx%).contentX = 0
+    HTMLGUI_NODES(idx%).contentY = 0
+    HTMLGUI_NODES(idx%).contentW = 0
+    HTMLGUI_NODES(idx%).contentH = 0
+    HTMLGUI_NODES(idx%).scrollX = 0
+    HTMLGUI_NODES(idx%).scrollY = 0
+    HTMLGUI_NODES(idx%).scrollContentH = 0
+    HTMLGUI_NODES(idx%).imgSrc = ""
+    HTMLGUI_NODES(idx%).imgHandle = -1
+    HTMLGUI_NODES(idx%).href = ""
+    HTMLGUI_NODES(idx%).selfClosing = FALSE
+    HTMLGUI_NODES(idx%).inlineScript = FALSE
+    HTMLGUI_NODES(idx%).layoutDirty = TRUE
+    DIM ai%
+    FOR ai% = 0 TO HTMLGUI_MAX_ATTRS - 1
+        HTMLGUI_ATTRS(idx%, ai%).aName = ""
+        HTMLGUI_ATTRS(idx%, ai%).aValue = ""
+    NEXT ai%
+END SUB
+
+
+''
+' Allocate a new DOM node and return its index
+'
+' @return INTEGER index of new node, or -1 if full
+'
+FUNCTION HTMLGUI_node_alloc%
+    IF HTMLGUI.nodeCount >= HTMLGUI_MAX_NODES THEN
+        HTMLGUI_node_alloc% = -1
+        EXIT FUNCTION
+    END IF
+    DIM idx%
+    idx% = HTMLGUI.nodeCount
+    HTMLGUI_node_init idx%
+    HTMLGUI.nodeCount = HTMLGUI.nodeCount + 1
+    HTMLGUI_node_alloc% = idx%
+END FUNCTION
+
+
+''
+' Append childIdx as the last child of parentIdx in the DOM tree
+'
+' @param INTEGER parentIdx% parent node index
+' @param INTEGER childIdx% child node index
+'
+SUB HTMLGUI_node_append_child (parentIdx%, childIdx%)
+    HTMLGUI_NODES(childIdx%).parentIdx = parentIdx%
+    HTMLGUI_NODES(childIdx%).depth = HTMLGUI_NODES(parentIdx%).depth + 1
+    HTMLGUI_NODES(childIdx%).nextSiblingIdx = -1
+
+    IF HTMLGUI_NODES(parentIdx%).firstChildIdx = -1 THEN
+        ' First child
+        HTMLGUI_NODES(parentIdx%).firstChildIdx = childIdx%
+        HTMLGUI_NODES(parentIdx%).lastChildIdx = childIdx%
+        HTMLGUI_NODES(childIdx%).prevSiblingIdx = -1
+    ELSE
+        ' Append after last child
+        DIM lastIdx%
+        lastIdx% = HTMLGUI_NODES(parentIdx%).lastChildIdx
+        HTMLGUI_NODES(lastIdx%).nextSiblingIdx = childIdx%
+        HTMLGUI_NODES(childIdx%).prevSiblingIdx = lastIdx%
+        HTMLGUI_NODES(parentIdx%).lastChildIdx = childIdx%
+    END IF
+
+    HTMLGUI_NODES(parentIdx%).childCount = HTMLGUI_NODES(parentIdx%).childCount + 1
+END SUB
+
+
+''
+' Check if a tag name is a void/self-closing element
+'
+' @param STRING tag$ tag name (lowercase)
+' @return INTEGER TRUE if self-closing
+'
+FUNCTION HTMLGUI_is_void_tag% (tag$)
+    DIM t$
+    t$ = _TRIM$(LCASE$(tag$))
+    SELECT CASE t$
+        CASE "br", "hr", "img", "input", "meta", "link", "col", "area", "base"
+            HTMLGUI_is_void_tag% = TRUE
+        CASE ELSE
+            HTMLGUI_is_void_tag% = FALSE
+    END SELECT
+END FUNCTION
+
+
+''
+' Check if a tag is one we know about (for default display assignment)
+'
+' @param STRING tag$ tag name (lowercase)
+' @return INTEGER TRUE if inline element
+'
+FUNCTION HTMLGUI_is_inline_tag% (tag$)
+    DIM t$
+    t$ = _TRIM$(LCASE$(tag$))
+    SELECT CASE t$
+        CASE "span", "a", "strong", "em", "b", "i", "label", "small", "sub", "sup"
+            HTMLGUI_is_inline_tag% = TRUE
+        CASE ELSE
+            HTMLGUI_is_inline_tag% = FALSE
+    END SELECT
+END FUNCTION
+
+
+''
+' Set an attribute on a node
+'
+' @param INTEGER nodeIdx% node index
+' @param STRING aName$ attribute name
+' @param STRING aValue$ attribute value
+'
+SUB HTMLGUI_node_set_attr (nodeIdx%, aName$, aValue$)
+    DIM ac%
+    ac% = HTMLGUI_NODES(nodeIdx%).attrCount
+    IF ac% >= HTMLGUI_MAX_ATTRS THEN EXIT SUB
+
+    HTMLGUI_ATTRS(nodeIdx%, ac%).aName = LCASE$(_TRIM$(aName$))
+    HTMLGUI_ATTRS(nodeIdx%, ac%).aValue = _TRIM$(aValue$)
+    HTMLGUI_NODES(nodeIdx%).attrCount = ac% + 1
+
+    ' Also set well-known attribute fields directly
+    DIM n$
+    n$ = LCASE$(_TRIM$(aName$))
+    DIM v$
+    v$ = _TRIM$(aValue$)
+
+    SELECT CASE n$
+        CASE "id"
+            HTMLGUI_NODES(nodeIdx%).id = v$
+        CASE "class"
+            HTMLGUI_NODES(nodeIdx%).className = v$
+        CASE "src"
+            HTMLGUI_NODES(nodeIdx%).imgSrc = v$
+        CASE "href"
+            HTMLGUI_NODES(nodeIdx%).href = v$
+        CASE "value"
+            HTMLGUI_NODES(nodeIdx%).formValue = v$
+        CASE "placeholder"
+            HTMLGUI_NODES(nodeIdx%).formPlaceholder = v$
+        CASE "checked"
+            HTMLGUI_NODES(nodeIdx%).formChecked = TRUE
+        CASE "disabled"
+            HTMLGUI_NODES(nodeIdx%).formDisabled = TRUE
+        CASE "type"
+            SELECT CASE LCASE$(v$)
+                CASE "text"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_TEXT
+                CASE "password"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_PASSWORD
+                CASE "checkbox"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_CHECKBOX
+                CASE "radio"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_RADIO
+                CASE "range"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_RANGE
+                CASE "hidden"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_HIDDEN
+                CASE "submit"
+                    HTMLGUI_NODES(nodeIdx%).formType = HTMLGUI_INPUT_SUBMIT
+            END SELECT
+    END SELECT
+END SUB
+
+
+''
+' Get an attribute value from a node by name
+'
+' @param INTEGER nodeIdx% node index
+' @param STRING aName$ attribute name
+' @return STRING attribute value or "" if not found
+'
+FUNCTION HTMLGUI_node_get_attr$ (nodeIdx%, aName$)
+    DIM n$
+    n$ = LCASE$(_TRIM$(aName$))
+    DIM i%
+    FOR i% = 0 TO HTMLGUI_NODES(nodeIdx%).attrCount - 1
+        IF _TRIM$(LCASE$(HTMLGUI_ATTRS(nodeIdx%, i%).aName)) = n$ THEN
+            HTMLGUI_node_get_attr$ = _TRIM$(HTMLGUI_ATTRS(nodeIdx%, i%).aValue)
+            EXIT FUNCTION
+        END IF
+    NEXT i%
+    HTMLGUI_node_get_attr$ = ""
+END FUNCTION
+
+
+''
+' Parse an HTML file and build the DOM tree in HTMLGUI_NODES().
+' This is a character-by-character state machine parser.
+'
+' @param STRING filename$ path to .html file
+' @return INTEGER TRUE on success, FALSE on failure
+'
+FUNCTION HTMLGUI_parse_html% (filename$)
+    HTMLGUI_parse_html% = FALSE
+
+    ' Check file exists
+    IF NOT _FILEEXISTS(filename$) THEN
+        EXIT FUNCTION
+    END IF
+
+    ' Read entire file into a single string
+    DIM fh%, fileLen&, rawHtml$
+    fh% = FREEFILE
+    OPEN filename$ FOR BINARY AS #fh%
+    fileLen& = LOF(fh%)
+    IF fileLen& = 0 THEN
+        CLOSE #fh%
+        EXIT FUNCTION
+    END IF
+    rawHtml$ = SPACE$(fileLen&)
+    GET #fh%, 1, rawHtml$
+    CLOSE #fh%
+
+    ' Normalize line endings to LF
+    rawHtml$ = STR.rep$(rawHtml$, CHR$(13) + CHR$(10), CHR$(10))
+    rawHtml$ = STR.rep$(rawHtml$, CHR$(13), CHR$(10))
+
+    ' Reset node count
+    HTMLGUI.nodeCount = 0
+
+    ' Create implicit root document node
+    DIM rootIdx%
+    rootIdx% = HTMLGUI_node_alloc%
+    HTMLGUI_NODES(rootIdx%).nodeType = HTMLGUI_NODE_ELEMENT
+    HTMLGUI_NODES(rootIdx%).tag = "#document"
+    HTMLGUI.rootNodeIdx = rootIdx%
+
+    ' Parser state
+    DIM state%, pPos&, ch$
+    DIM curParent%, tagName$, attrName$, attrValue$, textBuf$
+    DIM quoteChar$, isClosingTag%, forceClose%, inScript%
+    DIM scriptBuf$
+
+    state% = HTMLGUI_PARSE_IDLE
+    curParent% = rootIdx%
+    tagName$ = ""
+    attrName$ = ""
+    attrValue$ = ""
+    textBuf$ = ""
+    quoteChar$ = ""
+    isClosingTag% = FALSE
+    inScript% = FALSE
+    scriptBuf$ = ""
+
+    DIM curNodeIdx%
+    curNodeIdx% = -1
+
+    FOR pPos& = 1 TO LEN(rawHtml$)
+        ch$ = MID$(rawHtml$, pPos&, 1)
+
+        ' --- Script content collection ---
+        IF inScript% THEN
+            ' Look for </script>
+            IF LCASE$(MID$(rawHtml$, pPos&, 9)) = "</script>" THEN
+                ' Extract event bindings from script content
+                HTMLGUI_parse_script_block scriptBuf$, curParent%
+                inScript% = FALSE
+                scriptBuf$ = ""
+                pPos& = pPos& + 8 ' skip past </script>
+                ' Pop parent back past the <script> node
+            ELSE
+                scriptBuf$ = scriptBuf$ + ch$
+            END IF
+            _CONTINUE
+        END IF
+
+        SELECT CASE state%
+
+            CASE HTMLGUI_PARSE_IDLE, HTMLGUI_PARSE_TEXT
+                IF ch$ = "<" THEN
+                    ' Flush accumulated text
+                    DIM trimText$
+                    trimText$ = _TRIM$(textBuf$)
+                    IF LEN(trimText$) > 0 THEN
+                        DIM textIdx%
+                        textIdx% = HTMLGUI_node_alloc%
+                        IF textIdx% >= 0 THEN
+                            HTMLGUI_NODES(textIdx%).nodeType = HTMLGUI_NODE_TEXT
+                            HTMLGUI_NODES(textIdx%).textContent = trimText$
+                            HTMLGUI_node_append_child curParent%, textIdx%
+                        END IF
+                    END IF
+                    textBuf$ = ""
+
+                    ' Check for comment <!-- -->
+                    IF MID$(rawHtml$, pPos&, 4) = "<!--" THEN
+                        DIM commentEnd&
+                        commentEnd& = INSTR(pPos& + 4, rawHtml$, "-->")
+                        IF commentEnd& > 0 THEN
+                            pPos& = commentEnd& + 2 ' skip to end of -->
+                        ELSE
+                            pPos& = LEN(rawHtml$) ' malformed, skip rest
+                        END IF
+                        state% = HTMLGUI_PARSE_IDLE
+                    ' Check for closing tag
+                    ELSEIF MID$(rawHtml$, pPos& + 1, 1) = "/" THEN
+                        isClosingTag% = TRUE
+                        tagName$ = ""
+                        state% = HTMLGUI_PARSE_TAG_NAME
+                        pPos& = pPos& + 1 ' skip the /
+                    ' Check for doctype
+                    ELSEIF LCASE$(MID$(rawHtml$, pPos&, 9)) = "<!doctype" THEN
+                        DIM dtEnd&
+                        dtEnd& = INSTR(pPos& + 9, rawHtml$, ">")
+                        IF dtEnd& > 0 THEN
+                            pPos& = dtEnd& ' skip past >
+                        END IF
+                        state% = HTMLGUI_PARSE_IDLE
+                    ELSE
+                        isClosingTag% = FALSE
+                        tagName$ = ""
+                        state% = HTMLGUI_PARSE_TAG_NAME
+                    END IF
+                ELSE
+                    textBuf$ = textBuf$ + ch$
+                    state% = HTMLGUI_PARSE_TEXT
+                END IF
+
+            CASE HTMLGUI_PARSE_TAG_NAME
+                IF ch$ = " " OR ch$ = CHR$(9) OR ch$ = CHR$(10) THEN
+                    IF LEN(tagName$) > 0 THEN
+                        IF isClosingTag% THEN
+                            state% = HTMLGUI_PARSE_TAG_CLOSE
+                        ELSE
+                            ' Create element node
+                            curNodeIdx% = HTMLGUI_node_alloc%
+                            IF curNodeIdx% >= 0 THEN
+                                HTMLGUI_NODES(curNodeIdx%).nodeType = HTMLGUI_NODE_ELEMENT
+                                HTMLGUI_NODES(curNodeIdx%).tag = LCASE$(tagName$)
+                                HTMLGUI_NODES(curNodeIdx%).selfClosing = HTMLGUI_is_void_tag%(tagName$)
+                            END IF
+                            attrName$ = ""
+                            state% = HTMLGUI_PARSE_ATTRS
+                        END IF
+                    END IF
+                ELSEIF ch$ = ">" THEN
+                    IF LEN(tagName$) > 0 THEN
+                        IF isClosingTag% THEN
+                            ' Close tag - pop parent
+                            HTMLGUI_pop_parent curParent%, tagName$
+                        ELSE
+                            ' Self-closing or open tag with no attrs
+                            curNodeIdx% = HTMLGUI_node_alloc%
+                            IF curNodeIdx% >= 0 THEN
+                                HTMLGUI_NODES(curNodeIdx%).nodeType = HTMLGUI_NODE_ELEMENT
+                                HTMLGUI_NODES(curNodeIdx%).tag = LCASE$(tagName$)
+                                HTMLGUI_NODES(curNodeIdx%).selfClosing = HTMLGUI_is_void_tag%(tagName$)
+                                HTMLGUI_node_append_child curParent%, curNodeIdx%
+                                IF NOT HTMLGUI_NODES(curNodeIdx%).selfClosing THEN
+                                    ' Skip html, head, title — don't push as parent
+                                    IF HTMLGUI_is_structural_tag%(tagName$) = FALSE THEN
+                                        curParent% = curNodeIdx%
+                                    END IF
+                                END IF
+                                IF LCASE$(tagName$) = "script" THEN
+                                    inScript% = TRUE
+                                    scriptBuf$ = ""
+                                END IF
+                            END IF
+                        END IF
+                    END IF
+                    state% = HTMLGUI_PARSE_IDLE
+                ELSEIF ch$ = "/" THEN
+                    ' Could be self-closing <br/>
+                    IF LEN(tagName$) > 0 THEN
+                        ' Mark as self-closing, wait for >
+                        forceClose% = TRUE
+                    END IF
+                ELSE
+                    tagName$ = tagName$ + ch$
+                END IF
+
+            CASE HTMLGUI_PARSE_ATTRS
+                IF ch$ = ">" THEN
+                    ' Finish attrs, finalize element
+                    IF curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_append_child curParent%, curNodeIdx%
+                        IF NOT HTMLGUI_NODES(curNodeIdx%).selfClosing AND NOT forceClose% THEN
+                            IF HTMLGUI_is_structural_tag%(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = FALSE THEN
+                                curParent% = curNodeIdx%
+                            END IF
+                        END IF
+                        IF LCASE$(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = "script" THEN
+                            inScript% = TRUE
+                            scriptBuf$ = ""
+                        END IF
+                    END IF
+                    forceClose% = FALSE
+                    curNodeIdx% = -1
+                    state% = HTMLGUI_PARSE_IDLE
+                ELSEIF ch$ = "/" THEN
+                    forceClose% = TRUE
+                ELSEIF ch$ = " " OR ch$ = CHR$(9) OR ch$ = CHR$(10) THEN
+                    ' skip whitespace between attrs
+                ELSE
+                    ' Start of attribute name
+                    attrName$ = ch$
+                    state% = HTMLGUI_PARSE_ATTR_NAME
+                END IF
+
+            CASE HTMLGUI_PARSE_ATTR_NAME
+                IF ch$ = "=" THEN
+                    state% = HTMLGUI_PARSE_ATTR_EQ
+                ELSEIF ch$ = " " OR ch$ = CHR$(9) OR ch$ = CHR$(10) THEN
+                    ' Boolean attribute (no value)
+                    IF LEN(attrName$) > 0 AND curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_set_attr curNodeIdx%, attrName$, attrName$
+                    END IF
+                    attrName$ = ""
+                    state% = HTMLGUI_PARSE_ATTRS
+                ELSEIF ch$ = ">" THEN
+                    ' Boolean attribute at end of tag
+                    IF LEN(attrName$) > 0 AND curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_set_attr curNodeIdx%, attrName$, attrName$
+                    END IF
+                    attrName$ = ""
+                    ' Finalize element 
+                    IF curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_append_child curParent%, curNodeIdx%
+                        IF NOT HTMLGUI_NODES(curNodeIdx%).selfClosing AND NOT forceClose% THEN
+                            IF HTMLGUI_is_structural_tag%(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = FALSE THEN
+                                curParent% = curNodeIdx%
+                            END IF
+                        END IF
+                    END IF
+                    forceClose% = FALSE
+                    curNodeIdx% = -1
+                    state% = HTMLGUI_PARSE_IDLE
+                ELSEIF ch$ = "/" THEN
+                    IF LEN(attrName$) > 0 AND curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_set_attr curNodeIdx%, attrName$, attrName$
+                    END IF
+                    attrName$ = ""
+                    forceClose% = TRUE
+                    state% = HTMLGUI_PARSE_ATTRS
+                ELSE
+                    attrName$ = attrName$ + ch$
+                END IF
+
+            CASE HTMLGUI_PARSE_ATTR_EQ
+                IF ch$ = CHR$(34) OR ch$ = "'" THEN
+                    quoteChar$ = ch$
+                    attrValue$ = ""
+                    state% = HTMLGUI_PARSE_ATTR_VAL
+                ELSEIF ch$ = " " OR ch$ = CHR$(9) OR ch$ = CHR$(10) THEN
+                    ' skip whitespace after =
+                ELSEIF ch$ = ">" THEN
+                    ' Attribute with empty value
+                    IF LEN(attrName$) > 0 AND curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_set_attr curNodeIdx%, attrName$, ""
+                    END IF
+                    attrName$ = ""
+                    IF curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_append_child curParent%, curNodeIdx%
+                        IF NOT HTMLGUI_NODES(curNodeIdx%).selfClosing AND NOT forceClose% THEN
+                            IF HTMLGUI_is_structural_tag%(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = FALSE THEN
+                                curParent% = curNodeIdx%
+                            END IF
+                        END IF
+                    END IF
+                    forceClose% = FALSE
+                    curNodeIdx% = -1
+                    state% = HTMLGUI_PARSE_IDLE
+                ELSE
+                    ' Unquoted attribute value
+                    quoteChar$ = ""
+                    attrValue$ = ch$
+                    state% = HTMLGUI_PARSE_ATTR_VAL
+                END IF
+
+            CASE HTMLGUI_PARSE_ATTR_VAL
+                DIM endVal%
+                endVal% = FALSE
+                IF LEN(quoteChar$) > 0 THEN
+                    IF ch$ = quoteChar$ THEN
+                        endVal% = TRUE
+                    END IF
+                ELSE
+                    IF ch$ = " " OR ch$ = CHR$(9) OR ch$ = CHR$(10) OR ch$ = ">" THEN
+                        endVal% = TRUE
+                    END IF
+                END IF
+
+                IF endVal% THEN
+                    IF LEN(attrName$) > 0 AND curNodeIdx% >= 0 THEN
+                        HTMLGUI_node_set_attr curNodeIdx%, attrName$, attrValue$
+                    END IF
+                    attrName$ = ""
+                    attrValue$ = ""
+                    quoteChar$ = ""
+                    IF ch$ = ">" THEN
+                        IF curNodeIdx% >= 0 THEN
+                            HTMLGUI_node_append_child curParent%, curNodeIdx%
+                            IF NOT HTMLGUI_NODES(curNodeIdx%).selfClosing AND NOT forceClose% THEN
+                                IF HTMLGUI_is_structural_tag%(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = FALSE THEN
+                                    curParent% = curNodeIdx%
+                                END IF
+                            END IF
+                            IF LCASE$(_TRIM$(HTMLGUI_NODES(curNodeIdx%).tag)) = "script" THEN
+                                inScript% = TRUE
+                                scriptBuf$ = ""
+                            END IF
+                        END IF
+                        forceClose% = FALSE
+                        curNodeIdx% = -1
+                        state% = HTMLGUI_PARSE_IDLE
+                    ELSE
+                        state% = HTMLGUI_PARSE_ATTRS
+                    END IF
+                ELSE
+                    attrValue$ = attrValue$ + ch$
+                END IF
+
+            CASE HTMLGUI_PARSE_TAG_CLOSE
+                IF ch$ = ">" THEN
+                    IF LEN(tagName$) > 0 THEN
+                        HTMLGUI_pop_parent curParent%, tagName$
+                    END IF
+                    state% = HTMLGUI_PARSE_IDLE
+                END IF
+                ' ignore anything else in closing tag (e.g., whitespace)
+
+        END SELECT
+    NEXT pPos&
+
+    ' Flush any remaining text
+    trimText$ = _TRIM$(textBuf$)
+    IF LEN(trimText$) > 0 THEN
+        textIdx% = HTMLGUI_node_alloc%
+        IF textIdx% >= 0 THEN
+            HTMLGUI_NODES(textIdx%).nodeType = HTMLGUI_NODE_TEXT
+            HTMLGUI_NODES(textIdx%).textContent = trimText$
+            HTMLGUI_node_append_child curParent%, textIdx%
+        END IF
+    END IF
+
+    ' Find the <body> node and set as root for rendering
+    DIM bi%
+    FOR bi% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_NODES(bi%).nodeType = HTMLGUI_NODE_ELEMENT THEN
+            IF _TRIM$(LCASE$(HTMLGUI_NODES(bi%).tag)) = "body" THEN
+                HTMLGUI.rootNodeIdx = bi%
+                EXIT FOR
+            END IF
+        END IF
+    NEXT bi%
+
+    HTMLGUI.htmlLoaded = TRUE
+    HTMLGUI_parse_html% = TRUE
+END FUNCTION
+
+
+''
+' Pop the parent stack back to close a tag.
+' Walks up from curParent until it finds a node matching the closing tag.
+'
+' @param INTEGER curParent% current parent index (BYREF - updated)
+' @param STRING tagName$ closing tag name
+'
+SUB HTMLGUI_pop_parent (curParent%, tagName$)
+    DIM t$
+    t$ = LCASE$(_TRIM$(tagName$))
+    DIM idx%
+    idx% = curParent%
+
+    ' Walk up the tree to find matching open tag
+    DO WHILE idx% >= 0
+        IF _TRIM$(LCASE$(HTMLGUI_NODES(idx%).tag)) = t$ THEN
+            ' Found it — pop to its parent
+            curParent% = HTMLGUI_NODES(idx%).parentIdx
+            IF curParent% < 0 THEN curParent% = 0
+            EXIT SUB
+        END IF
+        idx% = HTMLGUI_NODES(idx%).parentIdx
+    LOOP
+
+    ' Tag not found in ancestor chain — ignore (malformed HTML)
+END SUB
+
+
+''
+' Check if a tag should NOT be pushed as parent (structural wrapper tags)
+' We skip html, head, title, meta, link, style, script parent pushing
+' because we only care about visible body content for layout
+'
+' @param STRING tag$ tag name
+' @return INTEGER TRUE if structural (skip pushing as parent)
+'
+FUNCTION HTMLGUI_is_structural_tag% (tag$)
+    DIM t$
+    t$ = LCASE$(_TRIM$(tag$))
+    SELECT CASE t$
+        CASE "html", "head", "title", "meta", "link", "style"
+            HTMLGUI_is_structural_tag% = TRUE
+        CASE ELSE
+            HTMLGUI_is_structural_tag% = FALSE
+    END SELECT
+END FUNCTION
+
+
+''
+' Parse a <script> block to extract _QB64PE_ event bindings.
+' Scans for patterns like: _QB64PE_someFunc('param')
+' and registers them as event handlers on the appropriate elements.
+'
+' @param STRING scriptContent$ the raw script text
+' @param INTEGER parentIdx% the parent node of the script
+'
+SUB HTMLGUI_parse_script_block (scriptContent$, parentIdx%)
+    ' Look for function definitions that match _QB64PE_ pattern
+    ' Example: function button1_click() { _QB64PE_button_click('btn1'); }
+    '
+    ' We extract the function name from onclick attributes during HTML parsing,
+    ' so here we just store the script content for reference.
+    ' The actual binding happens when onclick="funcName()" is parsed as an attribute.
+    '
+    ' For inline _QB64PE_ calls, scan and register direct bindings
+    DIM searchPos&, funcStart&, funcEnd&, parenOpen&, parenClose&
+    DIM funcName$, funcParam$
+
+    searchPos& = 1
+    DO
+        funcStart& = INSTR(searchPos&, scriptContent$, "_QB64PE_")
+        IF funcStart& = 0 THEN EXIT DO
+
+        ' Find the opening paren
+        parenOpen& = INSTR(funcStart&, scriptContent$, "(")
+        IF parenOpen& = 0 THEN EXIT DO
+
+        ' Extract function name
+        funcName$ = _TRIM$(MID$(scriptContent$, funcStart&, parenOpen& - funcStart&))
+
+        ' Find closing paren and extract param
+        parenClose& = INSTR(parenOpen&, scriptContent$, ")")
+        IF parenClose& > 0 THEN
+            funcParam$ = MID$(scriptContent$, parenOpen& + 1, parenClose& - parenOpen& - 1)
+            ' Strip quotes from param
+            funcParam$ = HTMLGUI_strip_quotes$(funcParam$)
+
+            ' Find which function calls this _QB64PE_ function
+            ' Look backwards for the function name that contains this call
+            DIM lineStart&, lineText$
+            lineStart& = funcStart&
+            DO WHILE lineStart& > 1
+                IF MID$(scriptContent$, lineStart& - 1, 1) = CHR$(10) THEN EXIT DO
+                lineStart& = lineStart& - 1
+            LOOP
+            lineText$ = _TRIM$(MID$(scriptContent$, lineStart&, funcStart& - lineStart&))
+
+            ' Store as event binding: the JS function containing the _QB64PE_ call
+            ' will be matched against onclick attributes by HTMLGUI_resolve_event_binding
+        END IF
+
+        searchPos& = funcStart& + LEN(funcName$) + 1
+    LOOP
+END SUB
+
+
+''
+' Strip surrounding quotes (single or double) from a string
+'
+' @param STRING s$ input string
+' @return STRING string without surrounding quotes
+'
+FUNCTION HTMLGUI_strip_quotes$ (s$)
+    DIM t$
+    t$ = _TRIM$(s$)
+    IF LEN(t$) >= 2 THEN
+        DIM first$, last$
+        first$ = LEFT$(t$, 1)
+        last$ = RIGHT$(t$, 1)
+        IF (first$ = CHR$(34) AND last$ = CHR$(34)) OR (first$ = "'" AND last$ = "'") THEN
+            HTMLGUI_strip_quotes$ = MID$(t$, 2, LEN(t$) - 2)
+            EXIT FUNCTION
+        END IF
+    END IF
+    HTMLGUI_strip_quotes$ = t$
+END FUNCTION
+
+
+''
+' Find a DOM node by its id attribute
+'
+' @param STRING elementId$ the id to search for
+' @return INTEGER node index, or -1 if not found
+'
+FUNCTION HTMLGUI_find_by_id% (elementId$)
+    DIM i%, searchId$
+    searchId$ = LCASE$(_TRIM$(elementId$))
+    FOR i% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_NODES(i%).nodeType = HTMLGUI_NODE_ELEMENT THEN
+            IF LCASE$(_TRIM$(HTMLGUI_NODES(i%).id)) = searchId$ THEN
+                HTMLGUI_find_by_id% = i%
+                EXIT FUNCTION
+            END IF
+        END IF
+    NEXT i%
+    HTMLGUI_find_by_id% = -1
+END FUNCTION
+
+
+''
+' Debug: dump DOM tree to QB64PE log
+'
+' @param INTEGER nodeIdx% starting node index
+' @param INTEGER depth% indentation depth
+'
+SUB HTMLGUI_dump_tree (nodeIdx%, depth%)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+
+    DIM indent$, info$
+    indent$ = SPACE$(depth% * 2)
+
+    IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+        info$ = indent$ + "[TEXT] " + CHR$(34) + _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent) + CHR$(34)
+    ELSE
+        info$ = indent$ + "<" + _TRIM$(HTMLGUI_NODES(nodeIdx%).tag)
+        IF LEN(_TRIM$(HTMLGUI_NODES(nodeIdx%).id)) > 0 THEN
+            info$ = info$ + " id=" + CHR$(34) + _TRIM$(HTMLGUI_NODES(nodeIdx%).id) + CHR$(34)
+        END IF
+        IF LEN(_TRIM$(HTMLGUI_NODES(nodeIdx%).className)) > 0 THEN
+            info$ = info$ + " class=" + CHR$(34) + _TRIM$(HTMLGUI_NODES(nodeIdx%).className) + CHR$(34)
+        END IF
+        info$ = info$ + ">"
+        IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
+            info$ = info$ + " (" + _TRIM$(STR$(HTMLGUI_NODES(nodeIdx%).childCount)) + " children)"
+        END IF
+    END IF
+
+    _LOGINFO info$
+
+    ' Recurse into children
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        HTMLGUI_dump_tree childIdx%, depth% + 1
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+END SUB

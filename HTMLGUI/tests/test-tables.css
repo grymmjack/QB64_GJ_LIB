@@ -1,0 +1,51 @@
+body {
+  background-color: #0c0c1d;
+  color: #b8c0e0;
+  padding: 10px;
+}
+
+h2 {
+  color: #b8a9c9;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #3d3d5c;
+  padding-bottom: 3px;
+}
+
+.data-table {
+  width: 400px;
+  border: 1px solid #3d3d5c;
+}
+
+th {
+  background-color: #1e1e3f;
+  color: #ffd369;
+  padding: 4px 8px;
+  border-bottom: 2px solid #ffd369;
+  text-align: left;
+}
+
+td {
+  padding: 3px 8px;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.alt-row {
+  background-color: #14142b;
+}
+
+.status-ok {
+  color: #3fb950;
+}
+
+.status-warn {
+  color: #d29922;
+}
+
+.status-rare {
+  color: #bc8cff;
+}
+
+.footer-note {
+  color: #555;
+  margin-top: 6px;
+}

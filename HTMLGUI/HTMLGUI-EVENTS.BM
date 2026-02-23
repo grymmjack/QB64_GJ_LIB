@@ -1,0 +1,568 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - EVENTS
+'
+' Event handling system: hit testing, hover/click/focus tracking,
+' event queue management, and dispatch to user-defined handlers.
+'
+' Uses the _QB64PE_ naming convention for event bridge:
+' HTML onclick="_QB64PE_myHandler('param')" -> calls HTMLGUI_on_event
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Process all pending input events (mouse + keyboard)
+' Call this once per frame in the main loop.
+'
+SUB HTMLGUI_process_input
+    IF NOT HTMLGUI.layoutDone THEN EXIT SUB
+    IF HTMLGUI.rootNodeIdx < 0 THEN EXIT SUB
+
+    HTMLGUI_process_mouse
+    HTMLGUI_process_keyboard
+END SUB
+
+
+''
+' Process mouse input: hover, click, drag
+'
+SUB HTMLGUI_process_mouse
+    ' Drain mouse events
+    DO WHILE _MOUSEINPUT: LOOP
+
+    DIM mx%, my%, mb1%, mb2%
+    mx% = _MOUSEX
+    my% = _MOUSEY
+    mb1% = _MOUSEBUTTON(1)
+    mb2% = _MOUSEBUTTON(2)
+
+    ' Adjust for render offset if needed
+    mx% = mx% - HTMLGUI.offsetX
+    my% = my% - HTMLGUI.offsetY
+
+    ' Hit test: find topmost node at mouse position
+    DIM hitNode%
+    hitNode% = HTMLGUI_hit_test%(HTMLGUI.rootNodeIdx, mx%, my%)
+
+    ' --- HOVER ---
+    ' Clear previous hover
+    IF HTMLGUI.hoverNodeIdx >= 0 AND HTMLGUI.hoverNodeIdx <> hitNode% THEN
+        HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isHovered = FALSE
+        HTMLGUI_queue_event HTMLGUI.hoverNodeIdx, HTMLGUI_EVENT_MOUSELEAVE, "", ""
+        HTMLGUI.needsRepaint = TRUE
+    END IF
+
+    ' Set new hover
+    IF hitNode% >= 0 AND hitNode% <> HTMLGUI.hoverNodeIdx THEN
+        HTMLGUI_NODES(hitNode%).isHovered = TRUE
+        HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_MOUSEENTER, "", ""
+        HTMLGUI.needsRepaint = TRUE
+    END IF
+    HTMLGUI.hoverNodeIdx = hitNode%
+
+    ' --- MOUSE MOVE ---
+    IF mx% <> HTMLGUI.lastMouseX OR my% <> HTMLGUI.lastMouseY THEN
+        IF hitNode% >= 0 THEN
+            HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_MOUSEMOVE, "", ""
+        END IF
+    END IF
+
+    ' --- CLICK ---
+    IF mb1% AND NOT HTMLGUI.lastMouseB1 THEN
+        ' Mouse button just pressed
+        IF hitNode% >= 0 THEN
+            HTMLGUI_NODES(hitNode%).isActive = TRUE
+            HTMLGUI.needsRepaint = TRUE
+
+            ' Focus management
+            IF HTMLGUI_is_focusable%(hitNode%) THEN
+                HTMLGUI_set_focus hitNode%
+            END IF
+
+            HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_MOUSEDOWN, "", ""
+        ELSE
+            ' Clicked outside any element - blur current focus
+            HTMLGUI_blur_focus
+        END IF
+    END IF
+
+    IF NOT mb1% AND HTMLGUI.lastMouseB1 THEN
+        ' Mouse button just released
+        IF HTMLGUI.hoverNodeIdx >= 0 AND HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isActive THEN
+            ' Click event (press + release on same element)
+            HTMLGUI_handle_click HTMLGUI.hoverNodeIdx
+        END IF
+
+        ' Clear active state on ALL nodes
+        DIM ai%
+        FOR ai% = 0 TO HTMLGUI.nodeCount - 1
+            IF HTMLGUI_NODES(ai%).isActive THEN
+                HTMLGUI_NODES(ai%).isActive = FALSE
+                HTMLGUI.needsRepaint = TRUE
+            END IF
+        NEXT ai%
+    END IF
+
+    ' --- RIGHT CLICK ---
+    IF mb2% AND NOT HTMLGUI.lastMouseB2 THEN
+        IF hitNode% >= 0 THEN
+            HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_CONTEXTMENU, "", ""
+        END IF
+    END IF
+
+    ' --- SCROLL ---
+    DIM sw%
+    sw% = _MOUSEWHEEL
+    IF sw% <> 0 AND hitNode% >= 0 THEN
+        ' Find scrollable parent
+        DIM scrollNode%
+        scrollNode% = HTMLGUI_find_scrollable_parent%(hitNode%)
+        IF scrollNode% >= 0 THEN
+            HTMLGUI_NODES(scrollNode%).scrollY = HTMLGUI_NODES(scrollNode%).scrollY + sw% * 20
+            IF HTMLGUI_NODES(scrollNode%).scrollY < 0 THEN HTMLGUI_NODES(scrollNode%).scrollY = 0
+            DIM maxScroll!
+            maxScroll! = HTMLGUI_NODES(scrollNode%).scrollContentH - HTMLGUI_NODES(scrollNode%).contentH
+            IF maxScroll! < 0 THEN maxScroll! = 0
+            IF HTMLGUI_NODES(scrollNode%).scrollY > maxScroll! THEN HTMLGUI_NODES(scrollNode%).scrollY = maxScroll!
+            HTMLGUI.needsRepaint = TRUE
+            HTMLGUI.needsRelayout = TRUE
+        END IF
+    END IF
+
+    ' Save state for next frame
+    HTMLGUI.lastMouseX = mx%
+    HTMLGUI.lastMouseY = my%
+    HTMLGUI.lastMouseB1 = mb1%
+    HTMLGUI.lastMouseB2 = mb2%
+END SUB
+
+
+''
+' Process keyboard input for focused elements
+'
+SUB HTMLGUI_process_keyboard
+    DIM k&
+    k& = _KEYHIT
+
+    IF k& = 0 THEN EXIT SUB
+
+    ' Tab key for focus cycling
+    IF k& = 9 THEN ' TAB
+        IF _KEYDOWN(100304) OR _KEYDOWN(100303) THEN ' SHIFT held
+            HTMLGUI_focus_prev
+        ELSE
+            HTMLGUI_focus_next
+        END IF
+        EXIT SUB
+    END IF
+
+    ' Enter key on focused element = click
+    IF k& = 13 THEN ' ENTER
+        IF HTMLGUI.focusNodeIdx >= 0 THEN
+            HTMLGUI_handle_click HTMLGUI.focusNodeIdx
+            EXIT SUB
+        END IF
+    END IF
+
+    ' Escape key = blur
+    IF k& = 27 THEN
+        HTMLGUI_blur_focus
+        EXIT SUB
+    END IF
+
+    ' Type into focused input
+    IF HTMLGUI.focusNodeIdx >= 0 THEN
+        DIM focusTag$
+        focusTag$ = _TRIM$(LCASE$(HTMLGUI_NODES(HTMLGUI.focusNodeIdx).tag))
+
+        IF focusTag$ = "input" THEN
+            DIM inputType$
+            inputType$ = HTMLGUI_node_get_attr$(HTMLGUI.focusNodeIdx, "type")
+            IF inputType$ = "" OR inputType$ = "text" OR inputType$ = "password" THEN
+                IF k& = 8 THEN ' BACKSPACE
+                    DIM curVal$
+                    curVal$ = _TRIM$(HTMLGUI_NODES(HTMLGUI.focusNodeIdx).formValue)
+                    IF LEN(curVal$) > 0 THEN
+                        HTMLGUI_NODES(HTMLGUI.focusNodeIdx).formValue = LEFT$(curVal$, LEN(curVal$) - 1)
+                        HTMLGUI_queue_event HTMLGUI.focusNodeIdx, HTMLGUI_EVENT_CHANGE, "", ""
+                        HTMLGUI.needsRepaint = TRUE
+                    END IF
+                ELSEIF k& >= 32 AND k& <= 126 THEN
+                    ' Printable ASCII
+                    DIM curVal2$
+                    curVal2$ = _TRIM$(HTMLGUI_NODES(HTMLGUI.focusNodeIdx).formValue)
+                    IF LEN(curVal2$) < 62 THEN ' formValue is STRING*64, leave room
+                        HTMLGUI_NODES(HTMLGUI.focusNodeIdx).formValue = curVal2$ + CHR$(k&)
+                        HTMLGUI_queue_event HTMLGUI.focusNodeIdx, HTMLGUI_EVENT_CHANGE, "", ""
+                        HTMLGUI.needsRepaint = TRUE
+                    END IF
+                END IF
+            END IF
+        END IF
+    END IF
+END SUB
+
+
+''
+' Hit test: find the topmost visible node at (x, y)
+' Tests children last (so last/topmost child wins)
+'
+' @param INTEGER nodeIdx% starting node
+' @param INTEGER x% test X coordinate
+' @param INTEGER y% test Y coordinate
+' @return INTEGER index of topmost node at point, or -1
+'
+FUNCTION HTMLGUI_hit_test% (nodeIdx%, x%, y%)
+    HTMLGUI_hit_test% = -1
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT FUNCTION
+    IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT FUNCTION
+
+    ' Check if point is inside this node's box
+    DIM n AS HTMLGUI_NODE
+    n = HTMLGUI_NODES(nodeIdx%)
+
+    DIM inBounds%
+    inBounds% = (x% >= INT(n.layoutX) AND x% < INT(n.layoutX + n.layoutW) AND _
+                 y% >= INT(n.layoutY) AND y% < INT(n.layoutY + n.layoutH))
+
+    IF NOT inBounds% THEN
+        ' Still check children for absolute-positioned elements
+        IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
+            DIM ci2%
+            ci2% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+            DO WHILE ci2% >= 0 AND ci2% < HTMLGUI.nodeCount
+                IF HTMLGUI_STYLES(ci2%).position = HTMLGUI_POS_ABSOLUTE THEN
+                    DIM absHit%
+                    absHit% = HTMLGUI_hit_test%(ci2%, x%, y%)
+                    IF absHit% >= 0 THEN
+                        HTMLGUI_hit_test% = absHit%
+                        EXIT FUNCTION
+                    END IF
+                END IF
+                ci2% = HTMLGUI_NODES(ci2%).nextSiblingIdx
+            LOOP
+        END IF
+        EXIT FUNCTION
+    END IF
+
+    ' Check children in reverse order (last child = topmost)
+    DIM bestHit%
+    bestHit% = -1
+
+    IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
+        DIM childIdx%
+        childIdx% = HTMLGUI_NODES(nodeIdx%).lastChildIdx
+        DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+            DIM childHit%
+            childHit% = HTMLGUI_hit_test%(childIdx%, x%, y%)
+            IF childHit% >= 0 THEN
+                bestHit% = childHit%
+                EXIT DO
+            END IF
+            childIdx% = HTMLGUI_NODES(childIdx%).prevSiblingIdx
+        LOOP
+    END IF
+
+    IF bestHit% >= 0 THEN
+        HTMLGUI_hit_test% = bestHit%
+    ELSE
+        ' Only return element nodes, not text nodes (use parent for text)
+        IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            HTMLGUI_hit_test% = HTMLGUI_NODES(nodeIdx%).parentIdx
+        ELSE
+            HTMLGUI_hit_test% = nodeIdx%
+        END IF
+    END IF
+END FUNCTION
+
+
+''
+' Handle a click on a node - dispatch events and handle form interactions
+'
+SUB HTMLGUI_handle_click (nodeIdx%)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+
+    ' Handle checkbox toggle
+    IF tag$ = "input" THEN
+        DIM inputType2$
+        inputType2$ = HTMLGUI_node_get_attr$(nodeIdx%, "type")
+        IF inputType2$ = "checkbox" THEN
+            HTMLGUI_NODES(nodeIdx%).formChecked = NOT HTMLGUI_NODES(nodeIdx%).formChecked
+            HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_CHANGE, "", ""
+            HTMLGUI.needsRepaint = TRUE
+        END IF
+    END IF
+
+    ' Handle links
+    IF tag$ = "a" THEN
+        DIM href$
+        href$ = HTMLGUI_node_get_attr$(nodeIdx%, "href")
+        IF LEN(href$) > 0 THEN
+            HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_CLICK, href$, ""
+        END IF
+    END IF
+
+    ' Dispatch onclick handler
+    DIM onclick$
+    onclick$ = HTMLGUI_node_get_attr$(nodeIdx%, "onclick")
+    IF LEN(onclick$) > 0 THEN
+        HTMLGUI_dispatch_handler nodeIdx%, onclick$
+    END IF
+
+    ' Also dispatch a generic click event
+    DIM id$
+    id$ = HTMLGUI_node_get_attr$(nodeIdx%, "id")
+    HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_CLICK, id$, ""
+END SUB
+
+
+''
+' Parse and dispatch an event handler string
+' Supports: _QB64PE_functionName('param1', 'param2')
+'
+SUB HTMLGUI_dispatch_handler (nodeIdx%, handler$)
+    DIM h$
+    h$ = _TRIM$(handler$)
+
+    ' Check for _QB64PE_ prefix
+    IF LEFT$(UCASE$(h$), 9) <> "_QB64PE_" THEN EXIT SUB
+
+    ' Extract function name and parameters
+    DIM parenPos%
+    parenPos% = INSTR(h$, "(")
+
+    DIM funcName$, params$
+    IF parenPos% > 0 THEN
+        funcName$ = MID$(h$, 1, parenPos% - 1)
+        ' Extract params between ( and )
+        DIM closePos%
+        closePos% = INSTR(parenPos%, h$, ")")
+        IF closePos% > parenPos% THEN
+            params$ = MID$(h$, parenPos% + 1, closePos% - parenPos% - 1)
+        END IF
+    ELSE
+        funcName$ = h$
+        params$ = ""
+    END IF
+
+    ' Clean up params — remove quotes
+    DIM cleanParam$
+    cleanParam$ = ""
+    DIM pi%
+    FOR pi% = 1 TO LEN(params$)
+        DIM pc$
+        pc$ = MID$(params$, pi%, 1)
+        IF pc$ <> "'" AND pc$ <> CHR$(34) THEN
+            cleanParam$ = cleanParam$ + pc$
+        END IF
+    NEXT pi%
+    cleanParam$ = _TRIM$(cleanParam$)
+
+    ' Get element ID
+    DIM elemId$
+    elemId$ = _TRIM$(HTMLGUI_NODES(nodeIdx%).id)
+
+    ' Queue the event for user processing
+    HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_CLICK, funcName$, cleanParam$
+END SUB
+
+
+''
+' Add an event to the event queue
+'
+SUB HTMLGUI_queue_event (nodeIdx%, eventType%, handler$, param$)
+    IF HTMLGUI.eventQueueCount >= HTMLGUI_MAX_EVENTS THEN
+        ' Queue full — drop oldest
+        DIM si%
+        FOR si% = 0 TO HTMLGUI.eventQueueCount - 2
+            HTMLGUI_EVENT_QUEUE(si%) = HTMLGUI_EVENT_QUEUE(si% + 1)
+        NEXT si%
+        HTMLGUI.eventQueueCount = HTMLGUI.eventQueueCount - 1
+    END IF
+
+    DIM idx%
+    idx% = HTMLGUI.eventQueueCount
+
+    HTMLGUI_EVENT_QUEUE(idx%).nodeIdx = nodeIdx%
+    HTMLGUI_EVENT_QUEUE(idx%).eventType = eventType%
+    HTMLGUI_EVENT_QUEUE(idx%).handler = handler$
+    HTMLGUI_EVENT_QUEUE(idx%).param = param$
+    HTMLGUI_EVENT_QUEUE(idx%).id = HTMLGUI_NODES(nodeIdx%).id
+    HTMLGUI_EVENT_QUEUE(idx%).bubbles = TRUE
+    HTMLGUI_EVENT_QUEUE(idx%).handled = FALSE
+
+    HTMLGUI.eventQueueCount = HTMLGUI.eventQueueCount + 1
+END SUB
+
+
+''
+' Check if there are pending events to process
+'
+FUNCTION HTMLGUI_has_event%
+    HTMLGUI_has_event% = (HTMLGUI.eventQueueCount > 0)
+END FUNCTION
+
+
+''
+' Get the next event from the queue
+' Returns TRUE if an event was dequeued, FALSE if queue empty
+'
+FUNCTION HTMLGUI_poll_event% (outEvent AS HTMLGUI_EVENT)
+    IF HTMLGUI.eventQueueCount = 0 THEN
+        HTMLGUI_poll_event% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    outEvent = HTMLGUI_EVENT_QUEUE(0)
+
+    ' Shift queue
+    DIM si2%
+    FOR si2% = 0 TO HTMLGUI.eventQueueCount - 2
+        HTMLGUI_EVENT_QUEUE(si2%) = HTMLGUI_EVENT_QUEUE(si2% + 1)
+    NEXT si2%
+    HTMLGUI.eventQueueCount = HTMLGUI.eventQueueCount - 1
+
+    HTMLGUI_poll_event% = TRUE
+END FUNCTION
+
+
+''
+' Set focus to a specific node
+'
+SUB HTMLGUI_set_focus (nodeIdx%)
+    IF nodeIdx% = HTMLGUI.focusNodeIdx THEN EXIT SUB
+
+    ' Blur previous
+    IF HTMLGUI.focusNodeIdx >= 0 THEN
+        HTMLGUI_NODES(HTMLGUI.focusNodeIdx).isFocused = FALSE
+        HTMLGUI_queue_event HTMLGUI.focusNodeIdx, HTMLGUI_EVENT_BLUR, "", ""
+    END IF
+
+    ' Focus new
+    HTMLGUI.focusNodeIdx = nodeIdx%
+    IF nodeIdx% >= 0 THEN
+        HTMLGUI_NODES(nodeIdx%).isFocused = TRUE
+        HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_FOCUS, "", ""
+    END IF
+
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Remove focus from current element
+'
+SUB HTMLGUI_blur_focus
+    HTMLGUI_set_focus -1
+END SUB
+
+
+''
+' Focus the next focusable element (Tab key)
+'
+SUB HTMLGUI_focus_next
+    DIM startIdx%
+    IF HTMLGUI.focusNodeIdx >= 0 THEN
+        startIdx% = HTMLGUI.focusNodeIdx + 1
+    ELSE
+        startIdx% = 0
+    END IF
+
+    DIM fi%
+    FOR fi% = startIdx% TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_is_focusable%(fi%) THEN
+            HTMLGUI_set_focus fi%
+            EXIT SUB
+        END IF
+    NEXT fi%
+
+    ' Wrap around
+    FOR fi% = 0 TO startIdx% - 1
+        IF HTMLGUI_is_focusable%(fi%) THEN
+            HTMLGUI_set_focus fi%
+            EXIT SUB
+        END IF
+    NEXT fi%
+END SUB
+
+
+''
+' Focus the previous focusable element (Shift+Tab)
+'
+SUB HTMLGUI_focus_prev
+    DIM startIdx%
+    IF HTMLGUI.focusNodeIdx >= 0 THEN
+        startIdx% = HTMLGUI.focusNodeIdx - 1
+    ELSE
+        startIdx% = HTMLGUI.nodeCount - 1
+    END IF
+
+    DIM fi%
+    FOR fi% = startIdx% TO 0 STEP -1
+        IF HTMLGUI_is_focusable%(fi%) THEN
+            HTMLGUI_set_focus fi%
+            EXIT SUB
+        END IF
+    NEXT fi%
+
+    ' Wrap around
+    FOR fi% = HTMLGUI.nodeCount - 1 TO startIdx% + 1 STEP -1
+        IF HTMLGUI_is_focusable%(fi%) THEN
+            HTMLGUI_set_focus fi%
+            EXIT SUB
+        END IF
+    NEXT fi%
+END SUB
+
+
+''
+' Check if a node is focusable
+'
+FUNCTION HTMLGUI_is_focusable% (nodeIdx%)
+    HTMLGUI_is_focusable% = FALSE
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT FUNCTION
+    IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT FUNCTION
+
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+
+    SELECT CASE tag$
+        CASE "button", "input", "select", "a"
+            ' Check for disabled attribute
+            DIM disabled$
+            disabled$ = HTMLGUI_node_get_attr$(nodeIdx%, "disabled")
+            IF LEN(disabled$) = 0 THEN
+                HTMLGUI_is_focusable% = TRUE
+            END IF
+    END SELECT
+END FUNCTION
+
+
+''
+' Find the first scrollable parent of a node
+'
+FUNCTION HTMLGUI_find_scrollable_parent% (nodeIdx%)
+    HTMLGUI_find_scrollable_parent% = -1
+    DIM idx%
+    idx% = nodeIdx%
+
+    DO WHILE idx% >= 0
+        IF HTMLGUI_STYLES(idx%).overflow = HTMLGUI_OVERFLOW_SCROLL OR _
+           HTMLGUI_STYLES(idx%).overflow = HTMLGUI_OVERFLOW_AUTO THEN
+            IF HTMLGUI_NODES(idx%).scrollContentH > HTMLGUI_NODES(idx%).contentH THEN
+                HTMLGUI_find_scrollable_parent% = idx%
+                EXIT FUNCTION
+            END IF
+        END IF
+        idx% = HTMLGUI_NODES(idx%).parentIdx
+    LOOP
+END FUNCTION

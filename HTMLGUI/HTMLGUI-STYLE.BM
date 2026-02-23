@@ -1,0 +1,1455 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - STYLE RESOLVER
+'
+' CSS selector matching, specificity-ordered cascade, property inheritance,
+' and user-agent default styles. Resolves all CSS rules to computed styles
+' on each DOM node.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Initialize a style to default values
+'
+' @param INTEGER idx% style index in HTMLGUI_STYLES()
+'
+SUB HTMLGUI_style_init (idx%)
+    HTMLGUI_STYLES(idx%).marginTop = 0
+    HTMLGUI_STYLES(idx%).marginRight = 0
+    HTMLGUI_STYLES(idx%).marginBottom = 0
+    HTMLGUI_STYLES(idx%).marginLeft = 0
+    HTMLGUI_STYLES(idx%).paddingTop = 0
+    HTMLGUI_STYLES(idx%).paddingRight = 0
+    HTMLGUI_STYLES(idx%).paddingBottom = 0
+    HTMLGUI_STYLES(idx%).paddingLeft = 0
+    HTMLGUI_STYLES(idx%).borderTopWidth = 0
+    HTMLGUI_STYLES(idx%).borderRightWidth = 0
+    HTMLGUI_STYLES(idx%).borderBottomWidth = 0
+    HTMLGUI_STYLES(idx%).borderLeftWidth = 0
+    HTMLGUI_STYLES(idx%).borderTopColor = HTMLGUI_COLOR_BLACK~&
+    HTMLGUI_STYLES(idx%).borderRightColor = HTMLGUI_COLOR_BLACK~&
+    HTMLGUI_STYLES(idx%).borderBottomColor = HTMLGUI_COLOR_BLACK~&
+    HTMLGUI_STYLES(idx%).borderLeftColor = HTMLGUI_COLOR_BLACK~&
+    HTMLGUI_STYLES(idx%).width = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).height = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).minWidth = 0
+    HTMLGUI_STYLES(idx%).minHeight = 0
+    HTMLGUI_STYLES(idx%).maxWidth = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).maxHeight = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).bgColor = HTMLGUI_COLOR_TRANSPARENT~&
+    HTMLGUI_STYLES(idx%).fgColor = HTMLGUI_COLOR_BLACK~&
+    HTMLGUI_STYLES(idx%).opacity = 1.0
+    HTMLGUI_STYLES(idx%).fontFamily = "sans-serif"
+    HTMLGUI_STYLES(idx%).fontSize = 16
+    HTMLGUI_STYLES(idx%).fontWeight = HTMLGUI_WEIGHT_NORMAL
+    HTMLGUI_STYLES(idx%).fontStyle = HTMLGUI_STYLE_NORMAL
+    HTMLGUI_STYLES(idx%).fontHandle = 0
+    HTMLGUI_STYLES(idx%).textAlign = HTMLGUI_TEXT_LEFT
+    HTMLGUI_STYLES(idx%).textDecoration = HTMLGUI_DECOR_NONE
+    HTMLGUI_STYLES(idx%).display = HTMLGUI_DISPLAY_BLOCK
+    HTMLGUI_STYLES(idx%).position = HTMLGUI_POS_STATIC
+    HTMLGUI_STYLES(idx%).posTop = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).posRight = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).posBottom = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).posLeft = HTMLGUI_AUTO!
+    HTMLGUI_STYLES(idx%).flexDirection = HTMLGUI_FLEX_ROW
+    HTMLGUI_STYLES(idx%).justifyContent = HTMLGUI_JUSTIFY_START
+    HTMLGUI_STYLES(idx%).alignItems = HTMLGUI_ALIGN_STRETCH
+    HTMLGUI_STYLES(idx%).flexGrow = 0
+    HTMLGUI_STYLES(idx%).flexShrink = 1
+    HTMLGUI_STYLES(idx%).gap = 0
+    HTMLGUI_STYLES(idx%).overflow = HTMLGUI_OVERFLOW_VISIBLE
+    HTMLGUI_STYLES(idx%).cursor = HTMLGUI_CURSOR_DEFAULT
+    HTMLGUI_STYLES(idx%).listStyleType = HTMLGUI_LIST_DISC
+    HTMLGUI_STYLES(idx%).cssFloat = HTMLGUI_FLOAT_NONE
+    HTMLGUI_STYLES(idx%).isSet = FALSE
+    HTMLGUI_STYLES(idx%).explicitProps = 0
+
+    ' Background image defaults
+    HTMLGUI_STYLES(idx%).bgImageType = HTMLGUI_BG_NONE
+    HTMLGUI_STYLES(idx%).bgImageValue = ""
+    HTMLGUI_STYLES(idx%).bgRepeat = HTMLGUI_BG_REPEAT
+    HTMLGUI_STYLES(idx%).bgSizeMode = HTMLGUI_BG_SIZE_AUTO
+    HTMLGUI_STYLES(idx%).bgSizeW = 0
+    HTMLGUI_STYLES(idx%).bgSizeH = 0
+    HTMLGUI_STYLES(idx%).bgPositionX = 0
+    HTMLGUI_STYLES(idx%).bgPositionY = 0
+    HTMLGUI_STYLES(idx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+    HTMLGUI_STYLES(idx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+    HTMLGUI_STYLES(idx%).bgCacheHandle = 0
+    HTMLGUI_STYLES(idx%).gradientIdx = -1
+    HTMLGUI_STYLES(idx%).objectFit = HTMLGUI_OBJFIT_FILL
+END SUB
+
+
+''
+' Apply user-agent default styles based on tag name
+'
+' @param INTEGER nodeIdx% DOM node index
+'
+SUB HTMLGUI_apply_ua_defaults (nodeIdx%)
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+
+    SELECT CASE tag$
+        CASE "body"
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 8
+            HTMLGUI_STYLES(nodeIdx%).marginRight = 8
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 8
+            HTMLGUI_STYLES(nodeIdx%).marginLeft = 8
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h1"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 32
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 21
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 21
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h2"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 24
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 19
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 19
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h3"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 19
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 18
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 18
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h4"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 16
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 21
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 21
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h5"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 13
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 22
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 22
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "h6"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = 11
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 25
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 25
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "p"
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 16
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 16
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "div", "nav", "header", "footer", "main", "section", "article"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "span"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "a"
+            HTMLGUI_STYLES(nodeIdx%).fgColor = HTMLGUI_COLOR_LINK~&
+            HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_UNDERLINE
+            HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+            ' Protect UA link color from being overridden by inheritance
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_COLOR
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_DECORATION
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_CURSOR
+
+        CASE "strong", "b"
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "em", "i"
+            HTMLGUI_STYLES(nodeIdx%).fontStyle = HTMLGUI_STYLE_ITALIC
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "ul", "ol"
+            HTMLGUI_STYLES(nodeIdx%).paddingLeft = 40
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 16
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 16
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+            IF tag$ = "ol" THEN
+                HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_DECIMAL
+            ELSE
+                HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_DISC
+            END IF
+
+        CASE "li"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "button"
+            HTMLGUI_STYLES(nodeIdx%).paddingTop = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingRight = 6
+            HTMLGUI_STYLES(nodeIdx%).paddingBottom = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingLeft = 6
+            HTMLGUI_STYLES(nodeIdx%).borderTopWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderRightWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderBottomWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderLeftWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+            HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_CENTER
+
+        CASE "input"
+            HTMLGUI_STYLES(nodeIdx%).paddingTop = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingRight = 4
+            HTMLGUI_STYLES(nodeIdx%).paddingBottom = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingLeft = 4
+            HTMLGUI_STYLES(nodeIdx%).borderTopWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderRightWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderBottomWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderLeftWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_TEXT
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "select"
+            HTMLGUI_STYLES(nodeIdx%).paddingTop = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingRight = 4
+            HTMLGUI_STYLES(nodeIdx%).paddingBottom = 2
+            HTMLGUI_STYLES(nodeIdx%).paddingLeft = 4
+            HTMLGUI_STYLES(nodeIdx%).borderTopWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderRightWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderBottomWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderLeftWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "label"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "table"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE
+
+        CASE "tr"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW
+
+        CASE "td", "th"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE_CELL
+            HTMLGUI_STYLES(nodeIdx%).paddingTop = 1
+            HTMLGUI_STYLES(nodeIdx%).paddingRight = 4
+            HTMLGUI_STYLES(nodeIdx%).paddingBottom = 1
+            HTMLGUI_STYLES(nodeIdx%).paddingLeft = 4
+            IF tag$ = "th" THEN
+                HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+                HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_CENTER
+            END IF
+
+        CASE "hr"
+            HTMLGUI_STYLES(nodeIdx%).borderTopWidth = 1
+            HTMLGUI_STYLES(nodeIdx%).borderTopColor = _RGB32(128, 128, 128)
+            HTMLGUI_STYLES(nodeIdx%).marginTop = 8
+            HTMLGUI_STYLES(nodeIdx%).marginBottom = 8
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        CASE "img"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+
+        CASE "br"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+
+        ' Hidden elements — never render
+        CASE "head", "meta", "link", "title", "script", "style", "noscript"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE
+    END SELECT
+END SUB
+
+
+''
+' Check if a CSS selector matches a DOM node
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING selector$ CSS selector
+' @return INTEGER TRUE if matches
+'
+FUNCTION HTMLGUI_selector_matches% (nodeIdx%, selector$)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN
+        HTMLGUI_selector_matches% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    IF HTMLGUI_NODES(nodeIdx%).nodeType <> HTMLGUI_NODE_ELEMENT THEN
+        HTMLGUI_selector_matches% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    DIM sel$
+    sel$ = _TRIM$(selector$)
+
+    ' Handle descendant combinator (e.g., "nav a", "div .cls")
+    ' Split by spaces and match right-to-left
+    IF INSTR(sel$, " ") > 0 THEN
+        REDIM selParts$(0 TO 7)
+        DIM selPartCount%
+        selPartCount% = 0
+        STR.explode sel$, " ", selParts$(), selPartCount%
+
+        ' The rightmost part must match this node
+        IF selPartCount% < 1 THEN
+            HTMLGUI_selector_matches% = FALSE
+            EXIT FUNCTION
+        END IF
+
+        IF NOT HTMLGUI_simple_selector_matches%(nodeIdx%, _TRIM$(selParts$(selPartCount% - 1))) THEN
+            HTMLGUI_selector_matches% = FALSE
+            EXIT FUNCTION
+        END IF
+
+        ' Walk ancestors for remaining parts (right to left)
+        DIM si%, ancestorIdx%
+        ancestorIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+        FOR si% = selPartCount% - 2 TO 0 STEP -1
+            DIM partSel$
+            partSel$ = _TRIM$(selParts$(si%))
+            IF LEN(partSel$) = 0 THEN _CONTINUE
+
+            DIM found%
+            found% = FALSE
+            DO WHILE ancestorIdx% >= 0
+                IF HTMLGUI_simple_selector_matches%(ancestorIdx%, partSel$) THEN
+                    found% = TRUE
+                    ancestorIdx% = HTMLGUI_NODES(ancestorIdx%).parentIdx
+                    EXIT DO
+                END IF
+                ancestorIdx% = HTMLGUI_NODES(ancestorIdx%).parentIdx
+            LOOP
+
+            IF NOT found% THEN
+                HTMLGUI_selector_matches% = FALSE
+                EXIT FUNCTION
+            END IF
+        NEXT si%
+
+        HTMLGUI_selector_matches% = TRUE
+        EXIT FUNCTION
+    END IF
+
+    ' Simple selector (no spaces)
+    HTMLGUI_selector_matches% = HTMLGUI_simple_selector_matches%(nodeIdx%, sel$)
+END FUNCTION
+
+
+''
+' Check if a simple selector (no combinators) matches a node
+' Handles: tag, #id, .class, tag.class, tag#id, .class1.class2
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING sel$ simple selector
+' @return INTEGER TRUE if matches
+'
+FUNCTION HTMLGUI_simple_selector_matches% (nodeIdx%, sel$)
+    DIM s$
+    s$ = _TRIM$(LCASE$(sel$))
+
+    ' Universal selector
+    IF s$ = "*" THEN
+        HTMLGUI_simple_selector_matches% = TRUE
+        EXIT FUNCTION
+    END IF
+
+    DIM nodeTag$, nodeId$, nodeClass$
+    nodeTag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+    nodeId$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).id))
+    nodeClass$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).className))
+
+    ' Parse selector into components
+    DIM hasTag%, hasId%, hasClass%
+    DIM selTag$, selId$
+    REDIM selClasses$(0 TO 7)
+    DIM selClassCount%
+    hasTag% = FALSE: hasId% = FALSE: hasClass% = FALSE
+    selTag$ = "": selId$ = "": selClassCount% = 0
+
+    ' Tokenize: split at # and . boundaries
+    DIM pPos%, tokenStart%, tokenType%
+    ' tokenType: 0=tag, 1=id, 2=class
+    pPos% = 1
+    tokenType% = 0 ' assume starts with tag
+
+    IF LEFT$(s$, 1) = "#" THEN
+        tokenType% = 1
+        pPos% = 2
+    ELSEIF LEFT$(s$, 1) = "." THEN
+        tokenType% = 2
+        pPos% = 2
+    END IF
+
+    tokenStart% = pPos%
+    DO WHILE pPos% <= LEN(s$) + 1
+        DIM cc$, endToken%
+        IF pPos% <= LEN(s$) THEN cc$ = MID$(s$, pPos%, 1) ELSE cc$ = ""
+        endToken% = FALSE
+
+        IF pPos% > LEN(s$) THEN
+            endToken% = TRUE
+        ELSEIF cc$ = "#" OR cc$ = "." THEN
+            endToken% = TRUE
+        ELSEIF cc$ = ":" THEN
+            ' Pseudo-class — stop here (handled separately)
+            endToken% = TRUE
+        END IF
+
+        IF endToken% THEN
+            DIM token$
+            IF pPos% > tokenStart% THEN
+                token$ = MID$(s$, tokenStart%, pPos% - tokenStart%)
+            ELSE
+                token$ = ""
+            END IF
+
+            SELECT CASE tokenType%
+                CASE 0 ' tag
+                    selTag$ = token$
+                    hasTag% = TRUE
+                CASE 1 ' id
+                    selId$ = token$
+                    hasId% = TRUE
+                CASE 2 ' class
+                    IF LEN(token$) > 0 AND selClassCount% <= UBOUND(selClasses$) THEN
+                        selClasses$(selClassCount%) = token$
+                        selClassCount% = selClassCount% + 1
+                        hasClass% = TRUE
+                    END IF
+            END SELECT
+
+            ' Next token type
+            IF pPos% <= LEN(s$) THEN
+                IF cc$ = "#" THEN tokenType% = 1
+                IF cc$ = "." THEN tokenType% = 2
+                IF cc$ = ":" THEN EXIT DO ' stop at pseudo
+            END IF
+            tokenStart% = pPos% + 1
+        END IF
+
+        pPos% = pPos% + 1
+    LOOP
+
+    ' Now check all constraints
+    IF hasTag% AND LEN(selTag$) > 0 THEN
+        IF nodeTag$ <> selTag$ THEN
+            HTMLGUI_simple_selector_matches% = FALSE
+            EXIT FUNCTION
+        END IF
+    END IF
+
+    IF hasId% AND LEN(selId$) > 0 THEN
+        IF nodeId$ <> selId$ THEN
+            HTMLGUI_simple_selector_matches% = FALSE
+            EXIT FUNCTION
+        END IF
+    END IF
+
+    IF hasClass% THEN
+        DIM ci%
+        FOR ci% = 0 TO selClassCount% - 1
+            IF NOT HTMLGUI_has_class%(nodeIdx%, selClasses$(ci%)) THEN
+                HTMLGUI_simple_selector_matches% = FALSE
+                EXIT FUNCTION
+            END IF
+        NEXT ci%
+    END IF
+
+    ' Must have matched at least one thing
+    IF NOT hasTag% AND NOT hasId% AND NOT hasClass% THEN
+        HTMLGUI_simple_selector_matches% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    HTMLGUI_simple_selector_matches% = TRUE
+END FUNCTION
+
+
+''
+' Check if a node has a specific class
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING cls$ class name to look for (lowercase)
+' @return INTEGER TRUE if node has this class
+'
+FUNCTION HTMLGUI_has_class% (nodeIdx%, cls$)
+    DIM classes$
+    classes$ = " " + _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).className)) + " "
+    HTMLGUI_has_class% = (INSTR(classes$, " " + cls$ + " ") > 0)
+END FUNCTION
+
+
+''
+' Resolve all styles: apply UA defaults, then cascade CSS rules,
+' then inherit from parent.
+'
+SUB HTMLGUI_resolve_styles ()
+    ' Initialize all styles
+    DIM ni%
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        HTMLGUI_style_init ni%
+    NEXT ni%
+
+    ' Apply user-agent defaults to element nodes
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_NODES(ni%).nodeType = HTMLGUI_NODE_ELEMENT THEN
+            HTMLGUI_apply_ua_defaults ni%
+        END IF
+    NEXT ni%
+
+    ' Sort rules by specificity (insertion sort — stable, max 256 rules)
+    REDIM sortedRules%(0 TO HTMLGUI_MAX_RULES - 1)
+    DIM ri%
+    FOR ri% = 0 TO HTMLGUI.ruleCount - 1
+        sortedRules%(ri%) = ri%
+    NEXT ri%
+
+    DIM si2%, sj%, tempIdx%
+    FOR si2% = 1 TO HTMLGUI.ruleCount - 1
+        tempIdx% = sortedRules%(si2%)
+        sj% = si2% - 1
+        DO WHILE sj% >= 0
+            IF HTMLGUI_RULES(sortedRules%(sj%)).specificity > HTMLGUI_RULES(tempIdx%).specificity THEN
+                sortedRules%(sj% + 1) = sortedRules%(sj%)
+                sj% = sj% - 1
+            ELSE
+                EXIT DO
+            END IF
+        LOOP
+        sortedRules%(sj% + 1) = tempIdx%
+    NEXT si2%
+
+    ' Apply CSS rules to matching nodes (sorted by specificity — low to high)
+    FOR si2% = 0 TO HTMLGUI.ruleCount - 1
+        ri% = sortedRules%(si2%)
+        DIM selector$
+        selector$ = _TRIM$(HTMLGUI_RULES(ri%).selector)
+
+        FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+            IF HTMLGUI_NODES(ni%).nodeType <> HTMLGUI_NODE_ELEMENT THEN _CONTINUE
+            DIM matchResult%
+            matchResult% = HTMLGUI_selector_matches%(ni%, selector$)
+            IF NOT matchResult% THEN _CONTINUE
+
+            ' Apply all properties from this rule
+            DIM pi%
+            FOR pi% = 0 TO HTMLGUI_RULES(ri%).propCount - 1
+                DIM propName$, propVal$
+                propName$ = _TRIM$(HTMLGUI_RULE_NAMES(ri%, pi%))
+                propVal$ = _TRIM$(HTMLGUI_RULE_VALS(ri%, pi%))
+                HTMLGUI_apply_property ni%, propName$, propVal$
+            NEXT pi%
+        NEXT ni%
+    NEXT si2%
+
+    ' Inherit from parents (depth-first traversal)
+    HTMLGUI_inherit_styles HTMLGUI.rootNodeIdx
+END SUB
+
+
+''
+' Apply a single CSS property to a node's computed style
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING prop$ property name
+' @param STRING cssVal$ property value
+'
+SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
+    DIM fs!
+    fs! = HTMLGUI_STYLES(nodeIdx%).fontSize
+    IF fs! <= 0 THEN fs! = 16
+
+    SELECT CASE prop$
+        ' --- Box model ---
+        CASE "margin-top":      HTMLGUI_STYLES(nodeIdx%).marginTop = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "margin-right":    HTMLGUI_STYLES(nodeIdx%).marginRight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "margin-bottom":   HTMLGUI_STYLES(nodeIdx%).marginBottom = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "margin-left":     HTMLGUI_STYLES(nodeIdx%).marginLeft = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "padding-top":     HTMLGUI_STYLES(nodeIdx%).paddingTop = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "padding-right":   HTMLGUI_STYLES(nodeIdx%).paddingRight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "padding-bottom":  HTMLGUI_STYLES(nodeIdx%).paddingBottom = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "padding-left":    HTMLGUI_STYLES(nodeIdx%).paddingLeft = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "border-top-width": HTMLGUI_STYLES(nodeIdx%).borderTopWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "border-right-width": HTMLGUI_STYLES(nodeIdx%).borderRightWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "border-bottom-width": HTMLGUI_STYLES(nodeIdx%).borderBottomWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "border-left-width": HTMLGUI_STYLES(nodeIdx%).borderLeftWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "border-top-color": HTMLGUI_STYLES(nodeIdx%).borderTopColor = HTMLGUI_parse_color~&(cssVal$)
+        CASE "border-right-color": HTMLGUI_STYLES(nodeIdx%).borderRightColor = HTMLGUI_parse_color~&(cssVal$)
+        CASE "border-bottom-color": HTMLGUI_STYLES(nodeIdx%).borderBottomColor = HTMLGUI_parse_color~&(cssVal$)
+        CASE "border-left-color": HTMLGUI_STYLES(nodeIdx%).borderLeftColor = HTMLGUI_parse_color~&(cssVal$)
+
+        ' --- Dimensions ---
+        CASE "width":       HTMLGUI_STYLES(nodeIdx%).width = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "height":      HTMLGUI_STYLES(nodeIdx%).height = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "min-width":   HTMLGUI_STYLES(nodeIdx%).minWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "min-height":  HTMLGUI_STYLES(nodeIdx%).minHeight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "max-width":   HTMLGUI_STYLES(nodeIdx%).maxWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "max-height":  HTMLGUI_STYLES(nodeIdx%).maxHeight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+
+        ' --- Colors ---
+        CASE "background-color": HTMLGUI_STYLES(nodeIdx%).bgColor = HTMLGUI_parse_color~&(cssVal$)
+
+        ' --- Background image ---
+        CASE "background-image"
+            HTMLGUI_apply_bg_image nodeIdx%, cssVal$
+
+        CASE "background-repeat"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "no-repeat":  HTMLGUI_STYLES(nodeIdx%).bgRepeat = HTMLGUI_BG_NO_REPEAT
+                CASE "repeat-x":   HTMLGUI_STYLES(nodeIdx%).bgRepeat = HTMLGUI_BG_REPEAT_X
+                CASE "repeat-y":   HTMLGUI_STYLES(nodeIdx%).bgRepeat = HTMLGUI_BG_REPEAT_Y
+                CASE ELSE:         HTMLGUI_STYLES(nodeIdx%).bgRepeat = HTMLGUI_BG_REPEAT
+            END SELECT
+
+        CASE "background-size"
+            HTMLGUI_apply_bg_size nodeIdx%, cssVal$
+
+        CASE "background-position"
+            HTMLGUI_apply_bg_position nodeIdx%, cssVal$
+
+        CASE "background"
+            HTMLGUI_apply_bg_shorthand nodeIdx%, cssVal$
+
+        CASE "object-fit"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "contain":    HTMLGUI_STYLES(nodeIdx%).objectFit = HTMLGUI_OBJFIT_CONTAIN
+                CASE "cover":      HTMLGUI_STYLES(nodeIdx%).objectFit = HTMLGUI_OBJFIT_COVER
+                CASE "none":       HTMLGUI_STYLES(nodeIdx%).objectFit = HTMLGUI_OBJFIT_NONE
+                CASE "scale-down": HTMLGUI_STYLES(nodeIdx%).objectFit = HTMLGUI_OBJFIT_SCALE_DOWN
+                CASE ELSE:         HTMLGUI_STYLES(nodeIdx%).objectFit = HTMLGUI_OBJFIT_FILL
+            END SELECT
+        CASE "color"
+            HTMLGUI_STYLES(nodeIdx%).fgColor = HTMLGUI_parse_color~&(cssVal$)
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_COLOR
+        CASE "opacity"
+            DIM opVal!
+            opVal! = VAL(cssVal$)
+            IF opVal! < 0 THEN opVal! = 0
+            IF opVal! > 1 THEN opVal! = 1
+            HTMLGUI_STYLES(nodeIdx%).opacity = opVal!
+
+        ' --- Font ---
+        CASE "font-family"
+            HTMLGUI_STYLES(nodeIdx%).fontFamily = cssVal$
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_FAMILY
+        CASE "font-size"
+            HTMLGUI_STYLES(nodeIdx%).fontSize = HTMLGUI_parse_dimension!(cssVal$, fs!)
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_SIZE
+        CASE "font-weight"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "bold", "bolder", "700", "800", "900"
+                    HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+                CASE ELSE
+                    HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_NORMAL
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_WEIGHT
+        CASE "font-style"
+            IF LCASE$(cssVal$) = "italic" OR LCASE$(cssVal$) = "oblique" THEN
+                HTMLGUI_STYLES(nodeIdx%).fontStyle = HTMLGUI_STYLE_ITALIC
+            ELSE
+                HTMLGUI_STYLES(nodeIdx%).fontStyle = HTMLGUI_STYLE_NORMAL
+            END IF
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_STYLE
+
+        ' --- Text ---
+        CASE "text-align"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "center":  HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_CENTER
+                CASE "right":   HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_RIGHT
+                CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_LEFT
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_ALIGN
+        CASE "text-decoration"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "underline":    HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_UNDERLINE
+                CASE "overline":     HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_OVERLINE
+                CASE "line-through": HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_LINETHROUGH
+                CASE ELSE:           HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_NONE
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_DECORATION
+
+        ' --- Layout ---
+        CASE "display"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "block":       HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+                CASE "inline":      HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
+                CASE "none":        HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE
+                CASE "flex":        HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_FLEX
+                CASE "inline-flex": HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE_FLEX
+                CASE "table":       HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE
+                CASE "table-row":   HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW
+                CASE "table-cell":  HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_TABLE_CELL
+            END SELECT
+
+        CASE "position"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "relative":  HTMLGUI_STYLES(nodeIdx%).position = HTMLGUI_POS_RELATIVE
+                CASE "absolute":  HTMLGUI_STYLES(nodeIdx%).position = HTMLGUI_POS_ABSOLUTE
+                CASE ELSE:        HTMLGUI_STYLES(nodeIdx%).position = HTMLGUI_POS_STATIC
+            END SELECT
+        CASE "top":     HTMLGUI_STYLES(nodeIdx%).posTop = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "right":   HTMLGUI_STYLES(nodeIdx%).posRight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "bottom":  HTMLGUI_STYLES(nodeIdx%).posBottom = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        CASE "left":    HTMLGUI_STYLES(nodeIdx%).posLeft = HTMLGUI_parse_dimension!(cssVal$, fs!)
+
+        ' --- Flexbox ---
+        CASE "flex-direction"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "row":            HTMLGUI_STYLES(nodeIdx%).flexDirection = HTMLGUI_FLEX_ROW
+                CASE "column":         HTMLGUI_STYLES(nodeIdx%).flexDirection = HTMLGUI_FLEX_COLUMN
+                CASE "row-reverse":    HTMLGUI_STYLES(nodeIdx%).flexDirection = HTMLGUI_FLEX_ROW_REVERSE
+                CASE "column-reverse": HTMLGUI_STYLES(nodeIdx%).flexDirection = HTMLGUI_FLEX_COLUMN_REVERSE
+            END SELECT
+        CASE "justify-content"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "center":        HTMLGUI_STYLES(nodeIdx%).justifyContent = HTMLGUI_JUSTIFY_CENTER
+                CASE "flex-end", "end": HTMLGUI_STYLES(nodeIdx%).justifyContent = HTMLGUI_JUSTIFY_END
+                CASE "space-between": HTMLGUI_STYLES(nodeIdx%).justifyContent = HTMLGUI_JUSTIFY_SPACE_BETWEEN
+                CASE "space-around":  HTMLGUI_STYLES(nodeIdx%).justifyContent = HTMLGUI_JUSTIFY_SPACE_AROUND
+                CASE ELSE:            HTMLGUI_STYLES(nodeIdx%).justifyContent = HTMLGUI_JUSTIFY_START
+            END SELECT
+        CASE "align-items"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "center":         HTMLGUI_STYLES(nodeIdx%).alignItems = HTMLGUI_ALIGN_CENTER
+                CASE "flex-start", "start": HTMLGUI_STYLES(nodeIdx%).alignItems = HTMLGUI_ALIGN_START
+                CASE "flex-end", "end": HTMLGUI_STYLES(nodeIdx%).alignItems = HTMLGUI_ALIGN_END
+                CASE ELSE:             HTMLGUI_STYLES(nodeIdx%).alignItems = HTMLGUI_ALIGN_STRETCH
+            END SELECT
+        CASE "flex-grow":   HTMLGUI_STYLES(nodeIdx%).flexGrow = VAL(cssVal$)
+        CASE "flex-shrink":  HTMLGUI_STYLES(nodeIdx%).flexShrink = VAL(cssVal$)
+        CASE "gap":         HTMLGUI_STYLES(nodeIdx%).gap = HTMLGUI_parse_dimension!(cssVal$, fs!)
+
+        ' --- Misc ---
+        CASE "overflow"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "hidden":  HTMLGUI_STYLES(nodeIdx%).overflow = HTMLGUI_OVERFLOW_HIDDEN
+                CASE "scroll", "auto": HTMLGUI_STYLES(nodeIdx%).overflow = HTMLGUI_OVERFLOW_SCROLL
+                CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).overflow = HTMLGUI_OVERFLOW_VISIBLE
+            END SELECT
+        CASE "cursor"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "pointer": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
+                CASE "text":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_TEXT
+                CASE "crosshair": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_CROSSHAIR
+                CASE "move":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_MOVE
+                CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_DEFAULT
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_CURSOR
+        CASE "list-style-type"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "disc":    HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_DISC
+                CASE "circle":  HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_CIRCLE
+                CASE "square":  HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_SQUARE
+                CASE "decimal": HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_DECIMAL
+                CASE "none":    HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_LIST_NONE
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_LIST_STYLE
+
+        ' --- Float ---
+        CASE "float"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "left"
+                    HTMLGUI_STYLES(nodeIdx%).cssFloat = HTMLGUI_FLOAT_LEFT
+                CASE "right"
+                    HTMLGUI_STYLES(nodeIdx%).cssFloat = HTMLGUI_FLOAT_RIGHT
+                CASE ELSE
+                    HTMLGUI_STYLES(nodeIdx%).cssFloat = HTMLGUI_FLOAT_NONE
+            END SELECT
+    END SELECT
+
+    HTMLGUI_STYLES(nodeIdx%).isSet = TRUE
+END SUB
+
+
+''
+' Recursively inherit inheritable CSS properties from parent
+'
+' @param INTEGER nodeIdx% DOM node index to process
+'
+SUB HTMLGUI_inherit_styles (nodeIdx%)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+
+    DIM parentIdx%
+    parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+
+    IF parentIdx% >= 0 AND parentIdx% < HTMLGUI.nodeCount THEN
+        ' Inheritable properties: color, font-*, text-align, cursor, list-style-type
+        ' Only inherit if not explicitly set by a CSS rule (we check if it's still
+        ' at the UA default or initial value — a simplification)
+
+        ' For text nodes, always inherit everything from parent
+        IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            HTMLGUI_STYLES(nodeIdx%).fgColor = HTMLGUI_STYLES(parentIdx%).fgColor
+            HTMLGUI_STYLES(nodeIdx%).fontFamily = HTMLGUI_STYLES(parentIdx%).fontFamily
+            HTMLGUI_STYLES(nodeIdx%).fontSize = HTMLGUI_STYLES(parentIdx%).fontSize
+            HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_STYLES(parentIdx%).fontWeight
+            HTMLGUI_STYLES(nodeIdx%).fontStyle = HTMLGUI_STYLES(parentIdx%).fontStyle
+            HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_STYLES(parentIdx%).textAlign
+            HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_STYLES(parentIdx%).textDecoration
+            HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_STYLES(parentIdx%).cursor
+            HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_STYLES(parentIdx%).listStyleType
+        ELSE
+        ' For element nodes, inherit each property individually if not explicitly set
+            DIM ep AS LONG
+            ep = HTMLGUI_STYLES(nodeIdx%).explicitProps
+            IF (ep AND HTMLGUI_EXPLICIT_COLOR) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).fgColor = HTMLGUI_STYLES(parentIdx%).fgColor
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_FONT_FAMILY) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).fontFamily = HTMLGUI_STYLES(parentIdx%).fontFamily
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_FONT_SIZE) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).fontSize = HTMLGUI_STYLES(parentIdx%).fontSize
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_FONT_WEIGHT) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_STYLES(parentIdx%).fontWeight
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_FONT_STYLE) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).fontStyle = HTMLGUI_STYLES(parentIdx%).fontStyle
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_TEXT_ALIGN) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_STYLES(parentIdx%).textAlign
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_CURSOR) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_STYLES(parentIdx%).cursor
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_LIST_STYLE) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_STYLES(parentIdx%).listStyleType
+            END IF
+        END IF
+    END IF
+
+    ' Recurse into children
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        HTMLGUI_inherit_styles childIdx%
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+END SUB
+
+
+''
+' Apply background-image property value (url(), linear-gradient(), radial-gradient(), or none)
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING cssVal$ the background-image value
+'
+SUB HTMLGUI_apply_bg_image (nodeIdx%, cssVal$)
+    DIM v$
+    v$ = _TRIM$(cssVal$)
+    DIM lv$
+    lv$ = LCASE$(v$)
+
+    IF lv$ = "none" THEN
+        HTMLGUI_STYLES(nodeIdx%).bgImageType = HTMLGUI_BG_NONE
+        HTMLGUI_STYLES(nodeIdx%).bgImageValue = ""
+        HTMLGUI_STYLES(nodeIdx%).gradientIdx = -1
+        EXIT SUB
+    END IF
+
+    ' url(path)
+    IF LEFT$(lv$, 4) = "url(" THEN
+        HTMLGUI_STYLES(nodeIdx%).bgImageType = HTMLGUI_BG_URL
+        ' Extract path from url('path') or url("path") or url(path)
+        DIM urlPath$
+        urlPath$ = MID$(v$, 5)
+        IF RIGHT$(urlPath$, 1) = ")" THEN urlPath$ = LEFT$(urlPath$, LEN(urlPath$) - 1)
+        ' Strip quotes
+        urlPath$ = _TRIM$(urlPath$)
+        IF LEFT$(urlPath$, 1) = "'" OR LEFT$(urlPath$, 1) = CHR$(34) THEN
+            urlPath$ = MID$(urlPath$, 2)
+        END IF
+        IF RIGHT$(urlPath$, 1) = "'" OR RIGHT$(urlPath$, 1) = CHR$(34) THEN
+            urlPath$ = LEFT$(urlPath$, LEN(urlPath$) - 1)
+        END IF
+        HTMLGUI_STYLES(nodeIdx%).bgImageValue = urlPath$
+        HTMLGUI_STYLES(nodeIdx%).gradientIdx = -1
+        EXIT SUB
+    END IF
+
+    ' linear-gradient(...)
+    IF LEFT$(lv$, 16) = "linear-gradient(" THEN
+        HTMLGUI_STYLES(nodeIdx%).bgImageType = HTMLGUI_BG_LINEAR_GRADIENT
+        HTMLGUI_STYLES(nodeIdx%).bgImageValue = v$
+        ' Parse and store gradient
+        DIM gIdx%
+        gIdx% = HTMLGUI_parse_gradient%(v$)
+        HTMLGUI_STYLES(nodeIdx%).gradientIdx = gIdx%
+        EXIT SUB
+    END IF
+
+    ' radial-gradient(...)
+    IF LEFT$(lv$, 16) = "radial-gradient(" THEN
+        HTMLGUI_STYLES(nodeIdx%).bgImageType = HTMLGUI_BG_RADIAL_GRADIENT
+        HTMLGUI_STYLES(nodeIdx%).bgImageValue = v$
+        DIM rIdx%
+        rIdx% = HTMLGUI_parse_gradient%(v$)
+        HTMLGUI_STYLES(nodeIdx%).gradientIdx = rIdx%
+        EXIT SUB
+    END IF
+END SUB
+
+
+''
+' Apply background-size property value
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING cssVal$ the background-size value (auto|cover|contain|<w> <h>)
+'
+SUB HTMLGUI_apply_bg_size (nodeIdx%, cssVal$)
+    DIM v$
+    v$ = LCASE$(_TRIM$(cssVal$))
+
+    SELECT CASE v$
+        CASE "auto"
+            HTMLGUI_STYLES(nodeIdx%).bgSizeMode = HTMLGUI_BG_SIZE_AUTO
+        CASE "cover"
+            HTMLGUI_STYLES(nodeIdx%).bgSizeMode = HTMLGUI_BG_SIZE_COVER
+        CASE "contain"
+            HTMLGUI_STYLES(nodeIdx%).bgSizeMode = HTMLGUI_BG_SIZE_CONTAIN
+        CASE ELSE
+            ' Explicit size: "200px 100px" or "50% 50%" or "200px" (auto for other)
+            HTMLGUI_STYLES(nodeIdx%).bgSizeMode = HTMLGUI_BG_SIZE_EXPLICIT
+            REDIM szParts$(0 TO 1)
+            DIM szCount%
+            szCount% = 0
+            HTMLGUI_split_values v$, szParts$(), szCount%
+            DIM fs!
+            fs! = HTMLGUI_STYLES(nodeIdx%).fontSize
+            IF fs! <= 0 THEN fs! = 16
+            IF szCount% >= 1 THEN
+                IF RIGHT$(szParts$(0), 1) = "%" THEN
+                    HTMLGUI_STYLES(nodeIdx%).bgSizeW = VAL(szParts$(0)) / 100!
+                ELSE
+                    HTMLGUI_STYLES(nodeIdx%).bgSizeW = HTMLGUI_parse_dimension!(szParts$(0), fs!)
+                END IF
+            END IF
+            IF szCount% >= 2 THEN
+                IF RIGHT$(szParts$(1), 1) = "%" THEN
+                    HTMLGUI_STYLES(nodeIdx%).bgSizeH = VAL(szParts$(1)) / 100!
+                ELSE
+                    HTMLGUI_STYLES(nodeIdx%).bgSizeH = HTMLGUI_parse_dimension!(szParts$(1), fs!)
+                END IF
+            ELSE
+                HTMLGUI_STYLES(nodeIdx%).bgSizeH = HTMLGUI_AUTO!
+            END IF
+    END SELECT
+END SUB
+
+
+''
+' Apply background-position property value
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING cssVal$ the background-position value (center|top|left|right|bottom|<x> <y>|50% 50%)
+'
+SUB HTMLGUI_apply_bg_position (nodeIdx%, cssVal$)
+    DIM v$
+    v$ = LCASE$(_TRIM$(cssVal$))
+
+    ' Single keyword
+    SELECT CASE v$
+        CASE "center"
+            HTMLGUI_STYLES(nodeIdx%).bgPositionX = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPositionY = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+            HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+            EXIT SUB
+        CASE "top"
+            HTMLGUI_STYLES(nodeIdx%).bgPositionX = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPositionY = 0
+            HTMLGUI_STYLES(nodeIdx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+            HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+            EXIT SUB
+        CASE "bottom"
+            HTMLGUI_STYLES(nodeIdx%).bgPositionX = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPositionY = 100
+            HTMLGUI_STYLES(nodeIdx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+            HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+            EXIT SUB
+        CASE "left"
+            HTMLGUI_STYLES(nodeIdx%).bgPositionX = 0
+            HTMLGUI_STYLES(nodeIdx%).bgPositionY = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+            HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+            EXIT SUB
+        CASE "right"
+            HTMLGUI_STYLES(nodeIdx%).bgPositionX = 100
+            HTMLGUI_STYLES(nodeIdx%).bgPositionY = 50
+            HTMLGUI_STYLES(nodeIdx%).bgPosXMode = HTMLGUI_BG_POS_PERCENT
+            HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+            EXIT SUB
+    END SELECT
+
+    ' Two-value syntax: "left top", "50% 50%", "10px 20px"
+    REDIM posParts$(0 TO 1)
+    DIM posCount%
+    posCount% = 0
+    HTMLGUI_split_values v$, posParts$(), posCount%
+
+    IF posCount% >= 1 THEN
+        HTMLGUI_parse_bg_pos_value posParts$(0), HTMLGUI_STYLES(nodeIdx%).bgPositionX, HTMLGUI_STYLES(nodeIdx%).bgPosXMode, TRUE
+    END IF
+    IF posCount% >= 2 THEN
+        HTMLGUI_parse_bg_pos_value posParts$(1), HTMLGUI_STYLES(nodeIdx%).bgPositionY, HTMLGUI_STYLES(nodeIdx%).bgPosYMode, FALSE
+    ELSE
+        ' Default Y to center if only X given
+        HTMLGUI_STYLES(nodeIdx%).bgPositionY = 50
+        HTMLGUI_STYLES(nodeIdx%).bgPosYMode = HTMLGUI_BG_POS_PERCENT
+    END IF
+END SUB
+
+
+''
+' Parse a single background-position value (keyword, px, or %)
+'
+' @param STRING tok$ the token to parse
+' @param SINGLE outVal! (BYREF) the parsed value
+' @param INTEGER outMode% (BYREF) HTMLGUI_BG_POS_PIXEL or HTMLGUI_BG_POS_PERCENT
+' @param INTEGER isX% TRUE if parsing X axis, FALSE if Y axis
+'
+SUB HTMLGUI_parse_bg_pos_value (tok$, outVal!, outMode%, isX%)
+    DIM lt$
+    lt$ = LCASE$(_TRIM$(tok$))
+
+    SELECT CASE lt$
+        CASE "left"
+            outVal! = 0: outMode% = HTMLGUI_BG_POS_PERCENT
+        CASE "right"
+            outVal! = 100: outMode% = HTMLGUI_BG_POS_PERCENT
+        CASE "top"
+            outVal! = 0: outMode% = HTMLGUI_BG_POS_PERCENT
+        CASE "bottom"
+            outVal! = 100: outMode% = HTMLGUI_BG_POS_PERCENT
+        CASE "center"
+            outVal! = 50: outMode% = HTMLGUI_BG_POS_PERCENT
+        CASE ELSE
+            IF RIGHT$(lt$, 1) = "%" THEN
+                outVal! = VAL(lt$)
+                outMode% = HTMLGUI_BG_POS_PERCENT
+            ELSE
+                outVal! = VAL(lt$)
+                outMode% = HTMLGUI_BG_POS_PIXEL
+            END IF
+    END SELECT
+END SUB
+
+
+''
+' Apply background shorthand at the style application level
+' (Handles the case where the CSS expander already split it into sub-properties,
+'  but also handles inline style= where the shorthand might come through directly)
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param STRING cssVal$ the background value
+'
+SUB HTMLGUI_apply_bg_shorthand (nodeIdx%, cssVal$)
+    DIM v$
+    v$ = _TRIM$(cssVal$)
+    DIM lv$
+    lv$ = LCASE$(v$)
+
+    ' Check for gradient
+    IF LEFT$(lv$, 16) = "linear-gradient(" OR LEFT$(lv$, 16) = "radial-gradient(" THEN
+        HTMLGUI_apply_bg_image nodeIdx%, v$
+        EXIT SUB
+    END IF
+
+    ' Check for url()
+    IF LEFT$(lv$, 4) = "url(" THEN
+        HTMLGUI_apply_bg_image nodeIdx%, v$
+        EXIT SUB
+    END IF
+
+    ' Try as plain color
+    HTMLGUI_STYLES(nodeIdx%).bgColor = HTMLGUI_parse_color~&(v$)
+END SUB
+
+
+''
+' Parse a gradient function string and store it in the gradient array.
+' Returns the index in HTMLGUI_GRADIENTS() or -1 on failure.
+'
+' Supports:
+'   linear-gradient(to right, red, blue)
+'   linear-gradient(45deg, #ff0000, #0000ff)
+'   linear-gradient(to bottom right, red 0%, yellow 50%, blue 100%)
+'   radial-gradient(circle, red, blue)
+'   radial-gradient(ellipse at center, red, blue)
+'   radial-gradient(circle at 50% 50%, red 0%, blue 100%)
+'
+' @param STRING funcStr$ the gradient function string
+' @return INTEGER index in gradient array or -1
+'
+FUNCTION HTMLGUI_parse_gradient% (funcStr$)
+    IF HTMLGUI_GRADIENT_COUNT >= HTMLGUI_MAX_GRADIENTS THEN
+        HTMLGUI_parse_gradient% = -1
+        EXIT FUNCTION
+    END IF
+
+    DIM gIdx%
+    gIdx% = HTMLGUI_GRADIENT_COUNT
+    HTMLGUI_GRADIENT_COUNT = HTMLGUI_GRADIENT_COUNT + 1
+
+    DIM lv$
+    lv$ = LCASE$(_TRIM$(funcStr$))
+
+    ' Determine type
+    DIM isLinear%
+    isLinear% = (LEFT$(lv$, 16) = "linear-gradient(")
+
+    IF isLinear% THEN
+        HTMLGUI_GRADIENTS(gIdx%).gradType = HTMLGUI_BG_LINEAR_GRADIENT
+    ELSE
+        HTMLGUI_GRADIENTS(gIdx%).gradType = HTMLGUI_BG_RADIAL_GRADIENT
+    END IF
+
+    ' Set defaults
+    HTMLGUI_GRADIENTS(gIdx%).angleDeg = 180           ' default: to bottom
+    HTMLGUI_GRADIENTS(gIdx%).radialShape = HTMLGUI_RADIAL_ELLIPSE
+    HTMLGUI_GRADIENTS(gIdx%).radialSize = HTMLGUI_RADIAL_FARTHEST_CORNER
+    HTMLGUI_GRADIENTS(gIdx%).centerX = 0.5
+    HTMLGUI_GRADIENTS(gIdx%).centerY = 0.5
+    HTMLGUI_GRADIENTS(gIdx%).stopCount = 0
+    HTMLGUI_GRADIENTS(gIdx%).inUse = TRUE
+
+    ' Extract content between parentheses
+    DIM content$
+    DIM openParen&
+    openParen& = INSTR(lv$, "(")
+    IF openParen& = 0 THEN
+        HTMLGUI_parse_gradient% = gIdx%
+        EXIT FUNCTION
+    END IF
+    content$ = MID$(funcStr$, openParen& + 1)
+    ' Remove trailing )
+    IF RIGHT$(content$, 1) = ")" THEN content$ = LEFT$(content$, LEN(content$) - 1)
+    content$ = _TRIM$(content$)
+
+    ' Split by commas (respecting parentheses for nested functions)
+    REDIM args$(0 TO 15)
+    DIM argCount%
+    argCount% = 0
+    HTMLGUI_split_comma_args content$, args$(), argCount%
+
+    IF argCount% = 0 THEN
+        HTMLGUI_parse_gradient% = gIdx%
+        EXIT FUNCTION
+    END IF
+
+    ' Parse first argument for direction/shape
+    DIM firstArg$
+    firstArg$ = _TRIM$(LCASE$(args$(0)))
+    DIM startStop%
+    startStop% = 0
+
+    IF isLinear% THEN
+        ' Check for angle or "to" direction
+        IF LEFT$(firstArg$, 3) = "to " THEN
+            HTMLGUI_GRADIENTS(gIdx%).angleDeg = HTMLGUI_parse_gradient_direction!(MID$(firstArg$, 4))
+            startStop% = 1
+        ELSEIF RIGHT$(firstArg$, 3) = "deg" THEN
+            HTMLGUI_GRADIENTS(gIdx%).angleDeg = VAL(firstArg$)
+            startStop% = 1
+        ELSEIF RIGHT$(firstArg$, 4) = "turn" THEN
+            HTMLGUI_GRADIENTS(gIdx%).angleDeg = VAL(firstArg$) * 360!
+            startStop% = 1
+        ELSEIF RIGHT$(firstArg$, 3) = "rad" THEN
+            HTMLGUI_GRADIENTS(gIdx%).angleDeg = VAL(firstArg$) * 180! / 3.14159265!
+            startStop% = 1
+        END IF
+    ELSE
+        ' Radial: parse shape/size/position
+        IF HTMLGUI_parse_radial_config%(firstArg$, gIdx%) THEN
+            startStop% = 1
+        END IF
+    END IF
+
+    ' Parse color stops
+    DIM si%
+    FOR si% = startStop% TO argCount% - 1
+        IF HTMLGUI_GRADIENTS(gIdx%).stopCount >= HTMLGUI_MAX_GRADIENT_STOPS THEN EXIT FOR
+        DIM stopArg$
+        stopArg$ = _TRIM$(args$(si%))
+        HTMLGUI_parse_gradient_stop gIdx%, stopArg$
+    NEXT si%
+
+    ' Auto-distribute stop positions for any stops with pos = -1
+    HTMLGUI_auto_distribute_stops gIdx%
+
+    HTMLGUI_parse_gradient% = gIdx%
+END FUNCTION
+
+
+''
+' Parse "to <side-or-corner>" into degrees
+'
+' @param STRING dir$ the direction (e.g. "right", "bottom left")
+' @return SINGLE angle in degrees
+'
+FUNCTION HTMLGUI_parse_gradient_direction! (dir$)
+    DIM d$
+    d$ = _TRIM$(LCASE$(dir$))
+    SELECT CASE d$
+        CASE "top":          HTMLGUI_parse_gradient_direction! = 0
+        CASE "right":        HTMLGUI_parse_gradient_direction! = 90
+        CASE "bottom":       HTMLGUI_parse_gradient_direction! = 180
+        CASE "left":         HTMLGUI_parse_gradient_direction! = 270
+        CASE "top right":    HTMLGUI_parse_gradient_direction! = 45
+        CASE "right top":    HTMLGUI_parse_gradient_direction! = 45
+        CASE "bottom right": HTMLGUI_parse_gradient_direction! = 135
+        CASE "right bottom": HTMLGUI_parse_gradient_direction! = 135
+        CASE "bottom left":  HTMLGUI_parse_gradient_direction! = 225
+        CASE "left bottom":  HTMLGUI_parse_gradient_direction! = 225
+        CASE "top left":     HTMLGUI_parse_gradient_direction! = 315
+        CASE "left top":     HTMLGUI_parse_gradient_direction! = 315
+        CASE ELSE:           HTMLGUI_parse_gradient_direction! = 180
+    END SELECT
+END FUNCTION
+
+
+''
+' Parse radial gradient configuration from first arg
+' e.g. "circle", "ellipse at center", "circle at 30% 70%", "closest-side"
+'
+' @param STRING arg$ the first argument
+' @param INTEGER gIdx% gradient index to configure
+' @return INTEGER TRUE if this was a config arg (not a color stop)
+'
+FUNCTION HTMLGUI_parse_radial_config% (arg$, gIdx%)
+    DIM a$
+    a$ = _TRIM$(LCASE$(arg$))
+
+    ' Check if this looks like a config arg (has keywords, not a color)
+    DIM hasShape%, hasAt%
+    hasShape% = (INSTR(a$, "circle") > 0) OR (INSTR(a$, "ellipse") > 0)
+    hasAt% = (INSTR(a$, " at ") > 0)
+    DIM hasSize%
+    hasSize% = (INSTR(a$, "closest") > 0) OR (INSTR(a$, "farthest") > 0)
+
+    IF NOT hasShape% AND NOT hasAt% AND NOT hasSize% THEN
+        HTMLGUI_parse_radial_config% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    HTMLGUI_parse_radial_config% = TRUE
+
+    ' Parse shape
+    IF INSTR(a$, "circle") > 0 THEN
+        HTMLGUI_GRADIENTS(gIdx%).radialShape = HTMLGUI_RADIAL_CIRCLE
+    ELSE
+        HTMLGUI_GRADIENTS(gIdx%).radialShape = HTMLGUI_RADIAL_ELLIPSE
+    END IF
+
+    ' Parse size keyword
+    IF INSTR(a$, "closest-side") > 0 THEN
+        HTMLGUI_GRADIENTS(gIdx%).radialSize = HTMLGUI_RADIAL_CLOSEST_SIDE
+    ELSEIF INSTR(a$, "closest-corner") > 0 THEN
+        HTMLGUI_GRADIENTS(gIdx%).radialSize = HTMLGUI_RADIAL_CLOSEST_CORNER
+    ELSEIF INSTR(a$, "farthest-side") > 0 THEN
+        HTMLGUI_GRADIENTS(gIdx%).radialSize = HTMLGUI_RADIAL_FARTHEST_SIDE
+    ELSEIF INSTR(a$, "farthest-corner") > 0 THEN
+        HTMLGUI_GRADIENTS(gIdx%).radialSize = HTMLGUI_RADIAL_FARTHEST_CORNER
+    END IF
+
+    ' Parse position after "at"
+    IF hasAt% THEN
+        DIM atPos&
+        atPos& = INSTR(a$, " at ")
+        IF atPos& > 0 THEN
+            DIM posStr$
+            posStr$ = _TRIM$(MID$(a$, atPos& + 4))
+            REDIM posParts$(0 TO 1)
+            DIM posCount%
+            posCount% = 0
+            HTMLGUI_split_values posStr$, posParts$(), posCount%
+            IF posCount% >= 1 THEN
+                IF RIGHT$(posParts$(0), 1) = "%" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerX = VAL(posParts$(0)) / 100!
+                ELSEIF posParts$(0) = "center" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerX = 0.5
+                ELSEIF posParts$(0) = "left" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerX = 0
+                ELSEIF posParts$(0) = "right" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerX = 1
+                ELSE
+                    HTMLGUI_GRADIENTS(gIdx%).centerX = 0.5
+                END IF
+            END IF
+            IF posCount% >= 2 THEN
+                IF RIGHT$(posParts$(1), 1) = "%" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerY = VAL(posParts$(1)) / 100!
+                ELSEIF posParts$(1) = "center" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerY = 0.5
+                ELSEIF posParts$(1) = "top" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerY = 0
+                ELSEIF posParts$(1) = "bottom" THEN
+                    HTMLGUI_GRADIENTS(gIdx%).centerY = 1
+                ELSE
+                    HTMLGUI_GRADIENTS(gIdx%).centerY = 0.5
+                END IF
+            END IF
+        END IF
+    END IF
+END FUNCTION
+
+
+''
+' Parse a single gradient color stop (e.g. "red", "#ff0000 50%", "rgb(0,0,255) 100%")
+'
+' @param INTEGER gIdx% gradient index
+' @param STRING stopStr$ the stop string
+'
+SUB HTMLGUI_parse_gradient_stop (gIdx%, stopStr$)
+    DIM sc%
+    sc% = HTMLGUI_GRADIENTS(gIdx%).stopCount
+    IF sc% >= HTMLGUI_MAX_GRADIENT_STOPS THEN EXIT SUB
+
+    DIM s$
+    s$ = _TRIM$(stopStr$)
+
+    ' Check if there's a position at the end (percentage or px)
+    ' We need to separate color from position
+    DIM lastSpace&
+    lastSpace& = 0
+    DIM ci2&
+    DIM parenD%
+    parenD% = 0
+    FOR ci2& = 1 TO LEN(s$)
+        DIM ch2$
+        ch2$ = MID$(s$, ci2&, 1)
+        IF ch2$ = "(" THEN parenD% = parenD% + 1
+        IF ch2$ = ")" THEN parenD% = parenD% - 1
+        IF ch2$ = " " AND parenD% = 0 THEN lastSpace& = ci2&
+    NEXT ci2&
+
+    DIM colorPart$, posPart$
+    IF lastSpace& > 0 THEN
+        colorPart$ = _TRIM$(LEFT$(s$, lastSpace& - 1))
+        posPart$ = _TRIM$(MID$(s$, lastSpace& + 1))
+    ELSE
+        colorPart$ = s$
+        posPart$ = ""
+    END IF
+
+    ' Parse color
+    HTMLGUI_GRAD_STOPS(gIdx%, sc%).stopColor = HTMLGUI_parse_color~&(colorPart$)
+
+    ' Parse position
+    IF LEN(posPart$) > 0 THEN
+        IF RIGHT$(LCASE$(posPart$), 1) = "%" THEN
+            HTMLGUI_GRAD_STOPS(gIdx%, sc%).stopPos = VAL(posPart$) / 100!
+        ELSE
+            ' Treat as pixel value - store as-is; rendering will interpret based on gradient size
+            HTMLGUI_GRAD_STOPS(gIdx%, sc%).stopPos = VAL(posPart$) / 100!
+        END IF
+    ELSE
+        HTMLGUI_GRAD_STOPS(gIdx%, sc%).stopPos = -1  ' auto-distribute
+    END IF
+
+    HTMLGUI_GRADIENTS(gIdx%).stopCount = sc% + 1
+END SUB
+
+
+''
+' Auto-distribute gradient stops that have position = -1
+' First stop defaults to 0.0, last to 1.0, intermediates evenly spaced.
+'
+' @param INTEGER gIdx% gradient index
+'
+SUB HTMLGUI_auto_distribute_stops (gIdx%)
+    DIM sc%
+    sc% = HTMLGUI_GRADIENTS(gIdx%).stopCount
+    IF sc% = 0 THEN EXIT SUB
+
+    ' First stop defaults to 0
+    IF HTMLGUI_GRAD_STOPS(gIdx%, 0).stopPos < 0 THEN
+        HTMLGUI_GRAD_STOPS(gIdx%, 0).stopPos = 0
+    END IF
+
+    ' Last stop defaults to 1
+    IF sc% > 1 THEN
+        IF HTMLGUI_GRAD_STOPS(gIdx%, sc% - 1).stopPos < 0 THEN
+            HTMLGUI_GRAD_STOPS(gIdx%, sc% - 1).stopPos = 1
+        END IF
+    END IF
+
+    ' Distribute intermediates
+    IF sc% > 2 THEN
+        DIM si2%
+        FOR si2% = 1 TO sc% - 2
+            IF HTMLGUI_GRAD_STOPS(gIdx%, si2%).stopPos < 0 THEN
+                ' Find previous and next defined positions
+                DIM prevPos!, nextPos!
+                prevPos! = HTMLGUI_GRAD_STOPS(gIdx%, si2% - 1).stopPos
+                nextPos! = 1
+                DIM nextIdx%
+                nextIdx% = sc% - 1
+                DIM ni2%
+                FOR ni2% = si2% + 1 TO sc% - 1
+                    IF HTMLGUI_GRAD_STOPS(gIdx%, ni2%).stopPos >= 0 THEN
+                        nextPos! = HTMLGUI_GRAD_STOPS(gIdx%, ni2%).stopPos
+                        nextIdx% = ni2%
+                        EXIT FOR
+                    END IF
+                NEXT ni2%
+                ' Evenly distribute between prev and next
+                DIM span!
+                span! = nextIdx% - (si2% - 1)
+                IF span! > 0 THEN
+                    HTMLGUI_GRAD_STOPS(gIdx%, si2%).stopPos = prevPos! + (nextPos! - prevPos!) * (1! / span!)
+                END IF
+            END IF
+        NEXT si2%
+    END IF
+END SUB
+
+
+''
+' Split a string by commas, respecting parentheses depth.
+' Used for gradient function arguments.
+'
+' @param STRING content$ the string to split
+' @param STRING() args$() (BYREF) output array
+' @param INTEGER argCount% (BYREF) number of args found
+'
+SUB HTMLGUI_split_comma_args (content$, args$(), argCount%)
+    argCount% = 0
+    DIM i2&, pDepth%, current$, c2$
+    pDepth% = 0
+    current$ = ""
+
+    FOR i2& = 1 TO LEN(content$)
+        c2$ = MID$(content$, i2&, 1)
+        IF c2$ = "(" THEN
+            pDepth% = pDepth% + 1
+            current$ = current$ + c2$
+        ELSEIF c2$ = ")" THEN
+            pDepth% = pDepth% - 1
+            IF pDepth% < 0 THEN pDepth% = 0
+            current$ = current$ + c2$
+        ELSEIF c2$ = "," AND pDepth% = 0 THEN
+            IF LEN(_TRIM$(current$)) > 0 THEN
+                IF argCount% <= UBOUND(args$) THEN
+                    args$(argCount%) = _TRIM$(current$)
+                    argCount% = argCount% + 1
+                END IF
+            END IF
+            current$ = ""
+        ELSE
+            current$ = current$ + c2$
+        END IF
+    NEXT i2&
+
+    IF LEN(_TRIM$(current$)) > 0 THEN
+        IF argCount% <= UBOUND(args$) THEN
+            args$(argCount%) = _TRIM$(current$)
+            argCount% = argCount% + 1
+        END IF
+    END IF
+END SUB

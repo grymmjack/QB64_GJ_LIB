@@ -1,0 +1,112 @@
+body {
+  background-color: #0a0a0a;
+  color: #ccc;
+  padding: 0;
+  margin: 0;
+}
+
+.topbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1a1a2e;
+  padding: 6px 12px;
+  border-bottom: 2px solid #e94560;
+}
+
+.app-title {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.nav-links a {
+  color: #53cde2;
+  margin-left: 12px;
+}
+
+.layout {
+  display: flex;
+  flex-direction: row;
+}
+
+.sidebar {
+  width: 90px;
+  background-color: #16213e;
+  padding: 6px;
+  border-right: 1px solid #0f3460;
+}
+
+.menu-item {
+  padding: 4px 6px;
+  margin-bottom: 2px;
+  color: #8b949e;
+  cursor: pointer;
+}
+
+.menu-item.active {
+  background-color: #0f3460;
+  color: #58a6ff;
+  border-left: 2px solid #58a6ff;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 8px;
+}
+
+.stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.stat-card {
+  flex-grow: 1;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  padding: 8px;
+  text-align: center;
+}
+
+.stat-num {
+  color: #58a6ff;
+  font-weight: bold;
+}
+
+.stat-label {
+  color: #8b949e;
+}
+
+.details {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  padding: 8px;
+}
+
+.details h3 {
+  color: #c9d1d9;
+  margin-top: 0;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 3px;
+}
+
+.activity-list p {
+  color: #8b949e;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding-left: 8px;
+  border-left: 2px solid #30363d;
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #1a1a2e;
+  padding: 4px 12px;
+  border-top: 1px solid #30363d;
+  color: #555;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forms &amp; Controls</title>
+</head>
+<body>
+  <h2>Character Creator</h2>
+  <div class="form-group">
+    <label>Name:</label>
+    <input type="text" id="charName" placeholder="Enter name..." value="Hero">
+  </div>
+  <div class="form-group">
+    <label>Class:</label>
+    <select id="charClass">
+      <option>Warrior</option>
+      <option>Mage</option>
+      <option>Ranger</option>
+      <option>Thief</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Strength:</label>
+    <input type="range" id="strength" value="50">
+  </div>
+  <div class="form-group checkbox-group">
+    <input type="checkbox" id="pvp" checked>
+    <label>Enable PvP</label>
+  </div>
+  <div class="form-group checkbox-group">
+    <input type="checkbox" id="hardcore">
+    <label>Hardcore Mode</label>
+  </div>
+  <hr>
+  <div class="button-row">
+    <button id="btnCreate" onclick="_QB64PE_form_submit('create')">Create Character</button>
+    <button id="btnReset" onclick="_QB64PE_form_submit('reset')">Reset</button>
+    <button id="btnCancel" onclick="_QB64PE_form_submit('cancel')">Cancel</button>
+  </div>
+  <div id="status">Ready to create your character!</div>
+</body>
+</html>

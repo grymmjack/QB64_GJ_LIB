@@ -1,0 +1,309 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - FORMS
+'
+' Form control management: get/set values, validation,
+' select dropdown popup, range slider interaction.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI
+'
+$INCLUDEONCE
+
+
+''
+' Get the value of a form element by ID
+'
+' @param STRING elementId$ the element's id attribute
+' @return STRING current value
+'
+FUNCTION HTMLGUI_get_value$ (elementId$)
+    HTMLGUI_get_value$ = ""
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT FUNCTION
+
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(idx%).tag))
+
+    SELECT CASE tag$
+        CASE "input"
+            DIM inputType$
+            inputType$ = HTMLGUI_node_get_attr$(idx%, "type")
+            IF inputType$ = "checkbox" THEN
+                IF HTMLGUI_NODES(idx%).formChecked THEN
+                    HTMLGUI_get_value$ = "true"
+                ELSE
+                    HTMLGUI_get_value$ = "false"
+                END IF
+            ELSE
+                HTMLGUI_get_value$ = _TRIM$(HTMLGUI_NODES(idx%).formValue)
+            END IF
+        CASE "select"
+            HTMLGUI_get_value$ = _TRIM$(HTMLGUI_NODES(idx%).formValue)
+        CASE "button"
+            HTMLGUI_get_value$ = HTMLGUI_get_node_text$(idx%)
+        CASE ELSE
+            HTMLGUI_get_value$ = HTMLGUI_get_node_text$(idx%)
+    END SELECT
+END FUNCTION
+
+
+''
+' Set the value of a form element by ID
+'
+' @param STRING elementId$ the element's id attribute
+' @param STRING value$ new value
+'
+SUB HTMLGUI_set_value (elementId$, value$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(idx%).tag))
+
+    SELECT CASE tag$
+        CASE "input"
+            DIM inputType2$
+            inputType2$ = HTMLGUI_node_get_attr$(idx%, "type")
+            IF inputType2$ = "checkbox" THEN
+                HTMLGUI_NODES(idx%).formChecked = (LCASE$(value$) = "true" OR value$ = "1")
+            ELSE
+                HTMLGUI_NODES(idx%).formValue = value$
+            END IF
+        CASE "select"
+            HTMLGUI_NODES(idx%).formValue = value$
+        CASE ELSE
+            HTMLGUI_NODES(idx%).formValue = value$
+    END SELECT
+
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Set the text content of an element by ID
+'
+' @param STRING elementId$ the element's id attribute
+' @param STRING text$ new text content
+'
+SUB HTMLGUI_set_text (elementId$, text$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    ' Find first text child or create one
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(idx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            HTMLGUI_NODES(childIdx%).textContent = text$
+            HTMLGUI.needsRepaint = TRUE
+            HTMLGUI.needsRelayout = TRUE
+            EXIT SUB
+        END IF
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    ' No text child found — create one
+    DIM newText%
+    newText% = HTMLGUI_node_alloc%
+    IF newText% >= 0 THEN
+        HTMLGUI_NODES(newText%).nodeType = HTMLGUI_NODE_TEXT
+        HTMLGUI_NODES(newText%).textContent = text$
+        HTMLGUI_node_append_child idx%, newText%
+        HTMLGUI.needsRepaint = TRUE
+        HTMLGUI.needsRelayout = TRUE
+    END IF
+END SUB
+
+
+''
+' Set a CSS style property on an element by ID at runtime
+'
+' @param STRING elementId$ the element's id attribute
+' @param STRING prop$ CSS property name (e.g. "color", "background-color")
+' @param STRING cssVal$ CSS value (e.g. "red", "#ff0000", "20px")
+'
+SUB HTMLGUI_set_style (elementId$, prop$, cssVal$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    HTMLGUI_apply_property idx%, prop$, cssVal$
+    HTMLGUI.needsRepaint = TRUE
+    HTMLGUI.needsRelayout = TRUE
+END SUB
+
+
+''
+' Set element visibility by ID
+'
+SUB HTMLGUI_set_visible (elementId$, visible%)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    IF visible% THEN
+        IF HTMLGUI_STYLES(idx%).display = HTMLGUI_DISPLAY_NONE THEN
+            HTMLGUI_STYLES(idx%).display = HTMLGUI_DISPLAY_BLOCK ' restore to block
+        END IF
+    ELSE
+        HTMLGUI_STYLES(idx%).display = HTMLGUI_DISPLAY_NONE
+    END IF
+
+    HTMLGUI_NODES(idx%).visible = visible%
+    HTMLGUI.needsRepaint = TRUE
+    HTMLGUI.needsRelayout = TRUE
+END SUB
+
+
+''
+' Toggle a checkbox by ID
+'
+SUB HTMLGUI_toggle_checkbox (elementId$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    HTMLGUI_NODES(idx%).formChecked = NOT HTMLGUI_NODES(idx%).formChecked
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Get whether a checkbox is checked by ID
+'
+FUNCTION HTMLGUI_is_checked% (elementId$)
+    HTMLGUI_is_checked% = FALSE
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT FUNCTION
+
+    HTMLGUI_is_checked% = HTMLGUI_NODES(idx%).formChecked
+END FUNCTION
+
+
+''
+' Add an option to a select element
+'
+SUB HTMLGUI_add_option (selectId$, optionText$, optionValue$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(selectId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    DIM optNode%
+    optNode% = HTMLGUI_node_alloc%
+    IF optNode% < 0 THEN EXIT SUB
+
+    HTMLGUI_NODES(optNode%).nodeType = HTMLGUI_NODE_ELEMENT
+    HTMLGUI_NODES(optNode%).tag = "option"
+    HTMLGUI_NODES(optNode%).formValue = optionValue$
+
+    DIM textNode%
+    textNode% = HTMLGUI_node_alloc%
+    IF textNode% >= 0 THEN
+        HTMLGUI_NODES(textNode%).nodeType = HTMLGUI_NODE_TEXT
+        HTMLGUI_NODES(textNode%).textContent = optionText$
+        HTMLGUI_node_append_child optNode%, textNode%
+    END IF
+
+    HTMLGUI_node_append_child idx%, optNode%
+
+    ' If this is the first option, set it as the value
+    IF HTMLGUI_NODES(idx%).childCount = 1 THEN
+        HTMLGUI_NODES(idx%).formValue = optionValue$
+    END IF
+
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Clear all options from a select element
+'
+SUB HTMLGUI_clear_options (selectId$)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(selectId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    ' Reset children (simplified - just clear count and first/last)
+    HTMLGUI_NODES(idx%).firstChildIdx = -1
+    HTMLGUI_NODES(idx%).lastChildIdx = -1
+    HTMLGUI_NODES(idx%).childCount = 0
+    HTMLGUI_NODES(idx%).formValue = ""
+
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Disable/enable a form element
+'
+SUB HTMLGUI_set_enabled (elementId$, enabled%)
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT SUB
+
+    IF enabled% THEN
+        ' Remove disabled attribute (by clearing it)
+        HTMLGUI_node_set_attr idx%, "disabled", ""
+    ELSE
+        HTMLGUI_node_set_attr idx%, "disabled", "disabled"
+    END IF
+
+    HTMLGUI.needsRepaint = TRUE
+END SUB
+
+
+''
+' Check if an element is enabled (not disabled)
+'
+FUNCTION HTMLGUI_is_enabled% (elementId$)
+    HTMLGUI_is_enabled% = TRUE
+    DIM idx%
+    idx% = HTMLGUI_find_by_id%(elementId$)
+    IF idx% < 0 THEN EXIT FUNCTION
+
+    DIM disabled$
+    disabled$ = HTMLGUI_node_get_attr$(idx%, "disabled")
+    IF LEN(disabled$) > 0 THEN HTMLGUI_is_enabled% = FALSE
+END FUNCTION
+
+
+''
+' Get all form values as a DICT-compatible key=value string
+' Returns "id1=val1|id2=val2|..." format
+'
+FUNCTION HTMLGUI_get_form_data$ (formId$)
+    DIM result$
+    result$ = ""
+
+    DIM fi%
+    FOR fi% = 0 TO HTMLGUI.nodeCount - 1
+        DIM fTag$
+        fTag$ = _TRIM$(LCASE$(HTMLGUI_NODES(fi%).tag))
+        IF fTag$ = "input" OR fTag$ = "select" THEN
+            DIM fId$
+            fId$ = _TRIM$(HTMLGUI_NODES(fi%).id)
+            IF LEN(fId$) > 0 THEN
+                DIM fVal$
+                fVal$ = HTMLGUI_get_value$(fId$)
+                IF LEN(result$) > 0 THEN result$ = result$ + "|"
+                result$ = result$ + fId$ + "=" + fVal$
+            END IF
+        END IF
+    NEXT fi%
+
+    HTMLGUI_get_form_data$ = result$
+END FUNCTION
+
+
+''
+' Force a relayout (call after dynamic content changes)
+'
+SUB HTMLGUI_invalidate
+    HTMLGUI.needsRelayout = TRUE
+    HTMLGUI.needsRepaint = TRUE
+END SUB

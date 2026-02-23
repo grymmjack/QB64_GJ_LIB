@@ -1,0 +1,120 @@
+body {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  padding: 8px;
+}
+
+h2 {
+  color: #ff6b6b;
+  margin-bottom: 6px;
+}
+
+h3 {
+  color: #feca57;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+h4 {
+  color: #48dbfb;
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+
+.float-container {
+  border: 1px solid #555;
+  padding: 6px;
+  background-color: #333;
+}
+
+.float-nav {
+  float: left;
+  width: 100px;
+  background-color: #404040;
+  border: 1px solid #666;
+  padding: 6px;
+  margin-right: 8px;
+}
+
+.float-nav p {
+  color: #ff6b6b;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.float-nav ul {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding-left: 16px;
+}
+
+.float-nav li {
+  margin-bottom: 1px;
+}
+
+.float-sidebar {
+  float: left;
+  width: 80px;
+  background-color: #3a3a4a;
+  border: 1px solid #666;
+  padding: 6px;
+  margin-right: 8px;
+}
+
+.float-sidebar p {
+  margin-top: 0;
+  margin-bottom: 2px;
+  color: #aaa;
+}
+
+.widget {
+  background-color: #2a2a3a;
+  border: 1px solid #555;
+  padding: 4px;
+}
+
+.widget h4 {
+  margin-bottom: 2px;
+}
+
+.widget p {
+  margin-top: 1px;
+  margin-bottom: 1px;
+  color: #808e9b;
+}
+
+.float-main {
+  float: left;
+  background-color: #2a3a2a;
+  border: 1px solid #3fb950;
+  padding: 8px;
+}
+
+.float-main p {
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+
+hr {
+  border-top: 1px solid #555;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.chip-row {
+  padding: 4px;
+}
+
+.chip {
+  float: left;
+  padding: 4px 12px;
+  margin-right: 6px;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.chip-1 { background-color: #e74c3c; }
+.chip-2 { background-color: #e67e22; }
+.chip-3 { background-color: #2ecc71; }
+.chip-4 { background-color: #3498db; }
+.chip-5 { background-color: #9b59b6; }

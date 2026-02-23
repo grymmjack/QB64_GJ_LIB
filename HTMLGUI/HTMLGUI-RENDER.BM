@@ -1,0 +1,1262 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S HTMLGUI LIB - RENDERER
+'
+' Renders the laid-out DOM tree using QB64PE graphics primitives.
+' Uses LINE BF for fills, LINE B for borders, _PRINTSTRING for text,
+' _PUTIMAGE for images. Renders form controls (buttons, inputs, etc.).
+'
+' @author Rick Christy <grymmjack@gmail.com>
+' @uses HTMLGUI.BI, HTMLGUI-LAYOUT.BM
+'
+$INCLUDEONCE
+
+
+''
+' Render the entire GUI to the current _DEST
+'
+SUB HTMLGUI_render
+    IF NOT HTMLGUI.layoutDone THEN EXIT SUB
+    IF HTMLGUI.rootNodeIdx < 0 THEN EXIT SUB
+
+    DIM oldDest AS LONG
+    oldDest& = _DEST
+
+    ' If we have a render target, use it
+    IF HTMLGUI.renderTarget > 0 THEN
+        _DEST HTMLGUI.renderTarget
+    END IF
+
+    ' Clear with body background color (or default white)
+    DIM bgColor AS _UNSIGNED LONG
+    bgColor = HTMLGUI_STYLES(HTMLGUI.rootNodeIdx).bgColor
+    IF bgColor = 0 THEN bgColor = _RGB32(255, 255, 255)
+    CLS , bgColor
+
+    ' Render tree recursively
+    HTMLGUI_render_node HTMLGUI.rootNodeIdx
+
+    _DEST oldDest&
+    HTMLGUI.needsRepaint = FALSE
+END SUB
+
+
+''
+' Render a single node and its children
+'
+' @param INTEGER nodeIdx% node to render
+'
+SUB HTMLGUI_render_node (nodeIdx%)
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT SUB
+    IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT SUB
+
+    DIM n AS HTMLGUI_NODE
+    DIM s AS HTMLGUI_STYLE
+    n = HTMLGUI_NODES(nodeIdx%)
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Clipping for overflow:hidden
+    ' (QB64PE doesn't have clip regions, so we skip actual clipping but
+    ' could add bounds checks in future)
+
+    DIM x1%, y1%, x2%, y2%
+    x1% = INT(n.layoutX)
+    y1% = INT(n.layoutY)
+    x2% = INT(n.layoutX + n.layoutW) - 1
+    y2% = INT(n.layoutY + n.layoutH) - 1
+
+    IF x2% < x1% OR y2% < y1% THEN GOTO HTMLGUI_render_children
+
+    ' Skip rendering for text nodes (handled by parent)
+    IF n.nodeType = HTMLGUI_NODE_TEXT THEN
+        ' Render text content
+        HTMLGUI_render_text nodeIdx%
+        EXIT SUB
+    END IF
+
+    DIM tag$
+    tag$ = _TRIM$(LCASE$(n.tag))
+
+    ' --- BACKGROUND ---
+    ' Draw background color first
+    IF _RED32(s.bgColor) > 0 OR _GREEN32(s.bgColor) > 0 OR _BLUE32(s.bgColor) > 0 OR _ALPHA32(s.bgColor) > 0 THEN
+        IF _ALPHA32(s.bgColor) > 0 THEN
+            LINE (x1%, y1%)-(x2%, y2%), s.bgColor, BF
+        END IF
+    END IF
+
+    ' Draw background image (gradient or url) on top of color
+    IF s.bgImageType <> HTMLGUI_BG_NONE THEN
+        HTMLGUI_render_background nodeIdx%, x1%, y1%, x2%, y2%
+    END IF
+
+    ' --- BORDERS ---
+    HTMLGUI_render_borders nodeIdx%, x1%, y1%, x2%, y2%
+
+    ' --- FORM CONTROLS ---
+    SELECT CASE tag$
+        CASE "button"
+            HTMLGUI_render_button nodeIdx%, x1%, y1%, x2%, y2%
+        CASE "input"
+            HTMLGUI_render_input nodeIdx%, x1%, y1%, x2%, y2%
+        CASE "select"
+            HTMLGUI_render_select nodeIdx%, x1%, y1%, x2%, y2%
+        CASE "hr"
+            HTMLGUI_render_hr nodeIdx%, x1%, y1%, x2%, y2%
+        CASE "img"
+            HTMLGUI_render_img nodeIdx%, x1%, y1%, x2%, y2%
+    END SELECT
+
+    ' --- LIST BULLETS ---
+    IF tag$ = "li" THEN
+        HTMLGUI_render_list_marker nodeIdx%, x1%, y1%
+    END IF
+
+    ' --- RENDER CHILDREN ---
+    HTMLGUI_render_children:
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        HTMLGUI_render_node childIdx%
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+END SUB
+
+
+''
+' Render border lines for a node
+'
+SUB HTMLGUI_render_borders (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Top border
+    IF s.borderTopWidth > 0 THEN
+        DIM bt%
+        FOR bt% = 0 TO INT(s.borderTopWidth) - 1
+            LINE (x1%, y1% + bt%)-(x2%, y1% + bt%), s.borderTopColor
+        NEXT bt%
+    END IF
+
+    ' Bottom border
+    IF s.borderBottomWidth > 0 THEN
+        DIM bb%
+        FOR bb% = 0 TO INT(s.borderBottomWidth) - 1
+            LINE (x1%, y2% - bb%)-(x2%, y2% - bb%), s.borderBottomColor
+        NEXT bb%
+    END IF
+
+    ' Left border
+    IF s.borderLeftWidth > 0 THEN
+        DIM bl%
+        FOR bl% = 0 TO INT(s.borderLeftWidth) - 1
+            LINE (x1% + bl%, y1%)-(x1% + bl%, y2%), s.borderLeftColor
+        NEXT bl%
+    END IF
+
+    ' Right border
+    IF s.borderRightWidth > 0 THEN
+        DIM br%
+        FOR br% = 0 TO INT(s.borderRightWidth) - 1
+            LINE (x2% - br%, y1%)-(x2% - br%, y2%), s.borderRightColor
+        NEXT br%
+    END IF
+END SUB
+
+
+''
+' Render text node content
+'
+SUB HTMLGUI_render_text (nodeIdx%)
+    ' Skip whitespace-only text nodes (prevents rendering artifacts)
+    IF HTMLGUI_is_whitespace_node%(nodeIdx%) THEN EXIT SUB
+
+    ' Get text content, truncating at first null (STRING * 256 padding)
+    DIM rawText$, i%
+    rawText$ = HTMLGUI_NODES(nodeIdx%).textContent
+    DIM nullPos&
+    nullPos& = INSTR(rawText$, CHR$(0))
+    IF nullPos& > 0 THEN rawText$ = LEFT$(rawText$, nullPos& - 1)
+
+    ' Replace CR, LF, TAB with spaces then trim
+    DIM text$
+    DIM cleaned$
+    cleaned$ = ""
+    FOR i% = 1 TO LEN(rawText$)
+        DIM ch%
+        ch% = ASC(rawText$, i%)
+        IF ch% = 10 OR ch% = 13 OR ch% = 9 THEN
+            cleaned$ = cleaned$ + " "
+        ELSE
+            cleaned$ = cleaned$ + CHR$(ch%)
+        END IF
+    NEXT i%
+    text$ = _TRIM$(cleaned$)
+    IF LEN(text$) = 0 THEN EXIT SUB
+
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Set font if loaded
+    HTMLGUI_apply_font nodeIdx%
+
+    ' Set color
+    DIM textColor AS _UNSIGNED LONG
+    textColor = s.fgColor
+    IF textColor = 0 AND _ALPHA32(textColor) = 0 THEN textColor = _RGB32(0, 0, 0)
+    COLOR textColor
+    _PRINTMODE _KEEPBACKGROUND
+
+    ' Calculate text position
+    DIM tx%, ty%, maxW%
+    tx% = INT(HTMLGUI_NODES(nodeIdx%).layoutX)
+    ty% = INT(HTMLGUI_NODES(nodeIdx%).layoutY)
+    maxW% = INT(HTMLGUI_NODES(nodeIdx%).contentW)
+    IF maxW% <= 0 THEN maxW% = INT(HTMLGUI_NODES(nodeIdx%).layoutW)
+
+    ' Text alignment from parent
+    DIM parentIdx%
+    parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+    IF parentIdx% >= 0 THEN
+        DIM align%
+        align% = HTMLGUI_STYLES(parentIdx%).textAlign
+        DIM pw%
+        pw% = _PRINTWIDTH(text$)
+
+        SELECT CASE align%
+            CASE HTMLGUI_TEXT_CENTER
+                IF pw% < maxW% THEN tx% = tx% + (maxW% - pw%) \ 2
+            CASE HTMLGUI_TEXT_RIGHT
+                IF pw% < maxW% THEN tx% = tx% + maxW% - pw%
+        END SELECT
+    END IF
+
+    ' Word wrapping
+    IF maxW% > 0 AND _PRINTWIDTH(text$) > maxW% THEN
+        HTMLGUI_render_text_wrapped text$, tx%, ty%, maxW%
+    ELSE
+        _PRINTSTRING (tx%, ty%), text$
+    END IF
+END SUB
+
+
+''
+' Render text with word wrapping
+'
+SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
+    REDIM words$(0 TO 255)
+    DIM wordCount%, i%
+
+    ' Split by spaces
+    wordCount% = 0
+    DIM curPos%, spacePos%
+    curPos% = 1
+    DO WHILE curPos% <= LEN(text$)
+        spacePos% = INSTR(curPos%, text$, " ")
+        IF spacePos% = 0 THEN spacePos% = LEN(text$) + 1
+        IF wordCount% <= 255 THEN
+            words$(wordCount%) = MID$(text$, curPos%, spacePos% - curPos%)
+            wordCount% = wordCount% + 1
+        END IF
+        curPos% = spacePos% + 1
+    LOOP
+
+    DIM curX%, curY%, fh%
+    curX% = tx%
+    curY% = ty%
+    fh% = _FONTHEIGHT
+    IF fh% <= 0 THEN fh% = 16
+
+    DIM wrapLine$, testLine$
+    wrapLine$ = ""
+    FOR i% = 0 TO wordCount% - 1
+        IF LEN(wrapLine$) = 0 THEN
+            testLine$ = words$(i%)
+        ELSE
+            testLine$ = wrapLine$ + " " + words$(i%)
+        END IF
+
+        IF _PRINTWIDTH(testLine$) > maxW% AND LEN(wrapLine$) > 0 THEN
+            ' Print current line and wrap
+            _PRINTSTRING (curX%, curY%), wrapLine$
+            curY% = curY% + fh%
+            wrapLine$ = words$(i%)
+        ELSE
+            wrapLine$ = testLine$
+        END IF
+    NEXT i%
+
+    ' Print remaining
+    IF LEN(wrapLine$) > 0 THEN
+        _PRINTSTRING (curX%, curY%), wrapLine$
+    END IF
+END SUB
+
+
+''
+' Render a button control
+'
+SUB HTMLGUI_render_button (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Button background (if not already rendered)
+    DIM btnBg AS _UNSIGNED LONG
+    IF _ALPHA32(s.bgColor) > 0 THEN
+        btnBg = s.bgColor
+    ELSE
+        btnBg = _RGB32(225, 225, 225 )
+    END IF
+
+    ' Hover/active state
+    IF HTMLGUI_NODES(nodeIdx%).isActive THEN
+        ' Pressed: slightly darker
+        btnBg = _RGB32(_RED32(btnBg) * 0.8, _GREEN32(btnBg) * 0.8, _BLUE32(btnBg) * 0.8)
+    ELSEIF HTMLGUI_NODES(nodeIdx%).isHovered THEN
+        ' Hover: slightly lighter
+        DIM br%, bg%, bb%
+        br% = _RED32(btnBg) + 15: IF br% > 255 THEN br% = 255
+        bg% = _GREEN32(btnBg) + 15: IF bg% > 255 THEN bg% = 255
+        bb% = _BLUE32(btnBg) + 15: IF bb% > 255 THEN bb% = 255
+        btnBg = _RGB32(br%, bg%, bb%)
+    END IF
+
+    LINE (x1%, y1%)-(x2%, y2%), btnBg, BF
+
+    ' 3D effect border (raised unless active)
+    IF HTMLGUI_NODES(nodeIdx%).isActive THEN
+        LINE (x1%, y1%)-(x2%, y1%), _RGB32(100, 100, 100)
+        LINE (x1%, y1%)-(x1%, y2%), _RGB32(100, 100, 100)
+        LINE (x2%, y1%)-(x2%, y2%), _RGB32(200, 200, 200)
+        LINE (x1%, y2%)-(x2%, y2%), _RGB32(200, 200, 200)
+    ELSE
+        LINE (x1%, y1%)-(x2%, y1%), _RGB32(255, 255, 255)
+        LINE (x1%, y1%)-(x1%, y2%), _RGB32(255, 255, 255)
+        LINE (x2%, y1%)-(x2%, y2%), _RGB32(100, 100, 100)
+        LINE (x1%, y2%)-(x2%, y2%), _RGB32(100, 100, 100)
+    END IF
+
+    ' Render button text (from first text child)
+    DIM btnText$
+    btnText$ = HTMLGUI_get_node_text$(nodeIdx%)
+    IF LEN(btnText$) > 0 THEN
+        HTMLGUI_apply_font nodeIdx%
+        DIM textColor AS _UNSIGNED LONG
+        textColor = s.fgColor
+        IF textColor = 0 THEN textColor = _RGB32(0, 0, 0)
+        COLOR textColor
+
+        DIM tw%, th%, txtX%, txtY%
+        tw% = _PRINTWIDTH(btnText$)
+        th% = _FONTHEIGHT
+        txtX% = x1% + ((x2% - x1% + 1) - tw%) \ 2
+        txtY% = y1% + ((y2% - y1% + 1) - th%) \ 2
+        _PRINTSTRING (txtX%, txtY%), btnText$
+    END IF
+END SUB
+
+
+''
+' Render a text input control
+'
+SUB HTMLGUI_render_input (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Input background
+    DIM inputBg AS _UNSIGNED LONG
+    IF _ALPHA32(s.bgColor) > 0 THEN
+        inputBg = s.bgColor
+    ELSE
+        inputBg = _RGB32(255, 255, 255)
+    END IF
+    LINE (x1%, y1%)-(x2%, y2%), inputBg, BF
+
+    ' Sunken border
+    LINE (x1%, y1%)-(x2%, y1%), _RGB32(100, 100, 100)
+    LINE (x1%, y1%)-(x1%, y2%), _RGB32(100, 100, 100)
+    LINE (x2%, y1%)-(x2%, y2%), _RGB32(200, 200, 200)
+    LINE (x1%, y2%)-(x2%, y2%), _RGB32(200, 200, 200)
+
+    ' Focus indicator
+    IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
+        LINE (x1% - 1, y1% - 1)-(x2% + 1, y2% + 1), _RGB32(0, 120, 215), B
+    END IF
+
+    ' Input type
+    DIM inputType$
+    inputType$ = HTMLGUI_node_get_attr$(nodeIdx%, "type")
+    IF inputType$ = "" THEN inputType$ = "text"
+
+    DIM px%, py%
+    px% = x1% + INT(s.paddingLeft) + INT(s.borderLeftWidth)
+    py% = y1% + ((y2% - y1% + 1) - _FONTHEIGHT) \ 2
+
+    IF inputType$ = "checkbox" THEN
+        ' Checkbox rendering
+        DIM cbSize%, cbX%, cbY%
+        cbSize% = (y2% - y1%) - 4
+        IF cbSize% < 8 THEN cbSize% = 8
+        IF cbSize% > 16 THEN cbSize% = 16
+        cbX% = x1% + 3
+        cbY% = y1% + ((y2% - y1% + 1) - cbSize%) \ 2
+        LINE (cbX%, cbY%)-(cbX% + cbSize%, cbY% + cbSize%), _RGB32(0, 0, 0), B
+
+        IF HTMLGUI_NODES(nodeIdx%).formChecked THEN
+            ' Draw checkmark
+            LINE (cbX% + 2, cbY% + cbSize% \ 2)-(cbX% + cbSize% \ 2, cbY% + cbSize% - 2), _RGB32(0, 0, 0)
+            LINE (cbX% + cbSize% \ 2, cbY% + cbSize% - 2)-(cbX% + cbSize% - 2, cbY% + 2), _RGB32(0, 0, 0)
+        END IF
+    ELSEIF inputType$ = "range" THEN
+        ' Slider rendering
+        DIM trackY%, trackH%
+        trackH% = 4
+        trackY% = y1% + ((y2% - y1% + 1) - trackH%) \ 2
+        LINE (x1% + 4, trackY%)-(x2% - 4, trackY% + trackH%), _RGB32(180, 180, 180), BF
+        ' Thumb
+        DIM rangeVal!, thumbX%
+        rangeVal! = VAL(HTMLGUI_NODES(nodeIdx%).formValue)
+        thumbX% = x1% + 4 + INT(rangeVal! / 100 * (x2% - x1% - 8))
+        LINE (thumbX% - 4, y1% + 2)-(thumbX% + 4, y2% - 2), _RGB32(0, 120, 215), BF
+    ELSE
+        ' Text input
+        HTMLGUI_apply_font nodeIdx%
+        DIM inputText$
+        inputText$ = HTMLGUI_NODES(nodeIdx%).formValue
+        DIM inputColor AS _UNSIGNED LONG
+        inputColor = s.fgColor
+        IF LEN(_TRIM$(inputText$)) = 0 THEN
+            ' Show placeholder
+            inputText$ = HTMLGUI_node_get_attr$(nodeIdx%, "placeholder")
+            inputColor = _RGB32(150, 150, 150)
+        END IF
+        IF inputColor = 0 THEN inputColor = _RGB32(0, 0, 0)
+        COLOR inputColor
+
+        IF LEN(_TRIM$(inputText$)) > 0 THEN
+            _PRINTSTRING (px%, py%), _TRIM$(inputText$)
+        END IF
+
+        ' Cursor for focused input
+        IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
+            DIM cursorX%
+            cursorX% = px% + _PRINTWIDTH(_TRIM$(HTMLGUI_NODES(nodeIdx%).formValue))
+            IF (TIMER * 2) MOD 2 = 0 THEN ' Blink cursor
+                LINE (cursorX%, py%)-(cursorX%, py% + _FONTHEIGHT - 1), inputColor
+            END IF
+        END IF
+    END IF
+END SUB
+
+
+''
+' Render a select dropdown
+'
+SUB HTMLGUI_render_select (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Select background
+    DIM selBg AS _UNSIGNED LONG
+    IF _ALPHA32(s.bgColor) > 0 THEN
+        selBg = s.bgColor
+    ELSE
+        selBg = _RGB32(255, 255, 255)
+    END IF
+    LINE (x1%, y1%)-(x2%, y2%), selBg, BF
+
+    ' Border
+    LINE (x1%, y1%)-(x2%, y2%), _RGB32(100, 100, 100), B
+
+    ' Dropdown arrow area
+    DIM arrowW%
+    arrowW% = 16
+    LINE (x2% - arrowW%, y1%)-(x2% - arrowW%, y2%), _RGB32(100, 100, 100)
+    ' Draw triangle
+    DIM ax%, ay%
+    ax% = x2% - arrowW% \ 2
+    ay% = y1% + (y2% - y1%) \ 2
+    LINE (ax% - 3, ay% - 2)-(ax% + 3, ay% - 2), _RGB32(0, 0, 0)
+    LINE (ax% - 2, ay% - 1)-(ax% + 2, ay% - 1), _RGB32(0, 0, 0)
+    LINE (ax% - 1, ay%)-(ax% + 1, ay%), _RGB32(0, 0, 0)
+    PSET (ax%, ay% + 1), _RGB32(0, 0, 0)
+
+    ' Display current value
+    HTMLGUI_apply_font nodeIdx%
+    DIM selText$
+    selText$ = HTMLGUI_NODES(nodeIdx%).formValue
+    IF LEN(_TRIM$(selText$)) = 0 THEN
+        ' Find first option child
+        DIM optIdx%
+        optIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+        IF optIdx% >= 0 THEN
+            selText$ = HTMLGUI_get_node_text$(optIdx%)
+        END IF
+    END IF
+    DIM selColor AS _UNSIGNED LONG
+    selColor = s.fgColor
+    IF selColor = 0 THEN selColor = _RGB32(0, 0, 0)
+    COLOR selColor
+    IF LEN(_TRIM$(selText$)) > 0 THEN
+        DIM px2%, py2%
+        px2% = x1% + INT(s.paddingLeft) + INT(s.borderLeftWidth) + 2
+        py2% = y1% + ((y2% - y1% + 1) - _FONTHEIGHT) \ 2
+        _PRINTSTRING (px2%, py2%), _TRIM$(selText$)
+    END IF
+END SUB
+
+
+''
+' Render an <hr> element
+'
+SUB HTMLGUI_render_hr (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM midY%
+    midY% = y1% + (y2% - y1%) \ 2
+    LINE (x1%, midY%)-(x2%, midY%), _RGB32(180, 180, 180)
+    LINE (x1%, midY% + 1)-(x2%, midY% + 1), _RGB32(255, 255, 255)
+END SUB
+
+
+''
+' Render an <img> element with caching and object-fit support
+'
+SUB HTMLGUI_render_img (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM src$
+    src$ = HTMLGUI_node_get_attr$(nodeIdx%, "src")
+    IF LEN(src$) = 0 THEN EXIT SUB
+
+    ' Try to use cached image handle first
+    DIM imgHandle AS LONG
+    imgHandle = HTMLGUI_NODES(nodeIdx%).imgHandle
+
+    ' If no cached handle, try loading
+    IF imgHandle = 0 OR imgHandle = -1 THEN
+        ' Resolve relative path using basePath
+        DIM fullPath$
+        fullPath$ = src$
+        DIM basePath$
+        basePath$ = _TRIM$(HTMLGUI.basePath)
+        ' Truncate at null
+        DIM nullPos&
+        nullPos& = INSTR(basePath$, CHR$(0))
+        IF nullPos& > 0 THEN basePath$ = LEFT$(basePath$, nullPos& - 1)
+
+        ' If src is relative and basePath exists, prepend it
+        IF LEN(basePath$) > 0 AND LEFT$(src$, 1) <> "/" AND MID$(src$, 2, 1) <> ":" THEN
+            IF RIGHT$(basePath$, 1) <> "/" AND RIGHT$(basePath$, 1) <> "\" THEN
+                basePath$ = basePath$ + "/"
+            END IF
+            fullPath$ = basePath$ + src$
+        END IF
+
+        imgHandle = _LOADIMAGE(fullPath$, 32)
+        IF imgHandle < -1 THEN
+            HTMLGUI_NODES(nodeIdx%).imgHandle = imgHandle
+        ELSE
+            HTMLGUI_NODES(nodeIdx%).imgHandle = -1  ' mark as failed
+        END IF
+    END IF
+
+    IF imgHandle < -1 THEN
+        ' Get image natural dimensions
+        DIM imgW%, imgH%
+        imgW% = _WIDTH(imgHandle)
+        imgH% = _HEIGHT(imgHandle)
+        DIM boxW%, boxH%
+        boxW% = x2% - x1% + 1
+        boxH% = y2% - y1% + 1
+
+        ' Apply object-fit
+        DIM s AS HTMLGUI_STYLE
+        s = HTMLGUI_STYLES(nodeIdx%)
+        DIM drawX1%, drawY1%, drawX2%, drawY2%
+
+        SELECT CASE s.objectFit
+            CASE HTMLGUI_OBJFIT_CONTAIN
+                ' Scale to fit within box, maintaining aspect ratio
+                DIM cScale!
+                cScale! = boxW% / imgW%
+                IF (imgH% * cScale!) > boxH% THEN cScale! = boxH% / imgH%
+                DIM cW%, cH%
+                cW% = INT(imgW% * cScale!)
+                cH% = INT(imgH% * cScale!)
+                drawX1% = x1% + (boxW% - cW%) \ 2
+                drawY1% = y1% + (boxH% - cH%) \ 2
+                drawX2% = drawX1% + cW% - 1
+                drawY2% = drawY1% + cH% - 1
+
+            CASE HTMLGUI_OBJFIT_COVER
+                ' Scale to cover box, maintaining aspect ratio (clips)
+                DIM cvScale!
+                cvScale! = boxW% / imgW%
+                IF (imgH% * cvScale!) < boxH% THEN cvScale! = boxH% / imgH%
+                DIM cvW%, cvH%
+                cvW% = INT(imgW% * cvScale!)
+                cvH% = INT(imgH% * cvScale!)
+                drawX1% = x1% + (boxW% - cvW%) \ 2
+                drawY1% = y1% + (boxH% - cvH%) \ 2
+                drawX2% = drawX1% + cvW% - 1
+                drawY2% = drawY1% + cvH% - 1
+
+            CASE HTMLGUI_OBJFIT_NONE
+                ' No scaling, centered
+                drawX1% = x1% + (boxW% - imgW%) \ 2
+                drawY1% = y1% + (boxH% - imgH%) \ 2
+                drawX2% = drawX1% + imgW% - 1
+                drawY2% = drawY1% + imgH% - 1
+
+            CASE ELSE  ' HTMLGUI_OBJFIT_FILL (default) or SCALE_DOWN
+                drawX1% = x1%
+                drawY1% = y1%
+                drawX2% = x2%
+                drawY2% = y2%
+        END SELECT
+
+        _PUTIMAGE (drawX1%, drawY1%)-(drawX2%, drawY2%), imgHandle
+    ELSE
+        ' Show broken image placeholder
+        LINE (x1%, y1%)-(x2%, y2%), _RGB32(200, 200, 200), B
+        DIM cx2%, cy2%
+        cx2% = x1% + (x2% - x1%) \ 2
+        cy2% = y1% + (y2% - y1%) \ 2
+        LINE (x1%, y1%)-(x2%, y2%), _RGB32(200, 200, 200)
+        LINE (x1%, y2%)-(x2%, y1%), _RGB32(200, 200, 200)
+    END IF
+END SUB
+
+
+''
+' Render a list item marker (bullet or number)
+'
+SUB HTMLGUI_render_list_marker (nodeIdx%, x1%, y1%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    DIM fh%, markerX%, markerY%
+    fh% = _FONTHEIGHT
+    IF fh% <= 0 THEN fh% = 16
+    markerX% = x1% - 16
+    markerY% = y1% + INT(s.paddingTop)
+
+    DIM marker$
+    SELECT CASE s.listStyleType
+        CASE HTMLGUI_LIST_DISC
+            ' Filled circle (approximation)
+            DIM radius%
+            radius% = 3
+            CIRCLE (markerX% + radius%, markerY% + fh% \ 2), radius%, s.fgColor
+            PAINT (markerX% + radius%, markerY% + fh% \ 2), s.fgColor
+        CASE HTMLGUI_LIST_CIRCLE
+            CIRCLE (markerX% + 3, markerY% + fh% \ 2), 3, s.fgColor
+        CASE HTMLGUI_LIST_SQUARE
+            LINE (markerX%, markerY% + fh% \ 2 - 3)-(markerX% + 6, markerY% + fh% \ 2 + 3), s.fgColor, BF
+        CASE HTMLGUI_LIST_DECIMAL
+            ' Count position among siblings
+            DIM itemNum%, sibIdx%
+            itemNum% = 1
+            sibIdx% = HTMLGUI_NODES(nodeIdx%).prevSiblingIdx
+            DO WHILE sibIdx% >= 0
+                IF _TRIM$(LCASE$(HTMLGUI_NODES(sibIdx%).tag)) = "li" THEN
+                    itemNum% = itemNum% + 1
+                END IF
+                sibIdx% = HTMLGUI_NODES(sibIdx%).prevSiblingIdx
+            LOOP
+            marker$ = _TRIM$(STR$(itemNum%)) + "."
+            COLOR s.fgColor
+            _PRINTSTRING (markerX% - _PRINTWIDTH(marker$), markerY%), marker$
+        CASE ELSE
+            ' Default disc
+            CIRCLE (markerX% + 3, markerY% + fh% \ 2), 3, s.fgColor
+            PAINT (markerX% + 3, markerY% + fh% \ 2), s.fgColor
+    END SELECT
+END SUB
+
+
+''
+' Set the font for a node based on computed styles
+'
+SUB HTMLGUI_apply_font (nodeIdx%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Try to load/reuse a font matching font-family + size
+    DIM fontSize%
+    fontSize% = INT(s.fontSize)
+    IF fontSize% <= 0 THEN fontSize% = 16
+
+    DIM fontFamily$
+    fontFamily$ = _TRIM$(s.fontFamily)
+
+    ' Check font cache
+    DIM fi%
+    FOR fi% = 0 TO HTMLGUI.fontCount - 1
+        IF HTMLGUI_FONT_CACHE(fi%).size = fontSize% AND _TRIM$(HTMLGUI_FONT_CACHE(fi%).family) = fontFamily$ THEN
+            IF HTMLGUI_FONT_CACHE(fi%).handle > 0 THEN
+                _FONT HTMLGUI_FONT_CACHE(fi%).handle
+            END IF
+            EXIT SUB
+        END IF
+    NEXT fi%
+
+    ' Try to load the font
+    IF LEN(fontFamily$) > 0 THEN
+        DIM fontPath$
+        DIM fh AS LONG
+        fh = 0
+
+        ' Strip quotes from font-family (CSS allows "Font Name" or 'Font Name')
+        DIM cleanFamily$
+        cleanFamily$ = fontFamily$
+        IF LEFT$(cleanFamily$, 1) = CHR$(34) OR LEFT$(cleanFamily$, 1) = "'" THEN
+            cleanFamily$ = MID$(cleanFamily$, 2)
+        END IF
+        IF RIGHT$(cleanFamily$, 1) = CHR$(34) OR RIGHT$(cleanFamily$, 1) = "'" THEN
+            cleanFamily$ = LEFT$(cleanFamily$, LEN(cleanFamily$) - 1)
+        END IF
+        cleanFamily$ = _TRIM$(cleanFamily$)
+
+        ' 1. Try exact path as given
+        fontPath$ = cleanFamily$
+        fh = _LOADFONT(fontPath$, fontSize%)
+
+        ' 2. Try with .ttf extension
+        IF fh <= 0 THEN fh = _LOADFONT(fontPath$ + ".ttf", fontSize%)
+
+        ' 3. Try basePath (relative to HTML file location)
+        IF fh <= 0 THEN
+            DIM bp$
+            bp$ = _TRIM$(HTMLGUI.basePath)
+            IF LEN(bp$) > 0 THEN
+                fh = _LOADFONT(bp$ + cleanFamily$, fontSize%)
+                IF fh <= 0 THEN fh = _LOADFONT(bp$ + cleanFamily$ + ".ttf", fontSize%)
+            END IF
+        END IF
+
+        ' 4. Try defaultFontPath directory (configurable)
+        IF fh <= 0 THEN
+            DIM dfp$
+            dfp$ = _TRIM$(HTMLGUI.defaultFontPath)
+            IF LEN(dfp$) > 0 THEN
+                fh = _LOADFONT(dfp$ + cleanFamily$, fontSize%)
+                IF fh <= 0 THEN fh = _LOADFONT(dfp$ + cleanFamily$ + ".ttf", fontSize%)
+            END IF
+        END IF
+
+        ' 5. Try system font paths (Linux)
+        IF fh <= 0 THEN
+            fh = _LOADFONT("/usr/share/fonts/truetype/" + cleanFamily$ + ".ttf", fontSize%)
+        END IF
+
+        IF fh > 0 THEN
+            ' Cache it
+            IF HTMLGUI.fontCount < HTMLGUI_MAX_FONTS THEN
+                HTMLGUI_FONT_CACHE(HTMLGUI.fontCount).family = fontFamily$
+                HTMLGUI_FONT_CACHE(HTMLGUI.fontCount).size = fontSize%
+                HTMLGUI_FONT_CACHE(HTMLGUI.fontCount).handle = fh
+                HTMLGUI.fontCount = HTMLGUI.fontCount + 1
+            END IF
+            _FONT fh
+            EXIT SUB
+        END IF
+    END IF
+
+    ' Fall back to built-in fonts
+    IF fontSize% >= 14 THEN
+        _FONT 16 ' Built-in 8x16 font
+    ELSE
+        _FONT 8  ' Built-in 8x8 font
+    END IF
+END SUB
+
+
+''
+' Get all text content from a node's text children (non-recursive)
+'
+' @param INTEGER nodeIdx% node index
+' @return STRING concatenated text content
+'
+FUNCTION HTMLGUI_get_node_text$ (nodeIdx%)
+    DIM result$
+    result$ = ""
+
+    IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+        HTMLGUI_get_node_text$ = _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent)
+        EXIT FUNCTION
+    END IF
+
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            IF LEN(result$) > 0 THEN result$ = result$ + " "
+            result$ = result$ + _TRIM$(HTMLGUI_NODES(childIdx%).textContent)
+        ELSE
+            ' Recurse into element children for nested text
+            DIM childText$
+            childText$ = HTMLGUI_get_node_text$(childIdx%)
+            IF LEN(childText$) > 0 THEN
+                IF LEN(result$) > 0 THEN result$ = result$ + " "
+                result$ = result$ + childText$
+            END IF
+        END IF
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
+
+    HTMLGUI_get_node_text$ = result$
+END FUNCTION
+
+
+''
+' Render background image (gradient or url) for a node
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param INTEGER x1%, y1%, x2%, y2% bounding box
+'
+SUB HTMLGUI_render_background (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+    DIM boxW%, boxH%
+    boxW% = x2% - x1% + 1
+    boxH% = y2% - y1% + 1
+    IF boxW% <= 0 OR boxH% <= 0 THEN EXIT SUB
+
+    SELECT CASE s.bgImageType
+        CASE HTMLGUI_BG_LINEAR_GRADIENT
+            IF s.gradientIdx >= 0 AND s.gradientIdx < HTMLGUI_GRADIENT_COUNT THEN
+                HTMLGUI_render_linear_gradient s.gradientIdx, x1%, y1%, boxW%, boxH%
+            END IF
+
+        CASE HTMLGUI_BG_RADIAL_GRADIENT
+            IF s.gradientIdx >= 0 AND s.gradientIdx < HTMLGUI_GRADIENT_COUNT THEN
+                HTMLGUI_render_radial_gradient s.gradientIdx, x1%, y1%, boxW%, boxH%
+            END IF
+
+        CASE HTMLGUI_BG_URL
+            HTMLGUI_render_bg_image nodeIdx%, x1%, y1%, boxW%, boxH%
+    END SELECT
+END SUB
+
+
+''
+' Render a linear gradient
+'
+' @param INTEGER gIdx% gradient index
+' @param INTEGER x%, y% top-left corner
+' @param INTEGER w%, h% width and height
+'
+SUB HTMLGUI_render_linear_gradient (gIdx%, x%, y%, w%, h%)
+    IF HTMLGUI_GRADIENTS(gIdx%).stopCount < 2 THEN EXIT SUB
+    IF w% <= 0 OR h% <= 0 THEN EXIT SUB
+
+    DIM angleDeg!
+    angleDeg! = HTMLGUI_GRADIENTS(gIdx%).angleDeg
+
+    ' Convert angle to radians (CSS: 0deg=top, 90deg=right)
+    DIM angleRad!
+    angleRad! = (angleDeg! - 90) * 3.14159265! / 180!
+
+    ' Direction vector
+    DIM dx!, dy!
+    dx! = COS(angleRad!)
+    dy! = SIN(angleRad!)
+
+    ' Calculate gradient line length based on box and angle
+    ' The gradient line length is the projection of the box diagonal onto the gradient direction
+    DIM gradLen!
+    gradLen! = ABS(w% * dx!) + ABS(h% * dy!)
+    IF gradLen! < 1 THEN gradLen! = 1
+
+    ' Center of the box
+    DIM cx!, cy!
+    cx! = w% / 2!
+    cy! = h% / 2!
+
+    ' Start and end points on the gradient line
+    DIM startX!, startY!
+    startX! = cx! - (gradLen! / 2!) * dx!
+    startY! = cy! - (gradLen! / 2!) * dy!
+
+    ' For each pixel row, for each pixel column, project onto gradient line
+    DIM py%, px%
+    DIM r1%, g1%, b1%, a1%
+    DIM r2%, g2%, b2%, a2%
+
+    ' Optimization: for horizontal/vertical gradients, use LINE BF scanlines
+    DIM isHoriz%, isVert%
+    isHoriz% = (ABS(dy!) < 0.001)
+    isVert% = (ABS(dx!) < 0.001)
+
+    IF isVert% THEN
+        ' Vertical gradient: one color per row
+        FOR py% = 0 TO h% - 1
+            DIM vt!
+            IF dy! > 0 THEN
+                vt! = py% / h%
+            ELSE
+                vt! = 1! - (py% / h%)
+            END IF
+            DIM vColor AS _UNSIGNED LONG
+            vColor = HTMLGUI_gradient_color_at~&(gIdx%, vt!)
+            LINE (x% , y% + py%)-(x% + w% - 1, y% + py%), vColor, BF
+        NEXT py%
+    ELSEIF isHoriz% THEN
+        ' Horizontal gradient: one color per column
+        FOR px% = 0 TO w% - 1
+            DIM ht!
+            IF dx! > 0 THEN
+                ht! = px% / w%
+            ELSE
+                ht! = 1! - (px% / w%)
+            END IF
+            DIM hColor AS _UNSIGNED LONG
+            hColor = HTMLGUI_gradient_color_at~&(gIdx%, ht!)
+            LINE (x% + px%, y%)-(x% + px%, y% + h% - 1), hColor
+        NEXT px%
+    ELSE
+        ' Angled gradient: per-pixel projection
+        FOR py% = 0 TO h% - 1
+            FOR px% = 0 TO w% - 1
+                ' Project pixel position onto gradient line
+                DIM relX!, relY!
+                relX! = px% - startX!
+                relY! = py% - startY!
+                DIM proj!
+                proj! = (relX! * dx! + relY! * dy!) / gradLen!
+                IF proj! < 0 THEN proj! = 0
+                IF proj! > 1 THEN proj! = 1
+                DIM pColor AS _UNSIGNED LONG
+                pColor = HTMLGUI_gradient_color_at~&(gIdx%, proj!)
+                PSET (x% + px%, y% + py%), pColor
+            NEXT px%
+        NEXT py%
+    END IF
+END SUB
+
+
+''
+' Render a radial gradient
+'
+' @param INTEGER gIdx% gradient index
+' @param INTEGER x%, y% top-left corner
+' @param INTEGER w%, h% width and height
+'
+SUB HTMLGUI_render_radial_gradient (gIdx%, x%, y%, w%, h%)
+    IF HTMLGUI_GRADIENTS(gIdx%).stopCount < 2 THEN EXIT SUB
+    IF w% <= 0 OR h% <= 0 THEN EXIT SUB
+
+    ' Center position
+    DIM cx!, cy!
+    cx! = HTMLGUI_GRADIENTS(gIdx%).centerX * w%
+    cy! = HTMLGUI_GRADIENTS(gIdx%).centerY * h%
+
+    ' Calculate radius based on size keyword
+    DIM rx!, ry!  ' radii for ellipse (or both equal for circle)
+    SELECT CASE HTMLGUI_GRADIENTS(gIdx%).radialSize
+        CASE HTMLGUI_RADIAL_CLOSEST_SIDE
+            rx! = cx!
+            IF (w% - cx!) < rx! THEN rx! = w% - cx!
+            ry! = cy!
+            IF (h% - cy!) < ry! THEN ry! = h% - cy!
+            IF rx! < 1 THEN rx! = 1
+            IF ry! < 1 THEN ry! = 1
+
+        CASE HTMLGUI_RADIAL_FARTHEST_SIDE
+            rx! = cx!
+            IF (w% - cx!) > rx! THEN rx! = w% - cx!
+            ry! = cy!
+            IF (h% - cy!) > ry! THEN ry! = h% - cy!
+            IF rx! < 1 THEN rx! = 1
+            IF ry! < 1 THEN ry! = 1
+
+        CASE HTMLGUI_RADIAL_CLOSEST_CORNER
+            DIM ccDist!
+            ccDist! = SQR(cx! * cx! + cy! * cy!)
+            DIM ccD2!: ccD2! = SQR((w% - cx!) * (w% - cx!) + cy! * cy!)
+            IF ccD2! < ccDist! THEN ccDist! = ccD2!
+            DIM ccD3!: ccD3! = SQR(cx! * cx! + (h% - cy!) * (h% - cy!))
+            IF ccD3! < ccDist! THEN ccDist! = ccD3!
+            DIM ccD4!: ccD4! = SQR((w% - cx!) * (w% - cx!) + (h% - cy!) * (h% - cy!))
+            IF ccD4! < ccDist! THEN ccDist! = ccD4!
+            IF ccDist! < 1 THEN ccDist! = 1
+            rx! = ccDist!
+            ry! = ccDist!
+
+        CASE ELSE ' FARTHEST_CORNER (default)
+            DIM fcDist!
+            fcDist! = SQR(cx! * cx! + cy! * cy!)
+            DIM fcD2!: fcD2! = SQR((w% - cx!) * (w% - cx!) + cy! * cy!)
+            IF fcD2! > fcDist! THEN fcDist! = fcD2!
+            DIM fcD3!: fcD3! = SQR(cx! * cx! + (h% - cy!) * (h% - cy!))
+            IF fcD3! > fcDist! THEN fcDist! = fcD3!
+            DIM fcD4!: fcD4! = SQR((w% - cx!) * (w% - cx!) + (h% - cy!) * (h% - cy!))
+            IF fcD4! > fcDist! THEN fcDist! = fcD4!
+            IF fcDist! < 1 THEN fcDist! = 1
+            rx! = fcDist!
+            ry! = fcDist!
+    END SELECT
+
+    ' For circle shape, use the same radius for both axes
+    DIM isCircle%
+    isCircle% = (HTMLGUI_GRADIENTS(gIdx%).radialShape = HTMLGUI_RADIAL_CIRCLE)
+
+    ' Render per-pixel
+    DIM py%, px%
+    FOR py% = 0 TO h% - 1
+        FOR px% = 0 TO w% - 1
+            DIM relX!, relY!, dist!
+            relX! = px% - cx!
+            relY! = py% - cy!
+            IF isCircle% THEN
+                dist! = SQR(relX! * relX! + relY! * relY!) / rx!
+            ELSE
+                ' Ellipse: normalize by rx/ry
+                IF rx! > 0 AND ry! > 0 THEN
+                    dist! = SQR((relX! / rx!) * (relX! / rx!) + (relY! / ry!) * (relY! / ry!))
+                ELSE
+                    dist! = 0
+                END IF
+            END IF
+            IF dist! > 1 THEN dist! = 1
+            DIM rColor AS _UNSIGNED LONG
+            rColor = HTMLGUI_gradient_color_at~&(gIdx%, dist!)
+            PSET (x% + px%, y% + py%), rColor
+        NEXT px%
+    NEXT py%
+END SUB
+
+
+''
+' Interpolate a color at a given position along a gradient's color stops
+'
+' @param INTEGER gIdx% gradient index
+' @param SINGLE t! position 0..1 along gradient
+' @return _UNSIGNED LONG interpolated color
+'
+FUNCTION HTMLGUI_gradient_color_at~& (gIdx%, t!)
+    DIM sc%
+    sc% = HTMLGUI_GRADIENTS(gIdx%).stopCount
+    IF sc% = 0 THEN
+        HTMLGUI_gradient_color_at~& = HTMLGUI_COLOR_TRANSPARENT~&
+        EXIT FUNCTION
+    END IF
+    IF sc% = 1 THEN
+        HTMLGUI_gradient_color_at~& = HTMLGUI_GRAD_STOPS(gIdx%, 0).stopColor
+        EXIT FUNCTION
+    END IF
+
+    ' Clamp t
+    DIM tt!
+    tt! = t!
+    IF tt! <= HTMLGUI_GRAD_STOPS(gIdx%, 0).stopPos THEN
+        HTMLGUI_gradient_color_at~& = HTMLGUI_GRAD_STOPS(gIdx%, 0).stopColor
+        EXIT FUNCTION
+    END IF
+    IF tt! >= HTMLGUI_GRAD_STOPS(gIdx%, sc% - 1).stopPos THEN
+        HTMLGUI_gradient_color_at~& = HTMLGUI_GRAD_STOPS(gIdx%, sc% - 1).stopColor
+        EXIT FUNCTION
+    END IF
+
+    ' Find which two stops we're between
+    DIM si%
+    FOR si% = 0 TO sc% - 2
+        DIM pos1!, pos2!
+        pos1! = HTMLGUI_GRAD_STOPS(gIdx%, si%).stopPos
+        pos2! = HTMLGUI_GRAD_STOPS(gIdx%, si% + 1).stopPos
+        IF tt! >= pos1! AND tt! <= pos2! THEN
+            ' Interpolate between these two stops
+            DIM localT!
+            IF (pos2! - pos1!) > 0.0001 THEN
+                localT! = (tt! - pos1!) / (pos2! - pos1!)
+            ELSE
+                localT! = 0
+            END IF
+
+            DIM c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG
+            c1 = HTMLGUI_GRAD_STOPS(gIdx%, si%).stopColor
+            c2 = HTMLGUI_GRAD_STOPS(gIdx%, si% + 1).stopColor
+
+            DIM r%, g%, b%, a%
+            r% = INT(_RED32(c1) + (_RED32(c2) - _RED32(c1)) * localT!)
+            g% = INT(_GREEN32(c1) + (_GREEN32(c2) - _GREEN32(c1)) * localT!)
+            b% = INT(_BLUE32(c1) + (_BLUE32(c2) - _BLUE32(c1)) * localT!)
+            a% = INT(_ALPHA32(c1) + (_ALPHA32(c2) - _ALPHA32(c1)) * localT!)
+
+            IF r% < 0 THEN r% = 0
+            IF r% > 255 THEN r% = 255
+            IF g% < 0 THEN g% = 0
+            IF g% > 255 THEN g% = 255
+            IF b% < 0 THEN b% = 0
+            IF b% > 255 THEN b% = 255
+            IF a% < 0 THEN a% = 0
+            IF a% > 255 THEN a% = 255
+
+            HTMLGUI_gradient_color_at~& = _RGBA32(r%, g%, b%, a%)
+            EXIT FUNCTION
+        END IF
+    NEXT si%
+
+    ' Fallback: last stop color
+    HTMLGUI_gradient_color_at~& = HTMLGUI_GRAD_STOPS(gIdx%, sc% - 1).stopColor
+END FUNCTION
+
+
+''
+' Render a background image from url()
+' Handles background-position, background-size, and background-repeat
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param INTEGER x%, y% top-left corner
+' @param INTEGER w%, h% width and height
+'
+SUB HTMLGUI_render_bg_image (nodeIdx%, x%, y%, w%, h%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    ' Get the image path
+    DIM imgPath$
+    imgPath$ = _TRIM$(s.bgImageValue)
+    ' Truncate at null
+    DIM nullPos&
+    nullPos& = INSTR(imgPath$, CHR$(0))
+    IF nullPos& > 0 THEN imgPath$ = LEFT$(imgPath$, nullPos& - 1)
+    IF LEN(imgPath$) = 0 THEN EXIT SUB
+
+    ' Try cached handle first
+    DIM imgHandle AS LONG
+    imgHandle = s.bgCacheHandle
+
+    IF imgHandle = 0 OR imgHandle = -1 THEN
+        ' Resolve relative path
+        DIM fullPath$
+        fullPath$ = imgPath$
+        DIM basePath$
+        basePath$ = _TRIM$(HTMLGUI.basePath)
+        DIM np2&
+        np2& = INSTR(basePath$, CHR$(0))
+        IF np2& > 0 THEN basePath$ = LEFT$(basePath$, np2& - 1)
+        IF LEN(basePath$) > 0 AND LEFT$(imgPath$, 1) <> "/" AND MID$(imgPath$, 2, 1) <> ":" THEN
+            IF RIGHT$(basePath$, 1) <> "/" AND RIGHT$(basePath$, 1) <> "\" THEN
+                basePath$ = basePath$ + "/"
+            END IF
+            fullPath$ = basePath$ + imgPath$
+        END IF
+
+        imgHandle = _LOADIMAGE(fullPath$, 32)
+        IF imgHandle < -1 THEN
+            HTMLGUI_STYLES(nodeIdx%).bgCacheHandle = imgHandle
+        ELSE
+            HTMLGUI_STYLES(nodeIdx%).bgCacheHandle = -1  ' mark as failed
+            EXIT SUB
+        END IF
+    END IF
+
+    IF imgHandle = -1 THEN EXIT SUB  ' load failed previously
+
+    ' Get image dimensions
+    DIM imgW%, imgH%
+    imgW% = _WIDTH(imgHandle)
+    imgH% = _HEIGHT(imgHandle)
+    IF imgW% <= 0 OR imgH% <= 0 THEN EXIT SUB
+
+    ' Calculate display size based on background-size
+    DIM dispW%, dispH%
+    SELECT CASE s.bgSizeMode
+        CASE HTMLGUI_BG_SIZE_COVER
+            DIM covScale!
+            covScale! = w% / imgW%
+            IF (imgH% * covScale!) < h% THEN covScale! = h% / imgH%
+            dispW% = INT(imgW% * covScale!)
+            dispH% = INT(imgH% * covScale!)
+
+        CASE HTMLGUI_BG_SIZE_CONTAIN
+            DIM conScale!
+            conScale! = w% / imgW%
+            IF (imgH% * conScale!) > h% THEN conScale! = h% / imgH%
+            dispW% = INT(imgW% * conScale!)
+            dispH% = INT(imgH% * conScale!)
+
+        CASE HTMLGUI_BG_SIZE_EXPLICIT
+            IF s.bgSizeW > 0 AND s.bgSizeW < 1 THEN
+                dispW% = INT(w% * s.bgSizeW)
+            ELSEIF s.bgSizeW > 0 THEN
+                dispW% = INT(s.bgSizeW)
+            ELSE
+                dispW% = imgW%
+            END IF
+            IF s.bgSizeH = HTMLGUI_AUTO! OR s.bgSizeH = 0 THEN
+                ' Maintain aspect ratio
+                dispH% = INT(dispW% * (imgH% / imgW%))
+            ELSEIF s.bgSizeH > 0 AND s.bgSizeH < 1 THEN
+                dispH% = INT(h% * s.bgSizeH)
+            ELSEIF s.bgSizeH > 0 THEN
+                dispH% = INT(s.bgSizeH)
+            ELSE
+                dispH% = imgH%
+            END IF
+
+        CASE ELSE ' AUTO
+            dispW% = imgW%
+            dispH% = imgH%
+    END SELECT
+    IF dispW% <= 0 THEN dispW% = 1
+    IF dispH% <= 0 THEN dispH% = 1
+
+    ' Calculate position based on background-position
+    DIM posX%, posY%
+    IF s.bgPosXMode = HTMLGUI_BG_POS_PERCENT THEN
+        posX% = INT((w% - dispW%) * (s.bgPositionX / 100!))
+    ELSE
+        posX% = INT(s.bgPositionX)
+    END IF
+    IF s.bgPosYMode = HTMLGUI_BG_POS_PERCENT THEN
+        posY% = INT((h% - dispH%) * (s.bgPositionY / 100!))
+    ELSE
+        posY% = INT(s.bgPositionY)
+    END IF
+
+    ' Render based on background-repeat
+    SELECT CASE s.bgRepeat
+        CASE HTMLGUI_BG_NO_REPEAT
+            _PUTIMAGE (x% + posX%, y% + posY%)-(x% + posX% + dispW% - 1, y% + posY% + dispH% - 1), imgHandle
+
+        CASE HTMLGUI_BG_REPEAT_X
+            DIM rxStart%
+            rxStart% = posX% - (INT(-posX% / dispW%) + 1) * dispW%
+            IF rxStart% > 0 THEN rxStart% = rxStart% - dispW%
+            DIM rxX%
+            rxX% = rxStart%
+            DO WHILE rxX% < w%
+                _PUTIMAGE (x% + rxX%, y% + posY%)-(x% + rxX% + dispW% - 1, y% + posY% + dispH% - 1), imgHandle
+                rxX% = rxX% + dispW%
+            LOOP
+
+        CASE HTMLGUI_BG_REPEAT_Y
+            DIM ryStart%
+            ryStart% = posY% - (INT(-posY% / dispH%) + 1) * dispH%
+            IF ryStart% > 0 THEN ryStart% = ryStart% - dispH%
+            DIM ryY%
+            ryY% = ryStart%
+            DO WHILE ryY% < h%
+                _PUTIMAGE (x% + posX%, y% + ryY%)-(x% + posX% + dispW% - 1, y% + ryY% + dispH% - 1), imgHandle
+                ryY% = ryY% + dispH%
+            LOOP
+
+        CASE ELSE ' REPEAT (both axes)
+            DIM tileStartX%, tileStartY%
+            tileStartX% = posX%
+            DO WHILE tileStartX% > 0: tileStartX% = tileStartX% - dispW%: LOOP
+            tileStartY% = posY%
+            DO WHILE tileStartY% > 0: tileStartY% = tileStartY% - dispH%: LOOP
+            DIM tileY%, tileX%
+            tileY% = tileStartY%
+            DO WHILE tileY% < h%
+                tileX% = tileStartX%
+                DO WHILE tileX% < w%
+                    _PUTIMAGE (x% + tileX%, y% + tileY%)-(x% + tileX% + dispW% - 1, y% + tileY% + dispH% - 1), imgHandle
+                    tileX% = tileX% + dispW%
+                LOOP
+                tileY% = tileY% + dispH%
+            LOOP
+    END SELECT
+END SUB
