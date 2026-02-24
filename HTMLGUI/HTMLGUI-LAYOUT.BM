@@ -121,7 +121,9 @@ SUB HTMLGUI_layout_node (nodeIdx%, startX!, startY!, availW!, availH!)
     IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
         ' Text node: compute text dimensions
         DIM textW!, textH!
-        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), contentW!, style.fontSize, textW!, textH!
+        DIM textWrapMode%
+        textWrapMode% = HTMLGUI_STYLES(nodeIdx%).textWrap
+        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), contentW!, style.fontSize, textWrapMode%, textW!, textH!
         IF autoW% THEN contentW! = textW!
         childContentH! = textH!
     ELSEIF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
@@ -791,7 +793,7 @@ END FUNCTION
 ' @param SINGLE outW! (BYREF) measured width
 ' @param SINGLE outH! (BYREF) measured height
 '
-SUB HTMLGUI_measure_text (text$, maxW!, fontSize!, outW!, outH!)
+SUB HTMLGUI_measure_text (text$, maxW!, fontSize!, textWrap%, outW!, outH!)
     ' Truncate at first null (STRING * 256 padding) then normalize whitespace
     DIM rawText$
     rawText$ = text$
@@ -829,12 +831,14 @@ SUB HTMLGUI_measure_text (text$, maxW!, fontSize!, outW!, outH!)
     IF fh% <= 0 THEN fh% = 16
     outH! = fh%
 
-    ' Simple word-wrapping height estimation
-    IF outW! > maxW! AND maxW! > 0 THEN
-        DIM lines%
-        lines% = INT(outW! / maxW!) + 1
-        outH! = outH! * lines%
-        IF outW! > maxW! THEN outW! = maxW!
+    ' Simple word-wrapping height estimation (skip if text-wrap: nowrap)
+    IF textWrap% <> HTMLGUI_TEXT_WRAP_NOWRAP THEN
+        IF outW! > maxW! AND maxW! > 0 THEN
+            DIM lines%
+            lines% = INT(outW! / maxW!) + 1
+            outH! = outH! * lines%
+            IF outW! > maxW! THEN outW! = maxW!
+        END IF
     END IF
 END SUB
 
@@ -882,7 +886,9 @@ SUB HTMLGUI_measure_node_content (nodeIdx%, maxW!, outW!, outH!)
     IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
-        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), maxW!, HTMLGUI_STYLES(nodeIdx%).fontSize, outW!, outH!
+        DIM twMode%
+        twMode% = HTMLGUI_STYLES(nodeIdx%).textWrap
+        HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), maxW!, HTMLGUI_STYLES(nodeIdx%).fontSize, twMode%, outW!, outH!
         EXIT SUB
     END IF
 

@@ -818,6 +818,15 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
                 CASE ELSE:           HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_DECOR_NONE
             END SELECT
             HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_DECORATION
+        CASE "text-wrap"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "nowrap":  HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_TEXT_WRAP_NOWRAP
+                CASE "balance": HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_TEXT_WRAP_BALANCE
+                CASE "pretty":  HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_TEXT_WRAP_PRETTY
+                CASE "stable":  HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_TEXT_WRAP_STABLE
+                CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_TEXT_WRAP_WRAP
+            END SELECT
+            HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_WRAP
 
         ' --- Layout ---
         CASE "display"
@@ -971,6 +980,7 @@ SUB HTMLGUI_inherit_styles (nodeIdx%)
             HTMLGUI_STYLES(nodeIdx%).textDecoration = HTMLGUI_STYLES(parentIdx%).textDecoration
             HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_STYLES(parentIdx%).cursor
             HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_STYLES(parentIdx%).listStyleType
+            HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_STYLES(parentIdx%).textWrap
         ELSE
         ' For element nodes, inherit each property individually if not explicitly set
             DIM ep AS LONG
@@ -998,6 +1008,9 @@ SUB HTMLGUI_inherit_styles (nodeIdx%)
             END IF
             IF (ep AND HTMLGUI_EXPLICIT_LIST_STYLE) = 0 THEN
                 HTMLGUI_STYLES(nodeIdx%).listStyleType = HTMLGUI_STYLES(parentIdx%).listStyleType
+            END IF
+            IF (ep AND HTMLGUI_EXPLICIT_TEXT_WRAP) = 0 THEN
+                HTMLGUI_STYLES(nodeIdx%).textWrap = HTMLGUI_STYLES(parentIdx%).textWrap
             END IF
         END IF
     END IF

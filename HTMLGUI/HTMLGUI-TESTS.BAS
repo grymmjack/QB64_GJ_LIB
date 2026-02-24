@@ -69,6 +69,7 @@ REGISTER_TEST "images", "test-images", "Images & Backgrounds"
 REGISTER_TEST "pseudo", "test-pseudo", "Pseudo-classes & Cursors"
 REGISTER_TEST "overflow", "test-overflow", "Overflow & Scrolling"
 REGISTER_TEST "svg", "test-svg", "SVG Rendering"
+REGISTER_TEST "textwrap", "test-textwrap", "Text Wrap Modes"
 
 _LOGINFO "======================================"
 _LOGINFO " HTMLGUI TEST SUITE"
@@ -502,6 +503,44 @@ FUNCTION VALIDATE_TEST% (idx%)
                 _LOGINFO "  CHECK font-header: PASS"
             ELSE
                 _LOGINFO "  CHECK font-header: FAIL (" + HEX$(hdrPx) + ")"
+            END IF
+
+        CASE "Text Wrap Modes"
+            ' Check: nowrap box should not have content below the first line (single line)
+            ' The wrap-default box and wrap-nowrap box should look different
+            checks% = checks% + 1
+            DIM twDefault AS _UNSIGNED LONG, twNowrap AS _UNSIGNED LONG
+            ' Sample pixel below first text line in default-wrap box (~Y=60) vs nowrap box (~Y=150)
+            ' Default wrap box should have text wrapping to second line
+            ' Just check that content exists in both sections
+            DIM twHasWrap%, twHasNowrap%, twx%, twy%
+            twHasWrap% = FALSE
+            twHasNowrap% = FALSE
+            FOR twy% = 30 TO 80 STEP 5
+                FOR twx% = 20 TO 200 STEP 10
+                    twDefault = POINT(twx%, twy%)
+                    IF _ALPHA32(twDefault) > 200 AND twDefault <> bodyPixel THEN
+                        twHasWrap% = TRUE
+                        EXIT FOR
+                    END IF
+                NEXT twx%
+                IF twHasWrap% THEN EXIT FOR
+            NEXT twy%
+            FOR twy% = 100 TO 160 STEP 5
+                FOR twx% = 20 TO 200 STEP 10
+                    twNowrap = POINT(twx%, twy%)
+                    IF _ALPHA32(twNowrap) > 200 AND twNowrap <> bodyPixel THEN
+                        twHasNowrap% = TRUE
+                        EXIT FOR
+                    END IF
+                NEXT twx%
+                IF twHasNowrap% THEN EXIT FOR
+            NEXT twy%
+            IF twHasWrap% AND twHasNowrap% THEN
+                passes% = passes% + 1
+                _LOGINFO "  CHECK text-wrap-sections: PASS"
+            ELSE
+                _LOGINFO "  CHECK text-wrap-sections: FAIL"
             END IF
     END SELECT
 

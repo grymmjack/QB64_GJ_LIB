@@ -1,35 +1,176 @@
 [0.00000] WARN runtime internal/c/libqb/src/logging/logging.cpp: libqb_log_init: 201: 1
-[0.14700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 39: === TEST: Basic Float Layout ===
-[0.14700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 40: Loading: tests/basic/test-basic.html + tests/basic/test-basic.css
-[0.15100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/../../HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
-[0.15100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 60: Loaded: 48 nodes, 5 CSS rules
-[6.13800] ERROR libqb-image internal/c/parts/video/font/font.cpp: ReleaseHandle: 583: Failed to free FreeType face object ((nil))
-#1  [0x0x519730] in ./test.run
-#2  [0x0x51736c] in ./test.run
-#3  [0x0x517a76] in ./test.run
-#4  [0x0x5f6d7f] in ./test.run
-#5  [0x0x7fcc6564d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7fcc6564d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x51a13c] in ./test.run
-#8  [0x0x51aa6c] in ./test.run
+[0.15600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 39: === TEST: Basic Float Layout ===
+[0.15600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 40: Loading: tests/basic/test-basic.html + tests/basic/test-basic.css
+[0.15900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/../../HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
+[0.15900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 60: Loaded: 48 nodes, 5 CSS rules
+[2.79100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[2.79100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[2.80900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.10800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[3.10800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[3.12500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[3.12500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.12500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.14200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.24100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.24100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.29000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.32400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.34000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.35700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.37400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.39100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[3.39100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.39100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.40700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.42400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.57400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.59000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.60800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[3.60800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[3.60800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[3.62400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[3.64000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[3.75700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.02500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.02500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.10800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: btn1 id=btn1 param=
+[4.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.29000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.32400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.34100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.34100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.34100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.35700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.37400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.39000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.40700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.70800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn1 param=
+[4.70800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.70800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.80800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: btn2 id=btn2 param=
+[4.89000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[4.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[4.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[4.92400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[4.94000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[4.95800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.17500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[5.40800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.40800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.42400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.44200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.45700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.47400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.49100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.50800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[5.50800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.50800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.52400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.54100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.72400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.74100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.80800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[5.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: output id=output param=
+[6.02500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[6.04100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[6.05700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[6.07600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=output param=
+[6.07600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.07600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.09200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.09200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[6.09200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[6.10700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[6.12600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id=btn2 param=
+[6.12600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.12600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.14200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.14200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.14200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.15900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.15900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.15900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.24100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.25700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.29100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.37400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.39100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.40700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.50700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.52400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.54200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.55800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.55800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.55800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.57400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.65900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.65900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.75800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: # id= param=
+[6.75800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: # id= param=
+[6.75800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.92400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.94100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.95800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.95900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.95900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.97400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[6.99100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.10700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.17500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.17500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.17500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: # id= param=
+[7.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event: # id= param=
+[7.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.29100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.30900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.30900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.30900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.32500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.45800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.95800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.95800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.97400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[7.99300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: HTMLGUI_ON_EVENT (QB64): 77: Event:  id= param=
+[8.75400] ERROR libqb-image internal/c/parts/video/font/font.cpp: ReleaseHandle: 583: Failed to free FreeType face object ((nil))
+#1  [0x0x5199b0] in ./test.run
+#2  [0x0x5175ec] in ./test.run
+#3  [0x0x517cf6] in ./test.run
+#4  [0x0x5f6fff] in ./test.run
+#5  [0x0x7f104aa4d2b1] in /lib/x86_64-linux-gnu/libc.so.6
+#6  [0x0x7f104aa4d37a] in /lib/x86_64-linux-gnu/libc.so.6
+#7  [0x0x51a3bc] in ./test.run
+#8  [0x0x51acec] in ./test.run
 #9  [0x0x44a32d] in ./test.run
-#10 [0x0x68cd58] in ./test.run
+#10 [0x0x68cfd8] in ./test.run
 #11 [0x0x450ed8] in ./test.run
-#12 [0x0x7fcc65634ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7fcc65634d65] in __libc_start_main
+#12 [0x0x7f104aa34ca8] in /lib/x86_64-linux-gnu/libc.so.6
+#13 [0x0x7f104aa34d65] in __libc_start_main
 #14 [0x0x40f0b1] in ./test.run
-[6.13800] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x519730] in ./test.run
-#2  [0x0x51736c] in ./test.run
-#3  [0x0x517a76] in ./test.run
-#4  [0x0x5f696e] in ./test.run
-#5  [0x0x7fcc6564d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7fcc6564d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x51a13c] in ./test.run
-#8  [0x0x51aa6c] in ./test.run
+[8.75400] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
+#1  [0x0x5199b0] in ./test.run
+#2  [0x0x5175ec] in ./test.run
+#3  [0x0x517cf6] in ./test.run
+#4  [0x0x5f6bee] in ./test.run
+#5  [0x0x7f104aa4d2b1] in /lib/x86_64-linux-gnu/libc.so.6
+#6  [0x0x7f104aa4d37a] in /lib/x86_64-linux-gnu/libc.so.6
+#7  [0x0x51a3bc] in ./test.run
+#8  [0x0x51acec] in ./test.run
 #9  [0x0x44a32d] in ./test.run
-#10 [0x0x68cd58] in ./test.run
+#10 [0x0x68cfd8] in ./test.run
 #11 [0x0x450ed8] in ./test.run
-#12 [0x0x7fcc65634ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7fcc65634d65] in __libc_start_main
+#12 [0x0x7f104aa34ca8] in /lib/x86_64-linux-gnu/libc.so.6
+#13 [0x0x7f104aa34d65] in __libc_start_main
 #14 [0x0x40f0b1] in ./test.run

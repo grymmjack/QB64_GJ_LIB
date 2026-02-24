@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text Wrap Modes</title>
+  <link rel="stylesheet" href="test-textwrap.css">
+</head>
+<body>
+  <h3>text-wrap: wrap (default)</h3>
+  <div class="box wrap-default">
+    The quick brown fox jumps over the lazy dog and keeps on running through the fields.
+  </div>
+
+  <h3>text-wrap: nowrap</h3>
+  <div class="box wrap-nowrap">
+    The quick brown fox jumps over the lazy dog and keeps on running through the fields.
+  </div>
+
+  <h3>text-wrap: balance</h3>
+  <div class="box wrap-balance">
+    The quick brown fox jumps over the lazy dog and keeps on running.
+  </div>
+
+  <h3>text-wrap: pretty</h3>
+  <div class="box wrap-pretty">
+    The quick brown fox jumps over the lazy dog and keeps on running through the fields.
+  </div>
+
+  <h3>Side-by-side comparison</h3>
+  <div class="row">
+    <div class="col">
+      <div class="label">wrap</div>
+      <div class="narrow wrap-default">This text wraps normally at word boundaries.</div>
+    </div>
+    <div class="col">
+      <div class="label">nowrap</div>
+      <div class="narrow wrap-nowrap">This text should not wrap and clips at the edge.</div>
+    </div>
+    <div class="col">
+      <div class="label">balance</div>
+      <div class="narrow wrap-balance">This text has balanced line widths when wrapped.</div>
+    </div>
+  </div>
+
+  <h3>Nowrap overflow test</h3>
+  <div class="overflow-hidden-box wrap-nowrap">
+    A very long sentence that should never wrap and should be clipped because of overflow hidden.
+  </div>
+</body>
+</html>

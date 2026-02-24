@@ -68,6 +68,7 @@ h3 {
   border-right: 2px solid #f1c40f;
   border-bottom: 2px solid #2ecc71;
   border-left: 2px solid #3498db;
+  text-wrap: nowrap;
 }
 
 .spacing-demo {

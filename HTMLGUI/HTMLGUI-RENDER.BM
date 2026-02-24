@@ -390,12 +390,18 @@ SUB HTMLGUI_render_text (nodeIdx%)
     DIM tx%, ty%, maxW%
     tx% = INT(HTMLGUI_NODES(nodeIdx%).layoutX)
     ty% = INT(HTMLGUI_NODES(nodeIdx%).layoutY)
-    maxW% = INT(HTMLGUI_NODES(nodeIdx%).contentW)
+
+    ' Use parent's content width for text clipping (text nodes auto-size to text width)
+    DIM parentIdx%
+    parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+    IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
+        maxW% = INT(HTMLGUI_NODES(parentIdx%).contentW)
+    ELSE
+        maxW% = INT(HTMLGUI_NODES(nodeIdx%).contentW)
+    END IF
     IF maxW% <= 0 THEN maxW% = INT(HTMLGUI_NODES(nodeIdx%).layoutW)
 
     ' Text alignment from parent
-    DIM parentIdx%
-    parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
     IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
         DIM align%
         align% = HTMLGUI_STYLES(parentIdx%).textAlign
@@ -410,11 +416,20 @@ SUB HTMLGUI_render_text (nodeIdx%)
         END SELECT
     END IF
 
-    ' Word wrapping
-    IF maxW% > 0 AND _PRINTWIDTH(text$) > maxW% THEN
-        HTMLGUI_render_text_wrapped text$, tx%, ty%, maxW%
+    ' Word wrapping (respects text-wrap property)
+    DIM textWrapMode%
+    textWrapMode% = s.textWrap
+    IF textWrapMode% = HTMLGUI_TEXT_WRAP_NOWRAP THEN
+        ' text-wrap: nowrap — never wrap, just clip
+        HTMLGUI_print_clipped text$, tx%, ty%, maxW%
+    ELSEIF maxW% > 0 AND _PRINTWIDTH(text$) > maxW% THEN
+        IF textWrapMode% = HTMLGUI_TEXT_WRAP_BALANCE THEN
+            HTMLGUI_render_text_balanced text$, tx%, ty%, maxW%
+        ELSE
+            HTMLGUI_render_text_wrapped text$, tx%, ty%, maxW%
+        END IF
     ELSE
-        _PRINTSTRING (tx%, ty%), text$
+        HTMLGUI_print_clipped text$, tx%, ty%, maxW%
         ' Text decoration
         IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
             DIM decoration%
@@ -464,7 +479,7 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
     fh% = _FONTHEIGHT
     IF fh% <= 0 THEN fh% = 16
 
-    DIM wrapLine$, testLine$
+    DIM wrapLine$, testLine$, charLine$, testChar$, j%
     wrapLine$ = ""
     FOR i% = 0 TO wordCount% - 1
         IF LEN(wrapLine$) = 0 THEN
@@ -473,11 +488,29 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
             testLine$ = wrapLine$ + " " + words$(i%)
         END IF
 
-        IF _PRINTWIDTH(testLine$) > maxW% AND LEN(wrapLine$) > 0 THEN
-            ' Print current line and wrap
-            _PRINTSTRING (curX%, curY%), wrapLine$
-            curY% = curY% + fh%
-            wrapLine$ = words$(i%)
+        IF _PRINTWIDTH(testLine$) > maxW% THEN
+            ' Print accumulated line first (if any)
+            IF LEN(wrapLine$) > 0 THEN
+                HTMLGUI_print_clipped wrapLine$, curX%, curY%, maxW%
+                curY% = curY% + fh%
+            END IF
+            ' If single word wider than maxW%, break by character
+            IF _PRINTWIDTH(words$(i%)) > maxW% THEN
+                charLine$ = ""
+                FOR j% = 1 TO LEN(words$(i%))
+                    testChar$ = charLine$ + MID$(words$(i%), j%, 1)
+                    IF _PRINTWIDTH(testChar$) > maxW% AND LEN(charLine$) > 0 THEN
+                        _PRINTSTRING (curX%, curY%), charLine$
+                        curY% = curY% + fh%
+                        charLine$ = MID$(words$(i%), j%, 1)
+                    ELSE
+                        charLine$ = testChar$
+                    END IF
+                NEXT j%
+                wrapLine$ = charLine$
+            ELSE
+                wrapLine$ = words$(i%)
+            END IF
         ELSE
             wrapLine$ = testLine$
         END IF
@@ -485,8 +518,126 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
 
     ' Print remaining
     IF LEN(wrapLine$) > 0 THEN
-        _PRINTSTRING (curX%, curY%), wrapLine$
+        HTMLGUI_print_clipped wrapLine$, curX%, curY%, maxW%
     END IF
+END SUB
+
+
+''
+' Print text clipped to a maximum pixel width
+' Truncates text character by character if it exceeds maxW%
+'
+' @param STRING text$ text to print
+' @param INTEGER x% X position
+' @param INTEGER y% Y position
+' @param INTEGER maxW% maximum width in pixels (0 = no limit)
+'
+SUB HTMLGUI_print_clipped (text$, x%, y%, maxW%)
+    IF LEN(text$) = 0 THEN EXIT SUB
+    IF maxW% <= 0 OR _PRINTWIDTH(text$) <= maxW% THEN
+        _PRINTSTRING (x%, y%), text$
+        EXIT SUB
+    END IF
+    ' Truncate to fit within maxW%
+    DIM fit%, clipped$
+    clipped$ = ""
+    FOR fit% = 1 TO LEN(text$)
+        IF _PRINTWIDTH(clipped$ + MID$(text$, fit%, 1)) > maxW% THEN EXIT FOR
+        clipped$ = clipped$ + MID$(text$, fit%, 1)
+    NEXT fit%
+    IF LEN(clipped$) > 0 THEN _PRINTSTRING (x%, y%), clipped$
+END SUB
+
+
+''
+' Render text with balanced line wrapping (text-wrap: balance)
+' Tries to equalize line widths by finding the narrowest maxW that still
+' fits within the available width and uses the fewest lines possible.
+'
+' @param STRING text$ text to render
+' @param INTEGER tx% starting X position
+' @param INTEGER ty% starting Y position
+' @param INTEGER maxW% available width in pixels
+'
+SUB HTMLGUI_render_text_balanced (text$, tx%, ty%, maxW%)
+    ' Split into words
+    REDIM bWords$(0 TO 255)
+    DIM bWordCount%, bCurPos%, bSpacePos%
+    bWordCount% = 0
+    bCurPos% = 1
+    DO WHILE bCurPos% <= LEN(text$)
+        bSpacePos% = INSTR(bCurPos%, text$, " ")
+        IF bSpacePos% = 0 THEN bSpacePos% = LEN(text$) + 1
+        IF bWordCount% <= 255 THEN
+            bWords$(bWordCount%) = MID$(text$, bCurPos%, bSpacePos% - bCurPos%)
+            bWordCount% = bWordCount% + 1
+        END IF
+        bCurPos% = bSpacePos% + 1
+    LOOP
+
+    IF bWordCount% = 0 THEN EXIT SUB
+
+    ' First, determine how many lines are needed at full maxW
+    DIM fh%
+    fh% = _FONTHEIGHT
+    IF fh% <= 0 THEN fh% = 16
+
+    ' Count lines needed at full width
+    DIM targetLines%, bi%
+    DIM bLine$, bTest$
+    targetLines% = 1
+    bLine$ = ""
+    FOR bi% = 0 TO bWordCount% - 1
+        IF LEN(bLine$) = 0 THEN
+            bTest$ = bWords$(bi%)
+        ELSE
+            bTest$ = bLine$ + " " + bWords$(bi%)
+        END IF
+        IF _PRINTWIDTH(bTest$) > maxW% AND LEN(bLine$) > 0 THEN
+            targetLines% = targetLines% + 1
+            bLine$ = bWords$(bi%)
+        ELSE
+            bLine$ = bTest$
+        END IF
+    NEXT bi%
+
+    IF targetLines% <= 1 THEN
+        ' Single line — just print clipped
+        HTMLGUI_print_clipped text$, tx%, ty%, maxW%
+        EXIT SUB
+    END IF
+
+    ' Binary search for the narrowest width that still fits in targetLines
+    DIM loW%, hiW%, midW%, testLines%
+    loW% = 1
+    hiW% = maxW%
+    DO WHILE loW% < hiW%
+        midW% = (loW% + hiW%) \ 2
+        ' Count lines at midW
+        testLines% = 1
+        bLine$ = ""
+        FOR bi% = 0 TO bWordCount% - 1
+            IF LEN(bLine$) = 0 THEN
+                bTest$ = bWords$(bi%)
+            ELSE
+                bTest$ = bLine$ + " " + bWords$(bi%)
+            END IF
+            IF _PRINTWIDTH(bTest$) > midW% AND LEN(bLine$) > 0 THEN
+                testLines% = testLines% + 1
+                bLine$ = bWords$(bi%)
+            ELSE
+                bLine$ = bTest$
+            END IF
+        NEXT bi%
+        IF testLines% <= targetLines% THEN
+            hiW% = midW%
+        ELSE
+            loW% = midW% + 1
+        END IF
+    LOOP
+
+    ' Render using the balanced width
+    HTMLGUI_render_text_wrapped text$, tx%, ty%, loW%
 END SUB
 
 

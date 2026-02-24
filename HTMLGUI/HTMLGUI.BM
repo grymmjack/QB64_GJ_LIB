@@ -143,6 +143,12 @@ SUB HTMLGUI_update
     IF HTMLGUI.needsRepaint THEN
         HTMLGUI_render
     END IF
+
+    ' Dispatch queued events to user callback
+    DIM ev AS HTMLGUI_EVENT
+    DO WHILE HTMLGUI_poll_event%(ev)
+        HTMLGUI_on_event ev.handler, ev.id, ev.param
+    LOOP
 END SUB
 
 

@@ -276,12 +276,17 @@ FUNCTION HTMLGUI_hit_test% (nodeIdx%, x%, y%)
                  y% >= INT(n.layoutY) AND y% < INT(n.layoutY + n.layoutH))
 
     IF NOT inBounds% THEN
-        ' Still check children for absolute-positioned elements
+        ' Check children that may overflow parent bounds
+        ' When overflow is visible (default) or absolute-positioned, children
+        ' can extend beyond parent — still need hit testing
+        DIM parentOverflow%
+        parentOverflow% = HTMLGUI_STYLES(nodeIdx%).overflow
         IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
             DIM ci2%
             ci2% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
             DO WHILE ci2% >= LBOUND(HTMLGUI_NODES) AND ci2% <= UBOUND(HTMLGUI_NODES) AND ci2% < HTMLGUI.nodeCount
-                IF HTMLGUI_STYLES(ci2%).position = HTMLGUI_POS_ABSOLUTE THEN
+                ' Allow hit test on overflow-visible children OR absolute-positioned
+                IF parentOverflow% = HTMLGUI_OVERFLOW_VISIBLE OR HTMLGUI_STYLES(ci2%).position = HTMLGUI_POS_ABSOLUTE THEN
                     DIM absHit%
                     absHit% = HTMLGUI_hit_test%(ci2%, x%, y%)
                     IF absHit% >= 0 THEN
