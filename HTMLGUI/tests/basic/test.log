@@ -1,0 +1,35 @@
+[0.00000] WARN runtime internal/c/libqb/src/logging/logging.cpp: libqb_log_init: 201: 1
+[0.14700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 39: === TEST: Basic Float Layout ===
+[0.14700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 40: Loading: tests/basic/test-basic.html + tests/basic/test-basic.css
+[0.15100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/../../HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
+[0.15100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 60: Loaded: 48 nodes, 5 CSS rules
+[6.13800] ERROR libqb-image internal/c/parts/video/font/font.cpp: ReleaseHandle: 583: Failed to free FreeType face object ((nil))
+#1  [0x0x519730] in ./test.run
+#2  [0x0x51736c] in ./test.run
+#3  [0x0x517a76] in ./test.run
+#4  [0x0x5f6d7f] in ./test.run
+#5  [0x0x7fcc6564d2b1] in /lib/x86_64-linux-gnu/libc.so.6
+#6  [0x0x7fcc6564d37a] in /lib/x86_64-linux-gnu/libc.so.6
+#7  [0x0x51a13c] in ./test.run
+#8  [0x0x51aa6c] in ./test.run
+#9  [0x0x44a32d] in ./test.run
+#10 [0x0x68cd58] in ./test.run
+#11 [0x0x450ed8] in ./test.run
+#12 [0x0x7fcc65634ca8] in /lib/x86_64-linux-gnu/libc.so.6
+#13 [0x0x7fcc65634d65] in __libc_start_main
+#14 [0x0x40f0b1] in ./test.run
+[6.13800] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
+#1  [0x0x519730] in ./test.run
+#2  [0x0x51736c] in ./test.run
+#3  [0x0x517a76] in ./test.run
+#4  [0x0x5f696e] in ./test.run
+#5  [0x0x7fcc6564d2b1] in /lib/x86_64-linux-gnu/libc.so.6
+#6  [0x0x7fcc6564d37a] in /lib/x86_64-linux-gnu/libc.so.6
+#7  [0x0x51a13c] in ./test.run
+#8  [0x0x51aa6c] in ./test.run
+#9  [0x0x44a32d] in ./test.run
+#10 [0x0x68cd58] in ./test.run
+#11 [0x0x450ed8] in ./test.run
+#12 [0x0x7fcc65634ca8] in /lib/x86_64-linux-gnu/libc.so.6
+#13 [0x0x7fcc65634d65] in __libc_start_main
+#14 [0x0x40f0b1] in ./test.run

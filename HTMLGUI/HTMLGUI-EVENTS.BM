@@ -126,9 +126,11 @@ SUB HTMLGUI_process_mouse
 
     IF NOT mb1% AND HTMLGUI.lastMouseB1 THEN
         ' Mouse button just released
-        IF HTMLGUI.hoverNodeIdx >= 0 AND HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isActive THEN
-            ' Click event (press + release on same element)
-            HTMLGUI_handle_click HTMLGUI.hoverNodeIdx
+        IF HTMLGUI.hoverNodeIdx >= LBOUND(HTMLGUI_NODES) AND HTMLGUI.hoverNodeIdx <= UBOUND(HTMLGUI_NODES) THEN
+            IF HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isActive THEN
+                ' Click event (press + release on same element)
+                HTMLGUI_handle_click HTMLGUI.hoverNodeIdx
+            END IF
         END IF
 
         ' Dispatch onmouseup attribute handler
@@ -261,7 +263,7 @@ END SUB
 '
 FUNCTION HTMLGUI_hit_test% (nodeIdx%, x%, y%)
     HTMLGUI_hit_test% = -1
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
     IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT FUNCTION
     IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT FUNCTION
 
@@ -278,7 +280,7 @@ FUNCTION HTMLGUI_hit_test% (nodeIdx%, x%, y%)
         IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
             DIM ci2%
             ci2% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-            DO WHILE ci2% >= 0 AND ci2% < HTMLGUI.nodeCount
+            DO WHILE ci2% >= LBOUND(HTMLGUI_NODES) AND ci2% <= UBOUND(HTMLGUI_NODES) AND ci2% < HTMLGUI.nodeCount
                 IF HTMLGUI_STYLES(ci2%).position = HTMLGUI_POS_ABSOLUTE THEN
                     DIM absHit%
                     absHit% = HTMLGUI_hit_test%(ci2%, x%, y%)
@@ -300,7 +302,7 @@ FUNCTION HTMLGUI_hit_test% (nodeIdx%, x%, y%)
     IF HTMLGUI_NODES(nodeIdx%).childCount > 0 THEN
         DIM childIdx%
         childIdx% = HTMLGUI_NODES(nodeIdx%).lastChildIdx
-        DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
             DIM childHit%
             childHit% = HTMLGUI_hit_test%(childIdx%, x%, y%)
             IF childHit% >= 0 THEN
@@ -328,7 +330,7 @@ END FUNCTION
 ' Handle a click on a node - dispatch events and handle form interactions
 '
 SUB HTMLGUI_handle_click (nodeIdx%)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     DIM tag$
     tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
@@ -377,6 +379,7 @@ END SUB
 ' Supports: _QB64PE_functionName('param1', 'param2')
 '
 SUB HTMLGUI_dispatch_handler (nodeIdx%, handler$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM h$
     h$ = _TRIM$(handler$)
 
@@ -427,6 +430,7 @@ END SUB
 ' Add an event to the event queue
 '
 SUB HTMLGUI_queue_event (nodeIdx%, eventType%, handler$, param$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     IF HTMLGUI.eventQueueCount >= HTMLGUI_MAX_EVENTS THEN
         ' Queue full — drop oldest
         DIM si%
@@ -576,7 +580,7 @@ END SUB
 '
 FUNCTION HTMLGUI_is_focusable% (nodeIdx%)
     HTMLGUI_is_focusable% = FALSE
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
     IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT FUNCTION
     IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT FUNCTION
 
@@ -603,7 +607,7 @@ FUNCTION HTMLGUI_find_scrollable_parent% (nodeIdx%)
     DIM idx%
     idx% = nodeIdx%
 
-    DO WHILE idx% >= 0
+    DO WHILE idx% >= LBOUND(HTMLGUI_NODES) AND idx% <= UBOUND(HTMLGUI_NODES) AND idx% < HTMLGUI.nodeCount
         IF HTMLGUI_STYLES(idx%).overflow = HTMLGUI_OVERFLOW_SCROLL OR _
            HTMLGUI_STYLES(idx%).overflow = HTMLGUI_OVERFLOW_AUTO THEN
             IF HTMLGUI_NODES(idx%).scrollContentH > HTMLGUI_NODES(idx%).contentH THEN

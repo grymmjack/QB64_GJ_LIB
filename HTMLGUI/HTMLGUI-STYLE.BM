@@ -18,6 +18,7 @@ $INCLUDEONCE
 ' @param INTEGER idx% style index in HTMLGUI_STYLES()
 '
 SUB HTMLGUI_style_init (idx%)
+    IF idx% < LBOUND(HTMLGUI_NODES) OR idx% > UBOUND(HTMLGUI_NODES) THEN EXIT SUB
     HTMLGUI_STYLES(idx%).marginTop = 0
     HTMLGUI_STYLES(idx%).marginRight = 0
     HTMLGUI_STYLES(idx%).marginBottom = 0
@@ -92,6 +93,7 @@ END SUB
 ' @param INTEGER nodeIdx% DOM node index
 '
 SUB HTMLGUI_apply_ua_defaults (nodeIdx%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM tag$
     tag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
 
@@ -291,7 +293,7 @@ END SUB
 ' @return INTEGER TRUE if matches
 '
 FUNCTION HTMLGUI_selector_matches% (nodeIdx%, selector$)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN
         HTMLGUI_selector_matches% = FALSE
         EXIT FUNCTION
     END IF
@@ -366,6 +368,10 @@ END FUNCTION
 ' @return INTEGER TRUE if matches
 '
 FUNCTION HTMLGUI_simple_selector_matches% (nodeIdx%, sel$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN
+        HTMLGUI_simple_selector_matches% = FALSE
+        EXIT FUNCTION
+    END IF
     DIM s$
     s$ = _TRIM$(LCASE$(sel$))
 
@@ -495,6 +501,10 @@ END FUNCTION
 ' @return INTEGER TRUE if node has this class
 '
 FUNCTION HTMLGUI_has_class% (nodeIdx%, cls$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN
+        HTMLGUI_has_class% = FALSE
+        EXIT FUNCTION
+    END IF
     DIM classes$
     classes$ = " " + _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).className)) + " "
     HTMLGUI_has_class% = (INSTR(classes$, " " + cls$ + " ") > 0)
@@ -512,7 +522,7 @@ END FUNCTION
 '
 FUNCTION HTMLGUI_pseudo_matches% (nodeIdx%, pseudoFlags%)
     HTMLGUI_pseudo_matches% = FALSE
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
     IF pseudoFlags% = HTMLGUI_PSEUDO_NONE THEN
         HTMLGUI_pseudo_matches% = TRUE
         EXIT FUNCTION
@@ -695,6 +705,7 @@ END SUB
 ' @param STRING cssVal$ property value
 '
 SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM fs!
     fs! = HTMLGUI_STYLES(nodeIdx%).fontSize
     IF fs! <= 0 THEN fs! = 16
@@ -939,12 +950,12 @@ END SUB
 ' @param INTEGER nodeIdx% DOM node index to process
 '
 SUB HTMLGUI_inherit_styles (nodeIdx%)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     DIM parentIdx%
     parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
 
-    IF parentIdx% >= 0 AND parentIdx% < HTMLGUI.nodeCount THEN
+    IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
         ' Inheritable properties: color, font-*, text-align, cursor, list-style-type
         ' Only inherit if not explicitly set by a CSS rule (we check if it's still
         ' at the UA default or initial value — a simplification)
@@ -994,7 +1005,7 @@ SUB HTMLGUI_inherit_styles (nodeIdx%)
     ' Recurse into children
     DIM childIdx%
     childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         HTMLGUI_inherit_styles childIdx%
         childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
     LOOP
@@ -1008,6 +1019,7 @@ END SUB
 ' @param STRING cssVal$ the background-image value
 '
 SUB HTMLGUI_apply_bg_image (nodeIdx%, cssVal$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM v$
     v$ = _TRIM$(cssVal$)
     DIM lv$
@@ -1070,6 +1082,7 @@ END SUB
 ' @param STRING cssVal$ the background-size value (auto|cover|contain|<w> <h>)
 '
 SUB HTMLGUI_apply_bg_size (nodeIdx%, cssVal$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM v$
     v$ = LCASE$(_TRIM$(cssVal$))
 
@@ -1117,6 +1130,7 @@ END SUB
 ' @param STRING cssVal$ the background-position value (center|top|left|right|bottom|<x> <y>|50% 50%)
 '
 SUB HTMLGUI_apply_bg_position (nodeIdx%, cssVal$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM v$
     v$ = LCASE$(_TRIM$(cssVal$))
 
@@ -1217,6 +1231,7 @@ END SUB
 ' @param STRING cssVal$ the background value
 '
 SUB HTMLGUI_apply_bg_shorthand (nodeIdx%, cssVal$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM v$
     v$ = _TRIM$(cssVal$)
     DIM lv$

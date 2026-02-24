@@ -41,7 +41,7 @@ _LOGINFO "Loading: " + TEST_HTML$ + " + " + TEST_CSS$
 
 ' Initialize
 HTMLGUI_init SCREEN_W%, SCREEN_H%
-HTMLGUI.defaultFontPath = "tests/basic/"
+HTMLGUI.defaultFontPath = "tests/"
 
 ' Load HTML + CSS
 DIM loadOk%

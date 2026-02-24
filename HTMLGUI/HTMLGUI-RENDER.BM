@@ -47,7 +47,7 @@ END SUB
 ' @param INTEGER nodeIdx% node to render
 '
 SUB HTMLGUI_render_node (nodeIdx%)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     IF NOT HTMLGUI_NODES(nodeIdx%).visible THEN EXIT SUB
     IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN EXIT SUB
 
@@ -97,7 +97,7 @@ SUB HTMLGUI_render_node (nodeIdx%)
     ' Check if parent has overflow:hidden and clip this node
     DIM parentClip%
     parentClip% = FALSE
-    IF n.parentIdx >= 0 AND n.parentIdx < HTMLGUI.nodeCount THEN
+    IF n.parentIdx >= LBOUND(HTMLGUI_NODES) AND n.parentIdx <= UBOUND(HTMLGUI_NODES) AND n.parentIdx < HTMLGUI.nodeCount THEN
         DIM ps AS HTMLGUI_STYLE
         ps = HTMLGUI_STYLES(n.parentIdx)
         IF ps.overflow = HTMLGUI_OVERFLOW_HIDDEN OR ps.overflow = HTMLGUI_OVERFLOW_SCROLL OR ps.overflow = HTMLGUI_OVERFLOW_AUTO THEN
@@ -195,7 +195,7 @@ SUB HTMLGUI_render_node (nodeIdx%)
         ' Temporarily offset all child layout positions
         DIM cIdx%
         cIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-        DO WHILE cIdx% >= 0 AND cIdx% < HTMLGUI.nodeCount
+        DO WHILE cIdx% >= LBOUND(HTMLGUI_NODES) AND cIdx% <= UBOUND(HTMLGUI_NODES) AND cIdx% < HTMLGUI.nodeCount
             HTMLGUI_NODES(cIdx%).layoutX = HTMLGUI_NODES(cIdx%).layoutX - oxOff%
             HTMLGUI_NODES(cIdx%).layoutY = HTMLGUI_NODES(cIdx%).layoutY - oyOff%
             HTMLGUI_NODES(cIdx%).contentX = HTMLGUI_NODES(cIdx%).contentX - oxOff%
@@ -221,7 +221,7 @@ SUB HTMLGUI_render_node (nodeIdx%)
     ELSE
         DIM childIdx%
         childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-        DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+        DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
             HTMLGUI_render_node childIdx%
             childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
         LOOP
@@ -246,6 +246,7 @@ END SUB
 ' @param INTEGER nodeIdx% DOM node index
 '
 SUB HTMLGUI_render_scrollbar (nodeIdx%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM n AS HTMLGUI_NODE
     n = HTMLGUI_NODES(nodeIdx%)
 
@@ -303,6 +304,7 @@ END SUB
 ' Render border lines for a node
 '
 SUB HTMLGUI_render_borders (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -344,6 +346,7 @@ END SUB
 ' Render text node content
 '
 SUB HTMLGUI_render_text (nodeIdx%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     ' Skip whitespace-only text nodes (prevents rendering artifacts)
     IF HTMLGUI_is_whitespace_node%(nodeIdx%) THEN EXIT SUB
 
@@ -393,7 +396,7 @@ SUB HTMLGUI_render_text (nodeIdx%)
     ' Text alignment from parent
     DIM parentIdx%
     parentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
-    IF parentIdx% >= 0 THEN
+    IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
         DIM align%
         align% = HTMLGUI_STYLES(parentIdx%).textAlign
         DIM pw%
@@ -413,7 +416,7 @@ SUB HTMLGUI_render_text (nodeIdx%)
     ELSE
         _PRINTSTRING (tx%, ty%), text$
         ' Text decoration
-        IF parentIdx% >= 0 THEN
+        IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
             DIM decoration%
             decoration% = HTMLGUI_STYLES(parentIdx%).textDecoration
             IF decoration% <> HTMLGUI_DECOR_NONE THEN
@@ -491,6 +494,7 @@ END SUB
 ' Render a button control
 '
 SUB HTMLGUI_render_button (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -572,6 +576,7 @@ END SUB
 ' Render a text input control
 '
 SUB HTMLGUI_render_input (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -719,6 +724,7 @@ END SUB
 ' Render a select dropdown
 '
 SUB HTMLGUI_render_select (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -790,6 +796,7 @@ END SUB
 ' Render an <hr> element
 '
 SUB HTMLGUI_render_hr (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -810,6 +817,7 @@ END SUB
 ' Render an <img> element with caching and object-fit support
 '
 SUB HTMLGUI_render_img (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM src$
     src$ = HTMLGUI_node_get_attr$(nodeIdx%, "src")
     IF LEN(src$) = 0 THEN EXIT SUB
@@ -918,6 +926,7 @@ END SUB
 ' Render a list item marker (bullet or number)
 '
 SUB HTMLGUI_render_list_marker (nodeIdx%, x1%, y1%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -965,6 +974,7 @@ END SUB
 ' Set the font for a node based on computed styles
 '
 SUB HTMLGUI_apply_font (nodeIdx%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -1067,6 +1077,7 @@ END SUB
 FUNCTION HTMLGUI_get_node_text$ (nodeIdx%)
     DIM result$
     result$ = ""
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN HTMLGUI_get_node_text$ = "": EXIT FUNCTION
 
     IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
         HTMLGUI_get_node_text$ = _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent)
@@ -1075,7 +1086,7 @@ FUNCTION HTMLGUI_get_node_text$ (nodeIdx%)
 
     DIM childIdx%
     childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
             IF LEN(result$) > 0 THEN result$ = result$ + " "
             result$ = result$ + _TRIM$(HTMLGUI_NODES(childIdx%).textContent)
@@ -1102,6 +1113,7 @@ END FUNCTION
 ' @param INTEGER x1%, y1%, x2%, y2% bounding box
 '
 SUB HTMLGUI_render_background (nodeIdx%, x1%, y1%, x2%, y2%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
     DIM boxW%, boxH%
@@ -1398,6 +1410,7 @@ END FUNCTION
 ' @param INTEGER w%, h% width and height
 '
 SUB HTMLGUI_render_bg_image (nodeIdx%, x%, y%, w%, h%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
@@ -1563,6 +1576,7 @@ END SUB
 ' @param INTEGER oy% Y position to render at (layout y)
 '
 SUB HTMLGUI_render_svg_native (svgIdx%, ox%, oy%)
+    IF svgIdx% < LBOUND(HTMLGUI_NODES) OR svgIdx% > UBOUND(HTMLGUI_NODES) OR svgIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     ' Use cached image if available
     IF HTMLGUI_NODES(svgIdx%).svgHandle < -1 THEN
         _PUTIMAGE (ox%, oy%), HTMLGUI_NODES(svgIdx%).svgHandle
@@ -1592,7 +1606,7 @@ SUB HTMLGUI_render_svg_native (svgIdx%, ox%, oy%)
     ' Iterate child elements and serialize them
     DIM childIdx2%
     childIdx2% = HTMLGUI_NODES(svgIdx%).firstChildIdx
-    DO WHILE childIdx2% >= 0 AND childIdx2% < HTMLGUI.nodeCount
+    DO WHILE childIdx2% >= LBOUND(HTMLGUI_NODES) AND childIdx2% <= UBOUND(HTMLGUI_NODES) AND childIdx2% < HTMLGUI.nodeCount
         DIM childTag2$
         childTag2$ = _TRIM$(LCASE$(HTMLGUI_NODES(childIdx2%).tag))
 

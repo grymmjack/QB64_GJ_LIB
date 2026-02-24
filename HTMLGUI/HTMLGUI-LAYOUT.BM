@@ -51,7 +51,7 @@ END SUB
 ' @param SINGLE availH! available height from parent
 '
 SUB HTMLGUI_layout_node (nodeIdx%, startX!, startY!, availW!, availH!)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     ' Skip display:none
     IF HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE THEN
@@ -195,7 +195,7 @@ FUNCTION HTMLGUI_layout_block_children! (parentIdx%, cx!, cy!, cw!)
     inFloatRow% = FALSE
 
     childIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN
             HTMLGUI_NODES(childIdx%).visible = FALSE
             childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
@@ -285,7 +285,7 @@ FUNCTION HTMLGUI_layout_block_children! (parentIdx%, cx!, cy!, cw!)
             lineH! = HTMLGUI_layout_inline_run!(childIdx%, cx!, curY!, cw!)
             curY! = curY! + lineH!
             ' Skip past all inline children we just laid out
-            DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+            DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
                 IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
                     childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
                     _CONTINUE
@@ -339,7 +339,7 @@ FUNCTION HTMLGUI_layout_inline_run! (firstIdx%, cx!, cy!, cw!)
     lineY! = cy!
 
     childIdx% = firstIdx%
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         ' Accept text nodes and inline elements; stop at block elements
         IF HTMLGUI_NODES(childIdx%).nodeType <> HTMLGUI_NODE_TEXT THEN
             IF HTMLGUI_STYLES(childIdx%).display <> HTMLGUI_DISPLAY_INLINE THEN EXIT DO
@@ -444,7 +444,7 @@ FUNCTION HTMLGUI_layout_flex_children! (parentIdx%, cx!, cy!, cw!, ch!, autoH%)
 
     childCount% = 0
     childIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         IF HTMLGUI_STYLES(childIdx%).display = HTMLGUI_DISPLAY_NONE THEN
             HTMLGUI_NODES(childIdx%).visible = FALSE
             childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
@@ -651,6 +651,7 @@ END FUNCTION
 ' @param SINGLE cw! parent content width
 '
 SUB HTMLGUI_layout_absolute_child (parentIdx%, childIdx%, cx!, cy!, cw!)
+    IF childIdx% < LBOUND(HTMLGUI_NODES) OR childIdx% > UBOUND(HTMLGUI_NODES) OR childIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM absX!, absY!, absW!
     absX! = cx!
     absY! = cy!
@@ -699,12 +700,12 @@ FUNCTION HTMLGUI_layout_table_children! (parentIdx%, cx!, cy!, cw!)
 
     ' Scan rows to find column count and natural widths
     rowIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
-    DO WHILE rowIdx% >= 0 AND rowIdx% < HTMLGUI.nodeCount
+    DO WHILE rowIdx% >= LBOUND(HTMLGUI_NODES) AND rowIdx% <= UBOUND(HTMLGUI_NODES) AND rowIdx% < HTMLGUI.nodeCount
         IF _TRIM$(LCASE$(HTMLGUI_NODES(rowIdx%).tag)) = "tr" OR HTMLGUI_STYLES(rowIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW THEN
             DIM colIdx%, cellIdx%
             colIdx% = 0
             cellIdx% = HTMLGUI_NODES(rowIdx%).firstChildIdx
-            DO WHILE cellIdx% >= 0 AND cellIdx% < HTMLGUI.nodeCount
+            DO WHILE cellIdx% >= LBOUND(HTMLGUI_NODES) AND cellIdx% <= UBOUND(HTMLGUI_NODES) AND cellIdx% < HTMLGUI.nodeCount
                 IF colIdx% <= 31 THEN
                     DIM cellW!, cellH!
                     HTMLGUI_measure_node_content cellIdx%, cw!, cellW!, cellH!
@@ -745,7 +746,7 @@ FUNCTION HTMLGUI_layout_table_children! (parentIdx%, cx!, cy!, cw!)
     curY! = cy!
 
     rowIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
-    DO WHILE rowIdx% >= 0 AND rowIdx% < HTMLGUI.nodeCount
+    DO WHILE rowIdx% >= LBOUND(HTMLGUI_NODES) AND rowIdx% <= UBOUND(HTMLGUI_NODES) AND rowIdx% < HTMLGUI.nodeCount
         IF _TRIM$(LCASE$(HTMLGUI_NODES(rowIdx%).tag)) = "tr" OR HTMLGUI_STYLES(rowIdx%).display = HTMLGUI_DISPLAY_TABLE_ROW THEN
             DIM curX!, rowH!
             curX! = cx!
@@ -758,7 +759,7 @@ FUNCTION HTMLGUI_layout_table_children! (parentIdx%, cx!, cy!, cw!)
             HTMLGUI_NODES(rowIdx%).layoutW = cw!
 
             cellIdx% = HTMLGUI_NODES(rowIdx%).firstChildIdx
-            DO WHILE cellIdx% >= 0 AND cellIdx% < HTMLGUI.nodeCount
+            DO WHILE cellIdx% >= LBOUND(HTMLGUI_NODES) AND cellIdx% <= UBOUND(HTMLGUI_NODES) AND cellIdx% < HTMLGUI.nodeCount
                 IF colIdx% <= 31 THEN
                     HTMLGUI_layout_node cellIdx%, curX!, curY!, colWidths!(colIdx%), 0
                     IF HTMLGUI_NODES(cellIdx%).layoutH > rowH! THEN
@@ -845,6 +846,10 @@ END SUB
 ' @return INTEGER TRUE if only whitespace, FALSE otherwise
 '
 FUNCTION HTMLGUI_is_whitespace_node% (nodeIdx%)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN
+        HTMLGUI_is_whitespace_node% = TRUE
+        EXIT FUNCTION
+    END IF
     DIM text$, i%, c%, textLen&
     text$ = HTMLGUI_NODES(nodeIdx%).textContent
     ' Find actual text length (ignore STRING*256 null padding)
@@ -874,6 +879,7 @@ END FUNCTION
 SUB HTMLGUI_measure_node_content (nodeIdx%, maxW!, outW!, outH!)
     outW! = 0
     outH! = 0
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     IF HTMLGUI_NODES(nodeIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
         HTMLGUI_measure_text _TRIM$(HTMLGUI_NODES(nodeIdx%).textContent), maxW!, HTMLGUI_STYLES(nodeIdx%).fontSize, outW!, outH!
@@ -885,7 +891,7 @@ SUB HTMLGUI_measure_node_content (nodeIdx%, maxW!, outW!, outH!)
     totalW! = 0: totalH! = 0
 
     childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         DIM cw!, ch!
         HTMLGUI_measure_node_content childIdx%, maxW!, cw!, ch!
         ' Include child element's own padding + border in width measurement

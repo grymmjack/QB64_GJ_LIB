@@ -18,6 +18,7 @@ $INCLUDEONCE
 ' @param INTEGER idx% node index in HTMLGUI_NODES()
 '
 SUB HTMLGUI_node_init (idx%)
+    IF idx% < LBOUND(HTMLGUI_NODES) OR idx% > UBOUND(HTMLGUI_NODES) THEN EXIT SUB
     HTMLGUI_NODES(idx%).nodeType = 0
     HTMLGUI_NODES(idx%).parentIdx = -1
     HTMLGUI_NODES(idx%).firstChildIdx = -1
@@ -92,6 +93,8 @@ END FUNCTION
 ' @param INTEGER childIdx% child node index
 '
 SUB HTMLGUI_node_append_child (parentIdx%, childIdx%)
+    IF parentIdx% < LBOUND(HTMLGUI_NODES) OR parentIdx% > UBOUND(HTMLGUI_NODES) OR parentIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF childIdx% < LBOUND(HTMLGUI_NODES) OR childIdx% > UBOUND(HTMLGUI_NODES) OR childIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     HTMLGUI_NODES(childIdx%).parentIdx = parentIdx%
     HTMLGUI_NODES(childIdx%).depth = HTMLGUI_NODES(parentIdx%).depth + 1
     HTMLGUI_NODES(childIdx%).nextSiblingIdx = -1
@@ -160,6 +163,7 @@ END FUNCTION
 ' @param STRING aValue$ attribute value
 '
 SUB HTMLGUI_node_set_attr (nodeIdx%, aName$, aValue$)
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
     DIM ac%
     ac% = HTMLGUI_NODES(nodeIdx%).attrCount
     IF ac% >= HTMLGUI_MAX_ATTRS THEN EXIT SUB
@@ -220,6 +224,8 @@ END SUB
 ' @return STRING attribute value or "" if not found
 '
 FUNCTION HTMLGUI_node_get_attr$ (nodeIdx%, aName$)
+    HTMLGUI_node_get_attr$ = ""
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
     DIM n$
     n$ = LCASE$(_TRIM$(aName$))
     DIM i%
@@ -756,7 +762,7 @@ END FUNCTION
 ' @param INTEGER depth% indentation depth
 '
 SUB HTMLGUI_dump_tree (nodeIdx%, depth%)
-    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
+    IF nodeIdx% < LBOUND(HTMLGUI_NODES) OR nodeIdx% > UBOUND(HTMLGUI_NODES) OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT SUB
 
     DIM indent$, info$
     indent$ = SPACE$(depth% * 2)
@@ -782,7 +788,7 @@ SUB HTMLGUI_dump_tree (nodeIdx%, depth%)
     ' Recurse into children
     DIM childIdx%
     childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         HTMLGUI_dump_tree childIdx%, depth% + 1
         childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
     LOOP

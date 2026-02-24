@@ -96,7 +96,7 @@ SUB HTMLGUI_set_text (elementId$, text$)
     ' Find first text child or create one
     DIM childIdx%
     childIdx% = HTMLGUI_NODES(idx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
         IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
             HTMLGUI_NODES(childIdx%).textContent = text$
             HTMLGUI.needsRepaint = TRUE
