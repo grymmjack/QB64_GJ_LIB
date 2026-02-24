@@ -178,6 +178,14 @@ SUB HTMLGUI_cleanup
         END IF
     NEXT ni%
 
+    ' Free cached SVG rendered images
+    FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+        IF HTMLGUI_NODES(ni%).svgHandle < -1 THEN
+            _FREEIMAGE HTMLGUI_NODES(ni%).svgHandle
+            HTMLGUI_NODES(ni%).svgHandle = 0
+        END IF
+    NEXT ni%
+
     ' Free cached background images on styles
     FOR ni% = 0 TO HTMLGUI.nodeCount - 1
         IF HTMLGUI_STYLES(ni%).bgCacheHandle < -1 THEN

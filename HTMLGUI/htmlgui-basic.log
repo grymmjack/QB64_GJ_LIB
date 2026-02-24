@@ -1,0 +1,5 @@
+[0.00000] WARN runtime internal/c/libqb/src/logging/logging.cpp: libqb_log_init: 201: 1
+[0.13400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 39: === TEST: Basic Float Layout ===
+[0.13400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 40: Loading: tests/basic/test-basic.html + tests/basic/test-basic.css
+[0.13600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/../../HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
+[0.13600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/basic/test.BAS: Main QB64 Code: 60: Loaded: 48 nodes, 5 CSS rules

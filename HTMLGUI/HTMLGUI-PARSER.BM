@@ -126,6 +126,8 @@ FUNCTION HTMLGUI_is_void_tag% (tag$)
     SELECT CASE t$
         CASE "br", "hr", "img", "input", "meta", "link", "col", "area", "base"
             HTMLGUI_is_void_tag% = TRUE
+        CASE "rect", "circle", "ellipse", "line", "polyline", "polygon", "path"
+            HTMLGUI_is_void_tag% = TRUE
         CASE ELSE
             HTMLGUI_is_void_tag% = FALSE
     END SELECT

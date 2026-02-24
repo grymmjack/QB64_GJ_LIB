@@ -1,0 +1,88 @@
+body {
+  background-color: #1b2838;
+  color: #c7d5e0;
+  padding: 12px;
+}
+
+h2 {
+  color: #66c0f4;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #2a475e;
+  padding-bottom: 6px;
+}
+
+.form-group {
+  margin-bottom: 8px;
+}
+
+label {
+  color: #b8b6b4;
+}
+
+input {
+  background-color: #1a2736;
+  color: #e0e8f0;
+  border: 1px solid #3d5468;
+  padding: 4px 6px;
+  width: 160px;
+}
+
+select {
+  background-color: #1a2736;
+  color: #e0e8f0;
+  border: 1px solid #3d5468;
+  padding: 4px 6px;
+  width: 130px;
+}
+
+.checkbox-group {
+  padding: 3px 0;
+}
+
+.checkbox-group input {
+  width: 16px;
+  background-color: #1a2736;
+  border: 1px solid #3d5468;
+  color: #66c0f4;
+}
+
+hr {
+  border-top: 1px solid #2a475e;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #4c6b22;
+  color: #d2efa9;
+  border: 1px solid #6aa030;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+#btnReset {
+  background-color: #37485a;
+  color: #c7d5e0;
+  border: 1px solid #506878;
+}
+
+#btnCancel {
+  background-color: #5a2020;
+  color: #f4a4a4;
+  border: 1px solid #883030;
+}
+
+#status {
+  background-color: #152535;
+  border: 1px solid #2a475e;
+  padding: 8px 10px;
+  color: #8bc7e8;
+  margin-top: 2px;
+}

@@ -1,0 +1,5 @@
+[0.00000] WARN runtime internal/c/libqb/src/logging/logging.cpp: libqb_log_init: 201: 1
+[0.18000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/svg/test.BAS: Main QB64 Code: 39: === TEST: SVG Rendering ===
+[0.18000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/svg/test.BAS: Main QB64 Code: 40: Loading: tests/svg/test-svg.html + tests/svg/test-svg.css
+[0.18200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/svg/../../HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 93 nodes, 5 CSS rules
+[0.18200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/tests/svg/test.BAS: Main QB64 Code: 60: Loaded: 93 nodes, 5 CSS rules

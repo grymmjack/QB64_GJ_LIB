@@ -174,8 +174,9 @@ SUB HTMLGUI_render_node (nodeIdx%)
             HTMLGUI_render_hr nodeIdx%, x1%, y1%, x2%, y2%
         CASE "img"
             HTMLGUI_render_img nodeIdx%, x1%, y1%, x2%, y2%
-        CASE "rect", "circle", "ellipse", "line", "polyline", "polygon"
-            HTMLGUI_render_svg_element nodeIdx%, x1%, y1%
+        CASE "svg"
+            ' Render SVG using QB64-PE native _LOADIMAGE SVG support
+            HTMLGUI_render_svg_native nodeIdx%, x1%, y1%
     END SELECT
 
     ' --- LIST BULLETS ---
@@ -493,40 +494,58 @@ SUB HTMLGUI_render_button (nodeIdx%, x1%, y1%, x2%, y2%)
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
-    ' Button background (if not already rendered)
+    ' Button background
     DIM btnBg AS _UNSIGNED LONG
     IF _ALPHA32(s.bgColor) > 0 THEN
         btnBg = s.bgColor
     ELSE
-        btnBg = _RGB32(225, 225, 225 )
+        btnBg = _RGB32(225, 225, 225)
     END IF
 
     ' Hover/active state
     IF HTMLGUI_NODES(nodeIdx%).isActive THEN
-        ' Pressed: slightly darker
-        btnBg = _RGB32(_RED32(btnBg) * 0.8, _GREEN32(btnBg) * 0.8, _BLUE32(btnBg) * 0.8)
+        btnBg = _RGB32(_RED32(btnBg) * 0.75, _GREEN32(btnBg) * 0.75, _BLUE32(btnBg) * 0.75)
     ELSEIF HTMLGUI_NODES(nodeIdx%).isHovered THEN
-        ' Hover: slightly lighter
         DIM br%, bg%, bb%
-        br% = _RED32(btnBg) + 15: IF br% > 255 THEN br% = 255
-        bg% = _GREEN32(btnBg) + 15: IF bg% > 255 THEN bg% = 255
-        bb% = _BLUE32(btnBg) + 15: IF bb% > 255 THEN bb% = 255
+        br% = _RED32(btnBg) + 20: IF br% > 255 THEN br% = 255
+        bg% = _GREEN32(btnBg) + 20: IF bg% > 255 THEN bg% = 255
+        bb% = _BLUE32(btnBg) + 20: IF bb% > 255 THEN bb% = 255
         btnBg = _RGB32(br%, bg%, bb%)
     END IF
 
     LINE (x1%, y1%)-(x2%, y2%), btnBg, BF
 
-    ' 3D effect border (raised unless active)
-    IF HTMLGUI_NODES(nodeIdx%).isActive THEN
-        LINE (x1%, y1%)-(x2%, y1%), _RGB32(100, 100, 100)
-        LINE (x1%, y1%)-(x1%, y2%), _RGB32(100, 100, 100)
-        LINE (x2%, y1%)-(x2%, y2%), _RGB32(200, 200, 200)
-        LINE (x1%, y2%)-(x2%, y2%), _RGB32(200, 200, 200)
+    ' Border: use CSS border colors if available, otherwise derive from bg
+    DIM brdLight AS _UNSIGNED LONG, brdDark AS _UNSIGNED LONG
+    IF _ALPHA32(s.borderTopColor) > 0 THEN
+        ' CSS border colors specified - use them
+        brdLight = s.borderTopColor
+        brdDark = s.borderBottomColor
+        IF _ALPHA32(brdDark) = 0 THEN brdDark = brdLight
+        LINE (x1%, y1%)-(x2%, y2%), brdLight, B
     ELSE
-        LINE (x1%, y1%)-(x2%, y1%), _RGB32(255, 255, 255)
-        LINE (x1%, y1%)-(x1%, y2%), _RGB32(255, 255, 255)
-        LINE (x2%, y1%)-(x2%, y2%), _RGB32(100, 100, 100)
-        LINE (x1%, y2%)-(x2%, y2%), _RGB32(100, 100, 100)
+        ' Derive highlight/shadow from bg color
+        DIM hlR%, hlG%, hlB%, shR%, shG%, shB%
+        hlR% = _RED32(btnBg) + 40: IF hlR% > 255 THEN hlR% = 255
+        hlG% = _GREEN32(btnBg) + 40: IF hlG% > 255 THEN hlG% = 255
+        hlB% = _BLUE32(btnBg) + 40: IF hlB% > 255 THEN hlB% = 255
+        shR% = _RED32(btnBg) * 0.5
+        shG% = _GREEN32(btnBg) * 0.5
+        shB% = _BLUE32(btnBg) * 0.5
+        brdLight = _RGB32(hlR%, hlG%, hlB%)
+        brdDark = _RGB32(shR%, shG%, shB%)
+
+        IF HTMLGUI_NODES(nodeIdx%).isActive THEN
+            LINE (x1%, y1%)-(x2%, y1%), brdDark
+            LINE (x1%, y1%)-(x1%, y2%), brdDark
+            LINE (x2%, y1%)-(x2%, y2%), brdLight
+            LINE (x1%, y2%)-(x2%, y2%), brdLight
+        ELSE
+            LINE (x1%, y1%)-(x2%, y1%), brdLight
+            LINE (x1%, y1%)-(x1%, y2%), brdLight
+            LINE (x2%, y1%)-(x2%, y2%), brdDark
+            LINE (x1%, y2%)-(x2%, y2%), brdDark
+        END IF
     END IF
 
     ' Render button text (from first text child)
@@ -556,6 +575,11 @@ SUB HTMLGUI_render_input (nodeIdx%, x1%, y1%, x2%, y2%)
     DIM s AS HTMLGUI_STYLE
     s = HTMLGUI_STYLES(nodeIdx%)
 
+    ' Input type
+    DIM inputType$
+    inputType$ = HTMLGUI_node_get_attr$(nodeIdx%, "type")
+    IF inputType$ = "" THEN inputType$ = "text"
+
     ' Input background
     DIM inputBg AS _UNSIGNED LONG
     IF _ALPHA32(s.bgColor) > 0 THEN
@@ -563,65 +587,114 @@ SUB HTMLGUI_render_input (nodeIdx%, x1%, y1%, x2%, y2%)
     ELSE
         inputBg = _RGB32(255, 255, 255)
     END IF
-    LINE (x1%, y1%)-(x2%, y2%), inputBg, BF
 
-    ' Sunken border
-    LINE (x1%, y1%)-(x2%, y1%), _RGB32(100, 100, 100)
-    LINE (x1%, y1%)-(x1%, y2%), _RGB32(100, 100, 100)
-    LINE (x2%, y1%)-(x2%, y2%), _RGB32(200, 200, 200)
-    LINE (x1%, y2%)-(x2%, y2%), _RGB32(200, 200, 200)
-
-    ' Focus indicator
-    IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
-        LINE (x1% - 1, y1% - 1)-(x2% + 1, y2% + 1), _RGB32(0, 120, 215), B
+    ' --- Border color: use CSS or derive from bg ---
+    DIM ibrdColor AS _UNSIGNED LONG
+    IF _ALPHA32(s.borderTopColor) > 0 THEN
+        ibrdColor = s.borderTopColor
+    ELSE
+        ibrdColor = _RGB32(100, 100, 100)
     END IF
 
-    ' Input type
-    DIM inputType$
-    inputType$ = HTMLGUI_node_get_attr$(nodeIdx%, "type")
-    IF inputType$ = "" THEN inputType$ = "text"
-
-    DIM px%, py%
-    px% = x1% + INT(s.paddingLeft) + INT(s.borderLeftWidth)
-    py% = y1% + ((y2% - y1% + 1) - _FONTHEIGHT) \ 2
+    ' --- Focus accent color ---
+    DIM focusColor AS _UNSIGNED LONG
+    focusColor = _RGB32(0, 120, 215)
+    ' Try to derive from fg color if it's bright enough
+    IF s.fgColor <> 0 AND _ALPHA32(s.fgColor) > 0 THEN
+        DIM fBright%
+        fBright% = (_RED32(s.fgColor) + _GREEN32(s.fgColor) + _BLUE32(s.fgColor)) \ 3
+        IF fBright% > 80 THEN focusColor = s.fgColor
+    END IF
 
     IF inputType$ = "checkbox" THEN
-        ' Checkbox rendering
+        ' --- Checkbox ---
         DIM cbSize%, cbX%, cbY%
-        cbSize% = (y2% - y1%) - 4
+        cbSize% = (y2% - y1%) - 2
         IF cbSize% < 8 THEN cbSize% = 8
         IF cbSize% > 16 THEN cbSize% = 16
-        cbX% = x1% + 3
+        cbX% = x1% + 2
         cbY% = y1% + ((y2% - y1% + 1) - cbSize%) \ 2
-        LINE (cbX%, cbY%)-(cbX% + cbSize%, cbY% + cbSize%), _RGB32(0, 0, 0), B
+
+        ' Checkbox background
+        DIM cbBg AS _UNSIGNED LONG
+        cbBg = inputBg
+        LINE (cbX%, cbY%)-(cbX% + cbSize%, cbY% + cbSize%), cbBg, BF
+        LINE (cbX%, cbY%)-(cbX% + cbSize%, cbY% + cbSize%), ibrdColor, B
 
         IF HTMLGUI_NODES(nodeIdx%).formChecked THEN
-            ' Draw checkmark
-            LINE (cbX% + 2, cbY% + cbSize% \ 2)-(cbX% + cbSize% \ 2, cbY% + cbSize% - 2), _RGB32(0, 0, 0)
-            LINE (cbX% + cbSize% \ 2, cbY% + cbSize% - 2)-(cbX% + cbSize% - 2, cbY% + 2), _RGB32(0, 0, 0)
+            ' Draw checkmark using fg color
+            DIM chkColor AS _UNSIGNED LONG
+            IF s.fgColor <> 0 AND _ALPHA32(s.fgColor) > 0 THEN
+                chkColor = s.fgColor
+            ELSE
+                chkColor = focusColor
+            END IF
+            ' Filled inner square as check indicator
+            LINE (cbX% + 2, cbY% + 2)-(cbX% + cbSize% - 2, cbY% + cbSize% - 2), chkColor, BF
         END IF
+
+        ' Focus ring
+        IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
+            LINE (cbX% - 1, cbY% - 1)-(cbX% + cbSize% + 1, cbY% + cbSize% + 1), focusColor, B
+        END IF
+
     ELSEIF inputType$ = "range" THEN
-        ' Slider rendering
+        ' --- Slider ---
         DIM trackY%, trackH%
         trackH% = 4
         trackY% = y1% + ((y2% - y1% + 1) - trackH%) \ 2
-        LINE (x1% + 4, trackY%)-(x2% - 4, trackY% + trackH%), _RGB32(180, 180, 180), BF
+
+        ' Track color from border or derive
+        DIM trackColor AS _UNSIGNED LONG
+        IF _ALPHA32(ibrdColor) > 0 AND ibrdColor <> _RGB32(100, 100, 100) THEN
+            trackColor = ibrdColor
+        ELSE
+            trackColor = _RGB32(80, 80, 80)
+        END IF
+        LINE (x1% + 4, trackY%)-(x2% - 4, trackY% + trackH%), trackColor, BF
+
         ' Thumb
         DIM rangeVal!, thumbX%
         rangeVal! = VAL(HTMLGUI_NODES(nodeIdx%).formValue)
         thumbX% = x1% + 4 + INT(rangeVal! / 100 * (x2% - x1% - 8))
-        LINE (thumbX% - 4, y1% + 2)-(thumbX% + 4, y2% - 2), _RGB32(0, 120, 215), BF
+
+        ' Filled portion of track
+        IF thumbX% > x1% + 4 THEN
+            LINE (x1% + 4, trackY%)-(thumbX%, trackY% + trackH%), focusColor, BF
+        END IF
+
+        ' Thumb knob
+        LINE (thumbX% - 4, y1% + 2)-(thumbX% + 4, y2% - 2), focusColor, BF
+        LINE (thumbX% - 4, y1% + 2)-(thumbX% + 4, y2% - 2), ibrdColor, B
+
     ELSE
-        ' Text input
+        ' --- Text input ---
+        LINE (x1%, y1%)-(x2%, y2%), inputBg, BF
+        LINE (x1%, y1%)-(x2%, y2%), ibrdColor, B
+
+        ' Focus indicator
+        IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
+            LINE (x1% - 1, y1% - 1)-(x2% + 1, y2% + 1), focusColor, B
+        END IF
+
         HTMLGUI_apply_font nodeIdx%
         DIM inputText$
         inputText$ = HTMLGUI_NODES(nodeIdx%).formValue
         DIM inputColor AS _UNSIGNED LONG
         inputColor = s.fgColor
+
+        DIM px%, py%
+        px% = x1% + INT(s.paddingLeft) + INT(s.borderLeftWidth)
+        py% = y1% + ((y2% - y1% + 1) - _FONTHEIGHT) \ 2
+
         IF LEN(_TRIM$(inputText$)) = 0 THEN
-            ' Show placeholder
+            ' Show placeholder in dimmed color
             inputText$ = HTMLGUI_node_get_attr$(nodeIdx%, "placeholder")
-            inputColor = _RGB32(150, 150, 150)
+            IF inputColor <> 0 AND _ALPHA32(inputColor) > 0 THEN
+                inputColor = _RGB32(_RED32(inputColor) * 0.5, _GREEN32(inputColor) * 0.5, _BLUE32(inputColor) * 0.5)
+            ELSE
+                inputColor = _RGB32(150, 150, 150)
+            END IF
         END IF
         IF inputColor = 0 THEN inputColor = _RGB32(0, 0, 0)
         COLOR inputColor
@@ -634,8 +707,8 @@ SUB HTMLGUI_render_input (nodeIdx%, x1%, y1%, x2%, y2%)
         IF HTMLGUI.focusNodeIdx = nodeIdx% THEN
             DIM cursorX%
             cursorX% = px% + _PRINTWIDTH(_TRIM$(HTMLGUI_NODES(nodeIdx%).formValue))
-            IF (TIMER * 2) MOD 2 = 0 THEN ' Blink cursor
-                LINE (cursorX%, py%)-(cursorX%, py% + _FONTHEIGHT - 1), inputColor
+            IF (TIMER * 2) MOD 2 = 0 THEN
+                LINE (cursorX%, py%)-(cursorX%, py% + _FONTHEIGHT - 1), focusColor
             END IF
         END IF
     END IF
@@ -658,21 +731,35 @@ SUB HTMLGUI_render_select (nodeIdx%, x1%, y1%, x2%, y2%)
     END IF
     LINE (x1%, y1%)-(x2%, y2%), selBg, BF
 
-    ' Border
-    LINE (x1%, y1%)-(x2%, y2%), _RGB32(100, 100, 100), B
+    ' Border: use CSS or derive
+    DIM selBrd AS _UNSIGNED LONG
+    IF _ALPHA32(s.borderTopColor) > 0 THEN
+        selBrd = s.borderTopColor
+    ELSE
+        selBrd = _RGB32(100, 100, 100)
+    END IF
+    LINE (x1%, y1%)-(x2%, y2%), selBrd, B
+
+    ' Arrow color from fg
+    DIM arrowColor AS _UNSIGNED LONG
+    IF s.fgColor <> 0 AND _ALPHA32(s.fgColor) > 0 THEN
+        arrowColor = s.fgColor
+    ELSE
+        arrowColor = _RGB32(0, 0, 0)
+    END IF
 
     ' Dropdown arrow area
     DIM arrowW%
     arrowW% = 16
-    LINE (x2% - arrowW%, y1%)-(x2% - arrowW%, y2%), _RGB32(100, 100, 100)
+    LINE (x2% - arrowW%, y1%)-(x2% - arrowW%, y2%), selBrd
     ' Draw triangle
     DIM ax%, ay%
     ax% = x2% - arrowW% \ 2
     ay% = y1% + (y2% - y1%) \ 2
-    LINE (ax% - 3, ay% - 2)-(ax% + 3, ay% - 2), _RGB32(0, 0, 0)
-    LINE (ax% - 2, ay% - 1)-(ax% + 2, ay% - 1), _RGB32(0, 0, 0)
-    LINE (ax% - 1, ay%)-(ax% + 1, ay%), _RGB32(0, 0, 0)
-    PSET (ax%, ay% + 1), _RGB32(0, 0, 0)
+    LINE (ax% - 3, ay% - 2)-(ax% + 3, ay% - 2), arrowColor
+    LINE (ax% - 2, ay% - 1)-(ax% + 2, ay% - 1), arrowColor
+    LINE (ax% - 1, ay%)-(ax% + 1, ay%), arrowColor
+    PSET (ax%, ay% + 1), arrowColor
 
     ' Display current value
     HTMLGUI_apply_font nodeIdx%
@@ -703,10 +790,19 @@ END SUB
 ' Render an <hr> element
 '
 SUB HTMLGUI_render_hr (nodeIdx%, x1%, y1%, x2%, y2%)
+    DIM s AS HTMLGUI_STYLE
+    s = HTMLGUI_STYLES(nodeIdx%)
+
+    DIM hrColor AS _UNSIGNED LONG
+    IF _ALPHA32(s.borderTopColor) > 0 THEN
+        hrColor = s.borderTopColor
+    ELSE
+        hrColor = _RGB32(128, 128, 128)
+    END IF
+
     DIM midY%
     midY% = y1% + (y2% - y1%) \ 2
-    LINE (x1%, midY%)-(x2%, midY%), _RGB32(180, 180, 180)
-    LINE (x1%, midY% + 1)-(x2%, midY% + 1), _RGB32(255, 255, 255)
+    LINE (x1%, midY%)-(x2%, midY%), hrColor
 END SUB
 
 
@@ -1455,113 +1551,83 @@ END SUB
 
 
 ''
-' Render an SVG primitive element (rect, circle, ellipse, line, polyline, polygon)
-' Uses the parent SVG container's layout position as the coordinate origin.
+' Render an SVG element by reconstructing markup from the DOM tree and using
+' QB64-PE's native _LOADIMAGE SVG support to rasterize it.
 '
-' SVG attributes are read from the node's HTML attributes:
-'   rect: x, y, width, height, fill, stroke, stroke-width
-'   circle: cx, cy, r, fill, stroke
-'   ellipse: cx, cy, rx, ry, fill, stroke
-'   line: x1, y1, x2, y2, stroke, stroke-width
+' The SVG markup is rebuilt from the parsed DOM children, then loaded with
+' _LOADIMAGE(markup$, 32, "memory"). The resulting image is cached in
+' HTMLGUI_NODES(svgIdx%).svgHandle& and reused on subsequent frames.
 '
-' @param INTEGER nodeIdx% DOM node index of the SVG element
-' @param INTEGER ox% X origin (parent SVG container's layout x)
-' @param INTEGER oy% Y origin (parent SVG container's layout y)
+' @param INTEGER svgIdx% DOM node index of the <svg> container
+' @param INTEGER ox% X position to render at (layout x)
+' @param INTEGER oy% Y position to render at (layout y)
 '
-SUB HTMLGUI_render_svg_element (nodeIdx%, ox%, oy%)
-    DIM svgTag$
-    svgTag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
-
-    ' Read common attributes
-    DIM fillStr$, strokeStr$, strokeWidthStr$
-    fillStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "fill")
-    strokeStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "stroke")
-    strokeWidthStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "stroke-width")
-
-    DIM svgFillColor AS _UNSIGNED LONG
-    DIM svgStrokeColor AS _UNSIGNED LONG
-    DIM svgStrokeW%
-
-    IF LEN(fillStr$) > 0 AND LCASE$(fillStr$) <> "none" THEN
-        svgFillColor = HTMLGUI_parse_color~&(fillStr$)
-    ELSE
-        IF LCASE$(fillStr$) = "none" THEN
-            svgFillColor = _RGBA32(0, 0, 0, 0) ' transparent
-        ELSE
-            svgFillColor = _RGB32(0, 0, 0) ' default black fill
-        END IF
+SUB HTMLGUI_render_svg_native (svgIdx%, ox%, oy%)
+    ' Use cached image if available
+    IF HTMLGUI_NODES(svgIdx%).svgHandle < -1 THEN
+        _PUTIMAGE (ox%, oy%), HTMLGUI_NODES(svgIdx%).svgHandle
+        EXIT SUB
     END IF
 
-    IF LEN(strokeStr$) > 0 AND LCASE$(strokeStr$) <> "none" THEN
-        svgStrokeColor = HTMLGUI_parse_color~&(strokeStr$)
-    ELSE
-        svgStrokeColor = _RGBA32(0, 0, 0, 0) ' no stroke by default
+    ' Build SVG markup string from DOM tree
+    DIM svgW$, svgH$
+    svgW$ = HTMLGUI_node_get_attr$(svgIdx%, "width")
+    svgH$ = HTMLGUI_node_get_attr$(svgIdx%, "height")
+    IF LEN(svgW$) = 0 THEN svgW$ = _TRIM$(STR$(INT(HTMLGUI_NODES(svgIdx%).layoutW)))
+    IF LEN(svgH$) = 0 THEN svgH$ = _TRIM$(STR$(INT(HTMLGUI_NODES(svgIdx%).layoutH)))
+
+    DIM markup$
+    markup$ = "<svg xmlns='http://www.w3.org/2000/svg'"
+    markup$ = markup$ + " width='" + svgW$ + "'"
+    markup$ = markup$ + " height='" + svgH$ + "'"
+
+    ' Copy viewBox if present
+    DIM viewBox$
+    viewBox$ = HTMLGUI_node_get_attr$(svgIdx%, "viewbox")
+    IF LEN(viewBox$) > 0 THEN
+        markup$ = markup$ + " viewBox='" + viewBox$ + "'"
     END IF
+    markup$ = markup$ + ">"
 
-    IF LEN(strokeWidthStr$) > 0 THEN
-        svgStrokeW% = VAL(strokeWidthStr$)
+    ' Iterate child elements and serialize them
+    DIM childIdx2%
+    childIdx2% = HTMLGUI_NODES(svgIdx%).firstChildIdx
+    DO WHILE childIdx2% >= 0 AND childIdx2% < HTMLGUI.nodeCount
+        DIM childTag2$
+        childTag2$ = _TRIM$(LCASE$(HTMLGUI_NODES(childIdx2%).tag))
+
+        SELECT CASE childTag2$
+            CASE "rect", "circle", "ellipse", "line", "polyline", "polygon", "path", "g", "text"
+                markup$ = markup$ + "<" + childTag2$
+
+                ' Serialize all attributes
+                DIM ai2%
+                FOR ai2% = 0 TO HTMLGUI_NODES(childIdx2%).attrCount - 1
+                    DIM aName2$, aVal2$
+                    aName2$ = _TRIM$(HTMLGUI_ATTRS(childIdx2%, ai2%).aName)
+                    aVal2$ = _TRIM$(HTMLGUI_ATTRS(childIdx2%, ai2%).aValue)
+                    IF LEN(aName2$) > 0 THEN
+                        markup$ = markup$ + " " + aName2$ + "='" + aVal2$ + "'"
+                    END IF
+                NEXT ai2%
+
+                markup$ = markup$ + "/>"
+        END SELECT
+
+        childIdx2% = HTMLGUI_NODES(childIdx2%).nextSiblingIdx
+    LOOP
+
+    markup$ = markup$ + "</svg>"
+
+    ' Load SVG from memory using QB64-PE native support
+    DIM svgImg&
+    svgImg& = _LOADIMAGE(markup$, 32, "memory")
+
+    IF svgImg& < -1 THEN
+        ' Cache it for reuse
+        HTMLGUI_NODES(svgIdx%).svgHandle = svgImg&
+        _PUTIMAGE (ox%, oy%), svgImg&
     ELSE
-        svgStrokeW% = 1
+        _LOGWARN "HTMLGUI_render_svg_native: _LOADIMAGE failed for SVG node " + _TRIM$(STR$(svgIdx%))
     END IF
-    IF svgStrokeW% < 1 THEN svgStrokeW% = 1
-
-    SELECT CASE svgTag$
-        CASE "rect"
-            DIM srx%, sry%, srw%, srh%
-            srx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x"))
-            sry% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y"))
-            srw% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "width"))
-            srh% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "height"))
-            IF srw% > 0 AND srh% > 0 THEN
-                IF _ALPHA32(svgFillColor) > 0 THEN
-                    LINE (srx%, sry%)-(srx% + srw% - 1, sry% + srh% - 1), svgFillColor, BF
-                END IF
-                IF _ALPHA32(svgStrokeColor) > 0 THEN
-                    LINE (srx%, sry%)-(srx% + srw% - 1, sry% + srh% - 1), svgStrokeColor, B
-                END IF
-            END IF
-
-        CASE "circle"
-            DIM sccx%, sccy%, scr%
-            sccx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cx"))
-            sccy% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cy"))
-            scr% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "r"))
-            IF scr% > 0 THEN
-                IF _ALPHA32(svgFillColor) > 0 THEN
-                    CIRCLE (sccx%, sccy%), scr%, svgFillColor
-                    PAINT (sccx%, sccy%), svgFillColor, svgFillColor
-                END IF
-                IF _ALPHA32(svgStrokeColor) > 0 THEN
-                    CIRCLE (sccx%, sccy%), scr%, svgStrokeColor
-                END IF
-            END IF
-
-        CASE "ellipse"
-            DIM secx%, secy%, serx%, sery!
-            secx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cx"))
-            secy% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cy"))
-            serx% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "rx"))
-            sery! = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "ry"))
-            IF serx% > 0 AND sery! > 0 THEN
-                IF _ALPHA32(svgFillColor) > 0 THEN
-                    CIRCLE (secx%, secy%), serx%, svgFillColor, , , sery! / serx%
-                    PAINT (secx%, secy%), svgFillColor, svgFillColor
-                END IF
-                IF _ALPHA32(svgStrokeColor) > 0 THEN
-                    CIRCLE (secx%, secy%), serx%, svgStrokeColor, , , sery! / serx%
-                END IF
-            END IF
-
-        CASE "line"
-            DIM slx1%, sly1%, slx2%, sly2%
-            slx1% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x1"))
-            sly1% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y1"))
-            slx2% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x2"))
-            sly2% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y2"))
-            IF _ALPHA32(svgStrokeColor) > 0 THEN
-                LINE (slx1%, sly1%)-(slx2%, sly2%), svgStrokeColor
-            ELSE
-                LINE (slx1%, sly1%)-(slx2%, sly2%), _RGB32(0, 0, 0)
-            END IF
-    END SELECT
 END SUB

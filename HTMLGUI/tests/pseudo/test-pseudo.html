@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pseudo-classes, Links &amp; Cursors</title>
+  <link rel="stylesheet" href="test-pseudo.css">
+</head>
+<body>
+  <h3>Pseudo-class Selectors</h3>
+  <div class="hover-demo">
+    <div class="hover-box" id="hb1">Hover me (bg change)</div>
+    <div class="hover-box" id="hb2">Hover me (border)</div>
+    <div class="hover-box" id="hb3">Hover me (text color)</div>
+  </div>
+
+  <h3>Links &amp; Visited</h3>
+  <div class="link-demo">
+    <a href="#home" id="link1">Home Link</a>
+    <a href="#about" id="link2">About Link</a>
+    <a href="#contact" id="link3">Contact Link</a>
+  </div>
+
+  <h3>Focus Styles</h3>
+  <div class="focus-demo">
+    <input type="text" id="input1" placeholder="Focus me...">
+    <button id="btn1">Focusable Button</button>
+  </div>
+
+  <h3>Cursor Styles</h3>
+  <div class="cursor-demo">
+    <div class="cursor-box cur-pointer">pointer</div>
+    <div class="cursor-box cur-text">text</div>
+    <div class="cursor-box cur-crosshair">crosshair</div>
+    <div class="cursor-box cur-move">move</div>
+    <div class="cursor-box cur-help">help</div>
+    <div class="cursor-box cur-wait">wait</div>
+    <div class="cursor-box cur-grab">grab</div>
+    <div class="cursor-box cur-none">none</div>
+  </div>
+
+  <h3>Text Decoration</h3>
+  <div class="decor-demo">
+    <div class="decor-underline">Underlined text</div>
+    <div class="decor-overline">Overlined text</div>
+    <div class="decor-linethrough">Strikethrough text</div>
+    <div class="decor-none">No decoration</div>
+  </div>
+
+  <h3>First/Last Child</h3>
+  <ul class="child-demo">
+    <li>First item (green)</li>
+    <li>Middle item</li>
+    <li>Middle item</li>
+    <li>Last item (red)</li>
+  </ul>
+
+  <h3>Active State</h3>
+  <div class="active-demo">
+    <button class="active-btn" id="btn2">Click &amp; hold me</button>
+  </div>
+
+  <h3>Disabled Styles</h3>
+  <div class="disabled-demo">
+    <input type="text" id="dis1" disabled placeholder="Disabled input">
+    <button id="dis2" disabled>Disabled button</button>
+  </div>
+
+  <h3>Event Attributes</h3>
+  <div class="event-demo">
+    <button id="evt-btn" onmouseover="_QB64PE_onHover('evt-btn')" onmouseout="_QB64PE_onLeave('evt-btn')">Hover events</button>
+    <button id="evt-btn2" onmousedown="_QB64PE_onDown('evt-btn2')" onmouseup="_QB64PE_onUp('evt-btn2')">Press events</button>
+  </div>
+</body>
+</html>

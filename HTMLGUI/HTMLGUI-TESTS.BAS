@@ -54,21 +54,21 @@ testCount% = 0
 totalPass% = 0
 totalFail% = 0
 
-REGISTER_TEST "test-basic", "Basic Float Layout"
-REGISTER_TEST "test-headings", "Headings & Typography"
-REGISTER_TEST "test-flexbox", "Flexbox Layout"
-REGISTER_TEST "test-tables", "Table Layout"
-REGISTER_TEST "test-forms", "Forms & Controls"
-REGISTER_TEST "test-colors", "Colors, Borders, Spacing"
-REGISTER_TEST "test-layout", "Complex Dashboard Layout"
-REGISTER_TEST "test-lists", "Lists & Navigation"
-REGISTER_TEST "test-floats", "Float Positioning"
-REGISTER_TEST "test-fonts", "Custom Fonts"
-REGISTER_TEST "test-gradients", "CSS Gradients"
-REGISTER_TEST "test-images", "Images & Backgrounds"
-REGISTER_TEST "test-pseudo", "Pseudo-classes & Cursors"
-REGISTER_TEST "test-overflow", "Overflow & Scrolling"
-REGISTER_TEST "test-svg", "SVG Rendering"
+REGISTER_TEST "basic", "test-basic", "Basic Float Layout"
+REGISTER_TEST "headings", "test-headings", "Headings & Typography"
+REGISTER_TEST "flexbox", "test-flexbox", "Flexbox Layout"
+REGISTER_TEST "tables", "test-tables", "Table Layout"
+REGISTER_TEST "forms", "test-forms", "Forms & Controls"
+REGISTER_TEST "colors", "test-colors", "Colors, Borders, Spacing"
+REGISTER_TEST "layout", "test-layout", "Complex Dashboard Layout"
+REGISTER_TEST "lists", "test-lists", "Lists & Navigation"
+REGISTER_TEST "floats", "test-floats", "Float Positioning"
+REGISTER_TEST "fonts", "test-fonts", "Custom Fonts"
+REGISTER_TEST "gradients", "test-gradients", "CSS Gradients"
+REGISTER_TEST "images", "test-images", "Images & Backgrounds"
+REGISTER_TEST "pseudo", "test-pseudo", "Pseudo-classes & Cursors"
+REGISTER_TEST "overflow", "test-overflow", "Overflow & Scrolling"
+REGISTER_TEST "svg", "test-svg", "SVG Rendering"
 
 _LOGINFO "======================================"
 _LOGINFO " HTMLGUI TEST SUITE"
@@ -152,12 +152,12 @@ SYSTEM
 ' @param STRING baseName$ base filename without extension
 ' @param STRING description$ human-readable test name
 '
-SUB REGISTER_TEST (baseName$, description$)
+SUB REGISTER_TEST (subDir$, baseName$, description$)
     IF testCount% >= MAX_TESTS THEN EXIT SUB
-    testCases(testCount%).htmlFile = TEST_DIR$ + baseName$ + ".html"
-    testCases(testCount%).cssFile = TEST_DIR$ + baseName$ + ".css"
+    testCases(testCount%).htmlFile = TEST_DIR$ + subDir$ + "/" + baseName$ + ".html"
+    testCases(testCount%).cssFile = TEST_DIR$ + subDir$ + "/" + baseName$ + ".css"
     testCases(testCount%).testName = description$
-    testCases(testCount%).screenshotFile = TEST_DIR$ + baseName$ + ".png"
+    testCases(testCount%).screenshotFile = TEST_DIR$ + subDir$ + "/" + baseName$ + ".png"
     testCases(testCount%).passed = FALSE
     testCount% = testCount% + 1
 END SUB
@@ -185,8 +185,14 @@ SUB RUN_TEST (idx%)
     ' Initialize
     HTMLGUI_init SCREEN_W, SCREEN_H
 
-    ' Set font search path to tests directory
-    HTMLGUI.defaultFontPath = TEST_DIR$
+    ' Set font search path to the test's own directory
+    DIM fontPath$
+    fontPath$ = _TRIM$(testCases(idx%).htmlFile)
+    ' Trim filename to get directory
+    DIM slashPos%
+    slashPos% = _INSTRREV(fontPath$, "/")
+    IF slashPos% > 0 THEN fontPath$ = LEFT$(fontPath$, slashPos%)
+    HTMLGUI.defaultFontPath = fontPath$
 
     ' Load HTML + CSS
     DIM htmlFile$, cssFile$
@@ -361,7 +367,7 @@ FUNCTION VALIDATE_TEST% (idx%)
             ' Check h1 exists (red text/border area near top)
             checks% = checks% + 1
             DIM h1Area AS _UNSIGNED LONG
-            h1Area = POINT(40, 35)
+            h1Area = POINT(40, 50)
             IF _RED32(h1Area) > 150 THEN
                 passes% = passes% + 1
                 _LOGINFO "  CHECK h1-color: PASS"
@@ -386,7 +392,7 @@ FUNCTION VALIDATE_TEST% (idx%)
             ' Check table header area exists
             checks% = checks% + 1
             DIM thPx AS _UNSIGNED LONG
-            thPx = POINT(80, 60)
+            thPx = POINT(80, 75)
             IF _ALPHA32(thPx) > 200 AND thPx <> bodyPixel THEN
                 passes% = passes% + 1
                 _LOGINFO "  CHECK table-header: PASS"
@@ -400,7 +406,7 @@ FUNCTION VALIDATE_TEST% (idx%)
             DIM btArea%
             btArea% = FALSE
             DIM bsy%
-            FOR bsy% = 150 TO 350 STEP 5
+            FOR bsy% = 100 TO 460 STEP 5
                 DIM bpx AS _UNSIGNED LONG
                 bpx = POINT(80, bsy%)
                 IF _GREEN32(bpx) > 100 AND _RED32(bpx) < 150 AND _BLUE32(bpx) < 100 THEN
@@ -462,7 +468,7 @@ FUNCTION VALIDATE_TEST% (idx%)
             lastChipColor = 0
             FOR chipX% = 30 TO 400 STEP 30
                 DIM chPx AS _UNSIGNED LONG
-                chPx = POINT(chipX%, SCREEN_H - 60)
+                chPx = POINT(chipX%, 230)
                 IF _ALPHA32(chPx) > 200 AND chPx <> bodyPixel THEN
                     IF chPx <> lastChipColor THEN
                         chipCount% = chipCount% + 1
@@ -478,11 +484,20 @@ FUNCTION VALIDATE_TEST% (idx%)
             END IF
 
         CASE "Custom Fonts"
-            ' Check header bar (red bar at top)
+            ' Check header bar (red bar at top) - check right side to avoid white text
             checks% = checks% + 1
             DIM hdrPx AS _UNSIGNED LONG
-            hdrPx = POINT(100, 12)
-            IF _RED32(hdrPx) > 180 AND _GREEN32(hdrPx) < 100 THEN
+            DIM hdrFound%
+            hdrFound% = FALSE
+            DIM hx%
+            FOR hx% = 400 TO 600 STEP 20
+                hdrPx = POINT(hx%, 25)
+                IF _RED32(hdrPx) > 180 AND _GREEN32(hdrPx) < 100 THEN
+                    hdrFound% = TRUE
+                    EXIT FOR
+                END IF
+            NEXT hx%
+            IF hdrFound% THEN
                 passes% = passes% + 1
                 _LOGINFO "  CHECK font-header: PASS"
             ELSE

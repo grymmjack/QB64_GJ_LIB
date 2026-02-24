@@ -255,6 +255,24 @@ SUB HTMLGUI_apply_ua_defaults (nodeIdx%)
         CASE "img"
             HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_INLINE
 
+        CASE "svg"
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
+            ' Read width/height from HTML attributes
+            DIM svgWidthAttr$, svgHeightAttr$
+            svgWidthAttr$ = HTMLGUI_node_get_attr$(nodeIdx%, "width")
+            svgHeightAttr$ = HTMLGUI_node_get_attr$(nodeIdx%, "height")
+            IF LEN(svgWidthAttr$) > 0 AND HTMLGUI_STYLES(nodeIdx%).width < 1 THEN
+                HTMLGUI_STYLES(nodeIdx%).width = VAL(svgWidthAttr$)
+            END IF
+            IF LEN(svgHeightAttr$) > 0 AND HTMLGUI_STYLES(nodeIdx%).height < 1 THEN
+                HTMLGUI_STYLES(nodeIdx%).height = VAL(svgHeightAttr$)
+            END IF
+            HTMLGUI_STYLES(nodeIdx%).overflow = HTMLGUI_OVERFLOW_HIDDEN
+
+        CASE "rect", "circle", "ellipse", "line", "polyline", "polygon", "path"
+            ' SVG child elements don't participate in normal layout
+            HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_NONE
+
         CASE "br"
             HTMLGUI_STYLES(nodeIdx%).display = HTMLGUI_DISPLAY_BLOCK
 
