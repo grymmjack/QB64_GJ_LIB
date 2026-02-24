@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Overflow &amp; Scrolling</title>
+</head>
+<body>
+  <h3>Overflow Hidden</h3>
+  <div class="overflow-hidden">
+    <p>This text is inside a container with overflow:hidden. It should be clipped if it extends beyond the container boundaries. Extra long text that goes on and on and definitely exceeds the container width by a lot.</p>
+  </div>
+
+  <h3>Overflow Scroll</h3>
+  <div class="overflow-scroll" id="scrollable">
+    <div class="scroll-item">Item 1 - First</div>
+    <div class="scroll-item">Item 2</div>
+    <div class="scroll-item">Item 3</div>
+    <div class="scroll-item">Item 4</div>
+    <div class="scroll-item">Item 5</div>
+    <div class="scroll-item">Item 6</div>
+    <div class="scroll-item">Item 7</div>
+    <div class="scroll-item">Item 8</div>
+    <div class="scroll-item">Item 9</div>
+    <div class="scroll-item">Item 10 - Last</div>
+  </div>
+
+  <h3>Overflow Auto (short content)</h3>
+  <div class="overflow-auto-short">
+    <p>Short content - no scrollbar needed</p>
+  </div>
+
+  <h3>Overflow Auto (long content)</h3>
+  <div class="overflow-auto-long">
+    <div class="scroll-item">Row A</div>
+    <div class="scroll-item">Row B</div>
+    <div class="scroll-item">Row C</div>
+    <div class="scroll-item">Row D</div>
+    <div class="scroll-item">Row E</div>
+    <div class="scroll-item">Row F</div>
+    <div class="scroll-item">Row G</div>
+    <div class="scroll-item">Row H</div>
+  </div>
+</body>
+</html>

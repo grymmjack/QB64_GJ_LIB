@@ -484,6 +484,98 @@ END FUNCTION
 
 
 ''
+' Check if a node matches the given pseudo-class flags
+' Tests the node's runtime state (isHovered, isActive, isFocused, isVisited)
+' against the pseudo-class bitfield from the CSS rule.
+'
+' @param INTEGER nodeIdx% DOM node index
+' @param INTEGER pseudoFlags% HTMLGUI_PSEUDO_* bitfield
+' @return INTEGER TRUE if all pseudo-class conditions are met
+'
+FUNCTION HTMLGUI_pseudo_matches% (nodeIdx%, pseudoFlags%)
+    HTMLGUI_pseudo_matches% = FALSE
+    IF nodeIdx% < 0 OR nodeIdx% >= HTMLGUI.nodeCount THEN EXIT FUNCTION
+    IF pseudoFlags% = HTMLGUI_PSEUDO_NONE THEN
+        HTMLGUI_pseudo_matches% = TRUE
+        EXIT FUNCTION
+    END IF
+
+    DIM n AS HTMLGUI_NODE
+    n = HTMLGUI_NODES(nodeIdx%)
+
+    ' Check each pseudo-class flag — ALL must match (AND logic)
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_HOVER) THEN
+        IF NOT n.isHovered THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_ACTIVE) THEN
+        IF NOT n.isActive THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_FOCUS) THEN
+        IF NOT n.isFocused THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_VISITED) THEN
+        IF NOT n.isVisited THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_LINK) THEN
+        DIM linkTag$
+        linkTag$ = _TRIM$(LCASE$(n.tag))
+        IF linkTag$ <> "a" THEN EXIT FUNCTION
+        DIM linkHref$
+        linkHref$ = _TRIM$(n.href)
+        IF LEN(linkHref$) = 0 THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_FIRST_CHILD) THEN
+        IF n.prevSiblingIdx >= 0 THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_LAST_CHILD) THEN
+        IF n.nextSiblingIdx >= 0 THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_DISABLED) THEN
+        IF NOT n.formDisabled THEN EXIT FUNCTION
+    END IF
+
+    IF (pseudoFlags% AND HTMLGUI_PSEUDO_CHECKED) THEN
+        IF NOT n.formChecked THEN EXIT FUNCTION
+    END IF
+
+    HTMLGUI_pseudo_matches% = TRUE
+END FUNCTION
+
+
+''
+' Re-apply pseudo-class styles for all nodes whose interaction state
+' may have changed (hover, active, focus). Call this after
+' HTMLGUI_process_input to update styles dynamically.
+'
+' This re-initializes styles and re-applies the full cascade
+' so pseudo-class rules take effect based on current state.
+'
+SUB HTMLGUI_apply_pseudo_styles ()
+    ' Check if any pseudo-class rules exist — if not, skip
+    DIM hasPseudo%
+    hasPseudo% = FALSE
+    DIM ri2%
+    FOR ri2% = 0 TO HTMLGUI.ruleCount - 1
+        IF HTMLGUI_RULES(ri2%).pseudoClass <> HTMLGUI_PSEUDO_NONE THEN
+            hasPseudo% = TRUE
+            EXIT FOR
+        END IF
+    NEXT ri2%
+    IF NOT hasPseudo% THEN EXIT SUB
+
+    ' Full re-resolve: re-init, UA defaults, cascade (non-pseudo + pseudo), inherit
+    HTMLGUI_resolve_styles
+END SUB
+
+
+''
 ' Resolve all styles: apply UA defaults, then cascade CSS rules,
 ' then inherit from parent.
 '
@@ -524,8 +616,10 @@ SUB HTMLGUI_resolve_styles ()
     NEXT si2%
 
     ' Apply CSS rules to matching nodes (sorted by specificity — low to high)
+    ' First pass: apply non-pseudo-class rules
     FOR si2% = 0 TO HTMLGUI.ruleCount - 1
         ri% = sortedRules%(si2%)
+        IF HTMLGUI_RULES(ri%).pseudoClass <> HTMLGUI_PSEUDO_NONE THEN _CONTINUE
         DIM selector$
         selector$ = _TRIM$(HTMLGUI_RULES(ri%).selector)
 
@@ -539,6 +633,30 @@ SUB HTMLGUI_resolve_styles ()
             DIM pi%
             FOR pi% = 0 TO HTMLGUI_RULES(ri%).propCount - 1
                 DIM propName$, propVal$
+                propName$ = _TRIM$(HTMLGUI_RULE_NAMES(ri%, pi%))
+                propVal$ = _TRIM$(HTMLGUI_RULE_VALS(ri%, pi%))
+                HTMLGUI_apply_property ni%, propName$, propVal$
+            NEXT pi%
+        NEXT ni%
+    NEXT si2%
+
+    ' Second pass: apply pseudo-class rules where state matches
+    FOR si2% = 0 TO HTMLGUI.ruleCount - 1
+        ri% = sortedRules%(si2%)
+        IF HTMLGUI_RULES(ri%).pseudoClass = HTMLGUI_PSEUDO_NONE THEN _CONTINUE
+
+        selector$ = _TRIM$(HTMLGUI_RULES(ri%).selector)
+
+        FOR ni% = 0 TO HTMLGUI.nodeCount - 1
+            IF HTMLGUI_NODES(ni%).nodeType <> HTMLGUI_NODE_ELEMENT THEN _CONTINUE
+            matchResult% = HTMLGUI_selector_matches%(ni%, selector$)
+            IF NOT matchResult% THEN _CONTINUE
+
+            ' Check pseudo-class state
+            IF NOT HTMLGUI_pseudo_matches%(ni%, HTMLGUI_RULES(ri%).pseudoClass) THEN _CONTINUE
+
+            ' Apply pseudo-class properties
+            FOR pi% = 0 TO HTMLGUI_RULES(ri%).propCount - 1
                 propName$ = _TRIM$(HTMLGUI_RULE_NAMES(ri%, pi%))
                 propVal$ = _TRIM$(HTMLGUI_RULE_VALS(ri%, pi%))
                 HTMLGUI_apply_property ni%, propName$, propVal$
@@ -731,12 +849,44 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
                 CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).overflow = HTMLGUI_OVERFLOW_VISIBLE
             END SELECT
         CASE "cursor"
-            SELECT CASE LCASE$(cssVal$)
-                CASE "pointer": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
-                CASE "text":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_TEXT
-                CASE "crosshair": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_CROSSHAIR
-                CASE "move":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_MOVE
-                CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_DEFAULT
+            DIM curVal2$
+            curVal2$ = LCASE$(cssVal$)
+            SELECT CASE curVal2$
+                CASE "pointer":     HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_POINTER
+                CASE "text":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_TEXT
+                CASE "crosshair":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_CROSSHAIR
+                CASE "move":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_MOVE
+                CASE "wait":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_WAIT
+                CASE "help":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_HELP
+                CASE "not-allowed": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NOT_ALLOWED
+                CASE "no-drop":     HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NO_DROP
+                CASE "grab":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_GRAB
+                CASE "grabbing":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_GRABBING
+                CASE "ew-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_EW_RESIZE
+                CASE "ns-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NS_RESIZE
+                CASE "nesw-resize": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NESW_RESIZE
+                CASE "nwse-resize": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NWSE_RESIZE
+                CASE "col-resize":  HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_COL_RESIZE
+                CASE "row-resize":  HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_ROW_RESIZE
+                CASE "n-resize":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_N_RESIZE
+                CASE "e-resize":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_E_RESIZE
+                CASE "s-resize":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_S_RESIZE
+                CASE "w-resize":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_W_RESIZE
+                CASE "ne-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NE_RESIZE
+                CASE "nw-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NW_RESIZE
+                CASE "se-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_SE_RESIZE
+                CASE "sw-resize":   HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_SW_RESIZE
+                CASE "all-scroll":  HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_ALL_SCROLL
+                CASE "zoom-in":     HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_ZOOM_IN
+                CASE "zoom-out":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_ZOOM_OUT
+                CASE "progress":    HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_PROGRESS
+                CASE "cell":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_CELL
+                CASE "alias":       HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_ALIAS
+                CASE "copy":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_COPY
+                CASE "vertical-text": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_VERTICAL_TEXT
+                CASE "context-menu": HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_CONTEXT_MENU
+                CASE "none":        HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_NONE
+                CASE ELSE:          HTMLGUI_STYLES(nodeIdx%).cursor = HTMLGUI_CURSOR_DEFAULT
             END SELECT
             HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_CURSOR
         CASE "list-style-type"

@@ -1,0 +1,60 @@
+body {
+  background-color: #111;
+  color: #ddd;
+  padding: 8px;
+}
+
+h3 {
+  color: #aaa;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 2px;
+}
+
+.overflow-hidden {
+  width: 300px;
+  height: 40px;
+  overflow: hidden;
+  background-color: #1a1a2e;
+  border: 1px solid #444;
+  padding: 4px;
+  margin-bottom: 8px;
+}
+
+.overflow-scroll {
+  width: 300px;
+  height: 100px;
+  overflow: scroll;
+  background-color: #1a2e1a;
+  border: 1px solid #3fb950;
+  padding: 4px;
+  margin-bottom: 8px;
+}
+
+.scroll-item {
+  padding: 4px 8px;
+  margin-bottom: 2px;
+  background-color: #2a3a2a;
+  border: 1px solid #3a4a3a;
+  color: #aaa;
+}
+
+.overflow-auto-short {
+  width: 300px;
+  height: 60px;
+  overflow: auto;
+  background-color: #2e1a1a;
+  border: 1px solid #e94560;
+  padding: 4px;
+  margin-bottom: 8px;
+}
+
+.overflow-auto-long {
+  width: 300px;
+  height: 80px;
+  overflow: auto;
+  background-color: #1a1a2e;
+  border: 1px solid #58a6ff;
+  padding: 4px;
+}

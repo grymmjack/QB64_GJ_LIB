@@ -53,16 +53,43 @@ SUB HTMLGUI_process_mouse
     IF HTMLGUI.hoverNodeIdx >= 0 AND HTMLGUI.hoverNodeIdx <> hitNode% THEN
         HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isHovered = FALSE
         HTMLGUI_queue_event HTMLGUI.hoverNodeIdx, HTMLGUI_EVENT_MOUSELEAVE, "", ""
+        ' Dispatch onmouseout attribute handler
+        DIM mouseoutAttr$
+        mouseoutAttr$ = HTMLGUI_node_get_attr$(HTMLGUI.hoverNodeIdx, "onmouseout")
+        IF LEN(mouseoutAttr$) > 0 THEN
+            HTMLGUI_dispatch_handler HTMLGUI.hoverNodeIdx, mouseoutAttr$
+        END IF
         HTMLGUI.needsRepaint = TRUE
+        HTMLGUI.needsRelayout = TRUE   ' pseudo-class may change layout
     END IF
 
     ' Set new hover
     IF hitNode% >= 0 AND hitNode% <> HTMLGUI.hoverNodeIdx THEN
         HTMLGUI_NODES(hitNode%).isHovered = TRUE
         HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_MOUSEENTER, "", ""
+        ' Dispatch onmouseover attribute handler
+        DIM mouseoverAttr$
+        mouseoverAttr$ = HTMLGUI_node_get_attr$(hitNode%, "onmouseover")
+        IF LEN(mouseoverAttr$) > 0 THEN
+            HTMLGUI_dispatch_handler hitNode%, mouseoverAttr$
+        END IF
         HTMLGUI.needsRepaint = TRUE
+        HTMLGUI.needsRelayout = TRUE   ' pseudo-class may change layout
     END IF
     HTMLGUI.hoverNodeIdx = hitNode%
+
+    ' --- CURSOR ---
+    ' Update OS cursor based on hovered node's cursor style
+    DIM newCursor%
+    IF hitNode% >= 0 THEN
+        newCursor% = HTMLGUI_STYLES(hitNode%).cursor
+    ELSE
+        newCursor% = HTMLGUI_CURSOR_DEFAULT
+    END IF
+    IF newCursor% <> HTMLGUI.lastCursor THEN
+        HTMLGUI_apply_cursor newCursor%
+        HTMLGUI.lastCursor = newCursor%
+    END IF
 
     ' --- MOUSE MOVE ---
     IF mx% <> HTMLGUI.lastMouseX OR my% <> HTMLGUI.lastMouseY THEN
@@ -84,6 +111,13 @@ SUB HTMLGUI_process_mouse
             END IF
 
             HTMLGUI_queue_event hitNode%, HTMLGUI_EVENT_MOUSEDOWN, "", ""
+
+            ' Dispatch onmousedown attribute handler
+            DIM mousedownAttr$
+            mousedownAttr$ = HTMLGUI_node_get_attr$(hitNode%, "onmousedown")
+            IF LEN(mousedownAttr$) > 0 THEN
+                HTMLGUI_dispatch_handler hitNode%, mousedownAttr$
+            END IF
         ELSE
             ' Clicked outside any element - blur current focus
             HTMLGUI_blur_focus
@@ -95,6 +129,15 @@ SUB HTMLGUI_process_mouse
         IF HTMLGUI.hoverNodeIdx >= 0 AND HTMLGUI_NODES(HTMLGUI.hoverNodeIdx).isActive THEN
             ' Click event (press + release on same element)
             HTMLGUI_handle_click HTMLGUI.hoverNodeIdx
+        END IF
+
+        ' Dispatch onmouseup attribute handler
+        IF HTMLGUI.hoverNodeIdx >= 0 THEN
+            DIM mouseupAttr$
+            mouseupAttr$ = HTMLGUI_node_get_attr$(HTMLGUI.hoverNodeIdx, "onmouseup")
+            IF LEN(mouseupAttr$) > 0 THEN
+                HTMLGUI_dispatch_handler HTMLGUI.hoverNodeIdx, mouseupAttr$
+            END IF
         END IF
 
         ' Clear active state on ALL nodes
@@ -306,6 +349,11 @@ SUB HTMLGUI_handle_click (nodeIdx%)
         DIM href$
         href$ = HTMLGUI_node_get_attr$(nodeIdx%, "href")
         IF LEN(href$) > 0 THEN
+            ' Mark as visited
+            HTMLGUI_NODES(nodeIdx%).isVisited = TRUE
+            ' Queue a LINK event with href as handler
+            HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_LINK, href$, ""
+            ' Also queue a CLICK event
             HTMLGUI_queue_event nodeIdx%, HTMLGUI_EVENT_CLICK, href$, ""
         END IF
     END IF
@@ -566,3 +614,42 @@ FUNCTION HTMLGUI_find_scrollable_parent% (nodeIdx%)
         idx% = HTMLGUI_NODES(idx%).parentIdx
     LOOP
 END FUNCTION
+
+
+''
+' Apply an OS cursor shape based on HTMLGUI_CURSOR_* constant
+' Maps CSS cursor values to QB64PE _MOUSESHOW cursor strings.
+' QB64PE only supports a limited set of cursor shapes, so many CSS
+' cursor types map to the closest available equivalent.
+'
+' @param INTEGER cursorType% HTMLGUI_CURSOR_* constant
+'
+SUB HTMLGUI_apply_cursor (cursorType%)
+    SELECT CASE cursorType%
+        CASE HTMLGUI_CURSOR_POINTER, HTMLGUI_CURSOR_GRAB, HTMLGUI_CURSOR_GRABBING, _
+             HTMLGUI_CURSOR_ALIAS
+            _MOUSESHOW "LINK"
+        CASE HTMLGUI_CURSOR_TEXT, HTMLGUI_CURSOR_VERTICAL_TEXT
+            _MOUSESHOW "TEXT"
+        CASE HTMLGUI_CURSOR_CROSSHAIR, HTMLGUI_CURSOR_CELL
+            _MOUSESHOW "CROSSHAIR"
+        CASE HTMLGUI_CURSOR_MOVE, HTMLGUI_CURSOR_ALL_SCROLL
+            _MOUSESHOW "DEFAULT"
+        CASE HTMLGUI_CURSOR_NS_RESIZE, HTMLGUI_CURSOR_N_RESIZE, _
+             HTMLGUI_CURSOR_S_RESIZE, HTMLGUI_CURSOR_ROW_RESIZE
+            _MOUSESHOW "VERTICAL"
+        CASE HTMLGUI_CURSOR_EW_RESIZE, HTMLGUI_CURSOR_E_RESIZE, _
+             HTMLGUI_CURSOR_W_RESIZE, HTMLGUI_CURSOR_COL_RESIZE
+            _MOUSESHOW "HORIZONTAL"
+        CASE HTMLGUI_CURSOR_NWSE_RESIZE, HTMLGUI_CURSOR_NW_RESIZE, _
+             HTMLGUI_CURSOR_SE_RESIZE
+            _MOUSESHOW "TOPLEFT_BOTTOMRIGHT"
+        CASE HTMLGUI_CURSOR_NESW_RESIZE, HTMLGUI_CURSOR_NE_RESIZE, _
+             HTMLGUI_CURSOR_SW_RESIZE
+            _MOUSESHOW "TOPRIGHT_BOTTOMLEFT"
+        CASE HTMLGUI_CURSOR_NONE
+            _MOUSEHIDE
+        CASE ELSE
+            _MOUSESHOW "DEFAULT"
+    END SELECT
+END SUB

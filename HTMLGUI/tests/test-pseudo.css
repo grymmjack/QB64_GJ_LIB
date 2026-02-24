@@ -1,0 +1,179 @@
+body {
+  background-color: #111;
+  color: #ddd;
+  padding: 8px;
+}
+
+h3 {
+  color: #aaa;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 2px;
+}
+
+/* --- Hover Pseudo-class --- */
+.hover-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.hover-box {
+  width: 120px;
+  padding: 8px;
+  background-color: #2a2a3a;
+  border: 1px solid #444;
+  color: #ccc;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hover-box:hover {
+  background-color: #3a4a5a;
+  border-color: #58a6ff;
+  color: #fff;
+}
+
+/* --- Links --- */
+.link-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+a {
+  color: #58a6ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a:hover {
+  color: #79c0ff;
+}
+
+a:active {
+  color: #ff6677;
+}
+
+a:visited {
+  color: #bc8cff;
+}
+
+/* --- Focus --- */
+.focus-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+input:focus {
+  border-color: #58a6ff;
+  background-color: #1a2a3a;
+}
+
+button:focus {
+  border-color: #58a6ff;
+  background-color: #1a3a2a;
+}
+
+/* --- Cursors --- */
+.cursor-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.cursor-box {
+  width: 68px;
+  padding: 6px;
+  background-color: #222;
+  border: 1px solid #444;
+  text-align: center;
+  color: #aaa;
+}
+
+.cur-pointer { cursor: pointer; }
+.cur-text { cursor: text; }
+.cur-crosshair { cursor: crosshair; }
+.cur-move { cursor: move; }
+.cur-help { cursor: help; }
+.cur-wait { cursor: wait; }
+.cur-grab { cursor: grab; }
+.cur-none { cursor: none; }
+
+/* --- Text Decoration --- */
+.decor-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.decor-underline { text-decoration: underline; color: #58a6ff; }
+.decor-overline { text-decoration: overline; color: #3fb950; }
+.decor-linethrough { text-decoration: line-through; color: #e94560; }
+.decor-none { text-decoration: none; color: #aaa; }
+
+/* --- First/Last Child --- */
+.child-demo {
+  margin-bottom: 8px;
+}
+
+.child-demo li:first-child {
+  color: #3fb950;
+}
+
+.child-demo li:last-child {
+  color: #e94560;
+}
+
+/* --- Active --- */
+.active-demo {
+  margin-bottom: 8px;
+}
+
+.active-btn {
+  padding: 6px 12px;
+  background-color: #2a4a6a;
+  color: #fff;
+  border: 1px solid #58a6ff;
+  cursor: pointer;
+}
+
+.active-btn:active {
+  background-color: #58a6ff;
+  color: #000;
+}
+
+/* --- Disabled --- */
+.disabled-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+input:disabled {
+  background-color: #333;
+  color: #666;
+  border-color: #444;
+}
+
+button:disabled {
+  background-color: #333;
+  color: #666;
+  border-color: #444;
+  cursor: not-allowed;
+}
+
+/* --- Events --- */
+.event-demo {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}

@@ -119,12 +119,46 @@ CONST HTMLGUI_OVERFLOW_HIDDEN = 1
 CONST HTMLGUI_OVERFLOW_SCROLL = 2
 CONST HTMLGUI_OVERFLOW_AUTO = 3
 
+' --- Overflow clipping ---
+CONST HTMLGUI_OVERFLOW_CLIP = 4
+
 ' --- Cursor types ---
 CONST HTMLGUI_CURSOR_DEFAULT = 0
 CONST HTMLGUI_CURSOR_POINTER = 1
 CONST HTMLGUI_CURSOR_TEXT = 2
 CONST HTMLGUI_CURSOR_CROSSHAIR = 3
 CONST HTMLGUI_CURSOR_MOVE = 4
+CONST HTMLGUI_CURSOR_WAIT = 5
+CONST HTMLGUI_CURSOR_HELP = 6
+CONST HTMLGUI_CURSOR_NOT_ALLOWED = 7
+CONST HTMLGUI_CURSOR_GRAB = 8
+CONST HTMLGUI_CURSOR_GRABBING = 9
+CONST HTMLGUI_CURSOR_EW_RESIZE = 10
+CONST HTMLGUI_CURSOR_NS_RESIZE = 11
+CONST HTMLGUI_CURSOR_NESW_RESIZE = 12
+CONST HTMLGUI_CURSOR_NWSE_RESIZE = 13
+CONST HTMLGUI_CURSOR_COL_RESIZE = 14
+CONST HTMLGUI_CURSOR_ROW_RESIZE = 15
+CONST HTMLGUI_CURSOR_NONE = 16
+CONST HTMLGUI_CURSOR_ZOOM_IN = 17
+CONST HTMLGUI_CURSOR_ZOOM_OUT = 18
+CONST HTMLGUI_CURSOR_PROGRESS = 19
+CONST HTMLGUI_CURSOR_CELL = 20
+CONST HTMLGUI_CURSOR_ALIAS = 21
+CONST HTMLGUI_CURSOR_COPY = 22
+CONST HTMLGUI_CURSOR_NO_DROP = 23
+CONST HTMLGUI_CURSOR_ALL_SCROLL = 24
+CONST HTMLGUI_CURSOR_N_RESIZE = 25
+CONST HTMLGUI_CURSOR_E_RESIZE = 26
+CONST HTMLGUI_CURSOR_S_RESIZE = 27
+CONST HTMLGUI_CURSOR_W_RESIZE = 28
+CONST HTMLGUI_CURSOR_NE_RESIZE = 29
+CONST HTMLGUI_CURSOR_NW_RESIZE = 30
+CONST HTMLGUI_CURSOR_SE_RESIZE = 31
+CONST HTMLGUI_CURSOR_SW_RESIZE = 32
+CONST HTMLGUI_CURSOR_VERTICAL_TEXT = 33
+CONST HTMLGUI_CURSOR_CONTEXT_MENU = 34
+CONST HTMLGUI_CURSOR_CUSTOM = 99
 
 ' --- Event types ---
 CONST HTMLGUI_EVENT_CLICK = 1
@@ -138,6 +172,13 @@ CONST HTMLGUI_EVENT_FOCUS = 8
 CONST HTMLGUI_EVENT_BLUR = 9
 CONST HTMLGUI_EVENT_SUBMIT = 10
 CONST HTMLGUI_EVENT_CONTEXTMENU = 11
+CONST HTMLGUI_EVENT_DBLCLICK = 12
+CONST HTMLGUI_EVENT_MOUSEOVER = 13
+CONST HTMLGUI_EVENT_MOUSEOUT = 14
+CONST HTMLGUI_EVENT_SCROLL = 15
+CONST HTMLGUI_EVENT_KEYDOWN = 16
+CONST HTMLGUI_EVENT_KEYUP = 17
+CONST HTMLGUI_EVENT_LINK = 18
 
 ' --- Form input types ---
 CONST HTMLGUI_INPUT_TEXT = 0
@@ -276,6 +317,7 @@ TYPE HTMLGUI_NODE
     isHovered AS INTEGER               ' mouse is over this element
     isActive AS INTEGER                ' mouse button held on this element
     isFocused AS INTEGER               ' element has keyboard focus
+    isVisited AS INTEGER               ' link has been "visited" (clicked)
     visible AS INTEGER                 ' computed visibility
 
     ' --- Layout output (computed by layout engine) ---
@@ -290,11 +332,18 @@ TYPE HTMLGUI_NODE
     scrollX AS SINGLE                  ' horizontal scroll offset
     scrollY AS SINGLE                  ' vertical scroll offset
     scrollContentH AS SINGLE           ' total scrollable content height
+    scrollContentW AS SINGLE           ' total scrollable content width
+    scrollbarDragging AS INTEGER       ' TRUE if scrollbar thumb is being dragged
+    scrollbarDragY AS SINGLE           ' Y offset within thumb during drag
 
     ' --- Image ---
     imgSrc AS STRING * 256             ' src attribute for <img>
     imgHandle AS LONG                  ' loaded image handle (-1 = none)
     href AS STRING * 256               ' href for <a> tags
+
+    ' --- SVG ---
+    svgContent AS STRING * 512         ' raw SVG source content
+    svgHandle AS LONG                  ' rendered SVG image handle (-1 = none)
 
     ' --- Flags ---
     selfClosing AS INTEGER             ' br, hr, img, input
@@ -369,7 +418,12 @@ TYPE HTMLGUI_STYLE
 
     ' --- Misc ---
     overflow AS INTEGER                ' HTMLGUI_OVERFLOW_*
+    overflowX AS INTEGER               ' HTMLGUI_OVERFLOW_* (horizontal)
+    overflowY AS INTEGER               ' HTMLGUI_OVERFLOW_* (vertical)
     cursor AS INTEGER                  ' HTMLGUI_CURSOR_*
+    cursorImage AS STRING * 256        ' url() cursor image path
+    cursorHotX AS INTEGER              ' cursor hotspot X
+    cursorHotY AS INTEGER              ' cursor hotspot Y
     listStyleType AS INTEGER           ' HTMLGUI_LIST_*
 
     ' --- Flags ---
@@ -404,12 +458,33 @@ CONST HTMLGUI_EXPLICIT_TEXT_ALIGN = 32
 CONST HTMLGUI_EXPLICIT_CURSOR = 64
 CONST HTMLGUI_EXPLICIT_LIST_STYLE = 128
 CONST HTMLGUI_EXPLICIT_TEXT_DECORATION = 256
+CONST HTMLGUI_EXPLICIT_OPACITY = 512
+
+' --- Pseudo-class flags (bitfield for selector matching) ---
+CONST HTMLGUI_PSEUDO_NONE = 0
+CONST HTMLGUI_PSEUDO_HOVER = 1
+CONST HTMLGUI_PSEUDO_ACTIVE = 2
+CONST HTMLGUI_PSEUDO_FOCUS = 4
+CONST HTMLGUI_PSEUDO_VISITED = 8
+CONST HTMLGUI_PSEUDO_LINK = 16
+CONST HTMLGUI_PSEUDO_FIRST_CHILD = 32
+CONST HTMLGUI_PSEUDO_LAST_CHILD = 64
+CONST HTMLGUI_PSEUDO_DISABLED = 128
+CONST HTMLGUI_PSEUDO_CHECKED = 256
+
+' --- Scrollbar constants ---
+CONST HTMLGUI_SCROLLBAR_WIDTH = 12
+CONST HTMLGUI_SCROLLBAR_MIN_THUMB = 20
+
+' --- SVG limits ---
+CONST HTMLGUI_MAX_SVG_CMDS = 256
 
 ''
 ' A CSS rule: selector + list of property/value pairs
 '
 TYPE HTMLGUI_CSS_RULE
-    selector AS STRING * 128           ' CSS selector text
+    selector AS STRING * 128           ' CSS selector text (without pseudo-class part)
+    pseudoClass AS INTEGER             ' HTMLGUI_PSEUDO_* bitfield (0 = no pseudo-class)
     specificity AS LONG                ' packed: id*10000 + class*100 + tag*1
     propCount AS INTEGER               ' number of properties in this rule
     ' Properties stored in parallel arrays:
@@ -517,6 +592,10 @@ TYPE HTMLGUI_CONTEXT
     ' --- Config ---
     defaultFontPath AS STRING * 256    ' path to default TTF font
     basePath AS STRING * 256           ' base path for resolving relative URLs
+
+    ' --- Cursor ---
+    lastCursor AS INTEGER              ' last OS cursor type applied (-1 = none)
+    cursorImageHandle AS LONG          ' loaded custom cursor image (-1 = none)
 END TYPE
 
 ' =============================================================================

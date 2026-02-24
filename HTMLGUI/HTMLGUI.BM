@@ -129,6 +129,11 @@ SUB HTMLGUI_update
     ' Process input events
     HTMLGUI_process_input
 
+    ' Re-apply pseudo-class styles when interaction state changed
+    IF HTMLGUI.needsRelayout AND HTMLGUI.htmlLoaded THEN
+        HTMLGUI_apply_pseudo_styles
+    END IF
+
     ' Relayout if needed
     IF HTMLGUI.needsRelayout AND HTMLGUI.htmlLoaded THEN
         HTMLGUI_layout HTMLGUI.screenW, HTMLGUI.screenH

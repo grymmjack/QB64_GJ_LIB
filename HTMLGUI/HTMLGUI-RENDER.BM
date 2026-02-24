@@ -56,10 +56,6 @@ SUB HTMLGUI_render_node (nodeIdx%)
     n = HTMLGUI_NODES(nodeIdx%)
     s = HTMLGUI_STYLES(nodeIdx%)
 
-    ' Clipping for overflow:hidden
-    ' (QB64PE doesn't have clip regions, so we skip actual clipping but
-    ' could add bounds checks in future)
-
     DIM x1%, y1%, x2%, y2%
     x1% = INT(n.layoutX)
     y1% = INT(n.layoutY)
@@ -68,9 +64,76 @@ SUB HTMLGUI_render_node (nodeIdx%)
 
     IF x2% < x1% OR y2% < y1% THEN GOTO HTMLGUI_render_children
 
+    ' --- OPACITY SUPPORT ---
+    ' When opacity < 1.0, render this node + children into offscreen buffer,
+    ' then blit with reduced alpha onto the real target
+    DIM useOpacityBuffer%
+    DIM opacityBuf&, prevDest&
+    useOpacityBuffer% = FALSE
+    IF s.opacity < 0.999 AND s.opacity >= 0 THEN
+        IF n.nodeType <> HTMLGUI_NODE_TEXT THEN
+            DIM bufW%, bufH%
+            bufW% = (x2% - x1%) + 1
+            bufH% = (y2% - y1%) + 1
+            IF bufW% > 0 AND bufH% > 0 THEN
+                opacityBuf& = _NEWIMAGE(bufW%, bufH%, 32)
+                IF opacityBuf& < -1 THEN
+                    useOpacityBuffer% = TRUE
+                    prevDest& = _DEST
+                    _DEST opacityBuf&
+                    CLS , _RGBA32(0, 0, 0, 0)
+                    ' Offset all rendering by -x1%, -y1% so we draw at (0,0)
+                    ' in the buffer. We'll adjust x1%,y1%,x2%,y2% temporarily.
+                    x1% = 0
+                    y1% = 0
+                    x2% = bufW% - 1
+                    y2% = bufH% - 1
+                END IF
+            END IF
+        END IF
+    END IF
+
+    ' --- OVERFLOW CLIPPING ---
+    ' Check if parent has overflow:hidden and clip this node
+    DIM parentClip%
+    parentClip% = FALSE
+    IF n.parentIdx >= 0 AND n.parentIdx < HTMLGUI.nodeCount THEN
+        DIM ps AS HTMLGUI_STYLE
+        ps = HTMLGUI_STYLES(n.parentIdx)
+        IF ps.overflow = HTMLGUI_OVERFLOW_HIDDEN OR ps.overflow = HTMLGUI_OVERFLOW_SCROLL OR ps.overflow = HTMLGUI_OVERFLOW_AUTO THEN
+            ' Check if this node is entirely outside parent content area
+            DIM pn AS HTMLGUI_NODE
+            pn = HTMLGUI_NODES(n.parentIdx)
+            DIM pcx1%, pcy1%, pcx2%, pcy2%
+            pcx1% = INT(pn.contentX)
+            pcy1% = INT(pn.contentY)
+            pcx2% = INT(pn.contentX + pn.contentW) - 1
+            pcy2% = INT(pn.contentY + pn.contentH) - 1
+            IF NOT useOpacityBuffer% THEN
+                ' Full clip check - node entirely outside parent
+                IF INT(n.layoutX) > pcx2% OR INT(n.layoutX + n.layoutW) - 1 < pcx1% THEN
+                    parentClip% = TRUE
+                END IF
+                IF INT(n.layoutY) > pcy2% OR INT(n.layoutY + n.layoutH) - 1 < pcy1% THEN
+                    parentClip% = TRUE
+                END IF
+            END IF
+        END IF
+    END IF
+    IF parentClip% THEN
+        IF useOpacityBuffer% THEN
+            IF opacityBuf& < -1 THEN _FREEIMAGE opacityBuf&
+        END IF
+        EXIT SUB
+    END IF
+
     ' Skip rendering for text nodes (handled by parent)
     IF n.nodeType = HTMLGUI_NODE_TEXT THEN
         ' Render text content
+        IF useOpacityBuffer% THEN
+            _DEST prevDest&
+            IF opacityBuf& < -1 THEN _FREEIMAGE opacityBuf&
+        END IF
         HTMLGUI_render_text nodeIdx%
         EXIT SUB
     END IF
@@ -88,7 +151,12 @@ SUB HTMLGUI_render_node (nodeIdx%)
 
     ' Draw background image (gradient or url) on top of color
     IF s.bgImageType <> HTMLGUI_BG_NONE THEN
-        HTMLGUI_render_background nodeIdx%, x1%, y1%, x2%, y2%
+        IF useOpacityBuffer% THEN
+            ' Adjust rendering coords for the buffer offset
+            HTMLGUI_render_background nodeIdx%, x1%, y1%, x2%, y2%
+        ELSE
+            HTMLGUI_render_background nodeIdx%, x1%, y1%, x2%, y2%
+        END IF
     END IF
 
     ' --- BORDERS ---
@@ -106,6 +174,8 @@ SUB HTMLGUI_render_node (nodeIdx%)
             HTMLGUI_render_hr nodeIdx%, x1%, y1%, x2%, y2%
         CASE "img"
             HTMLGUI_render_img nodeIdx%, x1%, y1%, x2%, y2%
+        CASE "rect", "circle", "ellipse", "line", "polyline", "polygon"
+            HTMLGUI_render_svg_element nodeIdx%, x1%, y1%
     END SELECT
 
     ' --- LIST BULLETS ---
@@ -115,12 +185,116 @@ SUB HTMLGUI_render_node (nodeIdx%)
 
     ' --- RENDER CHILDREN ---
     HTMLGUI_render_children:
-    DIM childIdx%
-    childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
-    DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
-        HTMLGUI_render_node childIdx%
-        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
-    LOOP
+    IF useOpacityBuffer% THEN
+        ' Render children into the opacity buffer
+        ' Children need their coordinates offset by the buffer origin
+        DIM oxOff%, oyOff%
+        oxOff% = INT(n.layoutX)
+        oyOff% = INT(n.layoutY)
+        ' Temporarily offset all child layout positions
+        DIM cIdx%
+        cIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+        DO WHILE cIdx% >= 0 AND cIdx% < HTMLGUI.nodeCount
+            HTMLGUI_NODES(cIdx%).layoutX = HTMLGUI_NODES(cIdx%).layoutX - oxOff%
+            HTMLGUI_NODES(cIdx%).layoutY = HTMLGUI_NODES(cIdx%).layoutY - oyOff%
+            HTMLGUI_NODES(cIdx%).contentX = HTMLGUI_NODES(cIdx%).contentX - oxOff%
+            HTMLGUI_NODES(cIdx%).contentY = HTMLGUI_NODES(cIdx%).contentY - oyOff%
+            HTMLGUI_render_node cIdx%
+            ' Restore positions
+            HTMLGUI_NODES(cIdx%).layoutX = HTMLGUI_NODES(cIdx%).layoutX + oxOff%
+            HTMLGUI_NODES(cIdx%).layoutY = HTMLGUI_NODES(cIdx%).layoutY + oyOff%
+            HTMLGUI_NODES(cIdx%).contentX = HTMLGUI_NODES(cIdx%).contentX + oxOff%
+            HTMLGUI_NODES(cIdx%).contentY = HTMLGUI_NODES(cIdx%).contentY + oyOff%
+            cIdx% = HTMLGUI_NODES(cIdx%).nextSiblingIdx
+        LOOP
+
+        ' Blit the opacity buffer with alpha onto the real destination
+        _DEST prevDest&
+        DIM alphaVal%
+        alphaVal% = INT(s.opacity * 255)
+        IF alphaVal% < 0 THEN alphaVal% = 0
+        IF alphaVal% > 255 THEN alphaVal% = 255
+        _SETALPHA alphaVal%, , opacityBuf&
+        _PUTIMAGE (INT(n.layoutX), INT(n.layoutY)), opacityBuf&
+        _FREEIMAGE opacityBuf&
+    ELSE
+        DIM childIdx%
+        childIdx% = HTMLGUI_NODES(nodeIdx%).firstChildIdx
+        DO WHILE childIdx% >= 0 AND childIdx% < HTMLGUI.nodeCount
+            HTMLGUI_render_node childIdx%
+            childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+        LOOP
+    END IF
+
+    ' --- SCROLLBAR ---
+    ' Draw scrollbar for overflow:scroll or overflow:auto when content overflows
+    IF n.nodeType = HTMLGUI_NODE_ELEMENT THEN
+        IF s.overflow = HTMLGUI_OVERFLOW_SCROLL OR s.overflow = HTMLGUI_OVERFLOW_AUTO THEN
+            IF HTMLGUI_NODES(nodeIdx%).scrollContentH > n.contentH THEN
+                HTMLGUI_render_scrollbar nodeIdx%
+            END IF
+        END IF
+    END IF
+END SUB
+
+
+''
+' Render a vertical scrollbar for a node with overflow content
+' Draws a track + thumb on the right side of the content area
+'
+' @param INTEGER nodeIdx% DOM node index
+'
+SUB HTMLGUI_render_scrollbar (nodeIdx%)
+    DIM n AS HTMLGUI_NODE
+    n = HTMLGUI_NODES(nodeIdx%)
+
+    DIM trackX%, trackY%, trackW%, trackH%
+    trackW% = HTMLGUI_SCROLLBAR_WIDTH
+    trackX% = INT(n.layoutX + n.layoutW) - trackW% - INT(HTMLGUI_STYLES(nodeIdx%).borderRightWidth)
+    trackY% = INT(n.contentY)
+    trackH% = INT(n.contentH)
+
+    IF trackH% <= 0 THEN EXIT SUB
+
+    ' Draw track background
+    LINE (trackX%, trackY%)-(trackX% + trackW% - 1, trackY% + trackH% - 1), _RGB32(40, 40, 40), BF
+
+    ' Calculate thumb position and size
+    DIM totalContent!, visibleH!, scrollPos!
+    totalContent! = n.scrollContentH
+    visibleH! = n.contentH
+    scrollPos! = n.scrollY
+
+    IF totalContent! <= 0 THEN EXIT SUB
+
+    DIM thumbH%, thumbY%
+    thumbH% = INT((visibleH! / totalContent!) * trackH%)
+    IF thumbH% < HTMLGUI_SCROLLBAR_MIN_THUMB THEN thumbH% = HTMLGUI_SCROLLBAR_MIN_THUMB
+    IF thumbH% > trackH% THEN thumbH% = trackH%
+
+    DIM maxScroll2!
+    maxScroll2! = totalContent! - visibleH!
+    IF maxScroll2! <= 0 THEN
+        thumbY% = trackY%
+    ELSE
+        thumbY% = trackY% + INT((scrollPos! / maxScroll2!) * (trackH% - thumbH%))
+    END IF
+
+    ' Clamp thumb position
+    IF thumbY% < trackY% THEN thumbY% = trackY%
+    IF thumbY% + thumbH% > trackY% + trackH% THEN thumbY% = trackY% + trackH% - thumbH%
+
+    ' Draw thumb
+    DIM thumbColor AS _UNSIGNED LONG
+    IF n.scrollbarDragging THEN
+        thumbColor = _RGB32(160, 160, 160)
+    ELSE
+        thumbColor = _RGB32(100, 100, 100)
+    END IF
+    LINE (trackX% + 1, thumbY%)-(trackX% + trackW% - 2, thumbY% + thumbH% - 1), thumbColor, BF
+
+    ' Track border
+    LINE (trackX%, trackY%)-(trackX%, trackY% + trackH% - 1), _RGB32(60, 60, 60)
 END SUB
 
 
@@ -237,6 +411,24 @@ SUB HTMLGUI_render_text (nodeIdx%)
         HTMLGUI_render_text_wrapped text$, tx%, ty%, maxW%
     ELSE
         _PRINTSTRING (tx%, ty%), text$
+        ' Text decoration
+        IF parentIdx% >= 0 THEN
+            DIM decoration%
+            decoration% = HTMLGUI_STYLES(parentIdx%).textDecoration
+            IF decoration% <> HTMLGUI_DECOR_NONE THEN
+                DIM decorW%, fh2%
+                decorW% = _PRINTWIDTH(text$)
+                fh2% = _FONTHEIGHT
+                SELECT CASE decoration%
+                    CASE HTMLGUI_DECOR_UNDERLINE
+                        LINE (tx%, ty% + fh2% - 1)-(tx% + decorW% - 1, ty% + fh2% - 1), textColor
+                    CASE HTMLGUI_DECOR_OVERLINE
+                        LINE (tx%, ty%)-(tx% + decorW% - 1, ty%), textColor
+                    CASE HTMLGUI_DECOR_LINETHROUGH
+                        LINE (tx%, ty% + fh2% \ 2)-(tx% + decorW% - 1, ty% + fh2% \ 2), textColor
+                END SELECT
+            END IF
+        END IF
     END IF
 END SUB
 
@@ -1258,5 +1450,118 @@ SUB HTMLGUI_render_bg_image (nodeIdx%, x%, y%, w%, h%)
                 LOOP
                 tileY% = tileY% + dispH%
             LOOP
+    END SELECT
+END SUB
+
+
+''
+' Render an SVG primitive element (rect, circle, ellipse, line, polyline, polygon)
+' Uses the parent SVG container's layout position as the coordinate origin.
+'
+' SVG attributes are read from the node's HTML attributes:
+'   rect: x, y, width, height, fill, stroke, stroke-width
+'   circle: cx, cy, r, fill, stroke
+'   ellipse: cx, cy, rx, ry, fill, stroke
+'   line: x1, y1, x2, y2, stroke, stroke-width
+'
+' @param INTEGER nodeIdx% DOM node index of the SVG element
+' @param INTEGER ox% X origin (parent SVG container's layout x)
+' @param INTEGER oy% Y origin (parent SVG container's layout y)
+'
+SUB HTMLGUI_render_svg_element (nodeIdx%, ox%, oy%)
+    DIM svgTag$
+    svgTag$ = _TRIM$(LCASE$(HTMLGUI_NODES(nodeIdx%).tag))
+
+    ' Read common attributes
+    DIM fillStr$, strokeStr$, strokeWidthStr$
+    fillStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "fill")
+    strokeStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "stroke")
+    strokeWidthStr$ = HTMLGUI_node_get_attr$(nodeIdx%, "stroke-width")
+
+    DIM svgFillColor AS _UNSIGNED LONG
+    DIM svgStrokeColor AS _UNSIGNED LONG
+    DIM svgStrokeW%
+
+    IF LEN(fillStr$) > 0 AND LCASE$(fillStr$) <> "none" THEN
+        svgFillColor = HTMLGUI_parse_color~&(fillStr$)
+    ELSE
+        IF LCASE$(fillStr$) = "none" THEN
+            svgFillColor = _RGBA32(0, 0, 0, 0) ' transparent
+        ELSE
+            svgFillColor = _RGB32(0, 0, 0) ' default black fill
+        END IF
+    END IF
+
+    IF LEN(strokeStr$) > 0 AND LCASE$(strokeStr$) <> "none" THEN
+        svgStrokeColor = HTMLGUI_parse_color~&(strokeStr$)
+    ELSE
+        svgStrokeColor = _RGBA32(0, 0, 0, 0) ' no stroke by default
+    END IF
+
+    IF LEN(strokeWidthStr$) > 0 THEN
+        svgStrokeW% = VAL(strokeWidthStr$)
+    ELSE
+        svgStrokeW% = 1
+    END IF
+    IF svgStrokeW% < 1 THEN svgStrokeW% = 1
+
+    SELECT CASE svgTag$
+        CASE "rect"
+            DIM srx%, sry%, srw%, srh%
+            srx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x"))
+            sry% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y"))
+            srw% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "width"))
+            srh% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "height"))
+            IF srw% > 0 AND srh% > 0 THEN
+                IF _ALPHA32(svgFillColor) > 0 THEN
+                    LINE (srx%, sry%)-(srx% + srw% - 1, sry% + srh% - 1), svgFillColor, BF
+                END IF
+                IF _ALPHA32(svgStrokeColor) > 0 THEN
+                    LINE (srx%, sry%)-(srx% + srw% - 1, sry% + srh% - 1), svgStrokeColor, B
+                END IF
+            END IF
+
+        CASE "circle"
+            DIM sccx%, sccy%, scr%
+            sccx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cx"))
+            sccy% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cy"))
+            scr% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "r"))
+            IF scr% > 0 THEN
+                IF _ALPHA32(svgFillColor) > 0 THEN
+                    CIRCLE (sccx%, sccy%), scr%, svgFillColor
+                    PAINT (sccx%, sccy%), svgFillColor, svgFillColor
+                END IF
+                IF _ALPHA32(svgStrokeColor) > 0 THEN
+                    CIRCLE (sccx%, sccy%), scr%, svgStrokeColor
+                END IF
+            END IF
+
+        CASE "ellipse"
+            DIM secx%, secy%, serx%, sery!
+            secx% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cx"))
+            secy% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "cy"))
+            serx% = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "rx"))
+            sery! = VAL(HTMLGUI_node_get_attr$(nodeIdx%, "ry"))
+            IF serx% > 0 AND sery! > 0 THEN
+                IF _ALPHA32(svgFillColor) > 0 THEN
+                    CIRCLE (secx%, secy%), serx%, svgFillColor, , , sery! / serx%
+                    PAINT (secx%, secy%), svgFillColor, svgFillColor
+                END IF
+                IF _ALPHA32(svgStrokeColor) > 0 THEN
+                    CIRCLE (secx%, secy%), serx%, svgStrokeColor, , , sery! / serx%
+                END IF
+            END IF
+
+        CASE "line"
+            DIM slx1%, sly1%, slx2%, sly2%
+            slx1% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x1"))
+            sly1% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y1"))
+            slx2% = ox% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "x2"))
+            sly2% = oy% + VAL(HTMLGUI_node_get_attr$(nodeIdx%, "y2"))
+            IF _ALPHA32(svgStrokeColor) > 0 THEN
+                LINE (slx1%, sly1%)-(slx2%, sly2%), svgStrokeColor
+            ELSE
+                LINE (slx1%, sly1%)-(slx2%, sly2%), _RGB32(0, 0, 0)
+            END IF
     END SELECT
 END SUB

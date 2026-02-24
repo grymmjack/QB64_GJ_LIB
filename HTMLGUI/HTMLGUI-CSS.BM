@@ -141,7 +141,14 @@ SUB HTMLGUI_parse_css_block (selector$, block$)
     DIM ruleIdx%
     ruleIdx% = HTMLGUI.ruleCount
 
-    HTMLGUI_RULES(ruleIdx%).selector = selector$
+    ' --- Extract pseudo-class from selector ---
+    DIM cleanSel$, pseudoFlags%
+    cleanSel$ = selector$
+    pseudoFlags% = HTMLGUI_PSEUDO_NONE
+    HTMLGUI_extract_pseudo_class cleanSel$, pseudoFlags%
+
+    HTMLGUI_RULES(ruleIdx%).selector = cleanSel$
+    HTMLGUI_RULES(ruleIdx%).pseudoClass = pseudoFlags%
     HTMLGUI_RULES(ruleIdx%).specificity = HTMLGUI_calc_specificity&(selector$)
     HTMLGUI_RULES(ruleIdx%).propCount = 0
 
@@ -935,4 +942,90 @@ SUB HTMLGUI_css_parse_bg_tokens (ruleIdx%, tokens$)
     IF foundSize% AND LEN(sizeTokens$) > 0 THEN
         HTMLGUI_css_add_prop ruleIdx%, "background-size", sizeTokens$
     END IF
+END SUB
+
+
+''
+' Extract pseudo-class from a CSS selector string
+' Modifies selector$ in-place to remove the pseudo-class portion
+' Sets pseudoFlags% to the corresponding HTMLGUI_PSEUDO_* bitfield
+'
+' Examples:
+'   "a:hover"          -> selector$="a",        pseudoFlags%=HTMLGUI_PSEUDO_HOVER
+'   ".btn:active"      -> selector$=".btn",     pseudoFlags%=HTMLGUI_PSEUDO_ACTIVE
+'   "a:link:hover"     -> selector$="a",        pseudoFlags%=HOVER OR LINK
+'   "div .item:hover"  -> extracts from last compound only
+'
+' @param STRING selector$ selector (modified in-place)
+' @param INTEGER pseudoFlags% output pseudo-class bitfield
+'
+SUB HTMLGUI_extract_pseudo_class (selector$, pseudoFlags%)
+    pseudoFlags% = HTMLGUI_PSEUDO_NONE
+
+    ' Find the pseudo-class in the selector
+    ' For descendant selectors like "nav a:hover", we only strip from the
+    ' rightmost simple selector
+    DIM lastSpace%
+    lastSpace% = 0
+    DIM findPos%
+    FOR findPos% = LEN(selector$) TO 1 STEP -1
+        IF MID$(selector$, findPos%, 1) = " " THEN
+            lastSpace% = findPos%
+            EXIT FOR
+        END IF
+    NEXT findPos%
+
+    DIM rightPart$, leftPart$
+    IF lastSpace% > 0 THEN
+        leftPart$ = LEFT$(selector$, lastSpace%)
+        rightPart$ = MID$(selector$, lastSpace% + 1)
+    ELSE
+        leftPart$ = ""
+        rightPart$ = selector$
+    END IF
+
+    ' Find first colon that's a pseudo-class (not a CSS property colon)
+    DIM colonPos%
+    colonPos% = INSTR(rightPart$, ":")
+    IF colonPos% = 0 THEN EXIT SUB
+
+    ' Extract everything from the colon onward
+    DIM pseudoPart$
+    pseudoPart$ = LCASE$(MID$(rightPart$, colonPos%))
+    ' Trim the selector
+    rightPart$ = LEFT$(rightPart$, colonPos% - 1)
+    selector$ = leftPart$ + rightPart$
+
+    ' Parse multiple pseudo-classes (e.g., ":link:hover")
+    DIM pp%, pcStart%
+    pp% = 1
+    DO WHILE pp% <= LEN(pseudoPart$)
+        IF MID$(pseudoPart$, pp%, 1) = ":" THEN
+            pcStart% = pp% + 1
+            ' Find end of this pseudo-class name
+            DIM pcEnd%
+            pcEnd% = pcStart%
+            DO WHILE pcEnd% <= LEN(pseudoPart$)
+                IF MID$(pseudoPart$, pcEnd%, 1) = ":" THEN EXIT DO
+                IF MID$(pseudoPart$, pcEnd%, 1) = " " THEN EXIT DO
+                pcEnd% = pcEnd% + 1
+            LOOP
+            DIM pcName$
+            pcName$ = MID$(pseudoPart$, pcStart%, pcEnd% - pcStart%)
+            SELECT CASE pcName$
+                CASE "hover":       pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_HOVER
+                CASE "active":      pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_ACTIVE
+                CASE "focus":       pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_FOCUS
+                CASE "visited":     pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_VISITED
+                CASE "link":        pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_LINK
+                CASE "first-child": pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_FIRST_CHILD
+                CASE "last-child":  pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_LAST_CHILD
+                CASE "disabled":    pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_DISABLED
+                CASE "checked":     pseudoFlags% = pseudoFlags% OR HTMLGUI_PSEUDO_CHECKED
+            END SELECT
+            pp% = pcEnd%
+        ELSE
+            pp% = pp% + 1
+        END IF
+    LOOP
 END SUB
