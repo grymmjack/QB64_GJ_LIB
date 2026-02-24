@@ -83,16 +83,50 @@ SUB HTMLGUI_layout_node (nodeIdx%, startX!, startY!, availW!, availH!)
     DIM boxW!, boxH!, autoW%, autoH%
     autoW% = FALSE: autoH% = FALSE
 
-    IF style.width <> HTMLGUI_AUTO! AND style.width >= 0 THEN
-        boxW! = style.width
+    ' Resolve width (negative = percentage of availW!)
+    IF style.width <> HTMLGUI_AUTO! THEN
+        IF style.width < 0 THEN
+            boxW! = (-style.width / 100!) * availW!
+        ELSE
+            boxW! = style.width
+        END IF
     ELSE
         ' Auto width = available width minus margins and borders/padding
         boxW! = availW! - mLeft! - mRight!
         autoW% = TRUE
     END IF
 
-    IF style.height <> HTMLGUI_AUTO! AND style.height >= 0 THEN
-        boxH! = style.height
+    ' Resolve min-width (negative = percentage of availW!)
+    DIM resolvedMinW!, resolvedMaxW!
+    IF style.minWidth < 0 THEN
+        resolvedMinW! = (-style.minWidth / 100!) * availW!
+    ELSE
+        resolvedMinW! = style.minWidth
+    END IF
+    ' Resolve max-width (negative = percentage of availW!, AUTO = none)
+    IF style.maxWidth = HTMLGUI_AUTO! THEN
+        resolvedMaxW! = -1  ' sentinel: no max constraint
+    ELSEIF style.maxWidth < 0 THEN
+        resolvedMaxW! = (-style.maxWidth / 100!) * availW!
+    ELSE
+        resolvedMaxW! = style.maxWidth
+    END IF
+
+    ' Apply min/max-width constraints BEFORE child layout (CSS spec)
+    ' Order: apply max first, then min — so min-width overrides max-width
+    IF resolvedMaxW! >= 0 THEN
+        IF boxW! > resolvedMaxW! THEN boxW! = resolvedMaxW!
+    END IF
+    IF resolvedMinW! > 0 THEN
+        IF boxW! < resolvedMinW! THEN boxW! = resolvedMinW!
+    END IF
+
+    IF style.height <> HTMLGUI_AUTO! THEN
+        IF style.height < 0 THEN
+            boxH! = (-style.height / 100!) * availH!
+        ELSE
+            boxH! = style.height
+        END IF
     ELSE
         boxH! = 0 ' Will be determined by content
         autoH% = TRUE
@@ -145,11 +179,34 @@ SUB HTMLGUI_layout_node (nodeIdx%, startX!, startY!, availW!, availH!)
         boxH! = contentH! + style.borderTopWidth + style.borderBottomWidth + style.paddingTop + style.paddingBottom
     END IF
 
-    ' Apply min/max constraints
-    IF style.minWidth > 0 AND boxW! < style.minWidth THEN boxW! = style.minWidth
-    IF style.minHeight > 0 AND boxH! < style.minHeight THEN boxH! = style.minHeight
-    IF style.maxWidth <> HTMLGUI_AUTO! AND style.maxWidth >= 0 AND boxW! > style.maxWidth THEN boxW! = style.maxWidth
-    IF style.maxHeight <> HTMLGUI_AUTO! AND style.maxHeight >= 0 AND boxH! > style.maxHeight THEN boxH! = style.maxHeight
+    ' Apply min/max-height constraints (max first, then min — min overrides max)
+    DIM resolvedMinH!, resolvedMaxH!
+    IF style.minHeight < 0 THEN
+        resolvedMinH! = (-style.minHeight / 100!) * availH!
+    ELSE
+        resolvedMinH! = style.minHeight
+    END IF
+    IF style.maxHeight = HTMLGUI_AUTO! THEN
+        resolvedMaxH! = -1
+    ELSEIF style.maxHeight < 0 THEN
+        resolvedMaxH! = (-style.maxHeight / 100!) * availH!
+    ELSE
+        resolvedMaxH! = style.maxHeight
+    END IF
+    IF resolvedMaxH! >= 0 THEN
+        IF boxH! > resolvedMaxH! THEN
+            boxH! = resolvedMaxH!
+            contentH! = boxH! - style.borderTopWidth - style.borderBottomWidth - style.paddingTop - style.paddingBottom
+            IF contentH! < 0 THEN contentH! = 0
+        END IF
+    END IF
+    IF resolvedMinH! > 0 THEN
+        IF boxH! < resolvedMinH! THEN
+            boxH! = resolvedMinH!
+            contentH! = boxH! - style.borderTopWidth - style.borderBottomWidth - style.paddingTop - style.paddingBottom
+            IF contentH! < 0 THEN contentH! = 0
+        END IF
+    END IF
 
     ' Store final layout
     HTMLGUI_NODES(nodeIdx%).layoutW = boxW!

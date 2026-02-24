@@ -1,0 +1,106 @@
+/* Min-Width & Max-Width Test Styles */
+body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 14px;
+    padding: 8px;
+}
+
+h2 {
+    color: #00d4ff;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+h3 {
+    color: #7fdbca;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.container {
+    background-color: #16213e;
+    border: 1px solid #334;
+    padding: 8px;
+}
+
+.box {
+    background-color: #0f3460;
+    border: 1px solid #e94560;
+    padding: 6px;
+    color: #ffffff;
+    font-size: 11px;
+}
+
+/* Section 1: max-width constrains width */
+.max-width-test {
+    width: 400px;
+    max-width: 200px;
+}
+
+/* Section 2: min-width expands width */
+.min-width-test {
+    width: 50px;
+    min-width: 150px;
+}
+
+/* Section 3: min-width overrides max-width */
+.min-overrides-max {
+    width: 150px;
+    min-width: 200px;
+    max-width: 100px;
+}
+
+/* Section 4: max-width on auto-width block */
+.maxwidth-auto-block {
+    max-width: 250px;
+}
+
+/* Section 5: min-width on narrow content */
+.minwidth-small-content {
+    min-width: 180px;
+}
+
+/* Section 6: Flex children with constraints */
+.flex-row {
+    display: flex;
+    gap: 8px;
+    background-color: #16213e;
+    border: 1px solid #334;
+    padding: 8px;
+}
+
+.flex-child {
+    background-color: #0f3460;
+    border: 1px solid #53a8b6;
+    padding: 6px;
+    color: #ffffff;
+    font-size: 10px;
+}
+
+.flex-max {
+    max-width: 100px;
+}
+
+.flex-min {
+    min-width: 200px;
+}
+
+.flex-both {
+    min-width: 80px;
+    max-width: 120px;
+}
+
+/* Section 7: Percentage max-width */
+.pct-max-width {
+    max-width: 50%;
+}
+
+/* Section 8: max-width: none (no constraint) */
+.maxwidth-none {
+    max-width: none;
+}

@@ -70,6 +70,7 @@ REGISTER_TEST "pseudo", "test-pseudo", "Pseudo-classes & Cursors"
 REGISTER_TEST "overflow", "test-overflow", "Overflow & Scrolling"
 REGISTER_TEST "svg", "test-svg", "SVG Rendering"
 REGISTER_TEST "textwrap", "test-textwrap", "Text Wrap Modes"
+REGISTER_TEST "minmaxwidth", "test-minmaxwidth", "Min-Width & Max-Width"
 
 _LOGINFO "======================================"
 _LOGINFO " HTMLGUI TEST SUITE"
@@ -541,6 +542,50 @@ FUNCTION VALIDATE_TEST% (idx%)
                 _LOGINFO "  CHECK text-wrap-sections: PASS"
             ELSE
                 _LOGINFO "  CHECK text-wrap-sections: FAIL"
+            END IF
+
+        CASE "Min-Width & Max-Width"
+            ' CHECK 1: The max-width section should have rendered content
+            checks% = checks% + 1
+            DIM mmHasMaxW%, mmx%, mmy%
+            DIM mmPx AS _UNSIGNED LONG
+            mmHasMaxW% = FALSE
+            FOR mmy% = 30 TO 80 STEP 5
+                FOR mmx% = 20 TO 250 STEP 10
+                    mmPx = POINT(mmx%, mmy%)
+                    IF _ALPHA32(mmPx) > 200 AND mmPx <> bodyPixel THEN
+                        mmHasMaxW% = TRUE
+                        EXIT FOR
+                    END IF
+                NEXT mmx%
+                IF mmHasMaxW% THEN EXIT FOR
+            NEXT mmy%
+            IF mmHasMaxW% THEN
+                passes% = passes% + 1
+                _LOGINFO "  CHECK maxwidth-section: PASS"
+            ELSE
+                _LOGINFO "  CHECK maxwidth-section: FAIL"
+            END IF
+
+            ' CHECK 2: The min-width section should have rendered content
+            checks% = checks% + 1
+            DIM mmHasMinW%
+            mmHasMinW% = FALSE
+            FOR mmy% = 100 TO 160 STEP 5
+                FOR mmx% = 20 TO 250 STEP 10
+                    mmPx = POINT(mmx%, mmy%)
+                    IF _ALPHA32(mmPx) > 200 AND mmPx <> bodyPixel THEN
+                        mmHasMinW% = TRUE
+                        EXIT FOR
+                    END IF
+                NEXT mmx%
+                IF mmHasMinW% THEN EXIT FOR
+            NEXT mmy%
+            IF mmHasMinW% THEN
+                passes% = passes% + 1
+                _LOGINFO "  CHECK minwidth-section: PASS"
+            ELSE
+                _LOGINFO "  CHECK minwidth-section: FAIL"
             END IF
     END SELECT
 

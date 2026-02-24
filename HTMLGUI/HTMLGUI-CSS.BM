@@ -665,9 +665,9 @@ FUNCTION HTMLGUI_parse_dimension! (cssVal$, baseFontSize!)
         EXIT FUNCTION
     END IF
 
-    ' Check for % — return negative to indicate percentage
+    ' Check for % — return NEGATIVE to indicate percentage (e.g. 50% returns -50)
     IF RIGHT$(v$, 1) = "%" THEN
-        HTMLGUI_parse_dimension! = VAL(LEFT$(v$, LEN(v$) - 1))
+        HTMLGUI_parse_dimension! = -(VAL(LEFT$(v$, LEN(v$) - 1)))
         EXIT FUNCTION
     END IF
 

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Min-Width &amp; Max-Width Test</title>
+</head>
+<body>
+    <h2>Min-Width &amp; Max-Width Tests</h2>
+
+    <!-- Section 1: max-width constrains a wider element -->
+    <div class="section" id="maxwidth-section">
+        <h3>max-width</h3>
+        <div class="container">
+            <div class="box max-width-test">
+                This box has width:400px but max-width:200px, so it should be 200px wide.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: min-width expands a narrower element -->
+    <div class="section" id="minwidth-section">
+        <h3>min-width</h3>
+        <div class="container">
+            <div class="box min-width-test">
+                This box has width:50px but min-width:150px, so it should be 150px wide.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: min-width overrides max-width (CSS spec) -->
+    <div class="section" id="minmax-conflict">
+        <h3>min-width overrides max-width</h3>
+        <div class="container">
+            <div class="box min-overrides-max">
+                min-width:200px + max-width:100px = 200px (min wins per CSS spec).
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: max-width with auto width (block element fills available space) -->
+    <div class="section" id="maxwidth-auto">
+        <h3>max-width on auto-width block</h3>
+        <div class="container">
+            <div class="box maxwidth-auto-block">
+                This auto-width block is constrained to max-width:250px.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: min-width on small auto-width content -->
+    <div class="section" id="minwidth-small">
+        <h3>min-width on narrow content</h3>
+        <div class="container">
+            <div class="box minwidth-small-content">
+                Hi
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 6: Side by side comparison using flexbox -->
+    <div class="section">
+        <h3>Flex children with constraints</h3>
+        <div class="flex-row">
+            <div class="flex-child flex-max">max-width: 100px</div>
+            <div class="flex-child flex-min">min-width: 200px</div>
+            <div class="flex-child flex-both">min:80 max:120</div>
+        </div>
+    </div>
+
+    <!-- Section 7: Percentage-based max-width -->
+    <div class="section" id="pct-maxwidth">
+        <h3>Percentage max-width (50%)</h3>
+        <div class="container">
+            <div class="box pct-max-width">
+                This box has max-width: 50% of its parent container.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 8: max-width: none (no constraint) -->
+    <div class="section" id="maxwidth-none">
+        <h3>max-width: none</h3>
+        <div class="container">
+            <div class="box maxwidth-none">
+                No max-width constraint (max-width: none). Should fill container.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
