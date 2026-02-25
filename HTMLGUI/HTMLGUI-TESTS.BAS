@@ -71,6 +71,7 @@ REGISTER_TEST "overflow", "test-overflow", "Overflow & Scrolling"
 REGISTER_TEST "svg", "test-svg", "SVG Rendering"
 REGISTER_TEST "textwrap", "test-textwrap", "Text Wrap Modes"
 REGISTER_TEST "minmaxwidth", "test-minmaxwidth", "Min-Width & Max-Width"
+REGISTER_TEST "newcss", "test-newcss", "New CSS Properties"
 
 _LOGINFO "======================================"
 _LOGINFO " HTMLGUI TEST SUITE"

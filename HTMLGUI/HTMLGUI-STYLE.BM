@@ -67,6 +67,14 @@ SUB HTMLGUI_style_init (idx%)
     HTMLGUI_STYLES(idx%).cursor = HTMLGUI_CURSOR_DEFAULT
     HTMLGUI_STYLES(idx%).listStyleType = HTMLGUI_LIST_DISC
     HTMLGUI_STYLES(idx%).cssFloat = HTMLGUI_FLOAT_NONE
+    HTMLGUI_STYLES(idx%).cssClear = HTMLGUI_CLEAR_NONE
+    HTMLGUI_STYLES(idx%).verticalAlign = HTMLGUI_VALIGN_BASELINE
+    HTMLGUI_STYLES(idx%).boxShadowOffX = 0
+    HTMLGUI_STYLES(idx%).boxShadowOffY = 0
+    HTMLGUI_STYLES(idx%).boxShadowBlur = 0
+    HTMLGUI_STYLES(idx%).boxShadowSpread = 0
+    HTMLGUI_STYLES(idx%).boxShadowColor = HTMLGUI_COLOR_TRANSPARENT~&
+    HTMLGUI_STYLES(idx%).boxShadowInset = FALSE
     HTMLGUI_STYLES(idx%).isSet = FALSE
     HTMLGUI_STYLES(idx%).explicitProps = 0
 
@@ -729,13 +737,19 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
         CASE "border-bottom-color": HTMLGUI_STYLES(nodeIdx%).borderBottomColor = HTMLGUI_parse_color~&(cssVal$)
         CASE "border-left-color": HTMLGUI_STYLES(nodeIdx%).borderLeftColor = HTMLGUI_parse_color~&(cssVal$)
 
-        ' --- Dimensions ---
-        CASE "width":       HTMLGUI_STYLES(nodeIdx%).width = HTMLGUI_parse_dimension!(cssVal$, fs!)
-        CASE "height":      HTMLGUI_STYLES(nodeIdx%).height = HTMLGUI_parse_dimension!(cssVal$, fs!)
-        CASE "min-width":   HTMLGUI_STYLES(nodeIdx%).minWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
-        CASE "min-height":  HTMLGUI_STYLES(nodeIdx%).minHeight = HTMLGUI_parse_dimension!(cssVal$, fs!)
-        CASE "max-width":   HTMLGUI_STYLES(nodeIdx%).maxWidth = HTMLGUI_parse_dimension!(cssVal$, fs!)
-        CASE "max-height":  HTMLGUI_STYLES(nodeIdx%).maxHeight = HTMLGUI_parse_dimension!(cssVal$, fs!)
+        ' --- Dimensions (with inherit/initial/unset support) ---
+        CASE "width"
+            HTMLGUI_STYLES(nodeIdx%).width = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 0)
+        CASE "height"
+            HTMLGUI_STYLES(nodeIdx%).height = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 1)
+        CASE "min-width"
+            HTMLGUI_STYLES(nodeIdx%).minWidth = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 2)
+        CASE "min-height"
+            HTMLGUI_STYLES(nodeIdx%).minHeight = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 3)
+        CASE "max-width"
+            HTMLGUI_STYLES(nodeIdx%).maxWidth = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 4)
+        CASE "max-height"
+            HTMLGUI_STYLES(nodeIdx%).maxHeight = HTMLGUI_resolve_dimension_global!(nodeIdx%, cssVal$, fs!, 5)
 
         ' --- Colors ---
         CASE "background-color": HTMLGUI_STYLES(nodeIdx%).bgColor = HTMLGUI_parse_color~&(cssVal$)
@@ -787,11 +801,36 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
             HTMLGUI_STYLES(nodeIdx%).fontSize = HTMLGUI_parse_dimension!(cssVal$, fs!)
             HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_SIZE
         CASE "font-weight"
-            SELECT CASE LCASE$(cssVal$)
+            DIM fwVal$
+            fwVal$ = LCASE$(cssVal$)
+            SELECT CASE fwVal$
                 CASE "bold", "bolder", "700", "800", "900"
                     HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
-                CASE ELSE
+                CASE "normal", "lighter", "100", "200", "300", "400"
                     HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_NORMAL
+                CASE "500", "600"
+                    ' 500-600: treat as bold for simplicity
+                    HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+                CASE "inherit"
+                    ' Inherit from parent explicitly
+                    DIM fwParent%
+                    fwParent% = HTMLGUI_NODES(nodeIdx%).parentIdx
+                    IF fwParent% >= LBOUND(HTMLGUI_NODES) THEN
+                        IF fwParent% <= UBOUND(HTMLGUI_NODES) THEN
+                            IF fwParent% < HTMLGUI.nodeCount THEN
+                                HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_STYLES(fwParent%).fontWeight
+                            END IF
+                        END IF
+                    END IF
+                CASE ELSE
+                    ' Try numeric value
+                    DIM fwNum%
+                    fwNum% = VAL(fwVal$)
+                    IF fwNum% >= 600 THEN
+                        HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD
+                    ELSE
+                        HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_NORMAL
+                    END IF
             END SELECT
             HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_FONT_WEIGHT
         CASE "font-style"
@@ -807,6 +846,9 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
             SELECT CASE LCASE$(cssVal$)
                 CASE "center":  HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_CENTER
                 CASE "right":   HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_RIGHT
+                CASE "justify": HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_JUSTIFY
+                CASE "start":   HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_LEFT
+                CASE "end":     HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_RIGHT
                 CASE ELSE:      HTMLGUI_STYLES(nodeIdx%).textAlign = HTMLGUI_TEXT_LEFT
             END SELECT
             HTMLGUI_STYLES(nodeIdx%).explicitProps = HTMLGUI_STYLES(nodeIdx%).explicitProps OR HTMLGUI_EXPLICIT_TEXT_ALIGN
@@ -947,6 +989,32 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
                 CASE ELSE
                     HTMLGUI_STYLES(nodeIdx%).cssFloat = HTMLGUI_FLOAT_NONE
             END SELECT
+
+        ' --- Clear ---
+        CASE "clear"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "left":  HTMLGUI_STYLES(nodeIdx%).cssClear = HTMLGUI_CLEAR_LEFT
+                CASE "right": HTMLGUI_STYLES(nodeIdx%).cssClear = HTMLGUI_CLEAR_RIGHT
+                CASE "both":  HTMLGUI_STYLES(nodeIdx%).cssClear = HTMLGUI_CLEAR_BOTH
+                CASE ELSE:    HTMLGUI_STYLES(nodeIdx%).cssClear = HTMLGUI_CLEAR_NONE
+            END SELECT
+
+        ' --- Vertical align ---
+        CASE "vertical-align"
+            SELECT CASE LCASE$(cssVal$)
+                CASE "top":         HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_TOP
+                CASE "middle":      HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_MIDDLE
+                CASE "bottom":      HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_BOTTOM
+                CASE "sub":         HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_SUB
+                CASE "super":       HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_SUPER
+                CASE "text-top":    HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_TEXT_TOP
+                CASE "text-bottom": HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_TEXT_BOTTOM
+                CASE ELSE:          HTMLGUI_STYLES(nodeIdx%).verticalAlign = HTMLGUI_VALIGN_BASELINE
+            END SELECT
+
+        ' --- Box shadow ---
+        CASE "box-shadow"
+            HTMLGUI_apply_box_shadow nodeIdx%, cssVal$
     END SELECT
 
     HTMLGUI_STYLES(nodeIdx%).isSet = TRUE
@@ -1649,3 +1717,168 @@ SUB HTMLGUI_split_comma_args (content$, args$(), argCount%)
         END IF
     END IF
 END SUB
+
+
+''
+' Resolve a CSS dimension value with global value support (inherit/initial/unset).
+' @param INTEGER nodeIdx% target node
+' @param STRING cssVal$ CSS value string
+' @param SINGLE fs! base font size for em/pt resolution
+' @param INTEGER propId% 0=width, 1=height, 2=minWidth, 3=minHeight, 4=maxWidth, 5=maxHeight
+' @return SINGLE resolved dimension value
+'
+FUNCTION HTMLGUI_resolve_dimension_global! (nodeIdx%, cssVal$, fs!, propId%)
+    DIM v$
+    v$ = LCASE$(_TRIM$(cssVal$))
+
+    ' Handle global CSS values
+    IF v$ = "inherit" THEN
+        DIM pIdx%
+        pIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+        IF pIdx% >= LBOUND(HTMLGUI_NODES) THEN
+            IF pIdx% <= UBOUND(HTMLGUI_NODES) THEN
+                IF pIdx% < HTMLGUI.nodeCount THEN
+                    SELECT CASE propId%
+                        CASE 0: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).width
+                        CASE 1: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).height
+                        CASE 2: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).minWidth
+                        CASE 3: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).minHeight
+                        CASE 4: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).maxWidth
+                        CASE 5: HTMLGUI_resolve_dimension_global! = HTMLGUI_STYLES(pIdx%).maxHeight
+                    END SELECT
+                    EXIT FUNCTION
+                END IF
+            END IF
+        END IF
+        HTMLGUI_resolve_dimension_global! = HTMLGUI_AUTO!
+        EXIT FUNCTION
+    ELSEIF v$ = "initial" OR v$ = "unset" THEN
+        ' Width/height/min/max are non-inherited, so unset = initial = auto
+        HTMLGUI_resolve_dimension_global! = HTMLGUI_AUTO!
+        EXIT FUNCTION
+    END IF
+
+    ' Normal dimension parsing
+    HTMLGUI_resolve_dimension_global! = HTMLGUI_parse_dimension!(cssVal$, fs!)
+END FUNCTION
+
+
+''
+' Parse and apply box-shadow CSS shorthand to a node's style.
+' Syntax: offsetX offsetY [blur [spread]] [color] [inset]
+' Also supports "none" to clear shadow.
+' @param INTEGER nodeIdx% target node index
+' @param STRING cssVal$ the raw CSS value
+'
+SUB HTMLGUI_apply_box_shadow (nodeIdx%, cssVal$)
+    DIM v$
+    v$ = _TRIM$(cssVal$)
+
+    ' Handle none
+    IF LCASE$(v$) = "none" THEN
+        HTMLGUI_STYLES(nodeIdx%).boxShadowOffX = 0
+        HTMLGUI_STYLES(nodeIdx%).boxShadowOffY = 0
+        HTMLGUI_STYLES(nodeIdx%).boxShadowBlur = 0
+        HTMLGUI_STYLES(nodeIdx%).boxShadowSpread = 0
+        HTMLGUI_STYLES(nodeIdx%).boxShadowColor = &H00000000~&
+        HTMLGUI_STYLES(nodeIdx%).boxShadowInset = FALSE
+        EXIT SUB
+    END IF
+
+    ' Tokenize the value — split on spaces (respecting parens for rgb/rgba)
+    DIM tokens$(0 TO 9)
+    DIM tokCount%, pDepth3%, ci3&
+    tokCount% = 0
+    pDepth3% = 0
+    DIM curTok$
+    curTok$ = ""
+
+    FOR ci3& = 1 TO LEN(v$)
+        DIM ch3$
+        ch3$ = MID$(v$, ci3&, 1)
+        IF ch3$ = "(" THEN
+            pDepth3% = pDepth3% + 1
+            curTok$ = curTok$ + ch3$
+        ELSEIF ch3$ = ")" THEN
+            pDepth3% = pDepth3% - 1
+            IF pDepth3% < 0 THEN pDepth3% = 0
+            curTok$ = curTok$ + ch3$
+        ELSEIF ch3$ = " " AND pDepth3% = 0 THEN
+            IF LEN(_TRIM$(curTok$)) > 0 THEN
+                IF tokCount% <= UBOUND(tokens$) THEN
+                    tokens$(tokCount%) = _TRIM$(curTok$)
+                    tokCount% = tokCount% + 1
+                END IF
+            END IF
+            curTok$ = ""
+        ELSE
+            curTok$ = curTok$ + ch3$
+        END IF
+    NEXT ci3&
+    IF LEN(_TRIM$(curTok$)) > 0 THEN
+        IF tokCount% <= UBOUND(tokens$) THEN
+            tokens$(tokCount%) = _TRIM$(curTok$)
+            tokCount% = tokCount% + 1
+        END IF
+    END IF
+
+    IF tokCount% < 2 THEN EXIT SUB ' Need at least offsetX offsetY
+
+    ' Parse tokens: numeric values are offsets/blur/spread, color words/functions are color, "inset" is inset
+    DIM numericVals!(0 TO 3)
+    DIM numCount%, ti3%
+    DIM shadowColor~&
+    DIM isInset%
+    numCount% = 0
+    shadowColor~& = _RGBA32(0, 0, 0, 128) ' Default: semi-transparent black
+    isInset% = FALSE
+
+    FOR ti3% = 0 TO tokCount% - 1
+        DIM tk$
+        tk$ = LCASE$(tokens$(ti3%))
+        IF tk$ = "inset" THEN
+            isInset% = TRUE
+        ELSEIF HTMLGUI_is_numeric_token%(tk$) THEN
+            IF numCount% <= 3 THEN
+                numericVals!(numCount%) = HTMLGUI_parse_dimension!(tokens$(ti3%), 16)
+                numCount% = numCount% + 1
+            END IF
+        ELSE
+            ' Assume it's a color
+            shadowColor~& = HTMLGUI_parse_color~&(tokens$(ti3%))
+        END IF
+    NEXT ti3%
+
+    ' Assign: offsetX, offsetY, [blur, [spread]]
+    IF numCount% >= 1 THEN HTMLGUI_STYLES(nodeIdx%).boxShadowOffX = numericVals!(0)
+    IF numCount% >= 2 THEN HTMLGUI_STYLES(nodeIdx%).boxShadowOffY = numericVals!(1)
+    IF numCount% >= 3 THEN HTMLGUI_STYLES(nodeIdx%).boxShadowBlur = numericVals!(2)
+    IF numCount% >= 4 THEN HTMLGUI_STYLES(nodeIdx%).boxShadowSpread = numericVals!(3)
+
+    HTMLGUI_STYLES(nodeIdx%).boxShadowColor = shadowColor~&
+    HTMLGUI_STYLES(nodeIdx%).boxShadowInset = isInset%
+END SUB
+
+
+''
+' Check if a token looks like a numeric CSS value (for box-shadow parsing).
+' @param STRING tk$ token to check
+' @return INTEGER TRUE if numeric (possibly with unit suffix)
+'
+FUNCTION HTMLGUI_is_numeric_token% (tk$)
+    DIM t$
+    t$ = LCASE$(_TRIM$(tk$))
+    IF LEN(t$) = 0 THEN
+        HTMLGUI_is_numeric_token% = FALSE
+        EXIT FUNCTION
+    END IF
+
+    ' Check first char is digit, minus, or dot
+    DIM fc$
+    fc$ = LEFT$(t$, 1)
+    IF fc$ = "-" OR fc$ = "+" OR fc$ = "." OR (fc$ >= "0" AND fc$ <= "9") THEN
+        HTMLGUI_is_numeric_token% = TRUE
+    ELSE
+        HTMLGUI_is_numeric_token% = FALSE
+    END IF
+END FUNCTION

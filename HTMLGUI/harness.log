@@ -1,336 +1,259 @@
 [0.00000] WARN runtime internal/c/libqb/src/logging/logging.cpp: libqb_log_init: 201: 1
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 75: ======================================
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 76:  HTMLGUI TEST SUITE
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 77:  17 tests registered
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 78: ======================================
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.14500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 1: Basic Float Layout ---
-[0.18300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
-[0.18300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 48 nodes, 5 CSS rules
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/basic/test-basic.png
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF333333)
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 363:   CHECK float-side-by-side: PASS
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.30700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 2: Headings & Typography ---
-[0.30800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 62 nodes, 13 CSS rules
-[0.30800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 62 nodes, 13 CSS rules
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/headings/test-headings.png
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 375:   CHECK h1-color: PASS
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.42900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 3: Flexbox Layout ---
-[0.43100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 84 nodes, 18 CSS rules
-[0.43100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 84 nodes, 18 CSS rules
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/flexbox/test-flexbox.png
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF0D1117)
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 388:   CHECK flex-row: PASS
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.55100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 4: Table Layout ---
-[0.55300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 117 nodes, 10 CSS rules
-[0.55300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 117 nodes, 10 CSS rules
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/tables/test-tables.png
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF0C0C1D)
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 400:   CHECK table-header: PASS
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.66600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 5: Forms & Controls ---
-[0.66800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 91 nodes, 14 CSS rules
-[0.66800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 91 nodes, 14 CSS rules
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/forms/test-forms.png
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1B2838)
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 421:   CHECK button-area: PASS
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.78700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 6: Colors, Borders, Spacing ---
-[0.79000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 99 nodes, 29 CSS rules
-[0.79000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 99 nodes, 29 CSS rules
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/colors/test-colors.png
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF111111)
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 442:   CHECK red-swatch: PASS
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[0.90300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 7: Complex Dashboard Layout ---
-[0.90600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 129 nodes, 17 CSS rules
-[0.90600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 129 nodes, 17 CSS rules
-[0.90800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: HTMLGUI_ON_EVENT (QB64): 607: Event:  id= param=
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/layout/test-layout.png
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 455:   CHECK sidebar: PASS
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[1.01600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.01700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.01700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.01700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 8: Lists & Navigation ---
-[1.01900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 118 nodes, 16 CSS rules
-[1.01900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 118 nodes, 16 CSS rules
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/lists/test-lists.png
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1E272E)
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.12700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 9: Float Positioning ---
-[1.12900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 98 nodes, 24 CSS rules
-[1.13000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 98 nodes, 24 CSS rules
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/floats/test-floats.png
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF2D2D2D)
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 483:   CHECK float-chips: PASS (5 distinct)
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.24400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 10: Custom Fonts ---
-[1.24600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 99 nodes, 13 CSS rules
-[1.24600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 99 nodes, 13 CSS rules
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/fonts/test-fonts.png
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 504:   CHECK font-header: PASS
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.36700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 11: CSS Gradients ---
-[1.36900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 85 nodes, 16 CSS rules
-[1.36900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 85 nodes, 16 CSS rules
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/gradients/test-gradients.png
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.46800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 12: Images & Backgrounds ---
-[1.47000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 85 nodes, 17 CSS rules
-[1.47000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 85 nodes, 17 CSS rules
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/images/test-images.png
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1E1E2E)
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.58300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 13: Pseudo-classes & Cursors ---
-[1.58800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 157 nodes, 38 CSS rules
-[1.58800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 157 nodes, 38 CSS rules
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/pseudo/test-pseudo.png
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF111111)
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.69100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 14: Overflow & Scrolling ---
-[1.69300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 102 nodes, 7 CSS rules
-[1.69300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 102 nodes, 7 CSS rules
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/overflow/test-overflow.png
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF111111)
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.80400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 15: SVG Rendering ---
-[1.80600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 93 nodes, 5 CSS rules
-[1.80600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 93 nodes, 5 CSS rules
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/svg/test-svg.png
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF111111)
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 4/4 (threshold: 3)
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[1.92200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 16: Text Wrap Modes ---
-[1.92400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 81 nodes, 12 CSS rules
-[1.92400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 81 nodes, 12 CSS rules
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/textwrap/test-textwrap.png
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 542:   CHECK text-wrap-sections: PASS
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 5/5 (threshold: 3)
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 177: 
-[2.02800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: --- TEST 17: Min-Width & Max-Width ---
-[2.03100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 127 nodes, 18 CSS rules
-[2.03100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 215:   Loaded: 127 nodes, 18 CSS rules
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 228:   Screenshot: tests/minmaxwidth/test-minmaxwidth.png
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 274:   CHECK body-bg: PASS (FF1A1A2E)
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 297:   CHECK content: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 325:   CHECK text: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 347:   CHECK spread: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 565:   CHECK maxwidth-section: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 586:   CHECK minwidth-section: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 599:   Score: 6/6 (threshold: 4)
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 237:   RESULT: PASS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 246:   Cleanup complete
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 91: 
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 92: ======================================
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 93:  TEST RESULTS
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 94: ======================================
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Basic Float Layout
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Headings & Typography
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Flexbox Layout
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Table Layout
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Forms & Controls
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Colors, Borders, Spacing
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Complex Dashboard Layout
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Lists & Navigation
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Float Positioning
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Custom Fonts
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] CSS Gradients
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Images & Backgrounds
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Pseudo-classes & Cursors
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Overflow & Scrolling
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] SVG Rendering
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Text Wrap Modes
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 102:  [PASS] Min-Width & Max-Width
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 104: --------------------------------------
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 105:  PASSED: 17 / 17
-[2.14600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 109: ======================================
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ReleaseHandle: 583: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604f3f] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604b2e] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604b2e] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604b2e] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604b2e] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
-[4.52200] ERROR libqb-image internal/c/parts/video/font/font.cpp: ~Font: 365: Failed to free FreeType face object ((nil))
-#1  [0x0x5278f0] in ./HTMLGUI-TESTS.run
-#2  [0x0x52552c] in ./HTMLGUI-TESTS.run
-#3  [0x0x525c36] in ./HTMLGUI-TESTS.run
-#4  [0x0x604b2e] in ./HTMLGUI-TESTS.run
-#5  [0x0x7f7e1115d2b1] in /lib/x86_64-linux-gnu/libc.so.6
-#6  [0x0x7f7e1115d37a] in /lib/x86_64-linux-gnu/libc.so.6
-#7  [0x0x5282fc] in ./HTMLGUI-TESTS.run
-#8  [0x0x528c2c] in ./HTMLGUI-TESTS.run
-#9  [0x0x44a32d] in ./HTMLGUI-TESTS.run
-#10 [0x0x69af18] in ./HTMLGUI-TESTS.run
-#11 [0x0x450ed8] in ./HTMLGUI-TESTS.run
-#12 [0x0x7f7e11144ca8] in /lib/x86_64-linux-gnu/libc.so.6
-#13 [0x0x7f7e11144d65] in __libc_start_main
-#14 [0x0x40f0b1] in ./HTMLGUI-TESTS.run
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 76: ======================================
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 77:  HTMLGUI TEST SUITE
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 78:  18 tests registered
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 79: ======================================
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.15300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 1: Basic Float Layout ---
+[0.18900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 48 nodes, 5 CSS rules
+[0.18900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 48 nodes, 5 CSS rules
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/basic/test-basic.png
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF333333)
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 364:   CHECK float-side-by-side: PASS
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.31500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 2: Headings & Typography ---
+[0.31600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 62 nodes, 13 CSS rules
+[0.31600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 62 nodes, 13 CSS rules
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/headings/test-headings.png
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 376:   CHECK h1-color: PASS
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.44500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 3: Flexbox Layout ---
+[0.44700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 84 nodes, 18 CSS rules
+[0.44700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 84 nodes, 18 CSS rules
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/flexbox/test-flexbox.png
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF0D1117)
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 389:   CHECK flex-row: PASS
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.56500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 4: Table Layout ---
+[0.56700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 117 nodes, 10 CSS rules
+[0.56700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 117 nodes, 10 CSS rules
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/tables/test-tables.png
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF0C0C1D)
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 401:   CHECK table-header: PASS
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.68000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 5: Forms & Controls ---
+[0.68200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 91 nodes, 14 CSS rules
+[0.68200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 91 nodes, 14 CSS rules
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/forms/test-forms.png
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1B2838)
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 422:   CHECK button-area: PASS
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.79900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 6: Colors, Borders, Spacing ---
+[0.80200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 99 nodes, 29 CSS rules
+[0.80200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 99 nodes, 29 CSS rules
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/colors/test-colors.png
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF111111)
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 443:   CHECK red-swatch: PASS
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[0.91500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 7: Complex Dashboard Layout ---
+[0.91800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 129 nodes, 17 CSS rules
+[0.91800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 129 nodes, 17 CSS rules
+[0.92000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: HTMLGUI_ON_EVENT (QB64): 608: Event:  id= param=
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/layout/test-layout.png
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 456:   CHECK sidebar: PASS
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.03000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 8: Lists & Navigation ---
+[1.03200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 118 nodes, 16 CSS rules
+[1.03200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 118 nodes, 16 CSS rules
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/lists/test-lists.png
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1E272E)
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.14100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 9: Float Positioning ---
+[1.14300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 98 nodes, 24 CSS rules
+[1.14300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 98 nodes, 24 CSS rules
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/floats/test-floats.png
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF2D2D2D)
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 484:   CHECK float-chips: PASS (5 distinct)
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.25800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 10: Custom Fonts ---
+[1.26000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 99 nodes, 13 CSS rules
+[1.26000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 99 nodes, 13 CSS rules
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/fonts/test-fonts.png
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 505:   CHECK font-header: PASS
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.38100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 11: CSS Gradients ---
+[1.38400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 85 nodes, 16 CSS rules
+[1.38400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 85 nodes, 16 CSS rules
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/gradients/test-gradients.png
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.48300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 12: Images & Backgrounds ---
+[1.48500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 85 nodes, 17 CSS rules
+[1.48500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 85 nodes, 17 CSS rules
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/images/test-images.png
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1E1E2E)
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.59800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 13: Pseudo-classes & Cursors ---
+[1.60200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 157 nodes, 38 CSS rules
+[1.60200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 157 nodes, 38 CSS rules
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/pseudo/test-pseudo.png
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF111111)
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.70700] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 14: Overflow & Scrolling ---
+[1.70900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 102 nodes, 7 CSS rules
+[1.70900] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 102 nodes, 7 CSS rules
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/overflow/test-overflow.png
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF111111)
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.82100] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.82200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.82200] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 15: SVG Rendering ---
+[1.82400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 93 nodes, 5 CSS rules
+[1.82400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 93 nodes, 5 CSS rules
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/svg/test-svg.png
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF111111)
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[1.93800] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 16: Text Wrap Modes ---
+[1.94000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 81 nodes, 12 CSS rules
+[1.94000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 81 nodes, 12 CSS rules
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/textwrap/test-textwrap.png
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 543:   CHECK text-wrap-sections: PASS
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 5/5 (threshold: 3)
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[2.04300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 17: Min-Width & Max-Width ---
+[2.04600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 127 nodes, 18 CSS rules
+[2.04600] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 127 nodes, 18 CSS rules
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/minmaxwidth/test-minmaxwidth.png
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 566:   CHECK maxwidth-section: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 587:   CHECK minwidth-section: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 6/6 (threshold: 4)
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 178: 
+[2.16000] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 179: --- TEST 18: New CSS Properties ---
+[2.16300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI.BM: HTMLGUI_LOAD (QB64): 116: HTMLGUI_load: loaded 99 nodes, 21 CSS rules
+[2.16300] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 216:   Loaded: 99 nodes, 21 CSS rules
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 229:   Screenshot: tests/newcss/test-newcss.png
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 275:   CHECK body-bg: PASS (FF1A1A2E)
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 298:   CHECK content: PASS
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 326:   CHECK text: PASS
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 348:   CHECK spread: PASS
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: VALIDATE_TEST (QB64): 600:   Score: 4/4 (threshold: 3)
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 238:   RESULT: PASS
+[2.27400] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: RUN_TEST (QB64): 247:   Cleanup complete
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 92: 
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 93: ======================================
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 94:  TEST RESULTS
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 95: ======================================
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Basic Float Layout
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Headings & Typography
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Flexbox Layout
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Table Layout
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Forms & Controls
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Colors, Borders, Spacing
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Complex Dashboard Layout
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Lists & Navigation
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Float Positioning
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Custom Fonts
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] CSS Gradients
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Images & Backgrounds
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Pseudo-classes & Cursors
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Overflow & Scrolling
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] SVG Rendering
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Text Wrap Modes
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] Min-Width & Max-Width
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 103:  [PASS] New CSS Properties
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 105: --------------------------------------
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 106:  PASSED: 18 / 18
+[2.27500] INFO QB64 /home/grymmjack/git/DRAW/includes/QB64_GJ_LIB/HTMLGUI/HTMLGUI-TESTS.BAS: Main QB64 Code: 110: ======================================

@@ -1,0 +1,144 @@
+body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 14px;
+    padding: 10px;
+}
+
+h3 {
+    color: #64b5f6;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.box {
+    width: 200px;
+    padding: 6px;
+    background-color: #2a2a4a;
+    border: 1px solid #444;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+/* text-align: justify */
+.justify-box {
+    text-align: justify;
+}
+
+/* text-align: center (wrapped text) */
+.center-box {
+    text-align: center;
+}
+
+/* vertical-align table */
+.valign-table {
+    width: 300px;
+    border: 1px solid #666;
+}
+
+.valign-table td {
+    border: 1px solid #555;
+    height: 60px;
+    padding: 4px;
+    background-color: #2a2a4a;
+    font-size: 12px;
+}
+
+.va-top {
+    vertical-align: top;
+}
+
+.va-middle {
+    vertical-align: middle;
+}
+
+.va-bottom {
+    vertical-align: bottom;
+}
+
+/* clear property */
+.clear-container {
+    background-color: #2a2a4a;
+    border: 1px solid #444;
+    padding: 4px;
+    margin-bottom: 6px;
+}
+
+.float-left {
+    float: left;
+    width: 80px;
+    height: 30px;
+    background-color: #4a6a8a;
+    margin-right: 4px;
+    padding: 4px;
+    font-size: 11px;
+}
+
+.clear-both {
+    clear: both;
+    background-color: #6a4a8a;
+    padding: 4px;
+    font-size: 11px;
+}
+
+/* box-shadow */
+.shadow-box {
+    width: 120px;
+    padding: 10px;
+    background-color: #3a3a5a;
+    box-shadow: 3px 3px rgba(0,0,0,0.5);
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.shadow-blur-box {
+    width: 120px;
+    padding: 10px;
+    background-color: #3a3a5a;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.shadow-spread-box {
+    width: 120px;
+    padding: 10px;
+    background-color: #3a3a5a;
+    box-shadow: 2px 2px 4px 2px rgba(100,100,200,0.5);
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+/* font-weight */
+.bold-text {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.normal-text {
+    font-weight: normal;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+/* text-decoration on wrapped text */
+.underline-wrap {
+    text-decoration: underline;
+}
+
+/* width: inherit */
+.parent-width {
+    width: 200px;
+    background-color: #2a2a4a;
+    padding: 4px;
+    border: 1px solid #444;
+}
+
+.inherit-width {
+    width: inherit;
+    background-color: #4a6a4a;
+    padding: 4px;
+    font-size: 12px;
+}

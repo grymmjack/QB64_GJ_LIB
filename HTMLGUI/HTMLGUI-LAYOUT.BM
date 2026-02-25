@@ -279,6 +279,17 @@ FUNCTION HTMLGUI_layout_block_children! (parentIdx%, cx!, cy!, cw!)
 
         ' --- Float layout ---
         IF HTMLGUI_STYLES(childIdx%).cssFloat <> HTMLGUI_FLOAT_NONE THEN
+            ' If this floated element has clear, drop below float row first
+            IF HTMLGUI_STYLES(childIdx%).cssClear <> HTMLGUI_CLEAR_NONE THEN
+                IF inFloatRow% THEN
+                    curY! = curY! + floatRowH!
+                    floatX! = cx!
+                    floatY! = curY!
+                    floatRowH! = 0
+                    inFloatRow% = FALSE
+                END IF
+            END IF
+
             ' Start float row if not already in one
             IF NOT inFloatRow% THEN
                 floatX! = cx!
@@ -332,9 +343,13 @@ FUNCTION HTMLGUI_layout_block_children! (parentIdx%, cx!, cy!, cw!)
         END IF
 
         ' --- Non-floated child after floats: drop below float row ---
+        ' Also handle clear property for any non-floated child
         IF inFloatRow% THEN
             curY! = curY! + floatRowH!
             inFloatRow% = FALSE
+        ELSEIF HTMLGUI_STYLES(childIdx%).cssClear <> HTMLGUI_CLEAR_NONE THEN
+            ' Even if not currently in a float row, clear ensures we're below
+            ' any previous floats (already handled by inFloatRow% above when active)
         END IF
 
         ' Inline children get inline layout
@@ -832,6 +847,35 @@ FUNCTION HTMLGUI_layout_table_children! (parentIdx%, cx!, cy!, cw!)
 
             HTMLGUI_NODES(rowIdx%).layoutH = rowH!
             HTMLGUI_NODES(rowIdx%).visible = TRUE
+
+            ' --- Vertical-align: reposition cell content within row height ---
+            cellIdx% = HTMLGUI_NODES(rowIdx%).firstChildIdx
+            DO WHILE cellIdx% >= LBOUND(HTMLGUI_NODES) AND cellIdx% <= UBOUND(HTMLGUI_NODES) AND cellIdx% < HTMLGUI.nodeCount
+                DIM cellContentH!, vOffset!
+                cellContentH! = HTMLGUI_NODES(cellIdx%).layoutH
+                vOffset! = 0
+
+                SELECT CASE HTMLGUI_STYLES(cellIdx%).verticalAlign
+                    CASE HTMLGUI_VALIGN_MIDDLE
+                        vOffset! = (rowH! - cellContentH!) / 2
+                    CASE HTMLGUI_VALIGN_BOTTOM
+                        vOffset! = rowH! - cellContentH!
+                    CASE ELSE
+                        ' top / baseline — keep at top (vOffset = 0)
+                        vOffset! = 0
+                END SELECT
+
+                IF vOffset! > 0 THEN
+                    ' Shift ALL children of this cell downward by vOffset
+                    HTMLGUI_shift_children_y cellIdx%, vOffset!
+                END IF
+
+                ' Ensure cell takes full row height for background rendering
+                HTMLGUI_NODES(cellIdx%).layoutH = rowH!
+
+                cellIdx% = HTMLGUI_NODES(cellIdx%).nextSiblingIdx
+            LOOP
+
             curY! = curY! + rowH!
         END IF
         rowIdx% = HTMLGUI_NODES(rowIdx%).nextSiblingIdx
@@ -983,4 +1027,23 @@ SUB HTMLGUI_measure_node_content (nodeIdx%, maxW!, outW!, outH!)
         IF outW! < 80 THEN outW! = 80
         IF outH! < 20 THEN outH! = 20
     END IF
+END SUB
+
+
+''
+' Recursively shift all children of a node downward by a Y offset.
+' Used for vertical-align in table cells to reposition content.
+'
+' @param INTEGER parentIdx% parent node whose children to shift
+' @param SINGLE offsetY! positive offset to add to layoutY
+'
+SUB HTMLGUI_shift_children_y (parentIdx%, offsetY!)
+    DIM childIdx%
+    childIdx% = HTMLGUI_NODES(parentIdx%).firstChildIdx
+    DO WHILE childIdx% >= LBOUND(HTMLGUI_NODES) AND childIdx% <= UBOUND(HTMLGUI_NODES) AND childIdx% < HTMLGUI.nodeCount
+        HTMLGUI_NODES(childIdx%).layoutY = HTMLGUI_NODES(childIdx%).layoutY + offsetY!
+        ' Recurse into children
+        HTMLGUI_shift_children_y childIdx%, offsetY!
+        childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+    LOOP
 END SUB

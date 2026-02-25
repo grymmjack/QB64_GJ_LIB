@@ -141,6 +141,40 @@ SUB HTMLGUI_render_node (nodeIdx%)
     DIM tag$
     tag$ = _TRIM$(LCASE$(n.tag))
 
+    ' --- BOX SHADOW ---
+    ' Draw shadow before background so it appears behind the element
+    IF _ALPHA32(s.boxShadowColor) > 0 THEN
+        IF s.boxShadowOffX <> 0 OR s.boxShadowOffY <> 0 OR s.boxShadowBlur > 0 OR s.boxShadowSpread > 0 THEN
+            DIM sx1%, sy1%, sx2%, sy2%
+            DIM spread!
+            spread! = s.boxShadowSpread
+            sx1% = x1% + INT(s.boxShadowOffX) - INT(spread!)
+            sy1% = y1% + INT(s.boxShadowOffY) - INT(spread!)
+            sx2% = x2% + INT(s.boxShadowOffX) + INT(spread!)
+            sy2% = y2% + INT(s.boxShadowOffY) + INT(spread!)
+
+            IF s.boxShadowBlur > 0 THEN
+                ' Approximate Gaussian blur with concentric rectangles of decreasing alpha
+                DIM blurR%, bStep%
+                blurR% = INT(s.boxShadowBlur)
+                IF blurR% > 20 THEN blurR% = 20 ' Cap blur iterations for performance
+                DIM baseAlpha%
+                baseAlpha% = _ALPHA32(s.boxShadowColor)
+                FOR bStep% = blurR% TO 0 STEP -1
+                    DIM bAlpha%
+                    bAlpha% = INT(baseAlpha% * (1! - (bStep% / (blurR% + 1!))))
+                    IF bAlpha% > 0 THEN
+                        DIM blurColor~&
+                        blurColor~& = _RGBA32(_RED32(s.boxShadowColor), _GREEN32(s.boxShadowColor), _BLUE32(s.boxShadowColor), bAlpha%)
+                        LINE (sx1% - bStep%, sy1% - bStep%)-(sx2% + bStep%, sy2% + bStep%), blurColor~&, BF
+                    END IF
+                NEXT bStep%
+            ELSE
+                LINE (sx1%, sy1%)-(sx2%, sy2%), s.boxShadowColor, BF
+            END IF
+        END IF
+    END IF
+
     ' --- BACKGROUND ---
     ' Draw background color first
     IF _RED32(s.bgColor) > 0 OR _GREEN32(s.bgColor) > 0 OR _BLUE32(s.bgColor) > 0 OR _ALPHA32(s.bgColor) > 0 THEN
@@ -419,17 +453,32 @@ SUB HTMLGUI_render_text (nodeIdx%)
     ' Word wrapping (respects text-wrap property)
     DIM textWrapMode%
     textWrapMode% = s.textWrap
+
+    ' Check for synthetic bold
+    DIM isBold%
+    isBold% = FALSE
+    IF s.fontWeight = HTMLGUI_WEIGHT_BOLD THEN isBold% = TRUE
+    IF parentIdx% >= LBOUND(HTMLGUI_NODES) THEN
+        IF parentIdx% <= UBOUND(HTMLGUI_NODES) THEN
+            IF parentIdx% < HTMLGUI.nodeCount THEN
+                IF HTMLGUI_STYLES(parentIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD THEN isBold% = TRUE
+            END IF
+        END IF
+    END IF
+
     IF textWrapMode% = HTMLGUI_TEXT_WRAP_NOWRAP THEN
         ' text-wrap: nowrap — never wrap, just clip
         HTMLGUI_print_clipped text$, tx%, ty%, maxW%
+        IF isBold% THEN HTMLGUI_print_clipped text$, tx% + 1, ty%, maxW%
     ELSEIF maxW% > 0 AND _PRINTWIDTH(text$) > maxW% THEN
         IF textWrapMode% = HTMLGUI_TEXT_WRAP_BALANCE THEN
-            HTMLGUI_render_text_balanced text$, tx%, ty%, maxW%
+            HTMLGUI_render_text_balanced nodeIdx%, text$, tx%, ty%, maxW%
         ELSE
-            HTMLGUI_render_text_wrapped text$, tx%, ty%, maxW%
+            HTMLGUI_render_text_wrapped nodeIdx%, text$, tx%, ty%, maxW%
         END IF
     ELSE
         HTMLGUI_print_clipped text$, tx%, ty%, maxW%
+        IF isBold% THEN HTMLGUI_print_clipped text$, tx% + 1, ty%, maxW%
         ' Text decoration
         IF parentIdx% >= LBOUND(HTMLGUI_NODES) AND parentIdx% <= UBOUND(HTMLGUI_NODES) AND parentIdx% < HTMLGUI.nodeCount THEN
             DIM decoration%
@@ -438,14 +487,7 @@ SUB HTMLGUI_render_text (nodeIdx%)
                 DIM decorW%, fh2%
                 decorW% = _PRINTWIDTH(text$)
                 fh2% = _FONTHEIGHT
-                SELECT CASE decoration%
-                    CASE HTMLGUI_DECOR_UNDERLINE
-                        LINE (tx%, ty% + fh2% - 1)-(tx% + decorW% - 1, ty% + fh2% - 1), textColor
-                    CASE HTMLGUI_DECOR_OVERLINE
-                        LINE (tx%, ty%)-(tx% + decorW% - 1, ty%), textColor
-                    CASE HTMLGUI_DECOR_LINETHROUGH
-                        LINE (tx%, ty% + fh2% \ 2)-(tx% + decorW% - 1, ty% + fh2% \ 2), textColor
-                END SELECT
+                HTMLGUI_draw_text_decoration tx%, ty%, decorW%, fh2%, decoration%, textColor
             END IF
         END IF
     END IF
@@ -455,9 +497,29 @@ END SUB
 ''
 ' Render text with word wrapping
 '
-SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
+SUB HTMLGUI_render_text_wrapped (nodeIdx%, text$, tx%, ty%, maxW%)
     REDIM words$(0 TO 255)
     DIM wordCount%, i%
+
+    ' Get parent styles for text-align, text-decoration, font-weight
+    DIM wParentIdx%, wAlign%, wDecor%, wBold%
+    DIM wTextColor AS _UNSIGNED LONG
+    wParentIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
+    wAlign% = HTMLGUI_TEXT_LEFT
+    wDecor% = HTMLGUI_DECOR_NONE
+    wBold% = FALSE
+    wTextColor = HTMLGUI_STYLES(nodeIdx%).fgColor
+    IF wTextColor = 0 AND _ALPHA32(wTextColor) = 0 THEN wTextColor = _RGB32(0, 0, 0)
+    IF wParentIdx% >= LBOUND(HTMLGUI_NODES) THEN
+        IF wParentIdx% <= UBOUND(HTMLGUI_NODES) THEN
+            IF wParentIdx% < HTMLGUI.nodeCount THEN
+                wAlign% = HTMLGUI_STYLES(wParentIdx%).textAlign
+                wDecor% = HTMLGUI_STYLES(wParentIdx%).textDecoration
+                IF HTMLGUI_STYLES(wParentIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD THEN wBold% = TRUE
+            END IF
+        END IF
+    END IF
+    IF HTMLGUI_STYLES(nodeIdx%).fontWeight = HTMLGUI_WEIGHT_BOLD THEN wBold% = TRUE
 
     ' Split by spaces
     wordCount% = 0
@@ -491,7 +553,32 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
         IF _PRINTWIDTH(testLine$) > maxW% THEN
             ' Print accumulated line first (if any)
             IF LEN(wrapLine$) > 0 THEN
-                HTMLGUI_print_clipped wrapLine$, curX%, curY%, maxW%
+                DIM lineX%
+                lineX% = curX%
+                ' Apply text-align (center, right, justify)
+                DIM linePW%
+                linePW% = _PRINTWIDTH(wrapLine$)
+                SELECT CASE wAlign%
+                    CASE HTMLGUI_TEXT_CENTER
+                        IF linePW% < maxW% THEN lineX% = tx% + (maxW% - linePW%) \ 2
+                    CASE HTMLGUI_TEXT_RIGHT
+                        IF linePW% < maxW% THEN lineX% = tx% + maxW% - linePW%
+                    CASE HTMLGUI_TEXT_JUSTIFY
+                        ' Justify: distribute extra space between words
+                        HTMLGUI_print_justified wrapLine$, curX%, curY%, maxW%, wBold%
+                        IF wDecor% <> HTMLGUI_DECOR_NONE THEN
+                            HTMLGUI_draw_text_decoration curX%, curY%, maxW%, fh%, wDecor%, wTextColor
+                        END IF
+                        curY% = curY% + fh%
+                        wrapLine$ = words$(i%)
+                        _CONTINUE ' Skip to next word in FOR loop
+                END SELECT
+                HTMLGUI_print_clipped wrapLine$, lineX%, curY%, maxW%
+                IF wBold% THEN HTMLGUI_print_clipped wrapLine$, lineX% + 1, curY%, maxW%
+                ' Text decoration per line
+                IF wDecor% <> HTMLGUI_DECOR_NONE THEN
+                    HTMLGUI_draw_text_decoration lineX%, curY%, linePW%, fh%, wDecor%, wTextColor
+                END IF
                 curY% = curY% + fh%
             END IF
             ' If single word wider than maxW%, break by character
@@ -501,6 +588,10 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
                     testChar$ = charLine$ + MID$(words$(i%), j%, 1)
                     IF _PRINTWIDTH(testChar$) > maxW% AND LEN(charLine$) > 0 THEN
                         _PRINTSTRING (curX%, curY%), charLine$
+                        IF wBold% THEN _PRINTSTRING (curX% + 1, curY%), charLine$
+                        IF wDecor% <> HTMLGUI_DECOR_NONE THEN
+                            HTMLGUI_draw_text_decoration curX%, curY%, _PRINTWIDTH(charLine$), fh%, wDecor%, wTextColor
+                        END IF
                         curY% = curY% + fh%
                         charLine$ = MID$(words$(i%), j%, 1)
                     ELSE
@@ -518,7 +609,23 @@ SUB HTMLGUI_render_text_wrapped (text$, tx%, ty%, maxW%)
 
     ' Print remaining
     IF LEN(wrapLine$) > 0 THEN
-        HTMLGUI_print_clipped wrapLine$, curX%, curY%, maxW%
+        ' Apply text-align to last line (justify uses left for last line)
+        DIM lastLineX%
+        lastLineX% = curX%
+        IF wAlign% = HTMLGUI_TEXT_CENTER THEN
+            DIM lasLnW%
+            lasLnW% = _PRINTWIDTH(wrapLine$)
+            IF lasLnW% < maxW% THEN lastLineX% = tx% + (maxW% - lasLnW%) \ 2
+        ELSEIF wAlign% = HTMLGUI_TEXT_RIGHT THEN
+            IF _PRINTWIDTH(wrapLine$) < maxW% THEN lastLineX% = tx% + maxW% - _PRINTWIDTH(wrapLine$)
+        END IF
+        HTMLGUI_print_clipped wrapLine$, lastLineX%, curY%, maxW%
+        ' Synthetic bold for last line
+        IF wBold% THEN HTMLGUI_print_clipped wrapLine$, lastLineX% + 1, curY%, maxW%
+        ' Text decoration for last line
+        IF wDecor% <> HTMLGUI_DECOR_NONE THEN
+            HTMLGUI_draw_text_decoration lastLineX%, curY%, _PRINTWIDTH(wrapLine$), fh%, wDecor%, wTextColor
+        END IF
     END IF
 END SUB
 
@@ -559,7 +666,7 @@ END SUB
 ' @param INTEGER ty% starting Y position
 ' @param INTEGER maxW% available width in pixels
 '
-SUB HTMLGUI_render_text_balanced (text$, tx%, ty%, maxW%)
+SUB HTMLGUI_render_text_balanced (nodeIdx%, text$, tx%, ty%, maxW%)
     ' Split into words
     REDIM bWords$(0 TO 255)
     DIM bWordCount%, bCurPos%, bSpacePos%
@@ -637,7 +744,7 @@ SUB HTMLGUI_render_text_balanced (text$, tx%, ty%, maxW%)
     LOOP
 
     ' Render using the balanced width
-    HTMLGUI_render_text_wrapped text$, tx%, ty%, loW%
+    HTMLGUI_render_text_wrapped nodeIdx%, text$, tx%, ty%, loW%
 END SUB
 
 
@@ -1795,4 +1902,88 @@ SUB HTMLGUI_render_svg_native (svgIdx%, ox%, oy%)
     ELSE
         _LOGWARN "HTMLGUI_render_svg_native: _LOADIMAGE failed for SVG node " + _TRIM$(STR$(svgIdx%))
     END IF
+END SUB
+
+
+''
+' Draw text-decoration (underline, overline, line-through) for a text line.
+'
+' @param INTEGER x% line start X
+' @param INTEGER y% line start Y
+' @param INTEGER w% text width in pixels
+' @param INTEGER fh% font height
+' @param INTEGER decor% decoration type (HTMLGUI_DECOR_* constant)
+' @param _UNSIGNED LONG clr~& decoration color
+'
+SUB HTMLGUI_draw_text_decoration (x%, y%, w%, fh%, decor%, clr~&)
+    IF w% <= 0 THEN EXIT SUB
+    SELECT CASE decor%
+        CASE HTMLGUI_DECOR_UNDERLINE
+            LINE (x%, y% + fh% - 1)-(x% + w% - 1, y% + fh% - 1), clr~&
+        CASE HTMLGUI_DECOR_OVERLINE
+            LINE (x%, y%)-(x% + w% - 1, y%), clr~&
+        CASE HTMLGUI_DECOR_LINETHROUGH
+            LINE (x%, y% + fh% \ 2)-(x% + w% - 1, y% + fh% \ 2), clr~&
+    END SELECT
+END SUB
+
+
+''
+' Print text justified (distributed across full line width).
+' Extra space is evenly distributed between words.
+'
+' @param STRING text$ text line to justify
+' @param INTEGER x% starting X position
+' @param INTEGER y% Y position
+' @param INTEGER maxW% total width to fill
+' @param INTEGER bold% whether to apply synthetic bold
+'
+SUB HTMLGUI_print_justified (text$, x%, y%, maxW%, bold%)
+    ' Split line into words
+    REDIM jWords$(0 TO 127)
+    DIM jWordCount%, jPos%, jSpacePos%
+    jWordCount% = 0
+    jPos% = 1
+    DO WHILE jPos% <= LEN(text$)
+        jSpacePos% = INSTR(jPos%, text$, " ")
+        IF jSpacePos% = 0 THEN jSpacePos% = LEN(text$) + 1
+        IF jWordCount% <= 127 THEN
+            jWords$(jWordCount%) = MID$(text$, jPos%, jSpacePos% - jPos%)
+            jWordCount% = jWordCount% + 1
+        END IF
+        jPos% = jSpacePos% + 1
+    LOOP
+
+    IF jWordCount% <= 1 THEN
+        ' Single word or empty — just print left-aligned
+        _PRINTSTRING (x%, y%), text$
+        IF bold% THEN _PRINTSTRING (x% + 1, y%), text$
+        EXIT SUB
+    END IF
+
+    ' Measure total word widths
+    DIM totalWordW!, ji%
+    totalWordW! = 0
+    FOR ji% = 0 TO jWordCount% - 1
+        totalWordW! = totalWordW! + _PRINTWIDTH(jWords$(ji%))
+    NEXT ji%
+
+    ' Calculate extra spacing per gap
+    DIM gaps%, extraSpace!, gapSpace!
+    gaps% = jWordCount% - 1
+    extraSpace! = maxW% - totalWordW!
+    IF extraSpace! < 0 THEN extraSpace! = 0
+    gapSpace! = extraSpace! / gaps%
+
+    ' Print words with distributed spacing
+    DIM curJX!
+    curJX! = x%
+    FOR ji% = 0 TO jWordCount% - 1
+        DIM wx%
+        wx% = INT(curJX!)
+        _PRINTSTRING (wx%, y%), jWords$(ji%)
+        IF bold% THEN _PRINTSTRING (wx% + 1, y%), jWords$(ji%)
+        curJX! = curJX! + _PRINTWIDTH(jWords$(ji%))
+        IF ji% < gaps% THEN curJX! = curJX! + gapSpace!
+    NEXT ji%
 END SUB

@@ -98,6 +98,7 @@ CONST HTMLGUI_ALIGN_END = 3
 CONST HTMLGUI_TEXT_LEFT = 0
 CONST HTMLGUI_TEXT_CENTER = 1
 CONST HTMLGUI_TEXT_RIGHT = 2
+CONST HTMLGUI_TEXT_JUSTIFY = 3
 
 ' --- Text decoration ---
 CONST HTMLGUI_DECOR_NONE = 0
@@ -202,6 +203,22 @@ CONST HTMLGUI_LIST_CIRCLE = 1
 CONST HTMLGUI_LIST_SQUARE = 2
 CONST HTMLGUI_LIST_DECIMAL = 3
 CONST HTMLGUI_LIST_NONE = 4
+
+' --- Vertical align ---
+CONST HTMLGUI_VALIGN_BASELINE = 0
+CONST HTMLGUI_VALIGN_TOP = 1
+CONST HTMLGUI_VALIGN_MIDDLE = 2
+CONST HTMLGUI_VALIGN_BOTTOM = 3
+CONST HTMLGUI_VALIGN_SUB = 4
+CONST HTMLGUI_VALIGN_SUPER = 5
+CONST HTMLGUI_VALIGN_TEXT_TOP = 6
+CONST HTMLGUI_VALIGN_TEXT_BOTTOM = 7
+
+' --- Clear modes ---
+CONST HTMLGUI_CLEAR_NONE = 0
+CONST HTMLGUI_CLEAR_LEFT = 1
+CONST HTMLGUI_CLEAR_RIGHT = 2
+CONST HTMLGUI_CLEAR_BOTH = 3
 
 ' --- Float modes ---
 CONST HTMLGUI_FLOAT_NONE = 0
@@ -421,8 +438,20 @@ TYPE HTMLGUI_STYLE
     flexShrink AS SINGLE
     gap AS SINGLE
 
-    ' --- Float ---
+    ' --- Vertical align ---
+    verticalAlign AS INTEGER           ' HTMLGUI_VALIGN_*
+
+    ' --- Float/Clear ---
     cssFloat AS INTEGER                ' HTMLGUI_FLOAT_NONE/LEFT/RIGHT
+    cssClear AS INTEGER                ' HTMLGUI_CLEAR_NONE/LEFT/RIGHT/BOTH
+
+    ' --- Box shadow ---
+    boxShadowOffX AS SINGLE            ' horizontal offset (px)
+    boxShadowOffY AS SINGLE            ' vertical offset (px)
+    boxShadowBlur AS SINGLE            ' blur radius (px)
+    boxShadowSpread AS SINGLE          ' spread radius (px)
+    boxShadowColor AS _UNSIGNED LONG   ' shadow color
+    boxShadowInset AS INTEGER          ' TRUE if inset shadow
 
     ' --- Misc ---
     overflow AS INTEGER                ' HTMLGUI_OVERFLOW_*

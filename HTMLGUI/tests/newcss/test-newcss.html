@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New CSS Properties</title>
+  <link rel="stylesheet" href="test-newcss.css">
+</head>
+<body>
+  <h3>text-align: justify</h3>
+  <div class="box justify-box">
+    The quick brown fox jumps over the lazy dog and keeps running through the fields of green grass until sundown.
+  </div>
+
+  <h3>text-align: center (wrapped)</h3>
+  <div class="box center-box">
+    The quick brown fox jumps over the lazy dog and keeps running through the fields.
+  </div>
+
+  <h3>vertical-align in table cells</h3>
+  <table class="valign-table">
+    <tr>
+      <td class="va-top">Top</td>
+      <td class="va-middle">Middle</td>
+      <td class="va-bottom">Bottom</td>
+    </tr>
+  </table>
+
+  <h3>clear property</h3>
+  <div class="clear-container">
+    <div class="float-left">Float Left</div>
+    <div class="float-left">Float Left 2</div>
+    <div class="clear-both">Cleared Both</div>
+  </div>
+
+  <h3>box-shadow</h3>
+  <div class="shadow-box">Box with shadow</div>
+  <div class="shadow-blur-box">Blurred shadow</div>
+  <div class="shadow-spread-box">Shadow with spread</div>
+
+  <h3>font-weight: bold (synthetic)</h3>
+  <div class="bold-text">This text is bold</div>
+  <div class="normal-text">This text is normal</div>
+
+  <h3>text-decoration on wrapped text</h3>
+  <div class="box underline-wrap">
+    This underlined text wraps across multiple lines to test decoration.
+  </div>
+
+  <h3>width: inherit</h3>
+  <div class="parent-width">
+    <div class="inherit-width">Inherited width</div>
+  </div>
+</body>
+</html>
