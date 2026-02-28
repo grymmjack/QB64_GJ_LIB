@@ -313,30 +313,36 @@ FUNCTION HTMLGUI_selector_matches% (nodeIdx%, selector$)
 
     DIM sel$
     sel$ = _TRIM$(selector$)
+    ' Strip CHR$(0) null-padding from STRING * N fixed-length fields
+    DIM selNull%
+    selNull% = INSTR(sel$, CHR$(0))
+    IF selNull% > 0 THEN sel$ = LEFT$(sel$, selNull% - 1)
 
     ' Handle descendant combinator (e.g., "nav a", "div .cls")
     ' Split by spaces and match right-to-left
+    ' NOTE: STR.explode returns numParts% = number of DELIMITERS found,
+    ' so parts are at indices 0..numParts%. Last part = selParts$(numParts%).
     IF INSTR(sel$, " ") > 0 THEN
         REDIM selParts$(0 TO 7)
         DIM selPartCount%
         selPartCount% = 0
         STR.explode sel$, " ", selParts$(), selPartCount%
 
-        ' The rightmost part must match this node
+        ' The rightmost part (index = selPartCount%) must match this node
         IF selPartCount% < 1 THEN
             HTMLGUI_selector_matches% = FALSE
             EXIT FUNCTION
         END IF
 
-        IF NOT HTMLGUI_simple_selector_matches%(nodeIdx%, _TRIM$(selParts$(selPartCount% - 1))) THEN
+        IF NOT HTMLGUI_simple_selector_matches%(nodeIdx%, _TRIM$(selParts$(selPartCount%))) THEN
             HTMLGUI_selector_matches% = FALSE
             EXIT FUNCTION
         END IF
 
-        ' Walk ancestors for remaining parts (right to left)
+        ' Walk ancestors for remaining parts (right to left, indices 0..selPartCount%-1)
         DIM si%, ancestorIdx%
         ancestorIdx% = HTMLGUI_NODES(nodeIdx%).parentIdx
-        FOR si% = selPartCount% - 2 TO 0 STEP -1
+        FOR si% = selPartCount% - 1 TO 0 STEP -1
             DIM partSel$
             partSel$ = _TRIM$(selParts$(si%))
             IF LEN(partSel$) = 0 THEN _CONTINUE
@@ -736,6 +742,11 @@ SUB HTMLGUI_apply_property (nodeIdx%, prop$, cssVal$)
         CASE "border-right-color": HTMLGUI_STYLES(nodeIdx%).borderRightColor = HTMLGUI_parse_color~&(cssVal$)
         CASE "border-bottom-color": HTMLGUI_STYLES(nodeIdx%).borderBottomColor = HTMLGUI_parse_color~&(cssVal$)
         CASE "border-left-color": HTMLGUI_STYLES(nodeIdx%).borderLeftColor = HTMLGUI_parse_color~&(cssVal$)
+        CASE "border-color"
+            HTMLGUI_STYLES(nodeIdx%).borderTopColor = HTMLGUI_parse_color~&(cssVal$)
+            HTMLGUI_STYLES(nodeIdx%).borderRightColor = HTMLGUI_STYLES(nodeIdx%).borderTopColor
+            HTMLGUI_STYLES(nodeIdx%).borderBottomColor = HTMLGUI_STYLES(nodeIdx%).borderTopColor
+            HTMLGUI_STYLES(nodeIdx%).borderLeftColor = HTMLGUI_STYLES(nodeIdx%).borderTopColor
 
         ' --- Dimensions (with inherit/initial/unset support) ---
         CASE "width"

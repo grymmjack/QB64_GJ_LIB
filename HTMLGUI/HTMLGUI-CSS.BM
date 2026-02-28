@@ -83,7 +83,8 @@ FUNCTION HTMLGUI_parse_css% (filename$)
             selCount% = 0
             STR.explode selectorText$, ",", selParts$(), selCount%
             DIM si%
-            FOR si% = 0 TO selCount% - 1
+            ' NOTE: STR.explode returns delimiter count; parts at indices 0..selCount%
+            FOR si% = 0 TO selCount%
                 DIM oneSelector$
                 oneSelector$ = _TRIM$(selParts$(si%))
                 IF LEN(oneSelector$) > 0 THEN
@@ -159,7 +160,9 @@ SUB HTMLGUI_parse_css_block (selector$, block$)
     STR.explode block$, ";", props$(), propCount%
 
     DIM pi%
-    FOR pi% = 0 TO propCount% - 1
+    ' NOTE: STR.explode returns delimiter count; parts at indices 0..propCount%
+    ' Iterate to propCount% (inclusive) to catch last property without trailing semicolon
+    FOR pi% = 0 TO propCount%
         DIM prop$
         prop$ = _TRIM$(props$(pi%))
         IF LEN(prop$) = 0 THEN _CONTINUE
@@ -557,13 +560,15 @@ FUNCTION HTMLGUI_parse_color~& (cssVal$)
             REDIM cParts$(0 TO 3)
             DIM cCount%
             cCount% = 0
+            ' NOTE: STR.explode returns delimiter count; for "r,g,b" with 2 commas,
+            ' cCount%=2 and parts are at indices 0..2. Conditions use >= i (not >= i+1).
             STR.explode inner$, ",", cParts$(), cCount%
             DIM rc%, gc%, bc%, ac%
             rc% = 0: gc% = 0: bc% = 0: ac% = 255
-            IF cCount% >= 1 THEN rc% = VAL(_TRIM$(cParts$(0)))
-            IF cCount% >= 2 THEN gc% = VAL(_TRIM$(cParts$(1)))
-            IF cCount% >= 3 THEN bc% = VAL(_TRIM$(cParts$(2)))
-            IF cCount% >= 4 THEN
+            rc% = VAL(_TRIM$(cParts$(0)))               ' part [0] always present
+            IF cCount% >= 1 THEN gc% = VAL(_TRIM$(cParts$(1)))
+            IF cCount% >= 2 THEN bc% = VAL(_TRIM$(cParts$(2)))
+            IF cCount% >= 3 THEN
                 DIM aVal!
                 aVal! = VAL(_TRIM$(cParts$(3)))
                 IF aVal! <= 1.0 THEN ac% = INT(aVal! * 255) ELSE ac% = INT(aVal!)

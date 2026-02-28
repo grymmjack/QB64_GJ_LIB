@@ -530,6 +530,15 @@ FUNCTION HTMLGUI_layout_flex_children! (parentIdx%, cx!, cy!, cw!, ch!, autoH%)
             _CONTINUE
         END IF
 
+        ' Skip whitespace-only text nodes (they are not flex items)
+        IF HTMLGUI_NODES(childIdx%).nodeType = HTMLGUI_NODE_TEXT THEN
+            IF HTMLGUI_is_whitespace_node%(childIdx%) THEN
+                HTMLGUI_NODES(childIdx%).visible = FALSE
+                childIdx% = HTMLGUI_NODES(childIdx%).nextSiblingIdx
+                _CONTINUE
+            END IF
+        END IF
+
         childIndices%(childCount%) = childIdx%
 
         ' Measure natural size

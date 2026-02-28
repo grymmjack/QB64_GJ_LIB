@@ -59,12 +59,14 @@ END IF
 
 _LOGINFO "Loaded: " + _TRIM$(STR$(HTMLGUI.nodeCount)) + " nodes, " + _TRIM$(STR$(HTMLGUI.ruleCount)) + " CSS rules"
 
-' Interactive render loop
+' Interactive render loop — auto-exit after 2 seconds
+DIM startTime#
+startTime# = TIMER
 DO
     HTMLGUI_update
     _DISPLAY
     _LIMIT 60
-LOOP UNTIL _KEYDOWN(27)
+LOOP UNTIL _KEYDOWN(27) OR (TIMER - startTime# >= 2)
 
 ' Save screenshot before exit
 _SAVEIMAGE TEST_SCREENSHOT$
