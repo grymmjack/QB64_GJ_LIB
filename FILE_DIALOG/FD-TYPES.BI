@@ -4,7 +4,6 @@ $INCLUDEONCE
 ' FD-TYPES.BI — Type definitions for QB64_GJ_FILE_DIALOG
 '
 ' Standalone file dialog library for QB64-PE.
-' No dependency on DRAW project types.
 '
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================

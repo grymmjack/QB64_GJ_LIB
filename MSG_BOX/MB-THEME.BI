@@ -3,8 +3,6 @@ $INCLUDEONCE
 ' ============================================================================
 ' MB-THEME.BI — Self-contained theme constants for QB64_GJ_MSG_BOX
 '
-' No dependency on DRAW's THEME system. Flat dark theme matching FILE-DIALOG.
-'
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
 

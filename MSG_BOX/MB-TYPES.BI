@@ -4,7 +4,6 @@ $INCLUDEONCE
 ' MB-TYPES.BI — Type definitions for QB64_GJ_MSG_BOX
 '
 ' Unified message box / input box library for QB64-PE.
-' No dependency on DRAW project types.
 '
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================

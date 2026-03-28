@@ -5,7 +5,6 @@ $INCLUDEONCE
 '
 ' Standalone color picker dialog for QB64-PE (Photoshop/Krita style).
 ' HSV square + hue bar, RGB sliders, HSL sliders, hex input.
-' No dependency on DRAW project types.
 '
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
