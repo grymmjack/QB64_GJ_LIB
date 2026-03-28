@@ -1,6 +1,9 @@
 # COLOR_PICKER — Color Picker Dialog
 
-Photoshop/Krita-style modal color picker dialog for QB64-PE with dark flat theme.
+![Color Picker Screenshot 1](color-picker-1.png)
+![Color Picker Screenshot 2](color-picker-2.png)
+
+> Photoshop/Krita-style modal color picker dialog for QB64-PE with dark flat theme.
 
 ## Features
 

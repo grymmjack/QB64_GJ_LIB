@@ -1,6 +1,10 @@
 # FILE_DIALOG — Custom File Dialog
 
-Full-featured cross-platform file dialog for QB64-PE with dark flat theme, thumbnail preview, and places bar.
+![File Dialog Screenshot 1](file-dialog-1.png)
+![File Dialog Screenshot 2](file-dialog-2.png)
+![File Dialog Screenshot 3](file-dialog-3.png)
+
+> Full-featured cross-platform file dialog for QB64-PE with dark flat theme, thumbnail preview, and places bar.
 
 ## Features
 

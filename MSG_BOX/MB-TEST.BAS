@@ -33,7 +33,7 @@ _DISPLAY
 MB_alert "Welcome", "This is a simple alert message box." + CHR$(10) + CHR$(10) + "It supports line breaks and word wrapping for longer text that needs to flow across multiple lines in the dialog."
 PRINT "Test 1 (Alert): Dismissed."
 _DISPLAY
-
+2
 ' ==========================================================================
 ' Test 2: Confirm (Yes/No)
 ' ==========================================================================

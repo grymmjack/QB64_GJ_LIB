@@ -1,6 +1,9 @@
 # TEXT_INPUT — Reusable Text Input Widget
 
-Single-line and multiline text input widget for QB64-PE. Foundation for MSG_BOX, COLOR_PICKER, and FILE_DIALOG.
+![Text Input Screenshot 1](text-input-1.png)
+![Text Input Screenshot 2](text-input-2.png)
+
+> Single-line and multiline text input widget for QB64-PE. Foundation for MSG_BOX, COLOR_PICKER, and FILE_DIALOG.
 
 ## Features
 

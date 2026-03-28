@@ -1,6 +1,13 @@
 # MSG_BOX — Message Box / Input Box Dialog
 
-Modal message box and input box dialog for QB64-PE with dark flat theme.
+![Message Box Screenshot 1](msg-box-1.png)
+![Message Box Screenshot 2](msg-box-2.png)
+![Message Box Screenshot 3](msg-box-3.png)
+![Message Box Screenshot 4](msg-box-4.png)
+![Message Box Screenshot 5](msg-box-5.png)
+![Message Box Screenshot 6](msg-box-6.png)
+
+> Modal message box and input box dialog for QB64-PE with dark flat theme.
 
 ## Features
 
