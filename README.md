@@ -26,8 +26,12 @@ in it's current state.
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 | [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |
 | [ASEPRITE](ASEPRITE/README.md) | Adds ASEPRITE support to QB64 | See https://www.aseprite.org |
+| [COLOR_PICKER](COLOR_PICKER/README.md) | Color Picker Dialog | Photoshop/Krita-style HSV/RGB/HSL color picker with hex input and posterize mode |
 | [CONSOLE](CONSOLE/README.md) | CONSOLE object with debugging. |
+| [FILE_DIALOG](FILE_DIALOG/README.md) | File Dialog | Full-featured Open/Save/Folder dialog with list, details, and thumbnail views |
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
+| [MSG_BOX](MSG_BOX/README.md) | Message Box Dialog | Modal message boxes with OK/Cancel/Yes/No buttons, icons, and input mode |
+| [TEXT_INPUT](TEXT_INPUT/README.md) | Text Input Widget | Reusable text input with undo/redo, clipboard, selection, and multiline support |
 
 
 

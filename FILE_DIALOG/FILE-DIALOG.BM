@@ -1,0 +1,35 @@
+$INCLUDEONCE
+
+' ============================================================================
+' FILE-DIALOG.BM — Leader include file for QB64_GJ_FILE_DIALOG library
+'
+' Usage:
+'   '$INCLUDE:'path/to/FILE-DIALOG.BI'
+'   ' ... your code ...
+'   '$INCLUDE:'path/to/FILE-DIALOG.BM'
+'
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+' --- Reusable text input widget ---
+$IF GJ_LIB_TEXT_INPUT = UNDEFINED THEN
+'$INCLUDE:'../TEXT_INPUT/TEXT-INPUT.BM'
+$END IF
+
+' --- Platform wrappers (C interop helpers) ---
+'$INCLUDE:'FD-PLATFORM.BM'
+
+' --- File system operations (listing, sorting, filtering) ---
+'$INCLUDE:'FD-FS.BM'
+
+' --- Thumbnail cache and lazy loading ---
+'$INCLUDE:'FD-THUMB.BM'
+
+' --- Rendering routines ---
+'$INCLUDE:'FD-RENDER.BM'
+
+' --- Mouse and keyboard input handling ---
+'$INCLUDE:'FD-INPUT.BM'
+
+' --- Public API and modal loop ---
+'$INCLUDE:'FD-API.BM'
