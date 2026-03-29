@@ -169,13 +169,22 @@ SUB CP_modal_loop
     CP_STATE.mouseB1 = _MOUSEBUTTON(1)
     CP_STATE.oldMouseB1 = CP_STATE.mouseB1
 
+    DIM cpFrameIdle AS INTEGER
+    DIM cpPrevMX AS INTEGER, cpPrevMY AS INTEGER
+    cpPrevMX = -1: cpPrevMY = -1
+
     DO UNTIL CP_STATE.done
+        cpFrameIdle = -1 ' TRUE — assume idle
+
         ' Poll input
         CP_INPUT_poll
 
         ' Keyboard
         k = _KEYHIT
-        IF k <> 0 THEN CP_INPUT_keyboard k
+        IF k <> 0 THEN
+            CP_INPUT_keyboard k
+            cpFrameIdle = 0
+        END IF
 
         ' Mouse
         CP_INPUT_mouse
@@ -183,19 +192,45 @@ SUB CP_modal_loop
         ' Mouse wheel
         CP_INPUT_wheel
 
+        ' Detect mouse movement or button activity
+        IF CP_STATE.mouseX <> cpPrevMX OR CP_STATE.mouseY <> cpPrevMY THEN cpFrameIdle = 0
+        IF CP_STATE.mouseB1 THEN cpFrameIdle = 0
+        IF CP_STATE.mouseWheel <> 0 THEN cpFrameIdle = 0
+        IF CP_STATE.dragging <> CP_DRAG_NONE THEN cpFrameIdle = 0
+        cpPrevMX = CP_STATE.mouseX
+        cpPrevMY = CP_STATE.mouseY
+
         ' Tick TI cursor blink
         IF CP_STATE.tiHexId > 0 THEN TI_tick
+
+        ' Check if any TI input is dirty (cursor blink)
+        DIM cpTIDirty AS INTEGER
+        cpTIDirty = 0
+        IF CP_STATE.tiHexId > 0 THEN
+            IF CP_STATE.tiHexId <= TI_MAX_INPUTS THEN
+                IF TI_inputs(CP_STATE.tiHexId).dirty THEN cpTIDirty = -1
+            END IF
+        END IF
+        IF cpTIDirty THEN cpFrameIdle = 0
 
         ' Render if dirty or TI blink
         IF CP_STATE.dirty THEN
             CP_RENDER_all
             CP_STATE.dirty = 0
+            cpFrameIdle = 0
         END IF
 
-        ' Always blit (restore background + overlay + dialog)
-        CP_RENDER_blit
-        _DISPLAY
-        _LIMIT 60
+        ' Only blit + display when something changed
+        IF NOT cpFrameIdle THEN
+            CP_RENDER_blit
+            _DISPLAY
+        END IF
+
+        IF cpFrameIdle THEN
+            _LIMIT 15
+        ELSE
+            _LIMIT 60
+        END IF
     LOOP
 
     _MOUSESHOW "DEFAULT"
