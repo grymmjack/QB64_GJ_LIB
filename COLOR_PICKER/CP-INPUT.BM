@@ -308,7 +308,7 @@ SUB CP_INPUT_mouse
         ' Old color swatch click (revert to original)
         IF lx >= CP_STATE.previewOldX AND lx < CP_STATE.previewOldX + CP_PREVIEW_W THEN
             DIM swY AS INTEGER
-            swY = CP_STATE.previewY + 16
+            swY = CP_STATE.previewY + CP_STATE.fontH
             IF ly >= swY AND ly < swY + CP_PREVIEW_H THEN
                 CP_STATE.cR = _RED32(CP_STATE.origColor)
                 CP_STATE.cG = _GREEN32(CP_STATE.origColor)

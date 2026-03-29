@@ -1030,6 +1030,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     IF newW <> FD_STATE.dialogW OR newH <> FD_STATE.dialogH THEN
         IF FD_STATE.imgHandle < -1 THEN _FREEIMAGE FD_STATE.imgHandle
         FD_STATE.imgHandle = _NEWIMAGE(newW, newH, 32)
+        _FONT FD_CFG.fontID, FD_STATE.imgHandle
     END IF
 
     FD_STATE.dialogX = newX

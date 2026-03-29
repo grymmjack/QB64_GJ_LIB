@@ -79,7 +79,7 @@ SUB MB_RENDER_title_bar
     title = RTRIM$(MB_STATE.title)
     IF LEN(title) = 0 THEN title = "Message"
     COLOR MB_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (MB_PADDING \ 2 + 2, (MB_TITLE_BAR_H - 16) \ 2 + 1), title
+    _PRINTSTRING (MB_PADDING \ 2 + 2, (MB_TITLE_BAR_H - MB_STATE.fontH) \ 2 + 1), title
 
     ' Close button [X]
     DIM bx AS INTEGER
@@ -89,7 +89,7 @@ SUB MB_RENDER_title_bar
         LINE (bx, 0)-(MB_STATE.dialogW - 1, MB_TITLE_BAR_H - 1), &HFFE81123, BF
     END IF
     COLOR MB_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + (MB_TITLE_BAR_H - 8) \ 2, (MB_TITLE_BAR_H - 16) \ 2 + 1), "X"
+    _PRINTSTRING (bx + (MB_TITLE_BAR_H - 8) \ 2, (MB_TITLE_BAR_H - MB_STATE.fontH) \ 2 + 1), "X"
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -114,7 +114,7 @@ SUB MB_RENDER_content
     FOR i = 0 TO MB_STATE.messageLineCount - 1
         lineText = RTRIM$(MB_messageLines(i))
         IF LEN(lineText) > 0 THEN
-            _PRINTSTRING (MB_STATE.messageX, MB_STATE.messageY + i * MB_LINE_HEIGHT), lineText
+            _PRINTSTRING (MB_STATE.messageX, MB_STATE.messageY + i * MB_STATE.lineHeight), lineText
         END IF
     NEXT i
 
@@ -222,8 +222,8 @@ SUB MB_RENDER_button_bar
 
         ' Label (centered)
         DIM tx AS INTEGER
-        tx = bx + (MB_BUTTON_W - LEN(lbl) * MB_CHAR_W) \ 2
+        tx = bx + (MB_BUTTON_W - LEN(lbl) * MB_STATE.fontW) \ 2
         COLOR txtClr, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (tx, by + (MB_BUTTON_H - 16) \ 2), lbl
+        _PRINTSTRING (tx, by + (MB_BUTTON_H - MB_STATE.fontH) \ 2), lbl
     NEXT i
 END SUB

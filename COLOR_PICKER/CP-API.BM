@@ -88,6 +88,11 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
     CP_STATE.hoverButton = -1
     CP_STATE.hoverPosterize = -1
     CP_STATE.scale = 1
+
+    ' Font defaults (caller can override before modal loop)
+    IF CP_STATE.fontID = 0 THEN CP_STATE.fontID = CP_DEFAULT_FONT_ID
+    IF CP_STATE.fontW = 0 THEN CP_STATE.fontW = CP_DEFAULT_FONT_W
+    IF CP_STATE.fontH = 0 THEN CP_STATE.fontH = CP_DEFAULT_FONT_H
     CP_STATE.dragging = CP_DRAG_NONE
 
     ' Apply pre-configured options
@@ -275,7 +280,7 @@ SUB CP_layout_calculate
     CP_STATE.previewY = y
     CP_STATE.previewOldX = CP_PADDING
     CP_STATE.previewNewX = CP_PADDING + CP_PREVIEW_W + 8
-    y = y + 16 + CP_PREVIEW_H + CP_SECTION_GAP
+    y = y + CP_STATE.fontH + CP_PREVIEW_H + CP_SECTION_GAP
 
     ' Slider area
     CP_STATE.sliderX = CP_PADDING

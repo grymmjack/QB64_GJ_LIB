@@ -9,7 +9,7 @@ $INCLUDEONCE
 ' ============================================================================
 
 ' --------------------------------------------------------------------------
-' FD_print_scaled — Render text at integer scale of the built-in 8x16 font
+' FD_print_scaled — Render text at integer scale using FD_CFG.fontID font
 '   scale% = 1: direct _PRINTSTRING (no overhead)
 '   scale% > 1: render at 1x into temp surface, _PUTIMAGE scales up
 ' --------------------------------------------------------------------------
@@ -24,10 +24,10 @@ SUB FD_print_scaled (x AS INTEGER, y AS INTEGER, text AS STRING, scale AS INTEGE
         EXIT SUB
     END IF
 
-    ' Render text at native 8x16 into a temp image, then scale up
+    ' Render text at native size into a temp image, then scale up
     DIM tw AS INTEGER, th AS INTEGER
-    tw = LEN(text) * 8
-    th = 16
+    tw = LEN(text) * FD_CFG.fontW
+    th = FD_CFG.fontH
     DIM tmp AS LONG
     tmp = _NEWIMAGE(tw, th, 32)
     IF tmp >= -1 THEN
@@ -38,6 +38,7 @@ SUB FD_print_scaled (x AS INTEGER, y AS INTEGER, text AS STRING, scale AS INTEGE
     DIM oldD AS LONG
     oldD = _DEST
     _DEST tmp
+    _FONT FD_CFG.fontID
     CLS , _RGBA32(0, 0, 0, 0)
     COLOR _DEFAULTCOLOR(oldD), _RGBA32(0, 0, 0, 0)
     _PRINTSTRING (0, 0), text
@@ -55,7 +56,7 @@ FUNCTION FD_text_width% (text AS STRING, scale AS INTEGER)
     DIM s AS INTEGER
     s = scale
     IF s < 1 THEN s = 1
-    FD_text_width% = LEN(text) * 8 * s
+    FD_text_width% = LEN(text) * FD_CFG.fontW * s
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -65,7 +66,7 @@ FUNCTION FD_text_height% (scale AS INTEGER)
     DIM s AS INTEGER
     s = scale
     IF s < 1 THEN s = 1
-    FD_text_height% = 16 * s
+    FD_text_height% = FD_CFG.fontH * s
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -366,10 +367,10 @@ SUB FD_RENDER_places
         DIM label AS STRING
         label = RTRIM$(FD_places(i).label)
         DIM maxLabelW AS INTEGER
-        maxLabelW = (w - FD_PADDING * 2 - 16) \ (8 * pfs)
+        maxLabelW = (w - FD_PADDING * 2 - 16 - FD_ICON_TEXT_GAP) \ (8 * pfs)
         IF LEN(label) > maxLabelW THEN label = LEFT$(label, maxLabelW - 1) + "."
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-        FD_print_scaled x1 + FD_PADDING + 16, py + (entryH - FD_text_height%(pfs)) \ 2 + 1, label, pfs
+        FD_print_scaled x1 + FD_PADDING + 16 + FD_ICON_TEXT_GAP, py + (entryH - FD_text_height%(pfs)) \ 2 + 1, label, pfs
 
         py = py + entryH
     NEXT i
@@ -814,9 +815,23 @@ SUB FD_RENDER_preview
             FD_print_scaled x1 + FD_PADDING, infoY + FD_text_height%(pvfs) + 2, sizeInfo, pvfs
         END IF
     ELSE
-        ' No preview available
+        ' No preview available — show placeholder icon + text
+        DIM noPreviewIconSz AS INTEGER
+        noPreviewIconSz = 48
+        DIM npTextW AS INTEGER
+        npTextW = FD_text_width%("No preview", pvfs)
+        DIM npTotalH AS INTEGER
+        npTotalH = noPreviewIconSz + FD_PADDING + FD_text_height%(pvfs)
+        DIM npBaseY AS INTEGER
+        npBaseY = y1 + (h - npTotalH) \ 2
+
+        ' Draw a large image-frame icon centered
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-        FD_print_scaled x1 + w \ 2 - FD_text_width%("No preview", pvfs) \ 2, y1 + h \ 2, "No preview", pvfs
+        FD_ICONS_render FD_ICON_IMAGE, x1 + (w - noPreviewIconSz) \ 2, npBaseY, noPreviewIconSz
+
+        ' "No preview" label below icon
+        COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
+        FD_print_scaled x1 + (w - npTextW) \ 2, npBaseY + noPreviewIconSz + FD_PADDING, "No preview", pvfs
     END IF
 END SUB
 

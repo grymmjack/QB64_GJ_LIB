@@ -16,6 +16,13 @@ CONST TI_MAX_TEXT_LEN = 4096         ' Max text length per input
 CONST TI_CURSOR_BLINK_MS = 0.5      ' Cursor blink interval in seconds
 CONST TI_SCROLL_PADDING = 8         ' Pixels of padding for text scroll
 
+' --- Font Defaults -----------------------------------------------------------
+' Built-in font ID: 8 = 8x8, 16 = 8x16 (QB64-PE built-in fonts)
+' Runtime values live in TI_fontID/W/H shared vars; set via TI_set_font
+CONST TI_DEFAULT_FONT_ID = 16       ' Default built-in font (8 or 16)
+CONST TI_DEFAULT_FONT_W = 8         ' Font character width (always 8)
+CONST TI_DEFAULT_FONT_H = 16        ' Font character height (8 or 16)
+
 ' --- Default theme colors (can be overridden per-instance) -------------------
 
 CONST TI_DEFAULT_BG~& = &HFF3C3C3C          ' Background
@@ -31,6 +38,12 @@ CONST TI_DEFAULT_READONLY_BG~& = &HFF2D2D2D  ' Read-only background
 ' --- Clipboard buffer (shared) -----------------------------------------------
 
 DIM SHARED TI_clipboard AS STRING
+
+' --- Font metrics (shared, 0 = use defaults) ---------------------------------
+
+DIM SHARED TI_fontID AS INTEGER      ' Built-in font ID (8 or 16)
+DIM SHARED TI_fontW AS INTEGER       ' Char width in pixels
+DIM SHARED TI_fontH AS INTEGER       ' Char height in pixels
 
 ' --- Per-instance theme overrides --------------------------------------------
 

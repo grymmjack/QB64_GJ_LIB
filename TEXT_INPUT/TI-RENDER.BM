@@ -4,7 +4,7 @@ $INCLUDEONCE
 ' TI-RENDER.BM — Rendering routines for text input widget
 '
 ' Draws to current _DEST. Caller sets _DEST before calling.
-' Uses 8x16 default QB64 font (_PRINTSTRING).
+' Uses configurable font via TI_fontW/TI_fontH shared vars.
 '
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
@@ -79,7 +79,7 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
     ELSE
         ' Single-line rendering (original path)
         DIM singleTextY AS INTEGER
-        singleTextY = y1 + (h - 16) \ 2   ' Center 16px font vertically
+        singleTextY = y1 + (h - TI_fontH) \ 2   ' Center font vertically
 
         ' --- Show placeholder if empty and unfocused ---
         IF LEN(t) = 0 AND NOT TI_inputs(id).focused THEN
@@ -87,7 +87,7 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             ph = RTRIM$(TI_inputs(id).placeholder)
             IF LEN(ph) > 0 THEN
                 DIM maxPH AS INTEGER
-                maxPH = visibleW \ 8
+                maxPH = visibleW \ TI_fontW
                 IF LEN(ph) > maxPH THEN ph = LEFT$(ph, maxPH)
                 COLOR phClr, _RGBA32(0, 0, 0, 0)
                 _PRINTSTRING (textX, singleTextY), ph
@@ -108,9 +108,9 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         DIM scrollPx AS INTEGER
         scrollPx = TI_inputs(id).scrollX
         DIM startChar AS INTEGER, endChar AS INTEGER
-        startChar = scrollPx \ 8
+        startChar = scrollPx \ TI_fontW
         IF startChar < 0 THEN startChar = 0
-        endChar = startChar + (visibleW \ 8) + 2
+        endChar = startChar + (visibleW \ TI_fontW) + 2
         IF endChar > LEN(displayText) THEN endChar = LEN(displayText)
 
         ' --- Draw selection highlight ---
@@ -125,8 +125,8 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             END IF
 
             DIM selX1 AS INTEGER, selX2 AS INTEGER
-            selX1 = textX + s1 * 8 - scrollPx
-            selX2 = textX + s2 * 8 - scrollPx
+            selX1 = textX + s1 * TI_fontW - scrollPx
+            selX2 = textX + s2 * TI_fontW - scrollPx
 
             ' Clamp to visible area
             IF selX1 < textX THEN selX1 = textX
@@ -142,8 +142,8 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         COLOR txtClr, _RGBA32(0, 0, 0, 0)
         FOR ci = startChar TO endChar - 1
             DIM charX AS INTEGER
-            charX = textX + ci * 8 - scrollPx
-            IF charX >= textX - 8 AND charX < textX + visibleW THEN
+            charX = textX + ci * TI_fontW - scrollPx
+            IF charX >= textX - TI_fontW AND charX < textX + visibleW THEN
                 _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
             END IF
         NEXT ci
@@ -151,7 +151,7 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         ' --- Draw cursor ---
         IF TI_inputs(id).focused AND TI_inputs(id).cursorBlink THEN
             DIM curX AS INTEGER
-            curX = textX + TI_inputs(id).cursorPos * 8 - scrollPx
+            curX = textX + TI_inputs(id).cursorPos * TI_fontW - scrollPx
             IF curX >= x1 AND curX < x1 + w THEN
                 LINE (curX, y1 + 3)-(curX, y1 + h - 4), curClr
             END IF
@@ -182,7 +182,7 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
         phStr = RTRIM$(TI_inputs(id).placeholder)
         IF LEN(phStr) > 0 THEN
             DIM maxPHC AS INTEGER
-            maxPHC = visibleW \ 8
+            maxPHC = visibleW \ TI_fontW
             IF LEN(phStr) > maxPHC THEN phStr = LEFT$(phStr, maxPHC)
             COLOR phClr, _RGBA32(0, 0, 0, 0)
             _PRINTSTRING (textX, textY), phStr
@@ -211,9 +211,9 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
 
     ' --- Calculate visible row range ---
     DIM firstVisRow AS INTEGER, lastVisRow AS INTEGER
-    firstVisRow = scrollPxY \ 16
+    firstVisRow = scrollPxY \ TI_fontH
     IF firstVisRow < 0 THEN firstVisRow = 0
-    lastVisRow = (scrollPxY + visibleH) \ 16 + 1
+    lastVisRow = (scrollPxY + visibleH) \ TI_fontH + 1
 
     ' --- Draw lines ---
     DIM lineRow AS INTEGER
@@ -242,9 +242,9 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
 
         ' Only draw if within visible area
         DIM rowPxY AS INTEGER
-        rowPxY = textY + lineRow * 16 - scrollPxY
+        rowPxY = textY + lineRow * TI_fontH - scrollPxY
 
-        IF rowPxY + 16 >= y1 AND rowPxY < y1 + h THEN
+        IF rowPxY + TI_fontH >= y1 AND rowPxY < y1 + h THEN
             ' --- Draw selection highlight for this line ---
             IF hasSel THEN
                 ' Calculate selection overlap with this line
@@ -260,11 +260,11 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
 
                 IF lineSelEnd > lineSelStart AND selMax > lineBegin AND selMin <= lineEnd THEN
                     DIM slX1 AS INTEGER, slX2 AS INTEGER
-                    slX1 = textX + lineSelStart * 8 - scrollPxX
-                    slX2 = textX + lineSelEnd * 8 - scrollPxX
+                    slX1 = textX + lineSelStart * TI_fontW - scrollPxX
+                    slX2 = textX + lineSelEnd * TI_fontW - scrollPxX
                     IF slX1 < textX THEN slX1 = textX
                     IF slX2 > textX + visibleW THEN slX2 = textX + visibleW
-                    IF slX2 > slX1 AND rowPxY >= y1 AND rowPxY + 16 <= y1 + h THEN
+                    IF slX2 > slX1 AND rowPxY >= y1 AND rowPxY + TI_fontH <= y1 + h THEN
                         LINE (slX1, rowPxY)-(slX2 - 1, rowPxY + 15), selClr, BF
                     END IF
                 END IF
@@ -274,16 +274,16 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
             COLOR txtClr, _RGBA32(0, 0, 0, 0)
             DIM ci AS INTEGER
             DIM startC AS INTEGER, endC AS INTEGER
-            startC = scrollPxX \ 8
+            startC = scrollPxX \ TI_fontW
             IF startC < 0 THEN startC = 0
-            endC = startC + (visibleW \ 8) + 2
+            endC = startC + (visibleW \ TI_fontW) + 2
             IF endC > LEN(lineStr) THEN endC = LEN(lineStr)
 
             FOR ci = startC TO endC - 1
                 DIM cxPos AS INTEGER
-                cxPos = textX + ci * 8 - scrollPxX
-                IF cxPos >= textX - 8 AND cxPos < textX + visibleW THEN
-                    IF rowPxY >= y1 AND rowPxY + 16 <= y1 + h THEN
+                cxPos = textX + ci * TI_fontW - scrollPxX
+                IF cxPos >= textX - TI_fontW AND cxPos < textX + visibleW THEN
+                    IF rowPxY >= y1 AND rowPxY + TI_fontH <= y1 + h THEN
                         _PRINTSTRING (cxPos, rowPxY), MID$(lineStr, ci + 1, 1)
                     END IF
                 END IF
@@ -293,9 +293,9 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
             IF TI_inputs(id).focused AND TI_inputs(id).cursorBlink THEN
                 IF lineRow = curRow THEN
                     DIM curXM AS INTEGER
-                    curXM = textX + curCol * 8 - scrollPxX
+                    curXM = textX + curCol * TI_fontW - scrollPxX
                     IF curXM >= x1 AND curXM < x1 + w THEN
-                        IF rowPxY >= y1 AND rowPxY + 16 <= y1 + h THEN
+                        IF rowPxY >= y1 AND rowPxY + TI_fontH <= y1 + h THEN
                             LINE (curXM, rowPxY + 1)-(curXM, rowPxY + 14), curClr
                         END IF
                     END IF
@@ -313,12 +313,12 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
         lineBegin = charIdx
 
         ' Stop if beyond visible area
-        IF lineRow * 16 - scrollPxY > visibleH + 16 THEN EXIT DO
+        IF lineRow * TI_fontH - scrollPxY > visibleH + TI_fontH THEN EXIT DO
     LOOP
 
     ' --- Draw scrollbar indicator (if content overflows) ---
     DIM totalContentH AS INTEGER
-    totalContentH = TI__line_count%(id) * 16
+    totalContentH = TI__line_count%(id) * TI_fontH
     IF totalContentH > visibleH THEN
         DIM sbX AS INTEGER
         sbX = x1 + w - 4

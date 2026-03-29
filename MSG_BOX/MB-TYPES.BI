@@ -113,6 +113,12 @@ TYPE MB_STATE_OBJ
     screenShot AS LONG                  ' Background screen capture
     dirty AS INTEGER                    ' TRUE = needs redraw
     scale AS INTEGER                    ' Display scale factor
+
+    ' Font settings
+    fontID AS INTEGER                   ' Built-in font ID (8 or 16)
+    fontW AS INTEGER                    ' Char width in pixels
+    fontH AS INTEGER                    ' Char height in pixels
+    lineHeight AS INTEGER               ' Line height (fontH + 2)
 END TYPE
 
 ' --- Shared State ------------------------------------------------------------

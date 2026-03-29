@@ -131,6 +131,11 @@ TYPE CP_STATE_OBJ
     dirty AS INTEGER
     svDirty AS INTEGER                  ' TRUE = SV square needs re-render
     scale AS INTEGER
+
+    ' Font settings
+    fontID AS INTEGER                   ' Built-in font ID (8 or 16)
+    fontW AS INTEGER                    ' Char width in pixels
+    fontH AS INTEGER                    ' Char height in pixels
 END TYPE
 
 ' --- Options (set before calling CP_pick_color&) -----------------------------

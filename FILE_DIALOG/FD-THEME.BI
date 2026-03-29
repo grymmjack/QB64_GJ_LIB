@@ -6,6 +6,13 @@ $INCLUDEONCE
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
 
+' --- Font Defaults ------------------------------------------------------------
+' Built-in font ID: 8 = 8x8, 16 = 8x16 (QB64-PE built-in fonts)
+' These are compile-time defaults; runtime values live in FD_CFG.fontID/W/H
+CONST FD_DEFAULT_FONT_ID = 16        ' Default built-in font (8 or 16)
+CONST FD_DEFAULT_FONT_W = 8          ' Font character width (always 8)
+CONST FD_DEFAULT_FONT_H = 16         ' Font character height (8 or 16)
+
 ' --- Layout Constants --------------------------------------------------------
 
 CONST FD_TITLE_BAR_H = 24           ' Title bar height
@@ -22,10 +29,11 @@ CONST FD_THUMB_DEFAULT_SIZE = 64    ' Default thumbnail size
 CONST FD_SPLITTER_W = 4             ' Splitter handle width
 CONST FD_PADDING = 4                ' General padding
 CONST FD_ICON_SIZE = 16             ' Small file-type icon size
+CONST FD_ICON_TEXT_GAP = 4          ' Horizontal gap between icon and text label
 CONST FD_RESIZE_GRIP = 6            ' Resize handle detection zone
 CONST FD_BUTTON_W = 80              ' Standard button width
 CONST FD_BUTTON_H = 24              ' Standard button height
-CONST FD_MIN_DIALOG_W = 500         ' Minimum dialog width
+CONST FD_MIN_DIALOG_W = 300         ' Minimum dialog width
 CONST FD_MIN_DIALOG_H = 350         ' Minimum dialog height
 CONST FD_DOUBLE_CLICK_MS = 0.4      ' Double-click threshold in seconds
 CONST FD_CURSOR_BLINK_MS = 0.5      ' Cursor blink interval in seconds

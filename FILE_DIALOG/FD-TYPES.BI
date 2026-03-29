@@ -140,7 +140,12 @@ TYPE FD_CONFIG_OBJ
     ' Favorites
     favCount AS INTEGER
 
-    ' Font scale per element (1 = native 8x16, 2 = double, etc.)
+    ' Font settings (8 = 8x8, 16 = 8x16)
+    fontID AS INTEGER                ' Built-in font ID (8 or 16)
+    fontW AS INTEGER                 ' Font character width in pixels
+    fontH AS INTEGER                 ' Font character height in pixels
+
+    ' Font scale per element (1 = native fontH px, 2 = double, etc.)
     titleFontScale AS INTEGER        ' Title bar
     placesFontScale AS INTEGER       ' Places sidebar
     pathFontScale AS INTEGER         ' Path/location bar

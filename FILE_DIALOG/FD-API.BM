@@ -155,6 +155,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Create offscreen buffer
     FD_STATE.imgHandle = _NEWIMAGE(FD_STATE.dialogW, FD_STATE.dialogH, 32)
+    _FONT FD_CFG.fontID, FD_STATE.imgHandle
 
     ' Capture screen background
     FD_STATE.screenShot = _COPYIMAGE(0)
@@ -296,27 +297,27 @@ SUB FD_LAYOUT_calculate
     stfs = FD_CFG.statusFontScale: IF stfs < 1 THEN stfs = 1
     ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
 
-    FD_STATE.titleBarH = 16 * tfs + 8
+    FD_STATE.titleBarH = FD_CFG.fontH * tfs + 8
     IF FD_STATE.titleBarH < FD_TITLE_BAR_H THEN FD_STATE.titleBarH = FD_TITLE_BAR_H
 
-    FD_STATE.pathBarH = 16 * pfs + 8
+    FD_STATE.pathBarH = FD_CFG.fontH * pfs + 8
     IF FD_STATE.pathBarH < FD_PATH_BAR_H THEN FD_STATE.pathBarH = FD_PATH_BAR_H
 
-    FD_STATE.toolBarH = 16 * sfs + 8
+    FD_STATE.toolBarH = FD_CFG.fontH * sfs + 8
     IF FD_STATE.toolBarH < FD_TOOLBAR_H THEN FD_STATE.toolBarH = FD_TOOLBAR_H
 
-    FD_STATE.columnHeaderH = 16 * sfs + 6
+    FD_STATE.columnHeaderH = FD_CFG.fontH * sfs + 6
     IF FD_STATE.columnHeaderH < FD_COL_HEADER_H THEN FD_STATE.columnHeaderH = FD_COL_HEADER_H
 
-    FD_STATE.statusBarH = 16 * stfs + 6
+    FD_STATE.statusBarH = FD_CFG.fontH * stfs + 6
     IF FD_STATE.statusBarH < FD_STATUS_BAR_H THEN FD_STATE.statusBarH = FD_STATUS_BAR_H
 
-    FD_STATE.buttonBarH = 16 * ifs + 20
+    FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
     IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
 
     DIM cfs AS INTEGER
     cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
-    FD_STATE.rowHeight = 16 * cfs + 4
+    FD_STATE.rowHeight = FD_CFG.fontH * cfs + 4
     IF FD_STATE.rowHeight < FD_ROW_HEIGHT THEN FD_STATE.rowHeight = FD_ROW_HEIGHT
 
     ' Content Y start (below title, path, toolbar)
@@ -665,7 +666,12 @@ SUB FD_load_config
     FD_CFG.showPreview = -1
     FD_CFG.favCount = 0
 
-    ' Font scale defaults (1 = normal 8x16)
+    ' Font defaults
+    FD_CFG.fontID = FD_DEFAULT_FONT_ID
+    FD_CFG.fontW = FD_DEFAULT_FONT_W
+    FD_CFG.fontH = FD_DEFAULT_FONT_H
+
+    ' Font scale defaults (1 = normal fontH px)
     FD_CFG.titleFontScale = 1
     FD_CFG.placesFontScale = 1
     FD_CFG.pathFontScale = 1

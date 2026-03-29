@@ -10,9 +10,25 @@ $INCLUDEONCE
 ' ============================================================================
 
 ' --------------------------------------------------------------------------
+' TI_set_font — Set the font used by all text input instances
+'   fontID: 8 or 16 (QB64-PE built-in font ID)
+'   fontW:  character width in pixels (always 8 for built-in fonts)
+'   fontH:  character height in pixels (8 or 16)
+' --------------------------------------------------------------------------
+SUB TI_set_font (fontID AS INTEGER, fontW AS INTEGER, fontH AS INTEGER)
+    TI_fontID = fontID
+    TI_fontW = fontW
+    TI_fontH = fontH
+END SUB
+
+' --------------------------------------------------------------------------
 ' TI_create% — Create a new text input instance, returns its ID (0 on fail)
 ' --------------------------------------------------------------------------
 FUNCTION TI_create% (x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER)
+    ' Ensure font is initialized
+    IF TI_fontW < 1 THEN TI_fontW = TI_DEFAULT_FONT_W
+    IF TI_fontH < 1 THEN TI_fontH = TI_DEFAULT_FONT_H
+    IF TI_fontID < 1 THEN TI_fontID = TI_DEFAULT_FONT_ID
     DIM i AS INTEGER
     FOR i = 1 TO TI_MAX_INPUTS
         IF NOT TI_inputs(i).active THEN
@@ -170,7 +186,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relMY AS INTEGER
         relMY = py - TI_inputs(hitId).y - TI_SCROLL_PADDING + TI_inputs(hitId).scrollY
         DIM clickRow AS INTEGER
-        clickRow = relMY \ 16
+        clickRow = relMY \ TI_fontH
         IF clickRow < 0 THEN clickRow = 0
         DIM maxRow AS INTEGER
         maxRow = TI__line_count%(hitId) - 1
@@ -179,7 +195,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relMX AS INTEGER
         relMX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM clickCol AS INTEGER
-        clickCol = relMX \ 8
+        clickCol = relMX \ TI_fontW
         IF clickCol < 0 THEN clickCol = 0
 
         cp = TI__pos_from_row_col%(hitId, clickRow, clickCol)
@@ -188,7 +204,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relX AS INTEGER
         relX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM charPos AS INTEGER
-        charPos = relX \ 8
+        charPos = relX \ TI_fontW
         IF charPos < 0 THEN charPos = 0
         IF charPos > TI_inputs(hitId).textLen THEN charPos = TI_inputs(hitId).textLen
         cp = charPos
@@ -268,9 +284,9 @@ SUB TI_process_mousewheel (px AS INTEGER, py AS INTEGER, wheelDir AS INTEGER)
     IF hitId <= 0 THEN EXIT SUB
     IF NOT TI_inputs(hitId).multiline THEN EXIT SUB
 
-    ' Scroll 3 lines per wheel notch (16 pixels per line)
+    ' Scroll 3 lines per wheel notch
     DIM scrollAmt AS INTEGER
-    scrollAmt = wheelDir * 3 * 16
+    scrollAmt = wheelDir * 3 * TI_fontH
 
     TI_inputs(hitId).scrollY = TI_inputs(hitId).scrollY + scrollAmt
 
@@ -278,7 +294,7 @@ SUB TI_process_mousewheel (px AS INTEGER, py AS INTEGER, wheelDir AS INTEGER)
     IF TI_inputs(hitId).scrollY < 0 THEN TI_inputs(hitId).scrollY = 0
 
     DIM totalH AS INTEGER, visibleH AS INTEGER
-    totalH = TI__line_count%(hitId) * 16
+    totalH = TI__line_count%(hitId) * TI_fontH
     visibleH = TI_inputs(hitId).h - TI_SCROLL_PADDING * 2
     DIM maxScroll AS INTEGER
     maxScroll = totalH - visibleH
@@ -958,13 +974,13 @@ SUB TI__ensure_cursor_visible (id AS INTEGER)
         col = TI__cursor_col%(id)
 
         ' Horizontal
-        curPixel = col * 8
+        curPixel = col * TI_fontW
         visibleW = TI_inputs(id).w - TI_SCROLL_PADDING * 2
         IF NOT TI_inputs(id).wordWrap THEN
             IF curPixel - TI_inputs(id).scrollX > visibleW THEN
-                TI_inputs(id).scrollX = curPixel - visibleW + 8
+                TI_inputs(id).scrollX = curPixel - visibleW + TI_fontW
             ELSEIF curPixel < TI_inputs(id).scrollX THEN
-                TI_inputs(id).scrollX = curPixel - 8
+                TI_inputs(id).scrollX = curPixel - TI_fontW
                 IF TI_inputs(id).scrollX < 0 THEN TI_inputs(id).scrollX = 0
             END IF
         ELSE
@@ -973,23 +989,23 @@ SUB TI__ensure_cursor_visible (id AS INTEGER)
 
         ' Vertical
         DIM rowPixel AS INTEGER, visibleH AS INTEGER
-        rowPixel = row * 16
+        rowPixel = row * TI_fontH
         visibleH = TI_inputs(id).h - TI_SCROLL_PADDING * 2
-        IF rowPixel + 16 - TI_inputs(id).scrollY > visibleH THEN
-            TI_inputs(id).scrollY = rowPixel + 16 - visibleH
+        IF rowPixel + TI_fontH - TI_inputs(id).scrollY > visibleH THEN
+            TI_inputs(id).scrollY = rowPixel + TI_fontH - visibleH
         ELSEIF rowPixel < TI_inputs(id).scrollY THEN
             TI_inputs(id).scrollY = rowPixel
             IF TI_inputs(id).scrollY < 0 THEN TI_inputs(id).scrollY = 0
         END IF
     ELSE
         ' --- Single-line: horizontal only ---
-        curPixel = TI_inputs(id).cursorPos * 8
+        curPixel = TI_inputs(id).cursorPos * TI_fontW
         visibleW = TI_inputs(id).w - TI_SCROLL_PADDING * 2
 
         IF curPixel - TI_inputs(id).scrollX > visibleW THEN
-            TI_inputs(id).scrollX = curPixel - visibleW + 8
+            TI_inputs(id).scrollX = curPixel - visibleW + TI_fontW
         ELSEIF curPixel < TI_inputs(id).scrollX THEN
-            TI_inputs(id).scrollX = curPixel - 8
+            TI_inputs(id).scrollX = curPixel - TI_fontW
             IF TI_inputs(id).scrollX < 0 THEN TI_inputs(id).scrollX = 0
         END IF
     END IF

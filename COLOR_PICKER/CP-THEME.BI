@@ -6,6 +6,13 @@ $INCLUDEONCE
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
 
+' --- Font Defaults -----------------------------------------------------------
+' Built-in font ID: 8 = 8x8, 16 = 8x16 (QB64-PE built-in fonts)
+' Runtime values live in CP_STATE.fontID/fontW/fontH
+CONST CP_DEFAULT_FONT_ID = 16           ' Default built-in font (8 or 16)
+CONST CP_DEFAULT_FONT_W = 8             ' Font character width (always 8)
+CONST CP_DEFAULT_FONT_H = 16            ' Font character height (8 or 16)
+
 ' --- Layout Constants --------------------------------------------------------
 
 CONST CP_TITLE_BAR_H = 24               ' Title bar height
@@ -22,7 +29,7 @@ CONST CP_HEX_INPUT_H = 22              ' Hex input field height
 CONST CP_SECTION_GAP = 10               ' Gap between major sections
 CONST CP_LABEL_W = 24                   ' Width of slider labels ("R:", etc.)
 CONST CP_VALUE_W = 32                   ' Width of slider value numbers
-CONST CP_CHAR_W = 8                     ' Character width (default font)
+CONST CP_CHAR_W = 8                     ' Character width (default font — kept for layout constants only)
 CONST CP_COPY_BTN_W = 40                ' Copy button width
 CONST CP_PASTE_BTN_W = 44               ' Paste button width
 CONST CP_POSTERIZE_ROW_H = 20           ' Posterize option row height

@@ -6,6 +6,13 @@ $INCLUDEONCE
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
 
+' --- Font Defaults -----------------------------------------------------------
+' Built-in font ID: 8 = 8x8, 16 = 8x16 (QB64-PE built-in fonts)
+' Runtime values live in MB_STATE.fontID/fontW/fontH
+CONST MB_DEFAULT_FONT_ID = 16           ' Default built-in font (8 or 16)
+CONST MB_DEFAULT_FONT_W = 8             ' Font character width (always 8)
+CONST MB_DEFAULT_FONT_H = 16            ' Font character height (8 or 16)
+
 ' --- Layout Constants --------------------------------------------------------
 
 CONST MB_TITLE_BAR_H = 24               ' Title bar height
@@ -21,8 +28,8 @@ CONST MB_INPUT_GAP = 8                  ' Gap between message and input field
 CONST MB_MIN_DIALOG_W = 300             ' Minimum dialog width
 CONST MB_MAX_DIALOG_W = 600             ' Maximum dialog width (for text wrapping)
 CONST MB_MIN_DIALOG_H = 120             ' Minimum dialog height
-CONST MB_LINE_HEIGHT = 18               ' Line height for message text
-CONST MB_CHAR_W = 8                     ' Character width (default font)
+CONST MB_LINE_HEIGHT = 18               ' Line height for message text (fontH + 2)
+CONST MB_CHAR_W = 8                     ' Character width (default font — kept for layout constants only)
 
 ' --- Color Palette (Dark Flat Theme — matches FILE-DIALOG) -------------------
 

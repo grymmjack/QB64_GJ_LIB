@@ -115,6 +115,12 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
     MB_STATE.focusedButton = -1
     MB_STATE.scale = 1
 
+    ' Font defaults (caller can override before modal loop)
+    IF MB_STATE.fontID = 0 THEN MB_STATE.fontID = MB_DEFAULT_FONT_ID
+    IF MB_STATE.fontW = 0 THEN MB_STATE.fontW = MB_DEFAULT_FONT_W
+    IF MB_STATE.fontH = 0 THEN MB_STATE.fontH = MB_DEFAULT_FONT_H
+    MB_STATE.lineHeight = MB_STATE.fontH + 2
+
     ' ---- Setup buttons ----
     MB_setup_buttons buttons
 
@@ -291,7 +297,7 @@ SUB MB_wrap_text (message AS STRING)
     IF MB_STATE.icon <> MB_ICON_NONE THEN
         contentW = contentW - MB_ICON_SIZE - MB_ICON_GAP
     END IF
-    charsPerLine = contentW \ MB_CHAR_W
+    charsPerLine = contentW \ MB_STATE.fontW
     IF charsPerLine < 20 THEN charsPerLine = 20
 
     MB_STATE.messageLineCount = 0
@@ -363,7 +369,7 @@ SUB MB_wrap_paragraph (para AS STRING, charsPerLine AS INTEGER)
         END IF
 
         MB_messageLines(MB_STATE.messageLineCount) = lineOut
-        lineW = LEN(lineOut) * MB_CHAR_W
+        lineW = LEN(lineOut) * MB_STATE.fontW
         IF lineW > MB_STATE.maxLineWidth THEN MB_STATE.maxLineWidth = lineW
         MB_STATE.messageLineCount = MB_STATE.messageLineCount + 1
     LOOP
@@ -379,7 +385,7 @@ SUB MB_layout_calculate
     DIM textH AS INTEGER
 
     ' ---- Text dimensions ----
-    textH = MB_STATE.messageLineCount * MB_LINE_HEIGHT
+    textH = MB_STATE.messageLineCount * MB_STATE.lineHeight
     textW = MB_STATE.maxLineWidth
     IF textW < 200 THEN textW = 200
 
