@@ -276,7 +276,7 @@ int fd_get_xdg_dir(int type, char *buf, int buf_len) {
         default: return 0;
     }
     PWSTR widePath = NULL;
-    if (SUCCEEDED(SHGetKnownFolderPath(folderId, 0, NULL, &widePath))) {
+    if (SUCCEEDED(SHGetKnownFolderPath(*folderId, 0, NULL, &widePath))) {
         /* Convert wide string to narrow */
         int len = WideCharToMultiByte(CP_UTF8, 0, widePath, -1, buf, buf_len, NULL, NULL);
         CoTaskMemFree(widePath);
