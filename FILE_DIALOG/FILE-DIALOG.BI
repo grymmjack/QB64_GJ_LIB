@@ -17,6 +17,9 @@ $INCLUDEONCE
 ' --- Theme / layout constants ---
 '$INCLUDE:'FD-THEME.BI'
 
+' --- Icon constants ---
+'$INCLUDE:'FD-ICONS.BI'
+
 ' --- Reusable text input widget ---
 $IF GJ_LIB_TEXT_INPUT = UNDEFINED THEN
 '$INCLUDE:'../TEXT_INPUT/TEXT-INPUT.BI'

@@ -83,6 +83,14 @@ CONST FD_CLR_ICON_FOLDER~& = &HFFDCB67A    ' Folder icon color (gold)
 CONST FD_CLR_ICON_IMAGE~& = &HFF6A9955     ' Image file icon color (green)
 CONST FD_CLR_ICON_DOC~& = &HFF569CD6       ' Document icon color (blue)
 CONST FD_CLR_ICON_DEFAULT~& = &HFF808080   ' Default file icon color (gray)
+CONST FD_CLR_ICON_EXEC~& = &HFF4EC9B0      ' Executable icon color (teal)
+CONST FD_CLR_ICON_SOUND~& = &HFFC586C0     ' Sound/music icon color (purple)
+CONST FD_CLR_ICON_CONFIG~& = &HFFCE9178     ' Config file icon color (orange)
+CONST FD_CLR_ICON_FONT~& = &HFFDCDCAA      ' Font file icon color (pale yellow)
+CONST FD_CLR_ICON_TEXTMODE~& = &HFF4FC1FF   ' Text mode file icon color (bright blue)
+CONST FD_CLR_ICON_DSET~& = &HFFE2884B       ' DSET icon color (warm orange)
+CONST FD_CLR_ICON_PALETTE~& = &HFFFF6B6B    ' Palette icon color (red)
+CONST FD_CLR_ICON_GRADIENT~& = &HFF56B6C2   ' Gradient icon color (cyan)
 
 ' Checkerboard for preview transparency
 CONST FD_CLR_CHECK_A~& = &HFF404040        ' Checker dark

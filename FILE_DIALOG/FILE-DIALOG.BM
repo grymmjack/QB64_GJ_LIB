@@ -25,6 +25,9 @@ $END IF
 ' --- Thumbnail cache and lazy loading ---
 '$INCLUDE:'FD-THUMB.BM'
 
+' --- Icon rendering ---
+'$INCLUDE:'FD-ICONS.BM'
+
 ' --- Rendering routines ---
 '$INCLUDE:'FD-RENDER.BM'
 

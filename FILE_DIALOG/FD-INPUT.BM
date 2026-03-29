@@ -136,11 +136,11 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Title bar ---
-    IF my >= 0 AND my < FD_TITLE_BAR_H THEN
+    IF my >= 0 AND my < FD_STATE.titleBarH THEN
         IF justPressed THEN
             ' Close button
             DIM closeX AS INTEGER
-            closeX = FD_STATE.dialogW - FD_TITLE_BAR_H
+            closeX = FD_STATE.dialogW - FD_STATE.titleBarH
             IF mx >= closeX AND mx < FD_STATE.dialogW THEN
                 FD_STATE.done = -1
                 FD_STATE.confirmed = 0
@@ -158,8 +158,8 @@ SUB FD_INPUT_mouse
 
     ' --- Path bar ---
     DIM pathBarY AS INTEGER
-    pathBarY = FD_TITLE_BAR_H
-    IF my >= pathBarY AND my < pathBarY + FD_PATH_BAR_H THEN
+    pathBarY = FD_STATE.titleBarH
+    IF my >= pathBarY AND my < pathBarY + FD_STATE.pathBarH THEN
         IF justPressed THEN
             ' Up button
             IF mx >= FD_PADDING AND mx < FD_PADDING + 28 THEN
@@ -185,8 +185,8 @@ SUB FD_INPUT_mouse
 
     ' --- Toolbar ---
     DIM toolbarY AS INTEGER
-    toolbarY = FD_TITLE_BAR_H + FD_PATH_BAR_H
-    IF my >= toolbarY AND my < toolbarY + FD_TOOLBAR_H THEN
+    toolbarY = FD_STATE.titleBarH + FD_STATE.pathBarH
+    IF my >= toolbarY AND my < toolbarY + FD_STATE.toolBarH THEN
         IF justPressed THEN
             FD_INPUT_toolbar_click mx, my - toolbarY
         END IF
@@ -214,7 +214,7 @@ SUB FD_INPUT_mouse
     IF mx >= FD_STATE.contentX AND mx < FD_STATE.contentX + FD_STATE.contentW THEN
         ' Column header click (details mode)
         IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN
-            IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_COL_HEADER_H THEN
+            IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.columnHeaderH THEN
                 IF justPressed THEN
                     FD_INPUT_column_header_click mx, my
                 END IF
@@ -231,7 +231,7 @@ SUB FD_INPUT_mouse
 
     ' --- Button bar ---
     DIM btnBarY AS INTEGER
-    btnBarY = FD_STATE.dialogH - FD_BUTTON_BAR_H
+    btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
     IF my >= btnBarY AND my < FD_STATE.dialogH THEN
         IF justPressed THEN
             FD_INPUT_button_bar_click mx, my - btnBarY
@@ -266,7 +266,7 @@ SUB FD_INPUT_mouse
             FD_FS_recalc_scroll
             IF FD_STATE.scrollOffset > FD_STATE.maxScroll THEN FD_STATE.scrollOffset = FD_STATE.maxScroll
         ELSE
-            FD_STATE.scrollOffset = FD_STATE.scrollOffset + FD_STATE.mouseWheel * FD_ROW_HEIGHT * 3
+            FD_STATE.scrollOffset = FD_STATE.scrollOffset + FD_STATE.mouseWheel * FD_STATE.rowHeight * 3
             IF FD_STATE.scrollOffset < 0 THEN FD_STATE.scrollOffset = 0
             IF FD_STATE.scrollOffset > FD_STATE.maxScroll THEN FD_STATE.scrollOffset = FD_STATE.maxScroll
         END IF
@@ -413,7 +413,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
             CASE 18688  ' Page Up
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     DIM pageSize AS INTEGER
-                    pageSize = FD_STATE.contentH \ FD_ROW_HEIGHT
+                    pageSize = FD_STATE.contentH \ FD_STATE.rowHeight
                     FD_STATE.selectedIndex = FD_STATE.selectedIndex - pageSize
                     IF FD_STATE.selectedIndex < 0 THEN FD_STATE.selectedIndex = 0
                     FD_INPUT_ensure_visible FD_STATE.selectedIndex
@@ -423,7 +423,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
 
             CASE 20736  ' Page Down
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
-                    pageSize = FD_STATE.contentH \ FD_ROW_HEIGHT
+                    pageSize = FD_STATE.contentH \ FD_STATE.rowHeight
                     FD_STATE.selectedIndex = FD_STATE.selectedIndex + pageSize
                     IF FD_STATE.selectedIndex >= FD_STATE.visibleCount THEN
                         FD_STATE.selectedIndex = FD_STATE.visibleCount - 1
@@ -586,7 +586,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
     DIM i AS INTEGER
     DIM py AS INTEGER
     DIM entryH AS INTEGER
-    entryH = FD_ROW_HEIGHT
+    entryH = FD_STATE.rowHeight
 
     py = FD_STATE.contentY + FD_PADDING
     FD_STATE.placesHover = -1
@@ -631,7 +631,7 @@ END SUB
 SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
     DIM contentTop AS INTEGER
     IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN
-        contentTop = FD_STATE.contentY + FD_COL_HEADER_H
+        contentTop = FD_STATE.contentY + FD_STATE.columnHeaderH
     ELSE
         contentTop = FD_STATE.contentY
     END IF
@@ -663,7 +663,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
             FD_FS_recalc_scroll
             IF FD_STATE.scrollOffset > FD_STATE.maxScroll THEN FD_STATE.scrollOffset = FD_STATE.maxScroll
         ELSE
-            FD_STATE.scrollOffset = FD_STATE.scrollOffset + FD_STATE.mouseWheel * FD_ROW_HEIGHT * 3
+            FD_STATE.scrollOffset = FD_STATE.scrollOffset + FD_STATE.mouseWheel * FD_STATE.rowHeight * 3
             IF FD_STATE.scrollOffset < 0 THEN FD_STATE.scrollOffset = 0
             IF FD_STATE.scrollOffset > FD_STATE.maxScroll THEN FD_STATE.scrollOffset = FD_STATE.maxScroll
         END IF
@@ -678,7 +678,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         ' Thumbnail grid hit test
         DIM cellW AS INTEGER, cellH AS INTEGER, cols AS INTEGER
         cellW = FD_CFG.thumbSize + FD_PADDING * 2
-        cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT
+        cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
         cols = FD_STATE.contentW \ cellW
         IF cols < 1 THEN cols = 1
 
@@ -696,7 +696,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
     ELSE
         ' List/details hit test
         DIM relRow AS INTEGER
-        relRow = (my - contentTop + FD_STATE.scrollOffset) \ FD_ROW_HEIGHT
+        relRow = (my - contentTop + FD_STATE.scrollOffset) \ FD_STATE.rowHeight
         IF relRow >= 0 THEN hitIndex = relRow
     END IF
 
@@ -820,7 +820,7 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
             FD_STATE.pathInputActive = 0
             ' Use absolute button-bar Y for TI_process_mouse
             DIM absBtnBarY AS INTEGER
-            absBtnBarY = FD_STATE.dialogH - FD_BUTTON_BAR_H
+            absBtnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
             TI_process_mouse mx, absBtnBarY + my, -1
             FD_STATE.dirty = -1
             EXIT SUB
@@ -862,7 +862,7 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
 
     ' Recalculate popup geometry (same math as FD_RENDER_filter_dropdown)
     DIM btnBarY AS INTEGER
-    btnBarY = FD_STATE.dialogH - FD_BUTTON_BAR_H
+    btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
 
     DIM cancelX AS INTEGER
     cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
@@ -1235,7 +1235,7 @@ SUB FD_INPUT_ensure_visible (index AS INTEGER)
         DIM row AS INTEGER
         row = index \ cols
         DIM cellH AS INTEGER
-        cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT
+        cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
         itemY = row * cellH
         IF itemY < FD_STATE.scrollOffset THEN
             FD_STATE.scrollOffset = itemY
@@ -1243,11 +1243,11 @@ SUB FD_INPUT_ensure_visible (index AS INTEGER)
             FD_STATE.scrollOffset = itemY + cellH - FD_STATE.contentH
         END IF
     ELSE
-        itemY = index * FD_ROW_HEIGHT
+        itemY = index * FD_STATE.rowHeight
         IF itemY < FD_STATE.scrollOffset THEN
             FD_STATE.scrollOffset = itemY
-        ELSEIF itemY + FD_ROW_HEIGHT > FD_STATE.scrollOffset + FD_STATE.contentH THEN
-            FD_STATE.scrollOffset = itemY + FD_ROW_HEIGHT - FD_STATE.contentH
+        ELSEIF itemY + FD_STATE.rowHeight > FD_STATE.scrollOffset + FD_STATE.contentH THEN
+            FD_STATE.scrollOffset = itemY + FD_STATE.rowHeight - FD_STATE.contentH
         END IF
     END IF
 

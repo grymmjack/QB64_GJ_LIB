@@ -1,0 +1,304 @@
+'$INCLUDEONCE
+' ========================================================================
+' FD-ICONS.BM — Icon rendering for FILE_DIALOG
+' Procedural icon drawing with extension-to-icon mapping
+' ========================================================================
+
+' --------------------------------------------------------------------------
+' FD_ICONS_for_extension% — Map file extension to icon ID
+' --------------------------------------------------------------------------
+FUNCTION FD_ICONS_for_extension% (ext AS STRING)
+    DIM e AS STRING
+    e = LCASE$(LTRIM$(RTRIM$(ext)))
+    IF LEFT$(e, 1) = "." THEN e = MID$(e, 2)
+
+    SELECT CASE e
+        ' Images
+        CASE "png", "jpg", "jpeg", "bmp", "gif", "tga", "pcx", "ico", "svg", "webp", "tif", "tiff"
+            FD_ICONS_for_extension% = FD_ICON_IMAGE
+
+        ' DRAW-specific
+        CASE "drw"
+            FD_ICONS_for_extension% = FD_ICON_DRW
+        CASE "dset"
+            FD_ICONS_for_extension% = FD_ICON_DSET
+        CASE "pal", "gpl"
+            FD_ICONS_for_extension% = FD_ICON_PALETTE
+        CASE "grad"
+            FD_ICONS_for_extension% = FD_ICON_GRADIENT
+
+        ' Text / source code
+        CASE "txt", "md", "bas", "bi", "bm", "log", "csv"
+            FD_ICONS_for_extension% = FD_ICON_TEXT
+
+        ' Config files
+        CASE "cfg", "ini", "conf", "json", "xml", "yaml", "yml", "toml"
+            FD_ICONS_for_extension% = FD_ICON_CONFIG
+
+        ' Fonts
+        CASE "ttf", "otf", "psf", "fon", "fnt"
+            FD_ICONS_for_extension% = FD_ICON_FONT
+
+        ' Executables / scripts
+        CASE "run", "exe", "com", "sh", "bat", "cmd", "py", "pl"
+            FD_ICONS_for_extension% = FD_ICON_EXECUTABLE
+
+        ' Sound / music
+        CASE "wav", "mp3", "ogg", "flac", "mid", "midi", "mod", "xm", "s3m", "it"
+            FD_ICONS_for_extension% = FD_ICON_SOUND
+
+        ' Text mode art
+        CASE "ans", "asc", "nfo", "diz", "xb", "bin"
+            FD_ICONS_for_extension% = FD_ICON_TEXTMODE
+
+        ' Documents
+        CASE "pdf", "doc", "docx", "odt", "rtf", "html", "htm"
+            FD_ICONS_for_extension% = FD_ICON_DOCUMENT
+
+        CASE ELSE
+            FD_ICONS_for_extension% = FD_ICON_DEFAULT_FILE
+    END SELECT
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_ICONS_render — Draw a procedural icon at the given position and size
+' --------------------------------------------------------------------------
+SUB FD_ICONS_render (iconId AS INTEGER, x AS INTEGER, y AS INTEGER, sz AS INTEGER)
+    DIM clr AS _UNSIGNED LONG
+    DIM half AS INTEGER
+    half = sz \ 2
+
+    SELECT CASE iconId
+        ' === Folder ===
+        CASE FD_ICON_FOLDER
+            clr = FD_CLR_ICON_FOLDER~&
+            ' Tab
+            LINE (x + 1, y + sz \ 4)-(x + sz \ 3, y + sz \ 4 + 2), clr, BF
+            ' Body
+            LINE (x, y + sz \ 4 + 2)-(x + sz - 1, y + sz - 2), clr, BF
+            ' Inner shadow
+            LINE (x + 2, y + sz \ 4 + 5)-(x + sz - 3, y + sz - 4), _RGBA32(0, 0, 0, 30), BF
+
+        ' === Image ===
+        CASE FD_ICON_IMAGE
+            clr = FD_CLR_ICON_IMAGE~&
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            ' Mountain shape inside
+            LINE (x + 2, y + sz - 4)-(x + half, y + half), clr
+            LINE (x + half, y + half)-(x + sz - 3, y + sz - 4), clr
+
+        ' === Document ===
+        CASE FD_ICON_DOCUMENT
+            clr = FD_CLR_ICON_DOC~&
+            ' Page with folded corner
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            LINE (x + sz - 4, y)-(x + sz - 1, y + 3), clr
+            ' Text lines
+            LINE (x + 2, y + 5)-(x + sz - 4, y + 5), clr
+            LINE (x + 2, y + 8)-(x + sz - 6, y + 8), clr
+
+        ' === Text ===
+        CASE FD_ICON_TEXT
+            clr = FD_CLR_ICON_DOC~&
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            ' Lines of text
+            DIM ty AS INTEGER
+            FOR ty = 3 TO sz - 4 STEP 3
+                LINE (x + 2, y + ty)-(x + sz - 3, y + ty), clr
+            NEXT ty
+
+        ' === Executable ===
+        CASE FD_ICON_EXECUTABLE
+            clr = FD_CLR_ICON_EXEC~&
+            ' Gear shape — simplified
+            LINE (x + 2, y + 2)-(x + sz - 3, y + sz - 3), clr, B
+            CIRCLE (x + half, y + half), half - 3, clr
+
+        ' === Sound ===
+        CASE FD_ICON_SOUND
+            clr = FD_CLR_ICON_SOUND~&
+            ' Speaker shape
+            LINE (x + 1, y + sz \ 3)-(x + sz \ 3, y + sz * 2 \ 3), clr, BF
+            LINE (x + sz \ 3, y + sz \ 3)-(x + sz * 2 \ 3, y + 1), clr
+            LINE (x + sz \ 3, y + sz * 2 \ 3)-(x + sz * 2 \ 3, y + sz - 2), clr
+            ' Sound waves
+            LINE (x + sz * 2 \ 3 + 2, y + sz \ 3)-(x + sz * 2 \ 3 + 2, y + sz * 2 \ 3), clr
+            IF sz > 12 THEN
+                LINE (x + sz * 2 \ 3 + 4, y + sz \ 4)-(x + sz * 2 \ 3 + 4, y + sz * 3 \ 4), clr
+            END IF
+
+        ' === Config ===
+        CASE FD_ICON_CONFIG
+            clr = FD_CLR_ICON_CONFIG~&
+            ' Wrench — simplified as lines
+            LINE (x + 2, y + 2)-(x + sz - 3, y + sz - 3), clr
+            LINE (x + 1, y + 1)-(x + 4, y + 4), clr, BF
+            LINE (x + sz - 5, y + sz - 5)-(x + sz - 2, y + sz - 2), clr, BF
+
+        ' === Font ===
+        CASE FD_ICON_FONT
+            clr = FD_CLR_ICON_FONT~&
+            ' "A" shape
+            LINE (x + half, y + 1)-(x + 2, y + sz - 2), clr
+            LINE (x + half, y + 1)-(x + sz - 3, y + sz - 2), clr
+            LINE (x + half - 2, y + half + 1)-(x + half + 2, y + half + 1), clr
+
+        ' === Text mode art ===
+        CASE FD_ICON_TEXTMODE
+            clr = FD_CLR_ICON_TEXTMODE~&
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            ' Block chars inside
+            LINE (x + 2, y + 2)-(x + half - 1, y + half - 1), clr, BF
+            LINE (x + half + 1, y + half + 1)-(x + sz - 3, y + sz - 3), clr, BF
+
+        ' === DRAW-specific: DSET (brush set) ===
+        CASE FD_ICON_DSET
+            clr = FD_CLR_ICON_DSET~&
+            ' Paintbrush shape
+            LINE (x + 1, y + sz - 3)-(x + half, y + half), clr
+            LINE (x + half - 2, y + 1)-(x + half + 2, y + half - 1), clr, BF
+
+        ' === DRAW-specific: Palette ===
+        CASE FD_ICON_PALETTE
+            clr = FD_CLR_ICON_PALETTE~&
+            ' Color swatches
+            LINE (x + 1, y + 1)-(x + half - 1, y + half - 1), clr, BF
+            LINE (x + half, y + 1)-(x + sz - 2, y + half - 1), _RGB32(80, 200, 80), BF
+            LINE (x + 1, y + half)-(x + half - 1, y + sz - 2), _RGB32(80, 80, 200), BF
+            LINE (x + half, y + half)-(x + sz - 2, y + sz - 2), _RGB32(200, 200, 80), BF
+
+        ' === DRAW-specific: Gradient ===
+        CASE FD_ICON_GRADIENT
+            clr = FD_CLR_ICON_GRADIENT~&
+            ' Gradient bar (horizontal fill of varying brightness)
+            DIM gx AS INTEGER
+            FOR gx = 0 TO sz - 1
+                DIM bright AS INTEGER
+                bright = 40 + (gx * 215) \ sz
+                LINE (x + gx, y + 2)-(x + gx, y + sz - 3), _RGB32(bright, bright, bright)
+            NEXT gx
+            LINE (x, y + 1)-(x + sz - 1, y + sz - 2), clr, B
+
+        ' === DRW file ===
+        CASE FD_ICON_DRW
+            clr = FD_CLR_TEXT_ACCENT~&
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            ' "D" inside
+            LINE (x + 3, y + 3)-(x + 3, y + sz - 4), clr
+            LINE (x + 3, y + 3)-(x + sz - 5, y + half), clr
+            LINE (x + 3, y + sz - 4)-(x + sz - 5, y + half), clr
+
+        ' === Toolbar: Up directory ===
+        CASE FD_ICON_TB_UP
+            ' Up arrow
+            DIM cx AS INTEGER
+            cx = x + half
+            LINE (cx, y + 2)-(x + 2, y + half + 1), FD_CLR_TEXT~&
+            LINE (cx, y + 2)-(x + sz - 3, y + half + 1), FD_CLR_TEXT~&
+            LINE (cx, y + half + 1)-(cx, y + sz - 2), FD_CLR_TEXT~&
+
+        ' === Toolbar: List view ===
+        CASE FD_ICON_TB_LIST
+            clr = FD_CLR_TEXT~&
+            DIM ly AS INTEGER
+            FOR ly = 0 TO 2
+                LINE (x + 2, y + 3 + ly * 4)-(x + sz - 3, y + 3 + ly * 4), clr
+            NEXT ly
+
+        ' === Toolbar: Details view ===
+        CASE FD_ICON_TB_DETAILS
+            clr = FD_CLR_TEXT~&
+            DIM dy AS INTEGER
+            FOR dy = 0 TO 2
+                LINE (x + 2, y + 3 + dy * 4)-(x + half - 1, y + 3 + dy * 4), clr
+                LINE (x + half + 2, y + 3 + dy * 4)-(x + sz - 3, y + 3 + dy * 4), clr
+            NEXT dy
+
+        ' === Toolbar: Thumbnails view ===
+        CASE FD_ICON_TB_THUMBS
+            clr = FD_CLR_TEXT~&
+            LINE (x + 1, y + 1)-(x + half - 1, y + half - 1), clr, B
+            LINE (x + half + 1, y + 1)-(x + sz - 2, y + half - 1), clr, B
+            LINE (x + 1, y + half + 1)-(x + half - 1, y + sz - 2), clr, B
+            LINE (x + half + 1, y + half + 1)-(x + sz - 2, y + sz - 2), clr, B
+
+        ' === Toolbar: Show hidden ===
+        CASE FD_ICON_TB_HIDDEN
+            clr = FD_CLR_TEXT~&
+            ' Eye shape
+            CIRCLE (x + half, y + half), half - 2, clr, , , 0.5
+            CIRCLE (x + half, y + half), 2, clr
+
+        ' === Places bar icons ===
+        CASE FD_ICON_PLACE_ROOT
+            clr = FD_CLR_TEXT_DIM~&
+            LINE (x + half, y + 1)-(x + 1, y + sz - 2), clr
+            LINE (x + half, y + 1)-(x + sz - 2, y + sz - 2), clr
+            LINE (x + 1, y + sz - 2)-(x + sz - 2, y + sz - 2), clr
+
+        CASE FD_ICON_PLACE_HOME
+            clr = FD_CLR_ICON_FOLDER~&
+            ' House shape
+            LINE (x + half, y + 1)-(x + 1, y + half), clr
+            LINE (x + half, y + 1)-(x + sz - 2, y + half), clr
+            LINE (x + 1, y + half)-(x + 1, y + sz - 2), clr
+            LINE (x + sz - 2, y + half)-(x + sz - 2, y + sz - 2), clr
+            LINE (x + 1, y + sz - 2)-(x + sz - 2, y + sz - 2), clr
+
+        CASE FD_ICON_PLACE_DESKTOP
+            clr = FD_CLR_TEXT_ACCENT~&
+            LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 5), clr, B
+            LINE (x + half - 2, y + sz - 5)-(x + half + 2, y + sz - 2), clr, BF
+
+        CASE FD_ICON_PLACE_DOWNLOADS
+            clr = FD_CLR_TEXT_ACCENT~&
+            ' Down arrow
+            LINE (x + half, y + sz - 3)-(x + 3, y + half), clr
+            LINE (x + half, y + sz - 3)-(x + sz - 4, y + half), clr
+            LINE (x + half, y + 2)-(x + half, y + sz - 3), clr
+
+        CASE FD_ICON_PLACE_PICTURES
+            clr = FD_CLR_ICON_IMAGE~&
+            LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 2), clr, B
+            LINE (x + 3, y + sz - 3)-(x + half, y + half), clr
+            LINE (x + half, y + half)-(x + sz - 4, y + sz - 3), clr
+
+        CASE FD_ICON_PLACE_MUSIC
+            clr = FD_CLR_ICON_SOUND~&
+            ' Note shape
+            LINE (x + half, y + 2)-(x + half, y + sz - 4), clr
+            CIRCLE (x + half - 2, y + sz - 4), 2, clr
+            LINE (x + half, y + 2)-(x + sz - 3, y + 4), clr
+
+        CASE FD_ICON_PLACE_VIDEOS
+            clr = FD_CLR_TEXT_ACCENT~&
+            ' Play triangle inside rectangle
+            LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 2), clr, B
+            LINE (x + half - 2, y + 4)-(x + half - 2, y + sz - 5), clr
+            LINE (x + half - 2, y + 4)-(x + sz - 5, y + half), clr
+            LINE (x + half - 2, y + sz - 5)-(x + sz - 5, y + half), clr
+
+        CASE FD_ICON_PLACE_DOCUMENTS
+            clr = FD_CLR_ICON_DOC~&
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            LINE (x + sz - 4, y)-(x + sz - 1, y + 3), clr
+            LINE (x + 2, y + 5)-(x + sz - 4, y + 5), clr
+            LINE (x + 2, y + 8)-(x + sz - 6, y + 8), clr
+
+        CASE FD_ICON_PLACE_DRIVE
+            clr = FD_CLR_TEXT_DIM~&
+            LINE (x + 1, y + 3)-(x + sz - 2, y + sz - 4), clr, B
+            LINE (x + sz - 5, y + half)-(x + sz - 3, y + half), clr
+
+        ' === Default file icon ===
+        CASE FD_ICON_DEFAULT_FILE
+            clr = FD_CLR_ICON_DEFAULT~&
+            LINE (x, y + 2)-(x + sz - 1, y + sz - 1), clr, B
+            LINE (x + sz - 4, y)-(x + sz - 1, y + 2), clr
+            LINE (x, y)-(x + sz - 5, y), clr
+
+        CASE ELSE
+            ' Unknown icon — draw a simple box
+            LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 2), FD_CLR_TEXT_DIM~&, B
+    END SELECT
+END SUB

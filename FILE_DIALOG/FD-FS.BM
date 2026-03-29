@@ -216,10 +216,10 @@ SUB FD_FS_recalc_scroll
         IF cols < 1 THEN cols = 1
         DIM rows AS INTEGER
         rows = (FD_STATE.visibleCount + cols - 1) \ cols
-        totalH = rows * (FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT)
+        totalH = rows * (FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight)
     ELSE
         ' List/details: simple row count
-        totalH = FD_STATE.visibleCount * FD_ROW_HEIGHT
+        totalH = FD_STATE.visibleCount * FD_STATE.rowHeight
     END IF
 
     FD_STATE.maxScroll = totalH - FD_STATE.contentH

@@ -17,7 +17,7 @@ CONST FD_MAX_FAVORITES = 32          ' Max bookmark entries
 CONST FD_MAX_FILTERS = 16            ' Max filter patterns
 CONST FD_MAX_COLUMNS = 4             ' Name, Type, Size, Modified
 CONST FD_MAX_THUMB_CACHE = 256       ' Thumbnail pool size
-CONST FD_MAX_PLACES = 24             ' Max places bar entries (drives + XDG + favorites)
+CONST FD_MAX_PLACES = 40             ' Max places bar entries (drives + XDG + custom + favorites)
 
 ' Dialog modes
 CONST FD_MODE_OPEN = 0
@@ -54,6 +54,10 @@ CONST FD_PLACE_DRIVE = 0
 CONST FD_PLACE_XDG = 1
 CONST FD_PLACE_FAVORITE = 2
 CONST FD_PLACE_SEPARATOR = 3
+CONST FD_PLACE_CUSTOM = 4
+
+' Max custom places that can be registered by host app
+CONST FD_MAX_CUSTOM_PLACES = 16
 
 ' Resize edge constants
 CONST FD_RESIZE_NONE = 0
@@ -91,7 +95,9 @@ TYPE FD_PLACES_ENTRY
     label AS STRING * 64             ' Display label
     path AS STRING * 260             ' Full path (empty for separators)
     entryType AS INTEGER             ' FD_PLACE_* constant
-    iconChar AS INTEGER              ' ASCII char for simple icon rendering
+    iconChar AS INTEGER              ' ASCII char for fallback icon rendering
+    iconId AS INTEGER                ' FD_ICON_* constant (0 = use iconChar fallback)
+    iconColor AS _UNSIGNED LONG      ' Tint color override (0 = use default for type)
 END TYPE
 
 TYPE FD_COLUMN_DEF
@@ -133,6 +139,17 @@ TYPE FD_CONFIG_OBJ
 
     ' Favorites
     favCount AS INTEGER
+
+    ' Font scale per element (1 = native 8x16, 2 = double, etc.)
+    titleFontScale AS INTEGER        ' Title bar
+    placesFontScale AS INTEGER       ' Places sidebar
+    pathFontScale AS INTEGER         ' Path/location bar
+    contentFontScale AS INTEGER      ' File listing (list/details)
+    previewFontScale AS INTEGER      ' Preview pane info text
+    inputFontScale AS INTEGER        ' Filename input / buttons
+    filterFontScale AS INTEGER       ' Filter dropdown
+    statusFontScale AS INTEGER       ' Status bar
+    sortFontScale AS INTEGER         ' Sort indicator / column headers
 END TYPE
 
 ' --- Runtime State -----------------------------------------------------------
@@ -288,6 +305,22 @@ DIM SHARED FD_columns(FD_MAX_COLUMNS - 1) AS FD_COLUMN_DEF
 
 ' Filters
 DIM SHARED FD_filters(FD_MAX_FILTERS - 1) AS FD_FILTER_ENTRY
+
+' Custom places (registered by host app before modal loop)
+TYPE FD_CUSTOM_PLACE
+    label AS STRING * 64             ' Display name
+    path AS STRING * 260             ' Full directory path
+    iconId AS INTEGER                ' FD_ICON_* constant
+    iconColor AS _UNSIGNED LONG      ' Tint color (0 = default)
+    hotkey AS STRING * 8              ' Reserved for future hotkey support
+END TYPE
+
+DIM SHARED FD_customPlaces(FD_MAX_CUSTOM_PLACES - 1) AS FD_CUSTOM_PLACE
+DIM SHARED FD_customPlaceCount AS INTEGER
+
+' Forward declarations for custom places API
+DECLARE SUB FD_add_custom_place (label AS STRING, dir AS STRING, iconId AS INTEGER, iconColor AS _UNSIGNED LONG, hotkey AS STRING)
+DECLARE SUB FD_clear_custom_places ()
 
 ' Thumbnail cache pool
 DIM SHARED FD_thumbs(FD_MAX_THUMB_CACHE - 1) AS FD_THUMB_SLOT

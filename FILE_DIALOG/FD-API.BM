@@ -166,7 +166,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     DIM pathX AS INTEGER, pathW AS INTEGER
     pathX = FD_PADDING + 28 + FD_PADDING   ' After up button
     pathW = FD_STATE.dialogW - pathX - FD_PADDING
-    FD_STATE.tiPathId = TI_create%(pathX, FD_TITLE_BAR_H + 3, pathW, FD_PATH_BAR_H - 6)
+    FD_STATE.tiPathId = TI_create%(pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6)
     TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
     TI_inputs(FD_STATE.tiPathId).placeholder = "Enter path..."
     TI_inputs(FD_STATE.tiPathId).theme.bgColor = FD_CLR_INPUT_BG~&
@@ -286,20 +286,45 @@ END SUB
 SUB FD_LAYOUT_calculate
     DIM y AS INTEGER
 
-    ' Fixed heights
-    FD_STATE.titleBarH = FD_TITLE_BAR_H
-    FD_STATE.pathBarH = FD_PATH_BAR_H
-    FD_STATE.toolBarH = FD_TOOLBAR_H
-    FD_STATE.statusBarH = FD_STATUS_BAR_H
-    FD_STATE.buttonBarH = FD_BUTTON_BAR_H
-    FD_STATE.rowHeight = FD_ROW_HEIGHT
+    ' Compute dynamic bar heights based on font scales
+    ' Each bar: font_height + padding. Minimum is the original constant value.
+    DIM tfs AS INTEGER, pfs AS INTEGER, sfs AS INTEGER
+    DIM stfs AS INTEGER, ifs AS INTEGER
+    tfs = FD_CFG.titleFontScale: IF tfs < 1 THEN tfs = 1
+    pfs = FD_CFG.pathFontScale: IF pfs < 1 THEN pfs = 1
+    sfs = FD_CFG.sortFontScale: IF sfs < 1 THEN sfs = 1
+    stfs = FD_CFG.statusFontScale: IF stfs < 1 THEN stfs = 1
+    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+
+    FD_STATE.titleBarH = 16 * tfs + 8
+    IF FD_STATE.titleBarH < FD_TITLE_BAR_H THEN FD_STATE.titleBarH = FD_TITLE_BAR_H
+
+    FD_STATE.pathBarH = 16 * pfs + 8
+    IF FD_STATE.pathBarH < FD_PATH_BAR_H THEN FD_STATE.pathBarH = FD_PATH_BAR_H
+
+    FD_STATE.toolBarH = 16 * sfs + 8
+    IF FD_STATE.toolBarH < FD_TOOLBAR_H THEN FD_STATE.toolBarH = FD_TOOLBAR_H
+
+    FD_STATE.columnHeaderH = 16 * sfs + 6
+    IF FD_STATE.columnHeaderH < FD_COL_HEADER_H THEN FD_STATE.columnHeaderH = FD_COL_HEADER_H
+
+    FD_STATE.statusBarH = 16 * stfs + 6
+    IF FD_STATE.statusBarH < FD_STATUS_BAR_H THEN FD_STATE.statusBarH = FD_STATUS_BAR_H
+
+    FD_STATE.buttonBarH = 16 * ifs + 20
+    IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
+
+    DIM cfs AS INTEGER
+    cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+    FD_STATE.rowHeight = 16 * cfs + 4
+    IF FD_STATE.rowHeight < FD_ROW_HEIGHT THEN FD_STATE.rowHeight = FD_ROW_HEIGHT
 
     ' Content Y start (below title, path, toolbar)
-    y = FD_TITLE_BAR_H + FD_PATH_BAR_H + FD_TOOLBAR_H
+    y = FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH
     FD_STATE.contentY = y
 
     ' Content area height
-    FD_STATE.contentH = FD_STATE.dialogH - y - FD_STATUS_BAR_H - FD_BUTTON_BAR_H
+    FD_STATE.contentH = FD_STATE.dialogH - y - FD_STATE.statusBarH - FD_STATE.buttonBarH
 
     ' Places pane (left)
     FD_STATE.placesX = 0
@@ -336,17 +361,17 @@ SUB FD__update_text_input_geometry
     DIM pathX AS INTEGER, pathW AS INTEGER
     pathX = FD_PADDING + 28 + FD_PADDING
     pathW = FD_STATE.dialogW - pathX - FD_PADDING
-    TI_set_geometry FD_STATE.tiPathId, pathX, FD_TITLE_BAR_H + 3, pathW, FD_PATH_BAR_H - 6
+    TI_set_geometry FD_STATE.tiPathId, pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6
 
     ' Filename input — in button bar (save modes only)
     IF FD_STATE.tiFileNameId >= 1 THEN
         DIM fnX AS INTEGER, fnW AS INTEGER
         DIM btnBarY AS INTEGER
-        btnBarY = FD_STATE.dialogH - FD_BUTTON_BAR_H
+        btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
         fnX = FD_PADDING + 72  ' After "Filename:" label
         fnW = FD_STATE.dialogW - fnX - FD_BUTTON_W * 2 - FD_PADDING * 4
         IF fnW < 50 THEN fnW = 50
-        TI_set_geometry FD_STATE.tiFileNameId, fnX, btnBarY + 5, fnW, FD_BUTTON_BAR_H - 10
+        TI_set_geometry FD_STATE.tiFileNameId, fnX, btnBarY + 5, fnW, FD_STATE.buttonBarH - 10
     END IF
 END SUB
 
@@ -422,6 +447,8 @@ SUB FD_init_places
                 FD_places(idx).path = driveStr
                 FD_places(idx).entryType = FD_PLACE_DRIVE
                 FD_places(idx).iconChar = 68  ' 'D' for drive
+                FD_places(idx).iconId = FD_ICON_PLACE_DRIVE
+                FD_places(idx).iconColor = 0
                 idx = idx + 1
                 IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
@@ -432,6 +459,8 @@ SUB FD_init_places
         FD_places(idx).path = "/"
         FD_places(idx).entryType = FD_PLACE_DRIVE
         FD_places(idx).iconChar = 47  ' '/'
+        FD_places(idx).iconId = FD_ICON_PLACE_ROOT
+        FD_places(idx).iconColor = 0
         idx = idx + 1
     END IF
 
@@ -448,6 +477,8 @@ SUB FD_init_places
         FD_places(idx).path = xdgHome
         FD_places(idx).entryType = FD_PLACE_XDG
         FD_places(idx).iconChar = 72  ' 'H'
+        FD_places(idx).iconId = FD_ICON_PLACE_HOME
+        FD_places(idx).iconColor = 0
         idx = idx + 1
         IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
     END IF
@@ -455,12 +486,13 @@ SUB FD_init_places
     ' Common XDG dirs (0=Desktop, 1=Documents, 2=Downloads, 3=Pictures, 4=Music, 5=Videos)
     DIM xdgLabels(5) AS STRING
     DIM xdgIcons(5) AS INTEGER
-    xdgLabels(0) = "Desktop": xdgIcons(0) = 126  ' '~'
-    xdgLabels(1) = "Documents": xdgIcons(1) = 100  ' 'd'
-    xdgLabels(2) = "Downloads": xdgIcons(2) = 118  ' 'v'
-    xdgLabels(3) = "Pictures": xdgIcons(3) = 112  ' 'p'
-    xdgLabels(4) = "Music": xdgIcons(4) = 109  ' 'm'
-    xdgLabels(5) = "Videos": xdgIcons(5) = 86  ' 'V'
+    DIM xdgPlaceIcons(5) AS INTEGER
+    xdgLabels(0) = "Desktop": xdgIcons(0) = 126: xdgPlaceIcons(0) = FD_ICON_PLACE_DESKTOP
+    xdgLabels(1) = "Documents": xdgIcons(1) = 100: xdgPlaceIcons(1) = FD_ICON_PLACE_DOCUMENTS
+    xdgLabels(2) = "Downloads": xdgIcons(2) = 118: xdgPlaceIcons(2) = FD_ICON_PLACE_DOWNLOADS
+    xdgLabels(3) = "Pictures": xdgIcons(3) = 112: xdgPlaceIcons(3) = FD_ICON_PLACE_PICTURES
+    xdgLabels(4) = "Music": xdgIcons(4) = 109: xdgPlaceIcons(4) = FD_ICON_PLACE_MUSIC
+    xdgLabels(5) = "Videos": xdgIcons(5) = 86: xdgPlaceIcons(5) = FD_ICON_PLACE_VIDEOS
 
     DIM xi AS INTEGER
     FOR xi = 0 TO 5
@@ -471,10 +503,35 @@ SUB FD_init_places
             FD_places(idx).path = xdir
             FD_places(idx).entryType = FD_PLACE_XDG
             FD_places(idx).iconChar = xdgIcons(xi)
+            FD_places(idx).iconId = xdgPlaceIcons(xi)
+            FD_places(idx).iconColor = 0
             idx = idx + 1
             IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
         END IF
     NEXT xi
+
+    ' --- Custom places (injected by host application) ---
+    IF FD_customPlaceCount > 0 THEN
+        FD_places(idx).entryType = FD_PLACE_SEPARATOR
+        idx = idx + 1
+        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+
+        DIM ci AS INTEGER
+        FOR ci = 0 TO FD_customPlaceCount - 1
+            DIM cPath AS STRING
+            cPath = RTRIM$(FD_customPlaces(ci).path)
+            IF LEN(cPath) > 0 AND FD_PLAT_is_dir%(cPath) THEN
+                FD_places(idx).label = RTRIM$(FD_customPlaces(ci).label)
+                FD_places(idx).path = cPath
+                FD_places(idx).entryType = FD_PLACE_CUSTOM
+                FD_places(idx).iconChar = 42  ' '*'
+                FD_places(idx).iconId = FD_customPlaces(ci).iconId
+                FD_places(idx).iconColor = FD_customPlaces(ci).iconColor
+                idx = idx + 1
+                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+            END IF
+        NEXT ci
+    END IF
 
     ' Separator before favorites
     IF FD_CFG.favCount > 0 THEN
@@ -489,6 +546,8 @@ SUB FD_init_places
                 FD_places(idx).path = RTRIM$(FD_favorites(fi).path)
                 FD_places(idx).entryType = FD_PLACE_FAVORITE
                 FD_places(idx).iconChar = 42  ' '*'
+                FD_places(idx).iconId = FD_ICON_FOLDER
+                FD_places(idx).iconColor = 0
                 idx = idx + 1
                 IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
@@ -606,6 +665,17 @@ SUB FD_load_config
     FD_CFG.showPreview = -1
     FD_CFG.favCount = 0
 
+    ' Font scale defaults (1 = normal 8x16)
+    FD_CFG.titleFontScale = 1
+    FD_CFG.placesFontScale = 1
+    FD_CFG.pathFontScale = 1
+    FD_CFG.contentFontScale = 1
+    FD_CFG.previewFontScale = 1
+    FD_CFG.inputFontScale = 1
+    FD_CFG.filterFontScale = 1
+    FD_CFG.statusFontScale = 1
+    FD_CFG.sortFontScale = 1
+
     IF NOT _FILEEXISTS(cfgPath) THEN EXIT SUB
 
     DIM f AS INTEGER
@@ -642,6 +712,15 @@ SUB FD_load_config
             CASE "PLACESWIDTH": FD_CFG.placesWidth = VAL(cfgVal)
             CASE "PREVIEWWIDTH": FD_CFG.previewWidth = VAL(cfgVal)
             CASE "SHOWPREVIEW": FD_CFG.showPreview = VAL(cfgVal)
+            CASE "TITLEFONTSCALE": FD_CFG.titleFontScale = VAL(cfgVal)
+            CASE "PLACESFONTSCALE": FD_CFG.placesFontScale = VAL(cfgVal)
+            CASE "PATHFONTSCALE": FD_CFG.pathFontScale = VAL(cfgVal)
+            CASE "CONTENTFONTSCALE": FD_CFG.contentFontScale = VAL(cfgVal)
+            CASE "PREVIEWFONTSCALE": FD_CFG.previewFontScale = VAL(cfgVal)
+            CASE "INPUTFONTSCALE": FD_CFG.inputFontScale = VAL(cfgVal)
+            CASE "FILTERFONTSCALE": FD_CFG.filterFontScale = VAL(cfgVal)
+            CASE "STATUSFONTSCALE": FD_CFG.statusFontScale = VAL(cfgVal)
+            CASE "SORTFONTSCALE": FD_CFG.sortFontScale = VAL(cfgVal)
         END SELECT
     LOOP
 
@@ -652,6 +731,26 @@ SUB FD_load_config
     IF FD_CFG.dialogH < FD_MIN_DIALOG_H THEN FD_CFG.dialogH = FD_MIN_DIALOG_H
     IF FD_CFG.thumbSize < 32 THEN FD_CFG.thumbSize = 32
     IF FD_CFG.thumbSize > 256 THEN FD_CFG.thumbSize = 256
+
+    ' Clamp font scales to 1..4
+    IF FD_CFG.titleFontScale < 1 THEN FD_CFG.titleFontScale = 1
+    IF FD_CFG.titleFontScale > 4 THEN FD_CFG.titleFontScale = 4
+    IF FD_CFG.placesFontScale < 1 THEN FD_CFG.placesFontScale = 1
+    IF FD_CFG.placesFontScale > 4 THEN FD_CFG.placesFontScale = 4
+    IF FD_CFG.pathFontScale < 1 THEN FD_CFG.pathFontScale = 1
+    IF FD_CFG.pathFontScale > 4 THEN FD_CFG.pathFontScale = 4
+    IF FD_CFG.contentFontScale < 1 THEN FD_CFG.contentFontScale = 1
+    IF FD_CFG.contentFontScale > 4 THEN FD_CFG.contentFontScale = 4
+    IF FD_CFG.previewFontScale < 1 THEN FD_CFG.previewFontScale = 1
+    IF FD_CFG.previewFontScale > 4 THEN FD_CFG.previewFontScale = 4
+    IF FD_CFG.inputFontScale < 1 THEN FD_CFG.inputFontScale = 1
+    IF FD_CFG.inputFontScale > 4 THEN FD_CFG.inputFontScale = 4
+    IF FD_CFG.filterFontScale < 1 THEN FD_CFG.filterFontScale = 1
+    IF FD_CFG.filterFontScale > 4 THEN FD_CFG.filterFontScale = 4
+    IF FD_CFG.statusFontScale < 1 THEN FD_CFG.statusFontScale = 1
+    IF FD_CFG.statusFontScale > 4 THEN FD_CFG.statusFontScale = 4
+    IF FD_CFG.sortFontScale < 1 THEN FD_CFG.sortFontScale = 1
+    IF FD_CFG.sortFontScale > 4 THEN FD_CFG.sortFontScale = 4
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -692,6 +791,15 @@ SUB FD_save_config
     PRINT #f, "placesWidth=" + LTRIM$(STR$(FD_CFG.placesWidth))
     PRINT #f, "previewWidth=" + LTRIM$(STR$(FD_CFG.previewWidth))
     PRINT #f, "showPreview=" + LTRIM$(STR$(FD_CFG.showPreview))
+    PRINT #f, "titleFontScale=" + LTRIM$(STR$(FD_CFG.titleFontScale))
+    PRINT #f, "placesFontScale=" + LTRIM$(STR$(FD_CFG.placesFontScale))
+    PRINT #f, "pathFontScale=" + LTRIM$(STR$(FD_CFG.pathFontScale))
+    PRINT #f, "contentFontScale=" + LTRIM$(STR$(FD_CFG.contentFontScale))
+    PRINT #f, "previewFontScale=" + LTRIM$(STR$(FD_CFG.previewFontScale))
+    PRINT #f, "inputFontScale=" + LTRIM$(STR$(FD_CFG.inputFontScale))
+    PRINT #f, "filterFontScale=" + LTRIM$(STR$(FD_CFG.filterFontScale))
+    PRINT #f, "statusFontScale=" + LTRIM$(STR$(FD_CFG.statusFontScale))
+    PRINT #f, "sortFontScale=" + LTRIM$(STR$(FD_CFG.sortFontScale))
 
     CLOSE #f
 END SUB
@@ -792,4 +900,25 @@ SUB FD_save_favorites
     NEXT i
 
     CLOSE #f
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_add_custom_place — Register a custom place entry for the places bar
+' --------------------------------------------------------------------------
+SUB FD_add_custom_place (label AS STRING, dirPath AS STRING, iconId AS INTEGER, iconColor AS _UNSIGNED LONG, hotkey AS STRING)
+    IF FD_customPlaceCount >= FD_MAX_CUSTOM_PLACES THEN EXIT SUB
+
+    FD_customPlaces(FD_customPlaceCount).label = label
+    FD_customPlaces(FD_customPlaceCount).path = dirPath
+    FD_customPlaces(FD_customPlaceCount).iconId = iconId
+    FD_customPlaces(FD_customPlaceCount).iconColor = iconColor
+    FD_customPlaces(FD_customPlaceCount).hotkey = hotkey
+    FD_customPlaceCount = FD_customPlaceCount + 1
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_clear_custom_places — Remove all custom place registrations
+' --------------------------------------------------------------------------
+SUB FD_clear_custom_places
+    FD_customPlaceCount = 0
 END SUB

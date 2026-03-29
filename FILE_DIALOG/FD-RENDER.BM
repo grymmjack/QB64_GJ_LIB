@@ -9,6 +9,66 @@ $INCLUDEONCE
 ' ============================================================================
 
 ' --------------------------------------------------------------------------
+' FD_print_scaled — Render text at integer scale of the built-in 8x16 font
+'   scale% = 1: direct _PRINTSTRING (no overhead)
+'   scale% > 1: render at 1x into temp surface, _PUTIMAGE scales up
+' --------------------------------------------------------------------------
+SUB FD_print_scaled (x AS INTEGER, y AS INTEGER, text AS STRING, scale AS INTEGER)
+    IF LEN(text) = 0 THEN EXIT SUB
+    DIM s AS INTEGER
+    s = scale
+    IF s < 1 THEN s = 1
+
+    IF s = 1 THEN
+        _PRINTSTRING (x, y), text
+        EXIT SUB
+    END IF
+
+    ' Render text at native 8x16 into a temp image, then scale up
+    DIM tw AS INTEGER, th AS INTEGER
+    tw = LEN(text) * 8
+    th = 16
+    DIM tmp AS LONG
+    tmp = _NEWIMAGE(tw, th, 32)
+    IF tmp >= -1 THEN
+        ' Fallback: draw at 1x directly
+        _PRINTSTRING (x, y), text
+        EXIT SUB
+    END IF
+    DIM oldD AS LONG
+    oldD = _DEST
+    _DEST tmp
+    CLS , _RGBA32(0, 0, 0, 0)
+    COLOR _DEFAULTCOLOR(oldD), _RGBA32(0, 0, 0, 0)
+    _PRINTSTRING (0, 0), text
+    _DEST oldD
+
+    ' Scale blit with alpha
+    _PUTIMAGE (x, y)-(x + tw * s - 1, y + th * s - 1), tmp, , (0, 0)-(tw - 1, th - 1)
+    _FREEIMAGE tmp
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_text_width% — Returns pixel width of text at given font scale
+' --------------------------------------------------------------------------
+FUNCTION FD_text_width% (text AS STRING, scale AS INTEGER)
+    DIM s AS INTEGER
+    s = scale
+    IF s < 1 THEN s = 1
+    FD_text_width% = LEN(text) * 8 * s
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_text_height% — Returns pixel height of text at given font scale
+' --------------------------------------------------------------------------
+FUNCTION FD_text_height% (scale AS INTEGER)
+    DIM s AS INTEGER
+    s = scale
+    IF s < 1 THEN s = 1
+    FD_text_height% = 16 * s
+END FUNCTION
+
+' --------------------------------------------------------------------------
 ' FD_RENDER_all — Master render routine, draws everything
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_all
@@ -82,7 +142,7 @@ SUB FD_RENDER_title_bar
     y1 = 0
 
     ' Background
-    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_TITLE_BAR_H - 1), FD_CLR_TITLE_BG_ACTIVE~&, BF
+    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), FD_CLR_TITLE_BG_ACTIVE~&, BF
 
     ' Title text
     DIM title AS STRING
@@ -95,15 +155,17 @@ SUB FD_RENDER_title_bar
             CASE FD_MODE_CHOOSE_FOLDER: title = "Choose Folder"
         END SELECT
     END IF
+    DIM tfs AS INTEGER
+    tfs = FD_CFG.titleFontScale: IF tfs < 1 THEN tfs = 1
     COLOR FD_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (FD_PADDING + 2, y1 + (FD_TITLE_BAR_H - 16) \ 2 + 1), title
+    FD_print_scaled FD_PADDING + 2, y1 + (FD_STATE.titleBarH - FD_text_height%(tfs)) \ 2 + 1, title, tfs
 
     ' Close button [X]
     DIM bx AS INTEGER
-    bx = FD_STATE.dialogW - FD_TITLE_BAR_H
-    LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_TITLE_BAR_H - 1), FD_CLR_BORDER~&, BF
+    bx = FD_STATE.dialogW - FD_STATE.titleBarH
+    LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), FD_CLR_BORDER~&, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + (FD_TITLE_BAR_H - 8) \ 2, y1 + (FD_TITLE_BAR_H - 16) \ 2 + 1), "X"
+    FD_print_scaled bx + (FD_STATE.titleBarH - 8 * tfs) \ 2, y1 + (FD_STATE.titleBarH - FD_text_height%(tfs)) \ 2 + 1, "X", tfs
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -111,20 +173,21 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_path_bar
     DIM y1 AS INTEGER
-    y1 = FD_TITLE_BAR_H
+    y1 = FD_STATE.titleBarH
 
     ' Background
-    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_PATH_BAR_H - 1), FD_CLR_PATH_BG~&, BF
+    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.pathBarH - 1), FD_CLR_PATH_BG~&, BF
 
     ' Up button [..]
     DIM upW AS INTEGER
     upW = 28
-    LINE (FD_PADDING, y1 + 3)-(FD_PADDING + upW - 1, y1 + FD_PATH_BAR_H - 4), FD_CLR_BUTTON_BG~&, BF
+    DIM pfs AS INTEGER
+    pfs = FD_CFG.pathFontScale: IF pfs < 1 THEN pfs = 1
+    LINE (FD_PADDING, y1 + 3)-(FD_PADDING + upW - 1, y1 + FD_STATE.pathBarH - 4), FD_CLR_BUTTON_BG~&, BF
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (FD_PADDING + 6, y1 + (FD_PATH_BAR_H - 16) \ 2 + 1), CHR$(24)  ' Up arrow
+    FD_print_scaled FD_PADDING + 6, y1 + (FD_STATE.pathBarH - FD_text_height%(pfs)) \ 2 + 1, CHR$(24), pfs
 
     ' Path input field — rendered by TI widget
-    ' When not active, show current path in the TI widget (unfocused state)
     IF NOT FD_STATE.pathInputActive THEN
         TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
     END IF
@@ -136,10 +199,10 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_toolbar
     DIM y1 AS INTEGER
-    y1 = FD_TITLE_BAR_H + FD_PATH_BAR_H
+    y1 = FD_STATE.titleBarH + FD_STATE.pathBarH
 
     ' Background
-    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_TOOLBAR_H - 1), FD_CLR_TOOLBAR_BG~&, BF
+    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.toolBarH - 1), FD_CLR_TOOLBAR_BG~&, BF
 
     DIM bx AS INTEGER
     bx = FD_PADDING
@@ -147,45 +210,47 @@ SUB FD_RENDER_toolbar
     ' View mode buttons: [List] [Detail] [Thumb]
     DIM btnW AS INTEGER
     btnW = 48
+    DIM sfs AS INTEGER
+    sfs = FD_CFG.sortFontScale: IF sfs < 1 THEN sfs = 1
 
     ' List button
     DIM listClr AS _UNSIGNED LONG
     IF FD_CFG.viewMode = FD_VIEW_LIST THEN listClr = FD_CLR_BUTTON_BG~& ELSE listClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_TOOLBAR_H - 4), listClr, BF
+    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), listClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 8, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), "List"
+    FD_ICONS_render FD_ICON_TB_LIST, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
     bx = bx + btnW + 2
 
     ' Details button
     DIM detClr AS _UNSIGNED LONG
     IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN detClr = FD_CLR_BUTTON_BG~& ELSE detClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_TOOLBAR_H - 4), detClr, BF
+    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), detClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), "Detail"
+    FD_ICONS_render FD_ICON_TB_DETAILS, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
     bx = bx + btnW + 2
 
     ' Thumbnails button
     DIM thumbClr AS _UNSIGNED LONG
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN thumbClr = FD_CLR_BUTTON_BG~& ELSE thumbClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_TOOLBAR_H - 4), thumbClr, BF
+    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), thumbClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), "Thumb"
+    FD_ICONS_render FD_ICON_TB_THUMBS, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
     bx = bx + btnW + 8
 
-    ' Hidden files toggle [H]
+    ' Hidden files toggle [.*]
     DIM hidClr AS _UNSIGNED LONG
     IF FD_CFG.showHidden THEN hidClr = FD_CLR_BUTTON_BG~& ELSE hidClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + 23, y1 + FD_TOOLBAR_H - 4), hidClr, BF
+    LINE (bx, y1 + 3)-(bx + 23, y1 + FD_STATE.toolBarH - 4), hidClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), ".*"
+    FD_ICONS_render FD_ICON_TB_HIDDEN, bx + 4, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
     bx = bx + 28
 
     ' Preview toggle [P]
     DIM prevClr AS _UNSIGNED LONG
     IF FD_CFG.showPreview THEN prevClr = FD_CLR_BUTTON_BG~& ELSE prevClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + 15, y1 + FD_TOOLBAR_H - 4), prevClr, BF
+    LINE (bx, y1 + 3)-(bx + 15, y1 + FD_STATE.toolBarH - 4), prevClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), "P"
+    _PRINTSTRING (bx + 4, y1 + (FD_STATE.toolBarH - 16) \ 2 + 1), "P"
     bx = bx + 20
 
     ' Sort indicator
@@ -197,19 +262,19 @@ SUB FD_RENDER_toolbar
         CASE FD_SORT_DATE: sortLabel = "Date"
     END SELECT
     IF FD_CFG.sortAscending THEN
-        sortLabel = sortLabel + " " + CHR$(24)  ' Up arrow
+        sortLabel = sortLabel + " " + CHR$(24)
     ELSE
-        sortLabel = sortLabel + " " + CHR$(25)  ' Down arrow
+        sortLabel = sortLabel + " " + CHR$(25)
     END IF
     COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), "Sort: " + sortLabel
+    FD_print_scaled bx + 4, y1 + (FD_STATE.toolBarH - FD_text_height%(sfs)) \ 2 + 1, "Sort: " + sortLabel, sfs
 
     ' Search box on right side
     DIM searchX AS INTEGER, searchW AS INTEGER
     searchW = 150
     searchX = FD_STATE.dialogW - searchW - FD_PADDING
-    LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_TOOLBAR_H - 4), FD_CLR_INPUT_BG~&, BF
-    LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_TOOLBAR_H - 4), FD_CLR_INPUT_BORDER~&, B
+    LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_STATE.toolBarH - 4), FD_CLR_INPUT_BG~&, BF
+    LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_STATE.toolBarH - 4), FD_CLR_INPUT_BORDER~&, B
 
     DIM searchDisp AS STRING
     IF FD_STATE.searchLen > 0 THEN
@@ -222,7 +287,7 @@ SUB FD_RENDER_toolbar
     ELSE
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     END IF
-    _PRINTSTRING (searchX + FD_PADDING, y1 + (FD_TOOLBAR_H - 16) \ 2 + 1), searchDisp
+    _PRINTSTRING (searchX + FD_PADDING, y1 + (FD_STATE.toolBarH - 16) \ 2 + 1), searchDisp
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -244,7 +309,9 @@ SUB FD_RENDER_places
     DIM i AS INTEGER
     DIM py AS INTEGER
     DIM entryH AS INTEGER
-    entryH = FD_ROW_HEIGHT
+    DIM pfs AS INTEGER
+    pfs = FD_CFG.placesFontScale: IF pfs < 1 THEN pfs = 1
+    entryH = FD_STATE.rowHeight
 
     py = y1 + FD_PADDING
     FOR i = 0 TO FD_STATE.placesCount - 1
@@ -269,25 +336,40 @@ SUB FD_RENDER_places
             LINE (x1 + 1, py)-(x1 + w - 2, py + entryH - 1), FD_CLR_SELECTED~&, BF
         END IF
 
-        ' Icon char
+        ' Icon — try icon system first, fall back to ASCII char
         DIM iconClr AS _UNSIGNED LONG
-        SELECT CASE FD_places(i).entryType
-            CASE FD_PLACE_DRIVE: iconClr = FD_CLR_TEXT_DIM~&
-            CASE FD_PLACE_XDG: iconClr = FD_CLR_ICON_FOLDER~&
-            CASE FD_PLACE_FAVORITE: iconClr = FD_CLR_TEXT_ACCENT~&
-            CASE ELSE: iconClr = FD_CLR_TEXT_DIM~&
-        END SELECT
-        COLOR iconClr, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (x1 + FD_PADDING, py + (entryH - 16) \ 2 + 1), CHR$(FD_places(i).iconChar)
+        IF FD_places(i).iconColor <> 0 THEN
+            iconClr = FD_places(i).iconColor
+        ELSE
+            SELECT CASE FD_places(i).entryType
+                CASE FD_PLACE_DRIVE: iconClr = FD_CLR_TEXT_DIM~&
+                CASE FD_PLACE_XDG: iconClr = FD_CLR_ICON_FOLDER~&
+                CASE FD_PLACE_FAVORITE: iconClr = FD_CLR_TEXT_ACCENT~&
+                CASE FD_PLACE_CUSTOM: iconClr = FD_CLR_TEXT_ACCENT~&
+                CASE ELSE: iconClr = FD_CLR_TEXT_DIM~&
+            END SELECT
+        END IF
+
+        DIM iconDrawn AS INTEGER
+        iconDrawn = 0
+        IF FD_places(i).iconId > 0 THEN
+            COLOR iconClr, _RGBA32(0, 0, 0, 0)
+            FD_ICONS_render FD_places(i).iconId, x1 + FD_PADDING, py + (entryH - 16) \ 2, 16
+            iconDrawn = -1
+        END IF
+        IF NOT iconDrawn THEN
+            COLOR iconClr, _RGBA32(0, 0, 0, 0)
+            _PRINTSTRING (x1 + FD_PADDING, py + (entryH - 16) \ 2 + 1), CHR$(FD_places(i).iconChar)
+        END IF
 
         ' Label
         DIM label AS STRING
         label = RTRIM$(FD_places(i).label)
         DIM maxLabelW AS INTEGER
-        maxLabelW = (w - FD_PADDING * 2 - 16) \ 8
+        maxLabelW = (w - FD_PADDING * 2 - 16) \ (8 * pfs)
         IF LEN(label) > maxLabelW THEN label = LEFT$(label, maxLabelW - 1) + "."
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (x1 + FD_PADDING + 16, py + (entryH - 16) \ 2 + 1), label
+        FD_print_scaled x1 + FD_PADDING + 16, py + (entryH - FD_text_height%(pfs)) \ 2 + 1, label, pfs
 
         py = py + entryH
     NEXT i
@@ -354,8 +436,15 @@ SUB FD_RENDER_column_headers
     y1 = FD_STATE.contentY
     w = FD_STATE.contentW
 
+    DIM chH AS INTEGER
+    chH = FD_STATE.columnHeaderH
+    IF chH < 1 THEN chH = FD_COL_HEADER_H
+
+    DIM sfs AS INTEGER
+    sfs = FD_CFG.sortFontScale: IF sfs < 1 THEN sfs = 1
+
     ' Background
-    LINE (x1, y1)-(x1 + w - 1, y1 + FD_COL_HEADER_H - 1), FD_CLR_COL_HEADER_BG~&, BF
+    LINE (x1, y1)-(x1 + w - 1, y1 + chH - 1), FD_CLR_COL_HEADER_BG~&, BF
 
     DIM cx AS INTEGER
     DIM i AS INTEGER
@@ -386,16 +475,16 @@ SUB FD_RENDER_column_headers
             COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
         END IF
 
-        _PRINTSTRING (cx + FD_PADDING, y1 + (FD_COL_HEADER_H - 16) \ 2 + 1), headerText
+        FD_print_scaled cx + FD_PADDING, y1 + (chH - FD_text_height%(sfs)) \ 2 + 1, headerText, sfs
 
         ' Column separator
-        LINE (cx + colW - 1, y1 + 2)-(cx + colW - 1, y1 + FD_COL_HEADER_H - 3), FD_CLR_DIVIDER~&
+        LINE (cx + colW - 1, y1 + 2)-(cx + colW - 1, y1 + chH - 3), FD_CLR_DIVIDER~&
 
         cx = cx + colW
     NEXT i
 
     ' Bottom border
-    LINE (x1, y1 + FD_COL_HEADER_H - 1)-(x1 + w - 1, y1 + FD_COL_HEADER_H - 1), FD_CLR_DIVIDER~&
+    LINE (x1, y1 + chH - 1)-(x1 + w - 1, y1 + chH - 1), FD_CLR_DIVIDER~&
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -409,8 +498,13 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
     contentW = w
     IF FD_STATE.maxScroll > 0 THEN contentW = contentW - FD_SCROLLBAR_W
 
+    DIM rh AS INTEGER
+    rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
+    DIM cfs AS INTEGER
+    cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+
     FOR i = 0 TO FD_STATE.visibleCount - 1
-        drawY = y1 + (i * FD_ROW_HEIGHT) - FD_STATE.scrollOffset
+        drawY = y1 + (i * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
         IF drawY >= y1 + h THEN EXIT FOR
 
@@ -419,12 +513,12 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
         ' Selection / hover highlight
         IF i = FD_STATE.selectedIndex THEN
             IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
-                LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_SELECTED~&, BF
+                LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED~&, BF
             ELSE
-                LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_SELECTED_UNFOCUSED~&, BF
+                LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED_UNFOCUSED~&, BF
             END IF
         ELSEIF i = FD_STATE.hoverIndex THEN
-            LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_HOVER~&, BF
+            LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_HOVER~&, BF
         END IF
 
         ' File icon
@@ -434,7 +528,7 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
         DIM fn AS STRING
         fn = RTRIM$(FD_entries(entryIdx).fileName)
         DIM maxChars AS INTEGER
-        maxChars = (contentW - FD_PADDING * 2 - FD_ICON_SIZE - 4) \ 8
+        maxChars = (contentW - FD_PADDING * 2 - FD_ICON_SIZE - 4) \ (8 * cfs)
         IF LEN(fn) > maxChars THEN fn = LEFT$(fn, maxChars - 3) + "..."
 
         IF FD_entries(entryIdx).isDirectory THEN
@@ -442,7 +536,7 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
         ELSE
             COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
         END IF
-        _PRINTSTRING (x1 + FD_PADDING + FD_ICON_SIZE + 4, drawY + (FD_ROW_HEIGHT - 16) \ 2 + 1), fn
+        FD_print_scaled x1 + FD_PADDING + FD_ICON_SIZE + 4, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, fn, cfs
     NEXT i
 END SUB
 
@@ -457,8 +551,13 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
     contentW = w
     IF FD_STATE.maxScroll > 0 THEN contentW = contentW - FD_SCROLLBAR_W
 
+    DIM rh AS INTEGER
+    rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
+    DIM cfs AS INTEGER
+    cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+
     FOR i = 0 TO FD_STATE.visibleCount - 1
-        drawY = y1 + (i * FD_ROW_HEIGHT) - FD_STATE.scrollOffset
+        drawY = y1 + (i * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
         IF drawY >= y1 + h THEN EXIT FOR
 
@@ -467,12 +566,12 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
         ' Selection / hover highlight
         IF i = FD_STATE.selectedIndex THEN
             IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
-                LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_SELECTED~&, BF
+                LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED~&, BF
             ELSE
-                LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_SELECTED_UNFOCUSED~&, BF
+                LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED_UNFOCUSED~&, BF
             END IF
         ELSEIF i = FD_STATE.hoverIndex THEN
-            LINE (x1, drawY)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), FD_CLR_HOVER~&, BF
+            LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_HOVER~&, BF
         END IF
 
         DIM cx AS INTEGER
@@ -486,7 +585,7 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
         DIM fn AS STRING
         fn = RTRIM$(FD_entries(entryIdx).fileName)
         DIM nameMaxChars AS INTEGER
-        nameMaxChars = (col0W - FD_PADDING * 2 - FD_ICON_SIZE - 4) \ 8
+        nameMaxChars = (col0W - FD_PADDING * 2 - FD_ICON_SIZE - 4) \ (8 * cfs)
         IF nameMaxChars < 1 THEN nameMaxChars = 1
         IF LEN(fn) > nameMaxChars THEN fn = LEFT$(fn, nameMaxChars - 3) + "..."
 
@@ -495,7 +594,7 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
         ELSE
             COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
         END IF
-        _PRINTSTRING (cx + FD_PADDING + FD_ICON_SIZE + 4, drawY + (FD_ROW_HEIGHT - 16) \ 2 + 1), fn
+        FD_print_scaled cx + FD_PADDING + FD_ICON_SIZE + 4, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, fn, cfs
         cx = cx + col0W
 
         ' Column 1: Type
@@ -510,7 +609,7 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
                 IF LEN(typeStr) = 0 THEN typeStr = "File"
             END IF
             COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-            _PRINTSTRING (cx + FD_PADDING, drawY + (FD_ROW_HEIGHT - 16) \ 2 + 1), typeStr
+            FD_print_scaled cx + FD_PADDING, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, typeStr, cfs
             cx = cx + col1W
         END IF
 
@@ -523,10 +622,10 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
                 sizeStr = FD_FS_format_size$(FD_entries(entryIdx).fileSize)
                 ' Right-align size
                 DIM sizeX AS INTEGER
-                sizeX = cx + col2W - FD_PADDING - LEN(sizeStr) * 8
+                sizeX = cx + col2W - FD_PADDING - FD_text_width%(sizeStr, cfs)
                 IF sizeX < cx + FD_PADDING THEN sizeX = cx + FD_PADDING
                 COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-                _PRINTSTRING (sizeX, drawY + (FD_ROW_HEIGHT - 16) \ 2 + 1), sizeStr
+                FD_print_scaled sizeX, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, sizeStr, cfs
             END IF
             cx = cx + col2W
         END IF
@@ -538,11 +637,11 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
             DIM dateStr AS STRING
             dateStr = FD_FS_format_date$(FD_entries(entryIdx).modifiedTime)
             COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-            _PRINTSTRING (cx + FD_PADDING, drawY + (FD_ROW_HEIGHT - 16) \ 2 + 1), dateStr
+            FD_print_scaled cx + FD_PADDING, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, dateStr, cfs
         END IF
 
         ' Row divider
-        LINE (x1, drawY + FD_ROW_HEIGHT - 1)-(x1 + contentW - 1, drawY + FD_ROW_HEIGHT - 1), _RGBA32(255, 255, 255, 12)
+        LINE (x1, drawY + rh - 1)-(x1 + contentW - 1, drawY + rh - 1), _RGBA32(255, 255, 255, 12)
     NEXT i
 END SUB
 
@@ -556,10 +655,15 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
     contentW = w
     IF FD_STATE.maxScroll > 0 THEN contentW = contentW - FD_SCROLLBAR_W
 
+    DIM rh AS INTEGER
+    rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
+    DIM cfs AS INTEGER
+    cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+
     DIM cellW AS INTEGER, cellH AS INTEGER
     DIM cols AS INTEGER
     cellW = FD_CFG.thumbSize + FD_PADDING * 2
-    cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT  ' Extra row for filename
+    cellH = FD_CFG.thumbSize + FD_PADDING * 2 + rh  ' Extra row for filename
     cols = contentW \ cellW
     IF cols < 1 THEN cols = 1
 
@@ -623,7 +727,7 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
         DIM fn AS STRING
         fn = RTRIM$(FD_entries(entryIdx).fileName)
         DIM maxChars AS INTEGER
-        maxChars = cellW \ 8
+        maxChars = cellW \ (8 * cfs)
         IF LEN(fn) > maxChars THEN fn = LEFT$(fn, maxChars - 2) + ".."
 
         IF FD_entries(entryIdx).isDirectory THEN
@@ -633,9 +737,9 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
         END IF
 
         DIM textX AS INTEGER
-        textX = cellX + (cellW - LEN(fn) * 8) \ 2
+        textX = cellX + (cellW - FD_text_width%(fn, cfs)) \ 2
         IF textX < cellX + 2 THEN textX = cellX + 2
-        _PRINTSTRING (textX, thumbY + FD_CFG.thumbSize + 2), fn
+        FD_print_scaled textX, thumbY + FD_CFG.thumbSize + 2, fn, cfs
     NEXT i
 END SUB
 
@@ -650,6 +754,9 @@ SUB FD_RENDER_preview
     h = FD_STATE.contentH + FD_STATE.buttonBarH
 
     IF w <= 0 OR NOT FD_CFG.showPreview THEN EXIT SUB
+
+    DIM pvfs AS INTEGER
+    pvfs = FD_CFG.previewFontScale: IF pvfs < 1 THEN pvfs = 1
 
     ' Background
     LINE (x1, y1)-(x1 + w - 1, y1 + h - 1), FD_CLR_PREVIEW_BG~&, BF
@@ -696,7 +803,7 @@ SUB FD_RENDER_preview
         DIM infoY AS INTEGER
         infoY = dy + dh + FD_PADDING
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (x1 + FD_PADDING, infoY), LTRIM$(STR$(pw)) + " x " + LTRIM$(STR$(ph))
+        FD_print_scaled x1 + FD_PADDING, infoY, LTRIM$(STR$(pw)) + " x " + LTRIM$(STR$(ph)), pvfs
 
         ' File size if selected
         IF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
@@ -704,12 +811,12 @@ SUB FD_RENDER_preview
             selIdx = FD_filtered(FD_STATE.selectedIndex)
             DIM sizeInfo AS STRING
             sizeInfo = FD_FS_format_size$(FD_entries(selIdx).fileSize)
-            _PRINTSTRING (x1 + FD_PADDING, infoY + 16), sizeInfo
+            FD_print_scaled x1 + FD_PADDING, infoY + FD_text_height%(pvfs) + 2, sizeInfo, pvfs
         END IF
     ELSE
         ' No preview available
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (x1 + w \ 2 - 40, y1 + h \ 2), "No preview"
+        FD_print_scaled x1 + w \ 2 - FD_text_width%("No preview", pvfs) \ 2, y1 + h \ 2, "No preview", pvfs
     END IF
 END SUB
 
@@ -718,9 +825,16 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_status_bar
     DIM y1 AS INTEGER
-    y1 = FD_STATE.dialogH - FD_STATUS_BAR_H - FD_BUTTON_BAR_H
+    DIM sbH AS INTEGER
+    sbH = FD_STATE.statusBarH: IF sbH < 1 THEN sbH = FD_STATUS_BAR_H
+    DIM bbH AS INTEGER
+    bbH = FD_STATE.buttonBarH: IF bbH < 1 THEN bbH = FD_BUTTON_BAR_H
+    y1 = FD_STATE.dialogH - sbH - bbH
 
-    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATUS_BAR_H - 1), FD_CLR_STATUS_BG~&, BF
+    DIM stfs AS INTEGER
+    stfs = FD_CFG.statusFontScale: IF stfs < 1 THEN stfs = 1
+
+    LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + sbH - 1), FD_CLR_STATUS_BG~&, BF
 
     DIM statusText AS STRING
     statusText = LTRIM$(STR$(FD_STATE.visibleCount)) + " items"
@@ -736,7 +850,7 @@ SUB FD_RENDER_status_bar
     END IF
 
     COLOR FD_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (FD_PADDING, y1 + (FD_STATUS_BAR_H - 16) \ 2 + 1), statusText
+    FD_print_scaled FD_PADDING, y1 + (sbH - FD_text_height%(stfs)) \ 2 + 1, statusText, stfs
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -744,7 +858,12 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_button_bar
     DIM y1 AS INTEGER
-    y1 = FD_STATE.dialogH - FD_BUTTON_BAR_H
+    DIM bbH AS INTEGER
+    bbH = FD_STATE.buttonBarH: IF bbH < 1 THEN bbH = FD_BUTTON_BAR_H
+    y1 = FD_STATE.dialogH - bbH
+
+    DIM ifs AS INTEGER
+    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
 
     LINE (0, y1)-(FD_STATE.dialogW - 1, FD_STATE.dialogH - 1), FD_CLR_BUTTON_BAR_BG~&, BF
     LINE (0, y1)-(FD_STATE.dialogW - 1, y1), FD_CLR_DIVIDER~&
@@ -752,24 +871,24 @@ SUB FD_RENDER_button_bar
     ' Filename input (save mode only) — rendered by TI widget
     IF FD_STATE.mode = FD_MODE_SAVE OR FD_STATE.mode = FD_MODE_SAVE_AS THEN
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (FD_PADDING, y1 + (FD_BUTTON_BAR_H - 16) \ 2 + 1), "Filename:"
+        FD_print_scaled FD_PADDING, y1 + (bbH - FD_text_height%(ifs)) \ 2 + 1, "Filename:", ifs
         TI_render FD_STATE.tiFileNameId, 0, 0
     END IF
 
     ' Cancel button
     DIM cancelX AS INTEGER
     cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
-    LINE (cancelX, y1 + 5)-(cancelX + FD_BUTTON_W - 1, y1 + FD_BUTTON_BAR_H - 6), FD_CLR_BG~&, BF
-    LINE (cancelX, y1 + 5)-(cancelX + FD_BUTTON_W - 1, y1 + FD_BUTTON_BAR_H - 6), FD_CLR_BORDER~&, B
+    LINE (cancelX, y1 + 5)-(cancelX + FD_BUTTON_W - 1, y1 + bbH - 6), FD_CLR_BG~&, BF
+    LINE (cancelX, y1 + 5)-(cancelX + FD_BUTTON_W - 1, y1 + bbH - 6), FD_CLR_BORDER~&, B
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     DIM cancelLabelX AS INTEGER
-    cancelLabelX = cancelX + (FD_BUTTON_W - 6 * 8) \ 2
-    _PRINTSTRING (cancelLabelX, y1 + (FD_BUTTON_BAR_H - 16) \ 2 + 1), "Cancel"
+    cancelLabelX = cancelX + (FD_BUTTON_W - FD_text_width%("Cancel", ifs)) \ 2
+    FD_print_scaled cancelLabelX, y1 + (bbH - FD_text_height%(ifs)) \ 2 + 1, "Cancel", ifs
 
     ' OK / Open / Save button
     DIM okX AS INTEGER
     okX = cancelX - FD_BUTTON_W - FD_PADDING
-    LINE (okX, y1 + 5)-(okX + FD_BUTTON_W - 1, y1 + FD_BUTTON_BAR_H - 6), FD_CLR_BUTTON_BG~&, BF
+    LINE (okX, y1 + 5)-(okX + FD_BUTTON_W - 1, y1 + bbH - 6), FD_CLR_BUTTON_BG~&, BF
     DIM okLabel AS STRING
     okLabel = RTRIM$(FD_STATE.confirmLabel)
     IF LEN(okLabel) = 0 THEN
@@ -781,8 +900,8 @@ SUB FD_RENDER_button_bar
     END IF
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
     DIM okLabelX AS INTEGER
-    okLabelX = okX + (FD_BUTTON_W - LEN(okLabel) * 8) \ 2
-    _PRINTSTRING (okLabelX, y1 + (FD_BUTTON_BAR_H - 16) \ 2 + 1), okLabel
+    okLabelX = okX + (FD_BUTTON_W - FD_text_width%(okLabel, ifs)) \ 2
+    FD_print_scaled okLabelX, y1 + (bbH - FD_text_height%(ifs)) \ 2 + 1, okLabel, ifs
 
     ' Filter dropdown button (if filters exist)
     IF FD_STATE.filterCount > 1 AND FD_STATE.mode <> FD_MODE_CHOOSE_FOLDER THEN
@@ -795,7 +914,7 @@ SUB FD_RENDER_button_bar
 
         ' Calculate dropdown button dimensions
         DIM filterW AS INTEGER
-        filterW = LEN(filterLabel) * 8 + FD_PADDING * 2 + 16  ' text + padding + arrow space
+        filterW = FD_text_width%(filterLabel, ifs) + FD_PADDING * 2 + 16  ' text + padding + arrow space
         DIM filterX AS INTEGER
         filterX = okX - filterW - FD_PADDING
 
@@ -808,7 +927,7 @@ SUB FD_RENDER_button_bar
 
         DIM filterBtnY1 AS INTEGER, filterBtnY2 AS INTEGER
         filterBtnY1 = y1 + 5
-        filterBtnY2 = y1 + FD_BUTTON_BAR_H - 6
+        filterBtnY2 = y1 + bbH - 6
 
         ' Draw button background
         DIM filterBgClr AS _UNSIGNED LONG
@@ -822,10 +941,10 @@ SUB FD_RENDER_button_bar
 
         ' Draw label and dropdown arrow
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (filterX + FD_PADDING, y1 + (FD_BUTTON_BAR_H - 16) \ 2 + 1), filterLabel
+        FD_print_scaled filterX + FD_PADDING, y1 + (bbH - FD_text_height%(ifs)) \ 2 + 1, filterLabel, ifs
         ' Down arrow indicator
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-        _PRINTSTRING (filterX + filterW - 14, y1 + (FD_BUTTON_BAR_H - 16) \ 2 + 1), CHR$(25)
+        _PRINTSTRING (filterX + filterW - 14, y1 + (bbH - 16) \ 2 + 1), CHR$(25)
     END IF
 END SUB
 
@@ -836,9 +955,16 @@ SUB FD_RENDER_filter_dropdown
     IF NOT FD_STATE.filterDropdownOpen THEN EXIT SUB
     IF FD_STATE.filterCount < 2 THEN EXIT SUB
 
+    DIM ffs AS INTEGER
+    ffs = FD_CFG.filterFontScale: IF ffs < 1 THEN ffs = 1
+    DIM ifs AS INTEGER
+    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+
     ' Recalculate button position (same math as button bar rendering)
+    DIM bbH AS INTEGER
+    bbH = FD_STATE.buttonBarH: IF bbH < 1 THEN bbH = FD_BUTTON_BAR_H
     DIM btnBarY AS INTEGER
-    btnBarY = FD_STATE.dialogH - FD_BUTTON_BAR_H
+    btnBarY = FD_STATE.dialogH - bbH
 
     DIM cancelX AS INTEGER
     cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
@@ -852,7 +978,7 @@ SUB FD_RENDER_filter_dropdown
         curLabel = "All Files"
     END IF
     DIM filterW AS INTEGER
-    filterW = LEN(curLabel) * 8 + FD_PADDING * 2 + 16
+    filterW = FD_text_width%(curLabel, ifs) + FD_PADDING * 2 + 16
     DIM filterX AS INTEGER
     filterX = okX - filterW - FD_PADDING
 
@@ -863,12 +989,12 @@ SUB FD_RENDER_filter_dropdown
         DIM lbl AS STRING
         lbl = RTRIM$(FD_filters(i).label)
         DIM lblW AS INTEGER
-        lblW = LEN(lbl) * 8 + FD_PADDING * 2
+        lblW = FD_text_width%(lbl, ffs) + FD_PADDING * 2
         IF lblW > popW THEN popW = lblW
     NEXT i
 
     DIM itemH AS INTEGER
-    itemH = 22  ' Height per filter item
+    itemH = FD_text_height%(ffs) + 6  ' Height per filter item
     DIM popH AS INTEGER
     popH = FD_STATE.filterCount * itemH + 4  ' +4 for border padding
 
@@ -914,7 +1040,7 @@ SUB FD_RENDER_filter_dropdown
 
         DIM filterText AS STRING
         filterText = RTRIM$(FD_filters(i).label)
-        _PRINTSTRING (popX + FD_PADDING, iy + (itemH - 16) \ 2), filterText
+        FD_print_scaled popX + FD_PADDING, iy + (itemH - FD_text_height%(ffs)) \ 2, filterText, ffs
     NEXT i
 END SUB
 
@@ -978,28 +1104,32 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_file_icon (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY)
     DIM clr AS _UNSIGNED LONG
-    DIM ch AS STRING
+    DIM iconId AS INTEGER
 
     IF entry.isDirectory THEN
         clr = FD_CLR_ICON_FOLDER~&
-        ch = CHR$(254)  ' Filled square
-    ELSEIF FD_FS_is_image_ext%(RTRIM$(entry.extension)) THEN
-        clr = FD_CLR_ICON_IMAGE~&
-        ch = CHR$(176)  ' Light shade
+        iconId = FD_ICON_FOLDER
     ELSE
-        DIM ext AS STRING
-        ext = LCASE$(RTRIM$(entry.extension))
-        SELECT CASE ext
-            CASE "txt", "md", "bas", "bi", "bm", "cfg", "ini", "log"
-                clr = FD_CLR_ICON_DOC~&
-            CASE ELSE
-                clr = FD_CLR_ICON_DEFAULT~&
+        iconId = FD_ICONS_for_extension%(RTRIM$(entry.extension))
+        SELECT CASE iconId
+            CASE FD_ICON_IMAGE: clr = FD_CLR_ICON_IMAGE~&
+            CASE FD_ICON_DOCUMENT: clr = FD_CLR_ICON_DOC~&
+            CASE FD_ICON_EXECUTABLE: clr = FD_CLR_ICON_EXEC~&
+            CASE FD_ICON_SOUND: clr = FD_CLR_ICON_SOUND~&
+            CASE FD_ICON_CONFIG: clr = FD_CLR_ICON_CONFIG~&
+            CASE FD_ICON_FONT: clr = FD_CLR_ICON_FONT~&
+            CASE FD_ICON_TEXTMODE: clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_DSET: clr = FD_CLR_ICON_DSET~&
+            CASE FD_ICON_PALETTE: clr = FD_CLR_ICON_PALETTE~&
+            CASE FD_ICON_GRADIENT: clr = FD_CLR_ICON_GRADIENT~&
+            CASE FD_ICON_DRW: clr = FD_CLR_TEXT_ACCENT~&
+            CASE FD_ICON_TEXT: clr = FD_CLR_ICON_DOC~&
+            CASE ELSE: clr = FD_CLR_ICON_DEFAULT~&
         END SELECT
-        ch = CHR$(254)
     END IF
 
     COLOR clr, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (x, y), ch
+    FD_ICONS_render iconId, x, y, 16
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -1007,19 +1137,32 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_file_icon_large (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY)
     DIM clr AS _UNSIGNED LONG
+    DIM iconId AS INTEGER
+
     IF entry.isDirectory THEN
         clr = FD_CLR_ICON_FOLDER~&
-    ELSEIF FD_FS_is_image_ext%(RTRIM$(entry.extension)) THEN
-        clr = FD_CLR_ICON_IMAGE~&
+        iconId = FD_ICON_FOLDER
     ELSE
-        clr = FD_CLR_ICON_DEFAULT~&
+        iconId = FD_ICONS_for_extension%(RTRIM$(entry.extension))
+        SELECT CASE iconId
+            CASE FD_ICON_IMAGE: clr = FD_CLR_ICON_IMAGE~&
+            CASE FD_ICON_DOCUMENT: clr = FD_CLR_ICON_DOC~&
+            CASE FD_ICON_EXECUTABLE: clr = FD_CLR_ICON_EXEC~&
+            CASE FD_ICON_SOUND: clr = FD_CLR_ICON_SOUND~&
+            CASE FD_ICON_CONFIG: clr = FD_CLR_ICON_CONFIG~&
+            CASE FD_ICON_FONT: clr = FD_CLR_ICON_FONT~&
+            CASE FD_ICON_TEXTMODE: clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_DSET: clr = FD_CLR_ICON_DSET~&
+            CASE FD_ICON_PALETTE: clr = FD_CLR_ICON_PALETTE~&
+            CASE FD_ICON_GRADIENT: clr = FD_CLR_ICON_GRADIENT~&
+            CASE FD_ICON_DRW: clr = FD_CLR_TEXT_ACCENT~&
+            CASE FD_ICON_TEXT: clr = FD_CLR_ICON_DOC~&
+            CASE ELSE: clr = FD_CLR_ICON_DEFAULT~&
+        END SELECT
     END IF
 
-    ' Draw a simple large icon shape (32x32)
-    LINE (x, y + 4)-(x + 31, y + 31), clr, B
-    LINE (x, y)-(x + 20, y), clr
-    LINE (x + 20, y)-(x + 31, y + 4), clr
-    LINE (x, y)-(x, y + 4), clr
+    COLOR clr, _RGBA32(0, 0, 0, 0)
+    FD_ICONS_render iconId, x, y, 32
 END SUB
 
 ' --------------------------------------------------------------------------
