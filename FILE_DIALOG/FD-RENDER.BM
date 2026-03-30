@@ -399,7 +399,7 @@ SUB FD_RENDER_content
     ' Content area (clipped)
     DIM contentTop AS INTEGER
     IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN
-        contentTop = y1 + FD_COL_HEADER_H
+        contentTop = y1 + FD_STATE.columnHeaderH
     ELSE
         contentTop = y1
     END IF

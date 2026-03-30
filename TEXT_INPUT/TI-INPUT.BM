@@ -116,6 +116,27 @@ SUB TI_set_focus (id AS INTEGER)
     TI_inputs(id).cursorBlink = -1
     TI_inputs(id).cursorTimer = TIMER(.001)
     TI_inputs(id).dirty = -1
+
+    ' Auto-select all text on focus if requested
+    IF TI_inputs(id).autoSelect THEN
+        TI_select_all id
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' TI_select_all — Select all text in specified input
+' --------------------------------------------------------------------------
+SUB TI_select_all (id AS INTEGER)
+    IF id < 1 OR id > TI_MAX_INPUTS THEN EXIT SUB
+    IF NOT TI_inputs(id).active THEN EXIT SUB
+    DIM tLen AS INTEGER
+    tLen = TI_inputs(id).textLen
+    IF tLen > 0 THEN
+        TI_inputs(id).selStart = 0
+        TI_inputs(id).selEnd = tLen
+        TI_inputs(id).cursorPos = tLen
+        TI_inputs(id).dirty = -1
+    END IF
 END SUB
 
 ' --------------------------------------------------------------------------

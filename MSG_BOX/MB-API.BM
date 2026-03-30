@@ -98,11 +98,16 @@ END SUB
 ' MB_init — Reset state and prepare the dialog
 ' --------------------------------------------------------------------------
 SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INTEGER, icon AS INTEGER, defaultText AS STRING, placeholder AS STRING)
+    ' ---- Preserve caller-set flags across reset ----
+    DIM savedAutoSelect AS INTEGER
+    savedAutoSelect = MB_STATE.autoSelectText
+
     ' ---- Reset all state ----
     DIM emptyState AS MB_STATE_OBJ
     MB_STATE = emptyState
     MB_STATE.imgHandle = -1
     MB_STATE.screenShot = -1
+    MB_STATE.autoSelectText = savedAutoSelect
 
     ' ---- Basic settings ----
     MB_STATE.mode = mode
@@ -143,6 +148,9 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
             IF LEN(defaultText) > 0 THEN TI_set_text MB_STATE.tiInputId, defaultText
             IF LEN(placeholder) > 0 THEN
                 TI_inputs(MB_STATE.tiInputId).placeholder = placeholder
+            END IF
+            IF MB_STATE.autoSelectText THEN
+                TI_inputs(MB_STATE.tiInputId).autoSelect = TRUE
             END IF
             TI_set_focus MB_STATE.tiInputId
         END IF

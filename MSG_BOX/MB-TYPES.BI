@@ -119,6 +119,7 @@ TYPE MB_STATE_OBJ
     fontW AS INTEGER                    ' Char width in pixels
     fontH AS INTEGER                    ' Char height in pixels
     lineHeight AS INTEGER               ' Line height (fontH + 2)
+    autoSelectText AS INTEGER           ' TRUE = auto-select input text on open
 END TYPE
 
 ' --- Shared State ------------------------------------------------------------

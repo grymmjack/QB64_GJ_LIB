@@ -679,7 +679,10 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         DIM cellW AS INTEGER, cellH AS INTEGER, cols AS INTEGER
         cellW = FD_CFG.thumbSize + FD_PADDING * 2
         cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
-        cols = FD_STATE.contentW \ cellW
+        DIM hitW AS INTEGER
+        hitW = FD_STATE.contentW
+        IF FD_STATE.maxScroll > 0 THEN hitW = hitW - FD_SCROLLBAR_W
+        cols = hitW \ cellW
         IF cols < 1 THEN cols = 1
 
         DIM relX AS INTEGER, relY AS INTEGER

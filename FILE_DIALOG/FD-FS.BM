@@ -212,11 +212,20 @@ SUB FD_FS_recalc_scroll
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
         ' Thumbnail grid: calculate rows
         DIM cols AS INTEGER
-        cols = FD_STATE.contentW \ (FD_CFG.thumbSize + FD_PADDING * 2)
+        DIM cellW AS INTEGER
+        cellW = FD_CFG.thumbSize + FD_PADDING * 2
+        cols = FD_STATE.contentW \ cellW
         IF cols < 1 THEN cols = 1
         DIM rows AS INTEGER
         rows = (FD_STATE.visibleCount + cols - 1) \ cols
-        totalH = rows * (FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight)
+        totalH = rows * (cellW + FD_STATE.rowHeight)
+        ' If scrollbar needed, recalculate with reduced width
+        IF totalH > FD_STATE.contentH THEN
+            cols = (FD_STATE.contentW - FD_SCROLLBAR_W) \ cellW
+            IF cols < 1 THEN cols = 1
+            rows = (FD_STATE.visibleCount + cols - 1) \ cols
+            totalH = rows * (cellW + FD_STATE.rowHeight)
+        END IF
     ELSE
         ' List/details: simple row count
         totalH = FD_STATE.visibleCount * FD_STATE.rowHeight

@@ -96,6 +96,7 @@ TYPE TI_INPUT_OBJ
     focused         AS INTEGER         ' TRUE if this input has focus
     readOnly        AS INTEGER         ' TRUE if read-only
     password        AS INTEGER         ' TRUE to mask with *
+    autoSelect      AS INTEGER         ' TRUE = select all text on focus
     cursorBlink     AS INTEGER         ' Current blink state
     cursorTimer     AS DOUBLE          ' Last blink toggle time
     dirty           AS INTEGER         ' TRUE if needs redraw
