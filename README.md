@@ -17,21 +17,21 @@ in it's current state.
 | [ASEPRITE](ASEPRITE/README.md) | [ASEPRITE](https://www.aseprite.org/) Image Format support | Natively use `.aseprite` files in QB64! |
 | [ARR](ARR/README.md) | ARRay Library | A high level library for working with arrays of all types in QB64 |
 | [BBX](BBX/README.md) | Bounding BoX Library | Reusable bounding box with position, resize, keyboard and mouse control | 
-| [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
-| [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
-| [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
-| [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
-| [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
-| [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
-| [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
-| [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |
-| [ASEPRITE](ASEPRITE/README.md) | Adds ASEPRITE support to QB64 | See https://www.aseprite.org |
 | [COLOR_PICKER](COLOR_PICKER/README.md) | Color Picker Dialog | Photoshop/Krita-style HSV/RGB/HSL color picker with hex input and posterize mode |
 | [CONSOLE](CONSOLE/README.md) | CONSOLE object with debugging. |
+| [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
+| [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
 | [FILE_DIALOG](FILE_DIALOG/README.md) | File Dialog | Full-featured Open/Save/Folder dialog with list, details, and thumbnail views |
+| [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
+| [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
 | [MSG_BOX](MSG_BOX/README.md) | Message Box Dialog | Modal message boxes with OK/Cancel/Yes/No buttons, icons, and input mode |
+| [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
+| [PSD](PSD/README.md) | Adds PSD Photoshop file support to QB64 | 8-bit Only |
+| [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
+| [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 | [TEXT_INPUT](TEXT_INPUT/README.md) | Text Input Widget | Reusable text input with undo/redo, clipboard, selection, and multiline support |
+| [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |
 
 
 
