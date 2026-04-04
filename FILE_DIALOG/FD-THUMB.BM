@@ -132,8 +132,30 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     DIM rawImg AS LONG
     rawImg = _LOADIMAGE(fullPath, 32)
     IF rawImg = -1 OR rawImg >= 0 THEN
-        FD_THUMB_load_one& = -1
-        EXIT FUNCTION
+        ' _LOADIMAGE failed — try custom format loaders
+        DIM fdExt AS STRING
+        DIM dotPos AS INTEGER
+        dotPos = _INSTRREV(fullPath, ".")
+        IF dotPos > 0 THEN fdExt = LCASE$(MID$(fullPath, dotPos + 1)) ELSE fdExt = ""
+
+        $IF FD_HAS_PSD = TRUE THEN
+        IF fdExt = "psd" THEN
+            IF PSD_load%(fullPath) THEN
+                rawImg = PSD_get_layer_image&(fullPath, 1)
+            END IF
+        END IF
+        $END IF
+
+        $IF FD_HAS_ASEPRITE = TRUE THEN
+        IF fdExt = "ase" OR fdExt = "aseprite" THEN
+            rawImg = load_aseprite_file&(fullPath)
+        END IF
+        $END IF
+
+        IF rawImg = -1 OR rawImg >= 0 THEN
+            FD_THUMB_load_one& = -1
+            EXIT FUNCTION
+        END IF
     END IF
 
     ' Scale to thumbnail size maintaining aspect ratio

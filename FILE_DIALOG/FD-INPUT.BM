@@ -1240,6 +1240,25 @@ SUB FD_INPUT_update_preview
 
     DIM img AS LONG
     img = _LOADIMAGE(fullPath, 32)
+    IF img = -1 OR img >= 0 THEN
+        ' _LOADIMAGE failed — try custom format loaders
+        DIM pvExt AS STRING
+        pvExt = LCASE$(RTRIM$(FD_entries(entryIdx).extension))
+
+        $IF FD_HAS_PSD = TRUE THEN
+        IF pvExt = "psd" THEN
+            IF PSD_load%(fullPath) THEN
+                img = PSD_get_layer_image&(fullPath, 1)
+            END IF
+        END IF
+        $END IF
+
+        $IF FD_HAS_ASEPRITE = TRUE THEN
+        IF pvExt = "ase" OR pvExt = "aseprite" THEN
+            img = load_aseprite_file&(fullPath)
+        END IF
+        $END IF
+    END IF
     IF img < -1 THEN
         FD_STATE.previewImgHandle = img
     END IF

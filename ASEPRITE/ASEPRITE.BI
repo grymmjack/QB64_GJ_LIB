@@ -12,6 +12,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 '
 $INCLUDEONCE
+$LET FD_HAS_ASEPRITE = TRUE
 
 ' DEBUG CONTROL
 ' Set to 1 to enable debug output, 0 to disable

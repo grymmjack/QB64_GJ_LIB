@@ -15,6 +15,7 @@
 ' @author Rick Christy <grymmjack@gmail.com>
 '
 $INCLUDEONCE
+$LET FD_HAS_PSD = TRUE
 
 ' ---------------------------------------------------------------------------
 ' Boolean constants (not built-in in all QB64-PE versions)

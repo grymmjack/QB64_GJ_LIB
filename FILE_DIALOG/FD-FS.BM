@@ -426,6 +426,10 @@ FUNCTION FD_FS_is_image_ext% (ext AS STRING)
     SELECT CASE e
         CASE "png", "bmp", "jpg", "jpeg", "gif", "tga", "pcx"
             FD_FS_is_image_ext% = -1
+        CASE "psd"
+            FD_FS_is_image_ext% = -1
+        CASE "ase", "aseprite"
+            FD_FS_is_image_ext% = -1
         CASE ELSE
             FD_FS_is_image_ext% = 0
     END SELECT
