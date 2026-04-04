@@ -1738,7 +1738,7 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
                     
                     ' Check CEL type and load pixel data
                     SELECT CASE cel_chunk.cel_type
-                        CASE ASEPRITE_CEL_RAW ' Raw image (type 0)
+                        CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image (type 0)
                             cel_width = 0: cel_height = 0
                             GET #file_handle, , cel_width
                             GET #file_handle, , cel_height
