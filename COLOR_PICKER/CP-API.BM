@@ -167,7 +167,14 @@ SUB CP_modal_loop
     _DISPLAY
 
     ' Drain stale keyboard input
-    DO WHILE _KEYHIT <> 0: LOOP
+    DIM cpDrainK AS LONG
+    cpDrainK& = _KEYHIT
+    DO WHILE cpDrainK& <> 0
+        $IF MAC THEN
+            MODIFIERS_track_alt_keyhit cpDrainK&
+        $END IF
+        cpDrainK& = _KEYHIT
+    LOOP
 
     ' Drain stale mouse input
     DO WHILE _MOUSEINPUT: LOOP

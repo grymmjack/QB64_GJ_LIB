@@ -236,7 +236,14 @@ SUB FD_cleanup
     ' Drain mouse input buffer
     DO WHILE _MOUSEINPUT: LOOP
     ' Clear keyboard buffer
-    DO WHILE _KEYHIT: LOOP
+    DIM fdDrainK AS LONG
+    fdDrainK& = _KEYHIT
+    DO WHILE fdDrainK& <> 0
+        $IF MAC THEN
+            MODIFIERS_track_alt_keyhit fdDrainK&
+        $END IF
+        fdDrainK& = _KEYHIT
+    LOOP
 END SUB
 
 ' --------------------------------------------------------------------------

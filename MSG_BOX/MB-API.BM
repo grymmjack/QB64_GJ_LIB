@@ -203,7 +203,14 @@ SUB MB_modal_loop
     _DISPLAY
 
     ' Drain stale keyboard input (e.g., Enter from SLEEP or previous dialog)
-    DO WHILE _KEYHIT <> 0: LOOP
+    DIM mbDrainK AS LONG
+    mbDrainK& = _KEYHIT
+    DO WHILE mbDrainK& <> 0
+        $IF MAC THEN
+            MODIFIERS_track_alt_keyhit mbDrainK&
+        $END IF
+        mbDrainK& = _KEYHIT
+    LOOP
 
     ' Drain stale mouse input so first frame starts clean
     DO WHILE _MOUSEINPUT: LOOP
