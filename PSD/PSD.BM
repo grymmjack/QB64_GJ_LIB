@@ -1,0 +1,758 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S PSD LIB — Implementation
+'
+' Pure QB64-PE parser for Adobe Photoshop PSD files.
+' Reads layer structure metadata (PSD_load) and extracts per-layer
+' pixel data on demand (PSD_get_layer_image).
+'
+' Supports PSD version 1, 8-bit depth, RGB and Grayscale color modes,
+' Raw / RLE (PackBits) / ZIP compression.
+'
+' @see https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$INCLUDEONCE
+
+
+' ===========================================================================
+' Big-endian byte read helpers
+' ===========================================================================
+
+''
+' Read a 2-byte big-endian unsigned integer, return as LONG (0-65535).
+'
+FUNCTION PSD_read_u16& (fh AS INTEGER)
+    DIM b1 AS _UNSIGNED _BYTE, b2 AS _UNSIGNED _BYTE
+    GET #fh%, , b1
+    GET #fh%, , b2
+    PSD_read_u16& = CLNG(b1) * 256& + CLNG(b2)
+END FUNCTION
+
+''
+' Read a 2-byte big-endian signed integer.
+'
+FUNCTION PSD_read_i16% (fh AS INTEGER)
+    DIM v AS LONG
+    v& = PSD_read_u16&(fh%)
+    IF v& > 32767 THEN v& = v& - 65536
+    PSD_read_i16% = v&
+END FUNCTION
+
+''
+' Read a 4-byte big-endian unsigned integer, return as _INTEGER64 (0-4294967295).
+'
+FUNCTION PSD_read_u32&& (fh AS INTEGER)
+    DIM b1 AS _UNSIGNED _BYTE, b2 AS _UNSIGNED _BYTE
+    DIM b3 AS _UNSIGNED _BYTE, b4 AS _UNSIGNED _BYTE
+    GET #fh%, , b1
+    GET #fh%, , b2
+    GET #fh%, , b3
+    GET #fh%, , b4
+    PSD_read_u32&& = CLNG(b1) * 16777216&& + CLNG(b2) * 65536&& + CLNG(b3) * 256&& + CLNG(b4)
+END FUNCTION
+
+''
+' Read a 4-byte big-endian signed integer (two's complement).
+'
+FUNCTION PSD_read_i32& (fh AS INTEGER)
+    DIM v AS _INTEGER64
+    v&& = PSD_read_u32&&(fh%)
+    IF v&& > 2147483647&& THEN v&& = v&& - 4294967296&&
+    PSD_read_i32& = v&&
+END FUNCTION
+
+
+' ===========================================================================
+' PackBits RLE decoder
+' ===========================================================================
+
+''
+' Decode PackBits-compressed data.
+'
+' @param rleData$      The compressed byte stream
+' @param expectedSize& Number of decompressed bytes expected
+' @return Decompressed byte string
+'
+FUNCTION PSD_decode_packbits$ (rleData AS STRING, expectedSize AS LONG)
+    DIM result AS STRING
+    result$ = STRING$(expectedSize&, 0)
+    DIM inPos AS LONG, outPos AS LONG
+    inPos& = 1
+    outPos& = 1
+    DIM dataLen AS LONG
+    dataLen& = LEN(rleData$)
+
+    DO WHILE inPos& <= dataLen& AND outPos& <= expectedSize&
+        DIM hdr AS INTEGER
+        hdr% = ASC(rleData$, inPos&)
+        IF hdr% > 127 THEN hdr% = hdr% - 256 ' convert to signed
+        inPos& = inPos& + 1
+
+        IF hdr% >= 0 THEN
+            ' Literal run: copy next (hdr + 1) bytes verbatim
+            DIM litCount AS INTEGER
+            litCount% = hdr% + 1
+            DIM avail AS LONG
+            avail& = expectedSize& - outPos& + 1
+            IF litCount% > avail& THEN litCount% = avail&
+            IF inPos& + litCount% - 1 <= dataLen& THEN
+                MID$(result$, outPos&, litCount%) = MID$(rleData$, inPos&, litCount%)
+            END IF
+            outPos& = outPos& + litCount%
+            inPos& = inPos& + (hdr% + 1)
+
+        ELSEIF hdr% > -128 THEN
+            ' Repeat run: repeat next byte (1 - hdr) times
+            DIM runLen AS INTEGER
+            runLen% = 1 - hdr%
+            IF inPos& <= dataLen& THEN
+                DIM runByte AS _UNSIGNED _BYTE
+                runByte = ASC(rleData$, inPos&)
+                DIM fillAvail AS LONG
+                fillAvail& = expectedSize& - outPos& + 1
+                IF runLen% > fillAvail& THEN runLen% = fillAvail&
+                IF runLen% > 0 THEN
+                    MID$(result$, outPos&, runLen%) = STRING$(runLen%, runByte)
+                    outPos& = outPos& + runLen%
+                END IF
+            END IF
+            inPos& = inPos& + 1
+
+        END IF
+        ' hdr% = -128: no-op, continue
+    LOOP
+
+    PSD_decode_packbits$ = result$
+END FUNCTION
+
+
+' ===========================================================================
+' PSD_load — parse file structure and layer metadata
+' ===========================================================================
+
+''
+' Parse a PSD file and populate PSD_IMG, PSD_LAYERS(), PSD_CHAN_INFO(),
+' and PSD_CHAN_DATA_OFFSETS(). Does NOT read pixel data (deferred).
+'
+' @param filename$ Path to the .psd file
+' @return TRUE on success, FALSE on error (see PSD_IMG.error_message)
+'
+FUNCTION PSD_load% (filename AS STRING)
+    DIM fh AS INTEGER
+    DIM i AS INTEGER, ch AS INTEGER
+
+    ' Clear previous state
+    PSD_IMG.is_valid = PSD_FALSE
+    PSD_IMG.layer_count = 0
+    PSD_IMG.error_message = ""
+
+    IF NOT _FILEEXISTS(filename$) THEN
+        PSD_IMG.error_message = "File not found"
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    fh% = FREEFILE
+    OPEN filename$ FOR BINARY AS #fh%
+
+    IF LOF(fh%) < 26 THEN
+        PSD_IMG.error_message = "File too small"
+        CLOSE #fh%
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    ' ===================================================================
+    ' SECTION 1: FILE HEADER (26 bytes)
+    ' ===================================================================
+    DIM sig AS STRING * 4
+    GET #fh%, , sig
+    IF sig <> "8BPS" THEN
+        PSD_IMG.error_message = "Not a PSD file (bad signature)"
+        CLOSE #fh%
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    PSD_IMG.header.version = PSD_read_u16&(fh%)
+    IF PSD_IMG.header.version <> 1 THEN
+        PSD_IMG.error_message = "Only PSD version 1 is supported (PSB not supported)"
+        CLOSE #fh%
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    ' Reserved (6 bytes) — skip
+    DIM reserved AS STRING * 6
+    GET #fh%, , reserved
+
+    PSD_IMG.header.channels = PSD_read_u16&(fh%)
+    PSD_IMG.header.height = PSD_read_i32&(fh%)
+    PSD_IMG.header.width = PSD_read_i32&(fh%)
+    PSD_IMG.header.depth = PSD_read_u16&(fh%)
+    PSD_IMG.header.color_mode = PSD_read_u16&(fh%)
+
+    IF PSD_IMG.header.depth <> 8 THEN
+        PSD_IMG.error_message = "Only 8-bit depth is supported (got" + STR$(PSD_IMG.header.depth) + ")"
+        CLOSE #fh%
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    IF PSD_IMG.header.color_mode <> PSD_MODE_RGB AND PSD_IMG.header.color_mode <> PSD_MODE_GRAYSCALE THEN
+        PSD_IMG.error_message = "Only RGB and Grayscale modes are supported (got" + STR$(PSD_IMG.header.color_mode) + ")"
+        CLOSE #fh%
+        PSD_load% = PSD_FALSE
+        EXIT FUNCTION
+    END IF
+
+    _LOGINFO "PSD: Header valid —" + STR$(PSD_IMG.header.width) + "x" + STR$(PSD_IMG.header.height) + "," + STR$(PSD_IMG.header.channels) + " channels, depth" + STR$(PSD_IMG.header.depth) + ", mode" + STR$(PSD_IMG.header.color_mode)
+
+    ' ===================================================================
+    ' SECTION 2: COLOR MODE DATA
+    ' ===================================================================
+    DIM colorModeLen AS _INTEGER64
+    colorModeLen&& = PSD_read_u32&&(fh%)
+    IF colorModeLen&& > 0 THEN
+        SEEK #fh%, SEEK(fh%) + colorModeLen&&
+    END IF
+
+    ' ===================================================================
+    ' SECTION 3: IMAGE RESOURCES
+    ' ===================================================================
+    DIM imgResourceLen AS _INTEGER64
+    imgResourceLen&& = PSD_read_u32&&(fh%)
+    IF imgResourceLen&& > 0 THEN
+        SEEK #fh%, SEEK(fh%) + imgResourceLen&&
+    END IF
+
+    ' ===================================================================
+    ' SECTION 4: LAYER AND MASK INFORMATION
+    ' ===================================================================
+    DIM layerMaskLen AS _INTEGER64
+    layerMaskLen&& = PSD_read_u32&&(fh%)
+    IF layerMaskLen&& = 0 THEN
+        ' No layer data — file is a flat composite only
+        PSD_IMG.layer_count = 0
+        PSD_IMG.is_valid = PSD_TRUE
+        _LOGINFO "PSD: No layer data (flat composite)"
+        CLOSE #fh%
+        PSD_load% = PSD_TRUE
+        EXIT FUNCTION
+    END IF
+
+    ' Layer info sub-section
+    DIM layerInfoLen AS _INTEGER64
+    layerInfoLen&& = PSD_read_u32&&(fh%)
+    IF layerInfoLen&& = 0 THEN
+        PSD_IMG.layer_count = 0
+        PSD_IMG.is_valid = PSD_TRUE
+        _LOGINFO "PSD: Layer info section empty"
+        CLOSE #fh%
+        PSD_load% = PSD_TRUE
+        EXIT FUNCTION
+    END IF
+
+    ' Layer count (2 bytes, signed)
+    ' If negative, the absolute value is the layer count and the first
+    ' alpha channel contains the transparency for the merged result.
+    DIM rawLayerCount AS INTEGER
+    rawLayerCount% = PSD_read_i16%(fh%)
+    DIM layerCount AS INTEGER
+    layerCount% = ABS(rawLayerCount%)
+
+    IF layerCount% = 0 THEN
+        PSD_IMG.layer_count = 0
+        PSD_IMG.is_valid = PSD_TRUE
+        CLOSE #fh%
+        PSD_load% = PSD_TRUE
+        EXIT FUNCTION
+    END IF
+
+    IF layerCount% > PSD_MAX_LAYERS THEN
+        _LOGWARN "PSD: File has" + STR$(layerCount%) + " layers, capping at" + STR$(PSD_MAX_LAYERS)
+        layerCount% = PSD_MAX_LAYERS
+    END IF
+
+    _LOGINFO "PSD: Parsing" + STR$(layerCount%) + " layer records"
+
+    ' ---------------------------------------------------------------
+    ' Parse all layer records
+    ' ---------------------------------------------------------------
+    FOR i% = 1 TO layerCount%
+        ' Bounds (4 × 4 bytes)
+        PSD_LAYERS(i%).top = PSD_read_i32&(fh%)
+        PSD_LAYERS(i%).left = PSD_read_i32&(fh%)
+        PSD_LAYERS(i%).bottom = PSD_read_i32&(fh%)
+        PSD_LAYERS(i%).right = PSD_read_i32&(fh%)
+
+        ' Channel count
+        PSD_LAYERS(i%).channel_count = PSD_read_u16&(fh%)
+        IF PSD_LAYERS(i%).channel_count > PSD_MAX_CHANNELS THEN
+            PSD_LAYERS(i%).channel_count = PSD_MAX_CHANNELS
+        END IF
+
+        ' Per-channel info: channel ID (2 bytes) + data length (4 bytes)
+        FOR ch% = 1 TO PSD_LAYERS(i%).channel_count
+            PSD_CHAN_INFO(i%, ch%).channel_id = PSD_read_i16%(fh%)
+            PSD_CHAN_INFO(i%, ch%).data_length = PSD_read_i32&(fh%)
+        NEXT ch%
+
+        ' Blend mode signature — must be "8BIM"
+        DIM blendSig AS STRING * 4
+        GET #fh%, , blendSig
+        IF blendSig <> "8BIM" THEN
+            PSD_IMG.error_message = "Bad blend mode signature at layer" + STR$(i%)
+            CLOSE #fh%
+            PSD_load% = PSD_FALSE
+            EXIT FUNCTION
+        END IF
+
+        ' Blend mode key (4 chars)
+        GET #fh%, , PSD_LAYERS(i%).blend_mode
+
+        ' Opacity
+        DIM opByte AS _UNSIGNED _BYTE
+        GET #fh%, , opByte
+        PSD_LAYERS(i%).opacity = opByte
+
+        ' Clipping
+        DIM clipByte AS _UNSIGNED _BYTE
+        GET #fh%, , clipByte
+        PSD_LAYERS(i%).clipping = clipByte
+
+        ' Flags
+        DIM flagByte AS _UNSIGNED _BYTE
+        GET #fh%, , flagByte
+        PSD_LAYERS(i%).flags = flagByte
+        ' Bit 1 (value 2) = NOT visible (inverted in PSD!)
+        IF (flagByte AND 2) = 2 THEN
+            PSD_LAYERS(i%).visible = PSD_FALSE
+        ELSE
+            PSD_LAYERS(i%).visible = PSD_TRUE
+        END IF
+
+        ' Filler byte
+        DIM filler AS _UNSIGNED _BYTE
+        GET #fh%, , filler
+
+        ' Extra data length
+        DIM extraLen AS _INTEGER64
+        extraLen&& = PSD_read_u32&&(fh%)
+        DIM extraEnd AS _INTEGER64
+        extraEnd&& = SEEK(fh%) + extraLen&& - 1
+
+        ' --- Layer mask data ---
+        DIM maskLen AS _INTEGER64
+        maskLen&& = PSD_read_u32&&(fh%)
+        IF maskLen&& > 0 THEN
+            SEEK #fh%, SEEK(fh%) + maskLen&&
+        END IF
+
+        ' --- Layer blending ranges ---
+        DIM rangesLen AS _INTEGER64
+        rangesLen&& = PSD_read_u32&&(fh%)
+        IF rangesLen&& > 0 THEN
+            SEEK #fh%, SEEK(fh%) + rangesLen&&
+        END IF
+
+        ' --- Layer name (Pascal string, padded to multiple of 4) ---
+        DIM nameLen AS _UNSIGNED _BYTE
+        GET #fh%, , nameLen
+        DIM nameStr AS STRING
+        IF nameLen > 0 THEN
+            nameStr$ = SPACE$(nameLen)
+            GET #fh%, , nameStr$
+        ELSE
+            nameStr$ = ""
+        END IF
+        PSD_LAYERS(i%).name = nameStr$
+        PSD_LAYERS(i%).name_len = nameLen
+
+        ' Padding: (1 + nameLen) rounded up to multiple of 4
+        DIM totalNameBytes AS LONG
+        totalNameBytes& = 1 + nameLen
+        DIM paddedNameBytes AS LONG
+        paddedNameBytes& = ((totalNameBytes& + 3) \ 4) * 4
+        DIM namePad AS LONG
+        namePad& = paddedNameBytes& - totalNameBytes&
+        IF namePad& > 0 THEN
+            SEEK #fh%, SEEK(fh%) + namePad&
+        END IF
+
+        ' Defaults for group detection
+        PSD_LAYERS(i%).is_group = PSD_FALSE
+        PSD_LAYERS(i%).is_group_end = PSD_FALSE
+        PSD_LAYERS(i%).section_type = PSD_SECTION_OTHER
+
+        ' --- Additional layer information (tagged blocks) ---
+        ' Each block: signature (4) + key (4) + length (4) + data
+        DO WHILE SEEK(fh%) <= extraEnd&& - 11 ' need >=12 bytes for a tag header
+            DIM tagSig AS STRING * 4
+            GET #fh%, , tagSig
+            IF tagSig <> "8BIM" AND tagSig <> "8B64" THEN
+                ' Not a valid tag — seek past rest of extra data
+                SEEK #fh%, extraEnd&& + 1
+                EXIT DO
+            END IF
+
+            DIM tagKey AS STRING * 4
+            GET #fh%, , tagKey
+
+            DIM tagLen AS _INTEGER64
+            tagLen&& = PSD_read_u32&&(fh%)
+
+            DIM tagStart AS _INTEGER64
+            tagStart&& = SEEK(fh%)
+
+            SELECT CASE tagKey
+                CASE "lsct", "lsdk"
+                    ' Section divider — group info
+                    IF tagLen&& >= 4 THEN
+                        DIM sectType AS LONG
+                        sectType& = PSD_read_i32&(fh%)
+                        PSD_LAYERS(i%).section_type = sectType&
+                        IF sectType& = PSD_SECTION_OPEN_FOLDER OR sectType& = PSD_SECTION_CLOSED_FOLDER THEN
+                            PSD_LAYERS(i%).is_group = PSD_TRUE
+                        ELSEIF sectType& = PSD_SECTION_BOUNDING THEN
+                            PSD_LAYERS(i%).is_group_end = PSD_TRUE
+                        END IF
+                    END IF
+
+                CASE "luni"
+                    ' Unicode layer name (UTF-16BE)
+                    IF tagLen&& >= 4 THEN
+                        DIM uniLen AS LONG
+                        uniLen& = PSD_read_i32&(fh%)
+                        IF uniLen& > 0 AND uniLen& <= 256 THEN
+                            DIM uniName AS STRING
+                            uniName$ = ""
+                            DIM u AS LONG
+                            FOR u& = 1 TO uniLen&
+                                DIM highByte AS _UNSIGNED _BYTE
+                                DIM lowByte AS _UNSIGNED _BYTE
+                                GET #fh%, , highByte
+                                GET #fh%, , lowByte
+                                ' Extract ASCII portion (non-ASCII becomes "?")
+                                IF highByte = 0 AND lowByte >= 32 AND lowByte <= 126 THEN
+                                    uniName$ = uniName$ + CHR$(lowByte)
+                                ELSEIF highByte > 0 OR lowByte > 126 THEN
+                                    uniName$ = uniName$ + "?"
+                                END IF
+                            NEXT u&
+                            IF LEN(uniName$) > 0 THEN
+                                PSD_LAYERS(i%).name = uniName$
+                                PSD_LAYERS(i%).name_len = LEN(uniName$)
+                            END IF
+                        END IF
+                    END IF
+            END SELECT
+
+            ' Seek past tag data (padded to even boundary)
+            DIM paddedTagLen AS _INTEGER64
+            paddedTagLen&& = tagLen&& + (tagLen&& MOD 2)
+            SEEK #fh%, tagStart&& + paddedTagLen&&
+        LOOP
+
+        ' Ensure file position is at end of extra data
+        IF SEEK(fh%) < extraEnd&& + 1 THEN
+            SEEK #fh%, extraEnd&& + 1
+        END IF
+
+        DIM lyrName AS STRING
+        lyrName$ = LEFT$(PSD_LAYERS(i%).name, PSD_LAYERS(i%).name_len)
+        _LOGINFO "PSD:   Layer" + STR$(i%) + ": " + CHR$(34) + lyrName$ + CHR$(34) + " [" + STR$(PSD_LAYERS(i%).left) + "," + STR$(PSD_LAYERS(i%).top) + " -" + STR$(PSD_LAYERS(i%).right) + "," + STR$(PSD_LAYERS(i%).bottom) + "] " + STR$(PSD_LAYERS(i%).channel_count) + " ch, blend=" + PSD_LAYERS(i%).blend_mode + ", opacity=" + STR$(PSD_LAYERS(i%).opacity) + ", vis=" + STR$(PSD_LAYERS(i%).visible) + ", group=" + STR$(PSD_LAYERS(i%).is_group) + ", groupEnd=" + STR$(PSD_LAYERS(i%).is_group_end)
+    NEXT i%
+
+    ' ---------------------------------------------------------------
+    ' Record channel data offsets
+    ' After all layer records, channel image data follows sequentially.
+    ' ---------------------------------------------------------------
+    DIM fileOffset AS _INTEGER64
+    fileOffset&& = SEEK(fh%)
+    FOR i% = 1 TO layerCount%
+        PSD_CHAN_DATA_OFFSETS(i%) = fileOffset&&
+        FOR ch% = 1 TO PSD_LAYERS(i%).channel_count
+            fileOffset&& = fileOffset&& + PSD_CHAN_INFO(i%, ch%).data_length
+        NEXT ch%
+    NEXT i%
+
+    PSD_IMG.layer_count = layerCount%
+    PSD_IMG.is_valid = PSD_TRUE
+
+    CLOSE #fh%
+    PSD_load% = PSD_TRUE
+    _LOGINFO "PSD: Parsed" + STR$(layerCount%) + " layers successfully"
+END FUNCTION
+
+
+' ===========================================================================
+' PSD_get_layer_image — extract pixel data for one layer
+' ===========================================================================
+
+''
+' Read and decompress channel data for a single layer, returning a QB64-PE
+' 32-bit RGBA image handle. The image dimensions match the layer bounds.
+' Returns 0 on error.
+'
+' @param filename$    Path to the .psd file
+' @param layer_index% 1-based layer index (into PSD_LAYERS)
+' @return Image handle (< -1) or 0 on failure
+'
+FUNCTION PSD_get_layer_image& (filename AS STRING, layer_index AS INTEGER)
+    DIM fh AS INTEGER
+
+    IF layer_index% < 1 OR layer_index% > PSD_IMG.layer_count THEN
+        PSD_get_layer_image& = 0
+        EXIT FUNCTION
+    END IF
+
+    DIM layW AS LONG, layH AS LONG
+    layW& = PSD_LAYERS(layer_index%).right - PSD_LAYERS(layer_index%).left
+    layH& = PSD_LAYERS(layer_index%).bottom - PSD_LAYERS(layer_index%).top
+
+    IF layW& <= 0 OR layH& <= 0 THEN
+        _LOGINFO "PSD: Layer" + STR$(layer_index%) + " has zero dimensions, skipping"
+        PSD_get_layer_image& = 0
+        EXIT FUNCTION
+    END IF
+
+    DIM pixelCount AS LONG
+    pixelCount& = layW& * layH&
+
+    ' Open file and seek to this layer's channel data
+    fh% = FREEFILE
+    OPEN filename$ FOR BINARY AS #fh%
+    SEEK #fh%, PSD_CHAN_DATA_OFFSETS(layer_index%)
+
+    ' Allocate per-channel buffers with defaults
+    DIM channelR AS STRING
+    DIM channelG AS STRING
+    DIM channelB AS STRING
+    DIM channelA AS STRING
+
+    IF PSD_IMG.header.color_mode = PSD_MODE_GRAYSCALE THEN
+        channelR$ = STRING$(pixelCount&, 128)
+        channelG$ = STRING$(pixelCount&, 128)
+        channelB$ = STRING$(pixelCount&, 128)
+    ELSE
+        channelR$ = STRING$(pixelCount&, 0)
+        channelG$ = STRING$(pixelCount&, 0)
+        channelB$ = STRING$(pixelCount&, 0)
+    END IF
+    channelA$ = STRING$(pixelCount&, 255) ' default fully opaque
+
+    ' Read and decompress each channel
+    DIM ch AS INTEGER
+    FOR ch% = 1 TO PSD_LAYERS(layer_index%).channel_count
+        DIM chanId AS INTEGER
+        chanId% = PSD_CHAN_INFO(layer_index%, ch%).channel_id
+        DIM chanDataLen AS LONG
+        chanDataLen& = PSD_CHAN_INFO(layer_index%, ch%).data_length
+
+        IF chanDataLen& <= 2 THEN
+            ' No meaningful data — skip
+            IF chanDataLen& > 0 THEN SEEK #fh%, SEEK(fh%) + chanDataLen&
+            _CONTINUE
+        END IF
+
+        ' Skip mask channels
+        IF chanId% = PSD_CHAN_USER_MASK OR chanId% = PSD_CHAN_REAL_USER_MASK THEN
+            SEEK #fh%, SEEK(fh%) + chanDataLen&
+            _CONTINUE
+        END IF
+
+        ' Compression type (first 2 bytes of channel data)
+        DIM compression AS INTEGER
+        compression% = PSD_read_u16&(fh%)
+
+        DIM chanBuf AS STRING
+
+        SELECT CASE compression%
+            CASE PSD_COMPRESS_RAW
+                chanBuf$ = SPACE$(pixelCount&)
+                GET #fh%, , chanBuf$
+
+            CASE PSD_COMPRESS_RLE
+                ' Scanline byte counts: layH × 2 bytes (big-endian uint16 each)
+                DIM rleCountsSize AS LONG
+                rleCountsSize& = layH& * 2
+                DIM rleCounts AS STRING
+                rleCounts$ = SPACE$(rleCountsSize&)
+                GET #fh%, , rleCounts$
+
+                ' Remaining bytes are the compressed data
+                DIM rleDataLen AS LONG
+                rleDataLen& = chanDataLen& - 2 - rleCountsSize&
+                IF rleDataLen& > 0 THEN
+                    DIM rleData AS STRING
+                    rleData$ = SPACE$(rleDataLen&)
+                    GET #fh%, , rleData$
+                    chanBuf$ = PSD_decode_packbits$(rleData$, pixelCount&)
+                ELSE
+                    chanBuf$ = STRING$(pixelCount&, 0)
+                END IF
+
+            CASE PSD_COMPRESS_ZIP
+                DIM zipDataLen AS LONG
+                zipDataLen& = chanDataLen& - 2
+                IF zipDataLen& > 0 THEN
+                    DIM zipData AS STRING
+                    zipData$ = SPACE$(zipDataLen&)
+                    GET #fh%, , zipData$
+                    chanBuf$ = _INFLATE$(zipData$, pixelCount&)
+                    IF LEN(chanBuf$) < pixelCount& THEN
+                        chanBuf$ = chanBuf$ + STRING$(pixelCount& - LEN(chanBuf$), 0)
+                    END IF
+                ELSE
+                    chanBuf$ = STRING$(pixelCount&, 0)
+                END IF
+
+            CASE ELSE
+                ' Unsupported compression — skip remaining data, use zeros
+                _LOGWARN "PSD: Unsupported compression" + STR$(compression%) + " on layer" + STR$(layer_index%) + " channel" + STR$(chanId%)
+                DIM skipLen AS LONG
+                skipLen& = chanDataLen& - 2
+                IF skipLen& > 0 THEN SEEK #fh%, SEEK(fh%) + skipLen&
+                chanBuf$ = STRING$(pixelCount&, 0)
+        END SELECT
+
+        ' Assign to the correct channel
+        SELECT CASE chanId%
+            CASE PSD_CHAN_RED
+                IF PSD_IMG.header.color_mode = PSD_MODE_GRAYSCALE THEN
+                    ' Grayscale: single channel goes to R, G, B
+                    channelR$ = chanBuf$
+                    channelG$ = chanBuf$
+                    channelB$ = chanBuf$
+                ELSE
+                    channelR$ = chanBuf$
+                END IF
+            CASE PSD_CHAN_GREEN
+                channelG$ = chanBuf$
+            CASE PSD_CHAN_BLUE
+                channelB$ = chanBuf$
+            CASE PSD_CHAN_TRANSPARENCY
+                channelA$ = chanBuf$
+        END SELECT
+    NEXT ch%
+
+    CLOSE #fh%
+
+    ' Create QB64-PE 32-bit image from channel data
+    DIM img AS LONG
+    img& = _NEWIMAGE(layW&, layH&, 32)
+    IF img& >= -1 THEN
+        _LOGWARN "PSD: Failed to create image for layer" + STR$(layer_index%)
+        PSD_get_layer_image& = 0
+        EXIT FUNCTION
+    END IF
+
+    DIM m AS _MEM
+    m = _MEMIMAGE(img&)
+
+    DIM px AS LONG
+    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE
+    DIM b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM c AS _UNSIGNED LONG
+
+    FOR px& = 0 TO pixelCount& - 1
+        r = ASC(channelR$, px& + 1)
+        g = ASC(channelG$, px& + 1)
+        b = ASC(channelB$, px& + 1)
+        a = ASC(channelA$, px& + 1)
+        c~& = _RGBA32(r, g, b, a)
+        _MEMPUT m, m.OFFSET + px& * 4, c~&
+    NEXT px&
+
+    _MEMFREE m
+
+    PSD_get_layer_image& = img&
+END FUNCTION
+
+
+' ===========================================================================
+' PSD_map_blend_mode — convert PSD 4-char key to DRAW blend mode constant
+' ===========================================================================
+
+''
+' Map a PSD blend mode key to a DRAW BLEND_* constant.
+' Unsupported PSD modes fall back to BLEND_NORMAL.
+'
+' @param blend_key$ 4-character PSD blend mode key
+' @return DRAW BLEND_* constant
+'
+FUNCTION PSD_map_blend_mode% (blend_key AS STRING)
+    DIM k AS STRING
+    k$ = blend_key$
+
+    SELECT CASE k$
+        CASE "norm", "pass"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "mul "
+            PSD_map_blend_mode% = BLEND_MULTIPLY
+        CASE "scrn"
+            PSD_map_blend_mode% = BLEND_SCREEN
+        CASE "over"
+            PSD_map_blend_mode% = BLEND_OVERLAY
+        CASE "dark"
+            PSD_map_blend_mode% = BLEND_DARKEN
+        CASE "lite"
+            PSD_map_blend_mode% = BLEND_LIGHTEN
+        CASE "div "
+            PSD_map_blend_mode% = BLEND_COLOR_DODGE
+        CASE "idiv"
+            PSD_map_blend_mode% = BLEND_COLOR_BURN
+        CASE "hLit"
+            PSD_map_blend_mode% = BLEND_HARD_LIGHT
+        CASE "sLit"
+            PSD_map_blend_mode% = BLEND_SOFT_LIGHT
+        CASE "diff"
+            PSD_map_blend_mode% = BLEND_DIFFERENCE
+        CASE "smud"
+            PSD_map_blend_mode% = BLEND_EXCLUSION
+        CASE "vLit"
+            PSD_map_blend_mode% = BLEND_VIVID_LIGHT
+        CASE "lLit"
+            PSD_map_blend_mode% = BLEND_LINEAR_LIGHT
+        CASE "pLit"
+            PSD_map_blend_mode% = BLEND_PIN_LIGHT
+        CASE "colr"
+            PSD_map_blend_mode% = BLEND_COLOR
+        CASE "lum "
+            PSD_map_blend_mode% = BLEND_LUMINOSITY
+        CASE "lbrn"
+            ' Linear Burn — closest is Color Burn
+            PSD_map_blend_mode% = BLEND_COLOR_BURN
+        CASE "lddg"
+            ' Linear Dodge (Add) — maps to Add
+            PSD_map_blend_mode% = BLEND_ADD
+        CASE "fsub"
+            PSD_map_blend_mode% = BLEND_SUBTRACT
+        CASE "diss"
+            _LOGWARN "PSD: Dissolve blend mode not supported, using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "hue "
+            _LOGWARN "PSD: Hue blend mode not supported, using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "sat "
+            _LOGWARN "PSD: Saturation blend mode not supported, using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "fdiv"
+            _LOGWARN "PSD: Divide blend mode not supported, using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "hMix"
+            _LOGWARN "PSD: Hard Mix blend mode not supported, using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+        CASE "dkCl"
+            _LOGWARN "PSD: Darker Color blend mode not supported, using Darken"
+            PSD_map_blend_mode% = BLEND_DARKEN
+        CASE "lgCl"
+            _LOGWARN "PSD: Lighter Color blend mode not supported, using Lighten"
+            PSD_map_blend_mode% = BLEND_LIGHTEN
+        CASE ELSE
+            _LOGWARN "PSD: Unknown blend mode '" + k$ + "', using Normal"
+            PSD_map_blend_mode% = BLEND_NORMAL
+    END SELECT
+END FUNCTION
