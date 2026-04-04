@@ -16,15 +16,33 @@ SUB FD_INPUT_poll
     FD_STATE.mouseWheel = 0
 
     ' Poll mouse events
-    DO WHILE _MOUSEINPUT
-        FD_STATE.mouseWheel = FD_STATE.mouseWheel + _MOUSEWHEEL
-    LOOP
+    $IF MAC THEN
+        ' macOS: Capture button presses during drain — trackpad tap-to-click
+        ' can press+release within a single drain cycle, so the final
+        ' _MOUSEBUTTON() call after the loop sees the button already released.
+        DIM mac_b1 AS INTEGER, mac_b2 AS INTEGER
+        mac_b1% = FALSE: mac_b2% = FALSE
+        DO WHILE _MOUSEINPUT
+            FD_STATE.mouseWheel = FD_STATE.mouseWheel + _MOUSEWHEEL
+            IF _MOUSEBUTTON(1) THEN mac_b1% = TRUE
+            IF _MOUSEBUTTON(2) THEN mac_b2% = TRUE
+        LOOP
+    $ELSE
+        DO WHILE _MOUSEINPUT
+            FD_STATE.mouseWheel = FD_STATE.mouseWheel + _MOUSEWHEEL
+        LOOP
+    $END IF
 
     ' Convert screen mouse to dialog-relative coordinates
     FD_STATE.mouseX = _MOUSEX \ FD_STATE.scale - FD_STATE.dialogX
     FD_STATE.mouseY = _MOUSEY \ FD_STATE.scale - FD_STATE.dialogY
-    FD_STATE.mouseB1 = _MOUSEBUTTON(1)
-    FD_STATE.mouseB2 = _MOUSEBUTTON(2)
+    $IF MAC THEN
+        FD_STATE.mouseB1 = mac_b1% OR _MOUSEBUTTON(1)
+        FD_STATE.mouseB2 = mac_b2% OR _MOUSEBUTTON(2)
+    $ELSE
+        FD_STATE.mouseB1 = _MOUSEBUTTON(1)
+        FD_STATE.mouseB2 = _MOUSEBUTTON(2)
+    $END IF
 
     ' Update cursor blink
     IF TIMER(.001) - FD_STATE.cursorTimer > FD_CURSOR_BLINK_MS THEN
