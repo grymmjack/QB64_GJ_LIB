@@ -155,6 +155,9 @@ TYPE FD_CONFIG_OBJ
     filterFontScale AS INTEGER       ' Filter dropdown
     statusFontScale AS INTEGER       ' Status bar
     sortFontScale AS INTEGER         ' Sort indicator / column headers
+
+    ' Icon scale (integer multiplier for PNG icons, 1 = native, 2 = double, etc.)
+    iconScale AS INTEGER             ' Icon rendering scale multiplier (default 2)
 END TYPE
 
 ' --- Runtime State -----------------------------------------------------------

@@ -225,6 +225,9 @@ SUB FD_cleanup
     ' Free thumbnail cache
     FD_THUMB_cleanup
 
+    ' Free loaded PNG icons
+    FD_ICONS_free_all
+
     ' Restore auto-display
     _AUTODISPLAY
 
@@ -682,6 +685,9 @@ SUB FD_load_config
     FD_CFG.statusFontScale = 1
     FD_CFG.sortFontScale = 1
 
+    ' Icon scale default (2 = double native size)
+    FD_CFG.iconScale = 2
+
     IF NOT _FILEEXISTS(cfgPath) THEN EXIT SUB
 
     DIM f AS INTEGER
@@ -727,6 +733,7 @@ SUB FD_load_config
             CASE "FILTERFONTSCALE": FD_CFG.filterFontScale = VAL(cfgVal)
             CASE "STATUSFONTSCALE": FD_CFG.statusFontScale = VAL(cfgVal)
             CASE "SORTFONTSCALE": FD_CFG.sortFontScale = VAL(cfgVal)
+            CASE "ICONSCALE": FD_CFG.iconScale = VAL(cfgVal)
         END SELECT
     LOOP
 
@@ -806,6 +813,7 @@ SUB FD_save_config
     PRINT #f, "filterFontScale=" + LTRIM$(STR$(FD_CFG.filterFontScale))
     PRINT #f, "statusFontScale=" + LTRIM$(STR$(FD_CFG.statusFontScale))
     PRINT #f, "sortFontScale=" + LTRIM$(STR$(FD_CFG.sortFontScale))
+    PRINT #f, "iconScale=" + LTRIM$(STR$(FD_CFG.iconScale))
 
     CLOSE #f
 END SUB

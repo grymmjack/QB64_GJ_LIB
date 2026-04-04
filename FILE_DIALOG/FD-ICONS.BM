@@ -27,6 +27,18 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
         CASE "grad"
             FD_ICONS_for_extension% = FD_ICON_GRADIENT
 
+        ' Archives
+        CASE "zip", "tar", "gz", "tgz", "rar", "7z", "bz2", "bzip", "bzip2", "xz", "lz", "lzma", "zst", "cab", "iso", "dmg", "sit", "sitx", "arj", "lha", "lzh", "z", "ace"
+            FD_ICONS_for_extension% = FD_ICON_ARCHIVE
+
+        ' Video
+        CASE "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v", "mpg", "mpeg", "3gp", "ogv", "vob"
+            FD_ICONS_for_extension% = FD_ICON_VIDEO
+
+        ' Music (longer-form audio, tracked music)
+        CASE "mp3", "ogg", "flac", "mid", "midi", "mod", "xm", "s3m", "it", "m4a", "wma", "aac", "opus"
+            FD_ICONS_for_extension% = FD_ICON_MUSIC
+
         ' Text / source code
         CASE "txt", "md", "bas", "bi", "bm", "log", "csv"
             FD_ICONS_for_extension% = FD_ICON_TEXT
@@ -43,8 +55,8 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
         CASE "run", "exe", "com", "sh", "bat", "cmd", "py", "pl"
             FD_ICONS_for_extension% = FD_ICON_EXECUTABLE
 
-        ' Sound / music
-        CASE "wav", "mp3", "ogg", "flac", "mid", "midi", "mod", "xm", "s3m", "it"
+        ' Sound effects (short-form audio)
+        CASE "wav", "aif", "aiff", "au", "snd"
             FD_ICONS_for_extension% = FD_ICON_SOUND
 
         ' Text mode art
@@ -297,8 +309,209 @@ SUB FD_ICONS_render (iconId AS INTEGER, x AS INTEGER, y AS INTEGER, sz AS INTEGE
             LINE (x + sz - 4, y)-(x + sz - 1, y + 2), clr
             LINE (x, y)-(x + sz - 5, y), clr
 
+        ' === Archive ===
+        CASE FD_ICON_ARCHIVE
+            clr = FD_CLR_ICON_ARCHIVE~&
+            ' Box with zipper
+            LINE (x, y)-(x + sz - 1, y + sz - 1), clr, B
+            ' Zipper stripe down center
+            DIM az AS INTEGER
+            FOR az = 0 TO sz - 2 STEP 2
+                PSET (x + half, y + az), clr
+            NEXT az
+            LINE (x + half - 1, y + sz \ 3)-(x + half + 1, y + sz * 2 \ 3), clr, B
+
+        ' === Video ===
+        CASE FD_ICON_VIDEO
+            clr = FD_CLR_ICON_VIDEO~&
+            ' Film frame
+            LINE (x + 1, y + 2)-(x + sz - 2, y + sz - 3), clr, B
+            ' Sprocket holes
+            LINE (x + 2, y + 4)-(x + 4, y + 5), clr, BF
+            LINE (x + 2, y + sz - 6)-(x + 4, y + sz - 5), clr, BF
+            LINE (x + sz - 5, y + 4)-(x + sz - 3, y + 5), clr, BF
+            LINE (x + sz - 5, y + sz - 6)-(x + sz - 3, y + sz - 5), clr, BF
+
+        ' === Music ===
+        CASE FD_ICON_MUSIC
+            clr = FD_CLR_ICON_MUSIC~&
+            ' Double music note
+            LINE (x + 3, y + 2)-(x + 3, y + sz - 4), clr
+            LINE (x + sz - 4, y + 2)-(x + sz - 4, y + sz - 4), clr
+            LINE (x + 3, y + 2)-(x + sz - 4, y + 2), clr
+            CIRCLE (x + 2, y + sz - 3), 2, clr
+            CIRCLE (x + sz - 5, y + sz - 3), 2, clr
+
+        ' === Toolbar: Preview toggle ===
+        CASE FD_ICON_TB_PREVIEW
+            clr = FD_CLR_TEXT~&
+            ' Preview pane icon — rectangle with image
+            LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 2), clr, B
+            LINE (x + half, y + 1)-(x + half, y + sz - 2), clr
+            ' Mini mountain in right pane
+            LINE (x + half + 2, y + sz - 4)-(x + half + half \ 2 + 1, y + half + 1), clr
+            LINE (x + half + half \ 2 + 1, y + half + 1)-(x + sz - 3, y + sz - 4), clr
+
         CASE ELSE
             ' Unknown icon — draw a simple box
             LINE (x + 1, y + 1)-(x + sz - 2, y + sz - 2), FD_CLR_TEXT_DIM~&, B
     END SELECT
 END SUB
+
+' --------------------------------------------------------------------------
+' FD_ICONS_has_png% — Check if a PNG icon handle is loaded for given icon ID
+' --------------------------------------------------------------------------
+FUNCTION FD_ICONS_has_png% (iconId AS INTEGER)
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
+        FD_ICONS_has_png% = 0
+        EXIT FUNCTION
+    END IF
+    FD_ICONS_has_png% = (FD_iconHandles(iconId) < -1)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_ICONS_render_png — Render a PNG icon scaled by FD_CFG.iconScale, centered
+' in sz x sz area. Falls back to procedural rendering if no PNG loaded.
+' --------------------------------------------------------------------------
+SUB FD_ICONS_render_png (iconId AS INTEGER, x AS INTEGER, y AS INTEGER, sz AS INTEGER)
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
+        FD_ICONS_render iconId, x, y, sz
+        EXIT SUB
+    END IF
+
+    DIM h AS LONG
+    h = FD_iconHandles(iconId)
+    IF h < -1 THEN
+        ' Scale factor from config (default 2 if not set)
+        DIM sc AS INTEGER
+        sc = FD_CFG.iconScale
+        IF sc < 1 THEN sc = 2
+
+        ' Scaled dimensions
+        DIM sw AS INTEGER, sh AS INTEGER
+        sw = FD_iconW(iconId) * sc
+        sh = FD_iconH(iconId) * sc
+
+        ' Center within sz x sz area
+        DIM ox AS INTEGER, oy AS INTEGER
+        ox = x + (sz - sw) \ 2
+        oy = y + (sz - sh) \ 2
+        _PUTIMAGE (ox, oy)-(ox + sw - 1, oy + sh - 1), h
+    ELSE
+        ' Fallback to procedural
+        FD_ICONS_render iconId, x, y, sz
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_ICONS_load_one — Load a single icon PNG from the icon directory
+' --------------------------------------------------------------------------
+SUB FD_ICONS_load_one (iconId AS INTEGER, filename AS STRING)
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN EXIT SUB
+    IF LEN(filename) = 0 THEN EXIT SUB
+    IF LEN(FD_iconDir) = 0 THEN EXIT SUB
+
+    DIM path AS STRING
+    path = FD_iconDir + "/" + filename
+
+    IF NOT _FILEEXISTS(path) THEN EXIT SUB
+
+    DIM img AS LONG
+    img = _LOADIMAGE(path, 32)
+    IF img < -1 THEN
+        ' Free any previously loaded handle
+        IF FD_iconHandles(iconId) < -1 THEN _FREEIMAGE FD_iconHandles(iconId)
+        FD_iconHandles(iconId) = img
+        FD_iconW(iconId) = _WIDTH(img)
+        FD_iconH(iconId) = _HEIGHT(img)
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_ICONS_load_all — Load all icon PNGs from the given directory
+'   iconDir$ should be the full path to the FILEDIALOG icon folder,
+'   e.g. "ASSETS/THEMES/DEFAULT/IMAGES/FILEDIALOG"
+' --------------------------------------------------------------------------
+SUB FD_ICONS_load_all (iconDir AS STRING)
+    FD_iconDir = iconDir
+    IF LEN(iconDir) = 0 THEN EXIT SUB
+    IF NOT _DIREXISTS(iconDir) THEN EXIT SUB
+
+    ' Places bar icons
+    FD_ICONS_load_one FD_ICON_PLACE_ROOT, "root.png"
+    FD_ICONS_load_one FD_ICON_PLACE_HOME, "home.png"
+    FD_ICONS_load_one FD_ICON_PLACE_DESKTOP, "desktop.png"
+    FD_ICONS_load_one FD_ICON_PLACE_DOWNLOADS, "downloads.png"
+    FD_ICONS_load_one FD_ICON_PLACE_PICTURES, "my-pictures.png"
+    FD_ICONS_load_one FD_ICON_PLACE_MUSIC, "my-music.png"
+    FD_ICONS_load_one FD_ICON_PLACE_VIDEOS, "my-videos.png"
+    FD_ICONS_load_one FD_ICON_PLACE_DOCUMENTS, "my-documents.png"
+    FD_ICONS_load_one FD_ICON_PLACE_DRIVE, "drives.png"
+
+    ' File type icons
+    FD_ICONS_load_one FD_ICON_FOLDER, "filetype-folder.png"
+    FD_ICONS_load_one FD_ICON_IMAGE, "filetype-image.png"
+    FD_ICONS_load_one FD_ICON_DOCUMENT, "filetype-text-document.png"
+    FD_ICONS_load_one FD_ICON_EXECUTABLE, "filetype-executable.png"
+    FD_ICONS_load_one FD_ICON_TEXT, "filetype-text-document.png"
+    FD_ICONS_load_one FD_ICON_TEXTMODE, "filetype-textmode.png"
+    FD_ICONS_load_one FD_ICON_SOUND, "filetype-sound.png"
+    FD_ICONS_load_one FD_ICON_CONFIG, "filetype-config.png"
+    FD_ICONS_load_one FD_ICON_FONT, "filetype-font.png"
+    FD_ICONS_load_one FD_ICON_DEFAULT_FILE, "filetype-unknown.png"
+    FD_ICONS_load_one FD_ICON_ARCHIVE, "filetype-archive.png"
+    FD_ICONS_load_one FD_ICON_VIDEO, "filetype-video.png"
+    FD_ICONS_load_one FD_ICON_MUSIC, "filetype-music.png"
+
+    ' DRAW-specific
+    FD_ICONS_load_one FD_ICON_DRW, "filetype-draw.png"
+    FD_ICONS_load_one FD_ICON_DSET, "filetype-drawset.png"
+    FD_ICONS_load_one FD_ICON_PALETTE, "filetype-palette.png"
+    FD_ICONS_load_one FD_ICON_GRADIENT, "filetype-gradient.png"
+
+    ' Toolbar buttons
+    FD_ICONS_load_one FD_ICON_TB_UP, "button-up-directory.png"
+    FD_ICONS_load_one FD_ICON_TB_LIST, "button-list-view.png"
+    FD_ICONS_load_one FD_ICON_TB_DETAILS, "button-detail-view.png"
+    FD_ICONS_load_one FD_ICON_TB_THUMBS, "button-thumbnail-view.png"
+    FD_ICONS_load_one FD_ICON_TB_HIDDEN, "button-show-hidden.png"
+    FD_ICONS_load_one FD_ICON_TB_PREVIEW, "button-show-preview.png"
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_ICONS_free_all — Free all loaded icon image handles
+' --------------------------------------------------------------------------
+SUB FD_ICONS_free_all ()
+    DIM i AS INTEGER
+    FOR i = 0 TO FD_ICON_COUNT - 1
+        IF FD_iconHandles(i) < -1 THEN
+            _FREEIMAGE FD_iconHandles(i)
+        END IF
+        FD_iconHandles(i) = -1
+        FD_iconW(i) = 0
+        FD_iconH(i) = 0
+    NEXT i
+    FD_iconDir = ""
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_ICONS_w% — Get width of loaded PNG icon (0 if not loaded)
+' --------------------------------------------------------------------------
+FUNCTION FD_ICONS_w% (iconId AS INTEGER)
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
+        FD_ICONS_w% = 0
+        EXIT FUNCTION
+    END IF
+    FD_ICONS_w% = FD_iconW(iconId)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_ICONS_h% — Get height of loaded PNG icon (0 if not loaded)
+' --------------------------------------------------------------------------
+FUNCTION FD_ICONS_h% (iconId AS INTEGER)
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
+        FD_ICONS_h% = 0
+        EXIT FUNCTION
+    END IF
+    FD_ICONS_h% = FD_iconH(iconId)
+END FUNCTION

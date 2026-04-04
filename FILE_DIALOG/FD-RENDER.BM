@@ -180,13 +180,18 @@ SUB FD_RENDER_path_bar
     LINE (0, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.pathBarH - 1), FD_CLR_PATH_BG~&, BF
 
     ' Up button [..]
+    DIM upIsc AS INTEGER
+    upIsc = FD_CFG.iconScale: IF upIsc < 1 THEN upIsc = 2
+    DIM upIconSz AS INTEGER
+    upIconSz = 11 * upIsc  ' default
+    IF FD_ICONS_has_png%(FD_ICON_TB_UP) THEN upIconSz = FD_iconW(FD_ICON_TB_UP) * upIsc
     DIM upW AS INTEGER
-    upW = 28
+    upW = upIconSz + 6  ' icon + padding
     DIM pfs AS INTEGER
     pfs = FD_CFG.pathFontScale: IF pfs < 1 THEN pfs = 1
     LINE (FD_PADDING, y1 + 3)-(FD_PADDING + upW - 1, y1 + FD_STATE.pathBarH - 4), FD_CLR_BUTTON_BG~&, BF
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
-    FD_print_scaled FD_PADDING + 6, y1 + (FD_STATE.pathBarH - FD_text_height%(pfs)) \ 2 + 1, CHR$(24), pfs
+    FD_ICONS_render_png FD_ICON_TB_UP, FD_PADDING + 3, y1 + (FD_STATE.pathBarH - upIconSz) \ 2, upIconSz
 
     ' Path input field — rendered by TI widget
     IF NOT FD_STATE.pathInputActive THEN
@@ -209,8 +214,15 @@ SUB FD_RENDER_toolbar
     bx = FD_PADDING
 
     ' View mode buttons: [List] [Detail] [Thumb]
+    DIM btnPad AS INTEGER
+    btnPad = 3  ' padding around icon inside button
+    DIM isc AS INTEGER
+    isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
+    DIM tbIconSz AS INTEGER
+    tbIconSz = 11 * isc  ' default toolbar icon size (scaled)
+    IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN tbIconSz = FD_iconW(FD_ICON_TB_LIST) * isc
     DIM btnW AS INTEGER
-    btnW = 48
+    btnW = tbIconSz + btnPad * 2
     DIM sfs AS INTEGER
     sfs = FD_CFG.sortFontScale: IF sfs < 1 THEN sfs = 1
 
@@ -219,7 +231,7 @@ SUB FD_RENDER_toolbar
     IF FD_CFG.viewMode = FD_VIEW_LIST THEN listClr = FD_CLR_BUTTON_BG~& ELSE listClr = FD_CLR_BG~&
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), listClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render FD_ICON_TB_LIST, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
+    FD_ICONS_render_png FD_ICON_TB_LIST, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
     bx = bx + btnW + 2
 
     ' Details button
@@ -227,7 +239,7 @@ SUB FD_RENDER_toolbar
     IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN detClr = FD_CLR_BUTTON_BG~& ELSE detClr = FD_CLR_BG~&
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), detClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render FD_ICON_TB_DETAILS, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
+    FD_ICONS_render_png FD_ICON_TB_DETAILS, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
     bx = bx + btnW + 2
 
     ' Thumbnails button
@@ -235,24 +247,24 @@ SUB FD_RENDER_toolbar
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN thumbClr = FD_CLR_BUTTON_BG~& ELSE thumbClr = FD_CLR_BG~&
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), thumbClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render FD_ICON_TB_THUMBS, bx + (btnW - 16) \ 2, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
+    FD_ICONS_render_png FD_ICON_TB_THUMBS, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
     bx = bx + btnW + 8
 
-    ' Hidden files toggle [.*]
+    ' Hidden files toggle
     DIM hidClr AS _UNSIGNED LONG
     IF FD_CFG.showHidden THEN hidClr = FD_CLR_BUTTON_BG~& ELSE hidClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + 23, y1 + FD_STATE.toolBarH - 4), hidClr, BF
+    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), hidClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render FD_ICON_TB_HIDDEN, bx + 4, y1 + (FD_STATE.toolBarH - 16) \ 2, 16
-    bx = bx + 28
+    FD_ICONS_render_png FD_ICON_TB_HIDDEN, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
+    bx = bx + btnW + 4
 
-    ' Preview toggle [P]
+    ' Preview toggle
     DIM prevClr AS _UNSIGNED LONG
     IF FD_CFG.showPreview THEN prevClr = FD_CLR_BUTTON_BG~& ELSE prevClr = FD_CLR_BG~&
-    LINE (bx, y1 + 3)-(bx + 15, y1 + FD_STATE.toolBarH - 4), prevClr, BF
+    LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), prevClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + 4, y1 + (FD_STATE.toolBarH - 16) \ 2 + 1), "P"
-    bx = bx + 20
+    FD_ICONS_render_png FD_ICON_TB_PREVIEW, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
+    bx = bx + btnW + 4
 
     ' Sort indicator
     DIM sortLabel AS STRING
@@ -355,7 +367,15 @@ SUB FD_RENDER_places
         iconDrawn = 0
         IF FD_places(i).iconId > 0 THEN
             COLOR iconClr, _RGBA32(0, 0, 0, 0)
-            FD_ICONS_render FD_places(i).iconId, x1 + FD_PADDING, py + (entryH - 16) \ 2, 16
+            DIM plIsc AS INTEGER
+            plIsc = FD_CFG.iconScale: IF plIsc < 1 THEN plIsc = 2
+            DIM plIconSz AS INTEGER
+            plIconSz = FD_ICON_SIZE
+            IF FD_ICONS_has_png%(FD_places(i).iconId) THEN
+                plIconSz = FD_iconH(FD_places(i).iconId) * plIsc
+                IF FD_iconW(FD_places(i).iconId) * plIsc > plIconSz THEN plIconSz = FD_iconW(FD_places(i).iconId) * plIsc
+            END IF
+            FD_ICONS_render_png FD_places(i).iconId, x1 + FD_PADDING, py + (entryH - plIconSz) \ 2, plIconSz
             iconDrawn = -1
         END IF
         IF NOT iconDrawn THEN
@@ -827,7 +847,7 @@ SUB FD_RENDER_preview
 
         ' Draw a large image-frame icon centered
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
-        FD_ICONS_render FD_ICON_IMAGE, x1 + (w - noPreviewIconSz) \ 2, npBaseY, noPreviewIconSz
+        FD_ICONS_render_png FD_ICON_IMAGE, x1 + (w - noPreviewIconSz) \ 2, npBaseY, noPreviewIconSz
 
         ' "No preview" label below icon
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
@@ -1134,6 +1154,9 @@ SUB FD_RENDER_file_icon (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY)
             CASE FD_ICON_CONFIG: clr = FD_CLR_ICON_CONFIG~&
             CASE FD_ICON_FONT: clr = FD_CLR_ICON_FONT~&
             CASE FD_ICON_TEXTMODE: clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_ARCHIVE: clr = FD_CLR_ICON_ARCHIVE~&
+            CASE FD_ICON_VIDEO: clr = FD_CLR_ICON_VIDEO~&
+            CASE FD_ICON_MUSIC: clr = FD_CLR_ICON_MUSIC~&
             CASE FD_ICON_DSET: clr = FD_CLR_ICON_DSET~&
             CASE FD_ICON_PALETTE: clr = FD_CLR_ICON_PALETTE~&
             CASE FD_ICON_GRADIENT: clr = FD_CLR_ICON_GRADIENT~&
@@ -1144,7 +1167,7 @@ SUB FD_RENDER_file_icon (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY)
     END IF
 
     COLOR clr, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render iconId, x, y, 16
+    FD_ICONS_render_png iconId, x, y, 16
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -1167,6 +1190,9 @@ SUB FD_RENDER_file_icon_large (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY
             CASE FD_ICON_CONFIG: clr = FD_CLR_ICON_CONFIG~&
             CASE FD_ICON_FONT: clr = FD_CLR_ICON_FONT~&
             CASE FD_ICON_TEXTMODE: clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_ARCHIVE: clr = FD_CLR_ICON_ARCHIVE~&
+            CASE FD_ICON_VIDEO: clr = FD_CLR_ICON_VIDEO~&
+            CASE FD_ICON_MUSIC: clr = FD_CLR_ICON_MUSIC~&
             CASE FD_ICON_DSET: clr = FD_CLR_ICON_DSET~&
             CASE FD_ICON_PALETTE: clr = FD_CLR_ICON_PALETTE~&
             CASE FD_ICON_GRADIENT: clr = FD_CLR_ICON_GRADIENT~&
@@ -1177,7 +1203,7 @@ SUB FD_RENDER_file_icon_large (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY
     END IF
 
     COLOR clr, _RGBA32(0, 0, 0, 0)
-    FD_ICONS_render iconId, x, y, 32
+    FD_ICONS_render_png iconId, x, y, 32
 END SUB
 
 ' --------------------------------------------------------------------------

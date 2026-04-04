@@ -509,8 +509,15 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     DIM bx AS INTEGER
+    DIM btnPad AS INTEGER
+    btnPad = 3
+    DIM isc AS INTEGER
+    isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
+    DIM tbIconSz AS INTEGER
+    tbIconSz = 11 * isc
+    IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN tbIconSz = FD_iconW(FD_ICON_TB_LIST) * isc
     DIM btnW AS INTEGER
-    btnW = 48
+    btnW = tbIconSz + btnPad * 2
     bx = FD_PADDING
 
     ' List button
@@ -541,16 +548,16 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     bx = bx + btnW + 8
 
     ' Hidden files toggle
-    IF mx >= bx AND mx < bx + 24 THEN
+    IF mx >= bx AND mx < bx + btnW THEN
         FD_CFG.showHidden = NOT FD_CFG.showHidden
         FD_FS_apply_filter
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + 28
+    bx = bx + btnW + 4
 
-    ' Preview toggle [P]
-    IF mx >= bx AND mx < bx + 16 THEN
+    ' Preview toggle
+    IF mx >= bx AND mx < bx + btnW THEN
         FD_CFG.showPreview = NOT FD_CFG.showPreview
         IF FD_CFG.showPreview THEN
             IF FD_STATE.previewW < 100 THEN FD_STATE.previewW = FD_CFG.previewWidth
@@ -561,7 +568,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + 20
+    bx = bx + btnW + 4
 
     ' Sort area click — cycle sort field
     DIM sortAreaW AS INTEGER
