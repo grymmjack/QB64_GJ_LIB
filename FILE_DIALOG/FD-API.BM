@@ -105,6 +105,8 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     FD_STATE.colResizing = -1
     FD_STATE.placesHover = -1
     FD_STATE.focusPane = FD_FOCUS_CONTENT
+    FD_STATE.navBackTop = -1
+    FD_STATE.navFwdTop = -1
 
     ' Load config (or use defaults)
     FD_load_config

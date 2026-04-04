@@ -40,6 +40,8 @@ END SUB
 
 ' --------------------------------------------------------------------------
 ' FD_FS_navigate — Change to a new directory
+'   pushHistory: TRUE = push current path onto back stack (normal navigation)
+'               FALSE = do NOT push (called internally by back/forward)
 ' --------------------------------------------------------------------------
 SUB FD_FS_navigate (newPath AS STRING)
     DIM normalized AS STRING
@@ -48,11 +50,96 @@ SUB FD_FS_navigate (newPath AS STRING)
     ' Verify it's a valid directory
     IF NOT FD_PLAT_is_dir%(normalized) THEN EXIT SUB
 
+    ' Push current location onto back stack before leaving
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    IF LEN(curPath) > 0 AND curPath <> normalized THEN
+        IF FD_STATE.navBackTop < FD_MAX_NAV_HIST - 1 THEN
+            FD_STATE.navBackTop = FD_STATE.navBackTop + 1
+        ELSE
+            ' Stack full — shift entries down (drop oldest)
+            DIM si AS INTEGER
+            FOR si = 0 TO FD_MAX_NAV_HIST - 2
+                FD_navBackStack(si) = FD_navBackStack(si + 1)
+            NEXT si
+        END IF
+        FD_navBackStack(FD_STATE.navBackTop) = curPath
+        ' Clear forward stack on normal navigation
+        FD_STATE.navFwdTop = -1
+    END IF
+
     FD_STATE.currentPath = normalized
     FD_STATE.pathInput = normalized
     FD_STATE.searchText = ""
     FD_STATE.searchLen = 0
     FD_FS_refresh
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_FS_navigate_raw — Change directory WITHOUT touching history stacks
+'   Used internally by back/forward navigation to avoid double-pushing.
+' --------------------------------------------------------------------------
+SUB FD_FS_navigate_raw (newPath AS STRING)
+    DIM normalized AS STRING
+    normalized = FD_PLAT_normalize_path$(newPath)
+    IF NOT FD_PLAT_is_dir%(normalized) THEN EXIT SUB
+    FD_STATE.currentPath = normalized
+    FD_STATE.pathInput = normalized
+    FD_STATE.searchText = ""
+    FD_STATE.searchLen = 0
+    FD_FS_refresh
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_FS_nav_back — Navigate to previous directory (mouse back button / Alt+Left)
+' --------------------------------------------------------------------------
+SUB FD_FS_nav_back
+    IF FD_STATE.navBackTop < 0 THEN EXIT SUB  ' Back stack empty
+
+    ' Push current path onto forward stack
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    IF FD_STATE.navFwdTop < FD_MAX_NAV_HIST - 1 THEN
+        FD_STATE.navFwdTop = FD_STATE.navFwdTop + 1
+    ELSE
+        DIM fi AS INTEGER
+        FOR fi = 0 TO FD_MAX_NAV_HIST - 2
+            FD_navFwdStack(fi) = FD_navFwdStack(fi + 1)
+        NEXT fi
+    END IF
+    FD_navFwdStack(FD_STATE.navFwdTop) = curPath
+
+    ' Pop back stack and navigate
+    DIM dest AS STRING
+    dest = RTRIM$(FD_navBackStack(FD_STATE.navBackTop))
+    FD_STATE.navBackTop = FD_STATE.navBackTop - 1
+    FD_FS_navigate_raw dest
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_FS_nav_forward — Navigate to next directory (mouse forward button / Alt+Right)
+' --------------------------------------------------------------------------
+SUB FD_FS_nav_forward
+    IF FD_STATE.navFwdTop < 0 THEN EXIT SUB  ' Forward stack empty
+
+    ' Push current path onto back stack
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    IF FD_STATE.navBackTop < FD_MAX_NAV_HIST - 1 THEN
+        FD_STATE.navBackTop = FD_STATE.navBackTop + 1
+    ELSE
+        DIM bi AS INTEGER
+        FOR bi = 0 TO FD_MAX_NAV_HIST - 2
+            FD_navBackStack(bi) = FD_navBackStack(bi + 1)
+        NEXT bi
+    END IF
+    FD_navBackStack(FD_STATE.navBackTop) = curPath
+
+    ' Pop forward stack and navigate
+    DIM dest AS STRING
+    dest = RTRIM$(FD_navFwdStack(FD_STATE.navFwdTop))
+    FD_STATE.navFwdTop = FD_STATE.navFwdTop - 1
+    FD_FS_navigate_raw dest
 END SUB
 
 ' --------------------------------------------------------------------------

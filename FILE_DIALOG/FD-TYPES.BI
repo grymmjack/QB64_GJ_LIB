@@ -18,6 +18,7 @@ CONST FD_MAX_FILTERS = 16            ' Max filter patterns
 CONST FD_MAX_COLUMNS = 4             ' Name, Type, Size, Modified
 CONST FD_MAX_THUMB_CACHE = 256       ' Thumbnail pool size
 CONST FD_MAX_PLACES = 40             ' Max places bar entries (drives + XDG + custom + favorites)
+CONST FD_MAX_NAV_HIST = 32           ' Max navigation history depth (back/forward stacks)
 
 ' Dialog modes
 CONST FD_MODE_OPEN = 0
@@ -237,9 +238,17 @@ TYPE FD_STATE_OBJ
     mouseY AS INTEGER
     mouseB1 AS INTEGER               ' Left button state
     mouseB2 AS INTEGER               ' Right button state
+    mouseB4 AS INTEGER               ' Back thumb button state
+    mouseB5 AS INTEGER               ' Forward thumb button state
     oldMouseB1 AS INTEGER            ' Previous frame left button
     oldMouseB2 AS INTEGER            ' Previous frame right button
+    oldMouseB4 AS INTEGER            ' Previous frame back thumb button
+    oldMouseB5 AS INTEGER            ' Previous frame forward thumb button
     mouseWheel AS INTEGER            ' Scroll wheel delta
+
+    ' Navigation history (for mouse back/forward buttons)
+    navBackTop AS INTEGER            ' Top of back stack (-1 = empty)
+    navFwdTop AS INTEGER             ' Top of forward stack (-1 = empty)
 
     ' Focus
     focusPane AS INTEGER             ' FD_FOCUS_* constant
@@ -297,6 +306,10 @@ END TYPE
 DIM SHARED FD_CFG AS FD_CONFIG_OBJ
 DIM SHARED FD_STATE AS FD_STATE_OBJ
 DIM SHARED FD_THUMB_CACHE AS FD_THUMB_CACHE_OBJ
+
+' Navigation history stacks
+DIM SHARED FD_navBackStack(FD_MAX_NAV_HIST - 1) AS STRING * 260
+DIM SHARED FD_navFwdStack(FD_MAX_NAV_HIST - 1) AS STRING * 260
 
 ' Entry arrays
 DIM SHARED FD_entries(FD_MAX_ENTRIES) AS FD_DIR_ENTRY

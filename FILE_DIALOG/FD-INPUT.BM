@@ -13,6 +13,8 @@ SUB FD_INPUT_poll
     ' Save old mouse state
     FD_STATE.oldMouseB1 = FD_STATE.mouseB1
     FD_STATE.oldMouseB2 = FD_STATE.mouseB2
+    FD_STATE.oldMouseB4 = FD_STATE.mouseB4
+    FD_STATE.oldMouseB5 = FD_STATE.mouseB5
     FD_STATE.mouseWheel = 0
 
     ' Poll mouse events
@@ -43,6 +45,9 @@ SUB FD_INPUT_poll
         FD_STATE.mouseB1 = _MOUSEBUTTON(1)
         FD_STATE.mouseB2 = _MOUSEBUTTON(2)
     $END IF
+    ' Buttons 4 (back) and 5 (forward) — supported on all platforms via SDL2
+    FD_STATE.mouseB4 = _MOUSEBUTTON(4)
+    FD_STATE.mouseB5 = _MOUSEBUTTON(5)
 
     ' Update cursor blink
     IF TIMER(.001) - FD_STATE.cursorTimer > FD_CURSOR_BLINK_MS THEN
@@ -64,6 +69,16 @@ SUB FD_INPUT_mouse
     my = FD_STATE.mouseY
     justPressed = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
     justReleased = (NOT FD_STATE.mouseB1 AND FD_STATE.oldMouseB1)
+
+    ' --- Back/Forward thumb buttons — navigate history ---
+    IF FD_STATE.mouseB4 AND NOT FD_STATE.oldMouseB4 THEN
+        FD_FS_nav_back
+        EXIT SUB
+    END IF
+    IF FD_STATE.mouseB5 AND NOT FD_STATE.oldMouseB5 THEN
+        FD_FS_nav_forward
+        EXIT SUB
+    END IF
 
     ' --- Handle filter dropdown popup first (modal overlay) ---
     IF FD_STATE.filterDropdownOpen THEN
