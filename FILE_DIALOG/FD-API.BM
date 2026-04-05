@@ -167,7 +167,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Create text input widgets
     DIM pathX AS INTEGER, pathW AS INTEGER
-    pathX = FD_PADDING + 28 + FD_PADDING   ' After up button
+    pathX = FD_PADDING + (FD_ICONS_calc_btn_w% + 2) * 2 + FD_PADDING  ' After up + new folder buttons
     pathW = FD_STATE.dialogW - pathX - FD_PADDING
     FD_STATE.tiPathId = TI_create%(pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6)
     TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
@@ -370,9 +370,9 @@ END SUB
 SUB FD__update_text_input_geometry
     IF FD_STATE.tiPathId < 1 THEN EXIT SUB
 
-    ' Path input — positioned after up button in path bar
+    ' Path input — positioned after up + new folder buttons in path bar
     DIM pathX AS INTEGER, pathW AS INTEGER
-    pathX = FD_PADDING + 28 + FD_PADDING
+    pathX = FD_PADDING + (FD_ICONS_calc_btn_w% + 2) * 2 + FD_PADDING
     pathW = FD_STATE.dialogW - pathX - FD_PADDING
     TI_set_geometry FD_STATE.tiPathId, pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6
 

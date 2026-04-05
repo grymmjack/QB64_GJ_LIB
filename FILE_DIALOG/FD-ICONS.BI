@@ -46,8 +46,9 @@ CONST FD_ICON_TB_DETAILS = 32
 CONST FD_ICON_TB_THUMBS = 33
 CONST FD_ICON_TB_HIDDEN = 34
 CONST FD_ICON_TB_PREVIEW = 35
+CONST FD_ICON_TB_NEWDIR = 36
 
-CONST FD_ICON_COUNT = 36  ' Total icon IDs (max + 1)
+CONST FD_ICON_COUNT = 37  ' Total icon IDs (max + 1)
 
 ' --- PNG Icon Handle Array ---------------------------------------------------
 ' Stores loaded PNG image handles for each icon ID. < -1 = valid loaded.
@@ -65,3 +66,4 @@ DECLARE SUB FD_ICONS_free_all ()
 DECLARE FUNCTION FD_ICONS_has_png% (iconId AS INTEGER)
 DECLARE FUNCTION FD_ICONS_w% (iconId AS INTEGER)
 DECLARE FUNCTION FD_ICONS_h% (iconId AS INTEGER)
+DECLARE FUNCTION FD_ICONS_calc_btn_w% ()

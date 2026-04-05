@@ -209,6 +209,20 @@ SUB FD_ICONS_render (iconId AS INTEGER, x AS INTEGER, y AS INTEGER, sz AS INTEGE
             LINE (cx, y + 2)-(x + sz - 3, y + half + 1), FD_CLR_TEXT~&
             LINE (cx, y + half + 1)-(cx, y + sz - 2), FD_CLR_TEXT~&
 
+        ' === Toolbar: New folder ===
+        CASE FD_ICON_TB_NEWDIR
+            clr = FD_CLR_ICON_FOLDER~&
+            ' Folder body
+            LINE (x + 1, y + sz \ 4 + 2)-(x + sz - 2, y + sz - 2), clr, BF
+            ' Folder tab
+            LINE (x + 1, y + sz \ 4)-(x + sz \ 3, y + sz \ 4 + 2), clr, BF
+            ' Plus sign
+            DIM pcx AS INTEGER, pcy AS INTEGER
+            pcx = x + half
+            pcy = y + half + 2
+            LINE (pcx - 2, pcy)-(pcx + 2, pcy), FD_CLR_TEXT~&
+            LINE (pcx, pcy - 2)-(pcx, pcy + 2), FD_CLR_TEXT~&
+
         ' === Toolbar: List view ===
         CASE FD_ICON_TB_LIST
             clr = FD_CLR_TEXT~&
@@ -476,6 +490,7 @@ SUB FD_ICONS_load_all (iconDir AS STRING)
     FD_ICONS_load_one FD_ICON_TB_THUMBS, "button-thumbnail-view.png"
     FD_ICONS_load_one FD_ICON_TB_HIDDEN, "button-show-hidden.png"
     FD_ICONS_load_one FD_ICON_TB_PREVIEW, "button-show-preview.png"
+    FD_ICONS_load_one FD_ICON_TB_NEWDIR, "button-new-folder.png"
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -514,4 +529,16 @@ FUNCTION FD_ICONS_h% (iconId AS INTEGER)
         EXIT FUNCTION
     END IF
     FD_ICONS_h% = FD_iconH(iconId)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_ICONS_calc_btn_w% — Calculate path bar button width (used by render + input)
+' --------------------------------------------------------------------------
+FUNCTION FD_ICONS_calc_btn_w%
+    DIM isc AS INTEGER
+    isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
+    DIM iconSz AS INTEGER
+    iconSz = 11 * isc
+    IF FD_ICONS_has_png%(FD_ICON_TB_UP) THEN iconSz = FD_iconW(FD_ICON_TB_UP) * isc
+    FD_ICONS_calc_btn_w% = iconSz + 6
 END FUNCTION

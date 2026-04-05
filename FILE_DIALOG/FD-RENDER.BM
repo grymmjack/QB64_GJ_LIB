@@ -193,6 +193,12 @@ SUB FD_RENDER_path_bar
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_UP, FD_PADDING + 3, y1 + (FD_STATE.pathBarH - upIconSz) \ 2, upIconSz
 
+    ' New folder button
+    DIM nfX AS INTEGER
+    nfX = FD_PADDING + upW + 2
+    LINE (nfX, y1 + 3)-(nfX + upW - 1, y1 + FD_STATE.pathBarH - 4), FD_CLR_BUTTON_BG~&, BF
+    FD_ICONS_render_png FD_ICON_TB_NEWDIR, nfX + 3, y1 + (FD_STATE.pathBarH - upIconSz) \ 2, upIconSz
+
     ' Path input field — rendered by TI widget
     IF NOT FD_STATE.pathInputActive THEN
         TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)

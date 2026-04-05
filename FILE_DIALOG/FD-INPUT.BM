@@ -195,14 +195,24 @@ SUB FD_INPUT_mouse
     IF my >= pathBarY AND my < pathBarY + FD_STATE.pathBarH THEN
         IF justPressed THEN
             ' Up button
-            IF mx >= FD_PADDING AND mx < FD_PADDING + 28 THEN
+            DIM upBtnW AS INTEGER
+            upBtnW = FD_ICONS_calc_btn_w%
+            IF mx >= FD_PADDING AND mx < FD_PADDING + upBtnW THEN
                 FD_FS_navigate_up
+                EXIT SUB
+            END IF
+
+            ' New folder button
+            DIM nfBtnX AS INTEGER
+            nfBtnX = FD_PADDING + upBtnW + 2
+            IF mx >= nfBtnX AND mx < nfBtnX + upBtnW THEN
+                FD_FS_create_folder
                 EXIT SUB
             END IF
 
             ' Path input click — activate path editing
             DIM pathFieldX AS INTEGER
-            pathFieldX = FD_PADDING + 28 + FD_PADDING
+            pathFieldX = nfBtnX + upBtnW + FD_PADDING
             IF mx >= pathFieldX THEN
                 IF NOT FD_STATE.pathInputActive THEN
                     FD_STATE.pathInputActive = -1

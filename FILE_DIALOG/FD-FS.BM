@@ -154,6 +154,39 @@ SUB FD_FS_navigate_up
 END SUB
 
 ' --------------------------------------------------------------------------
+' FD_FS_create_folder — Prompt user for name and create a new folder
+' --------------------------------------------------------------------------
+SUB FD_FS_create_folder
+    DIM folderName AS STRING
+    folderName = _INPUTBOX$("New Folder", "Enter folder name:", "New Folder")
+    folderName = LTRIM$(RTRIM$(folderName))
+    IF LEN(folderName) = 0 THEN EXIT SUB
+
+    ' Build full path
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    DIM fullPath AS STRING
+    fullPath = FD_PLAT_path_join$(curPath, folderName)
+
+    ' Check if already exists
+    IF _DIREXISTS(fullPath) THEN
+        _MESSAGEBOX "New Folder", "A folder named '" + folderName + "' already exists.", "info"
+        EXIT SUB
+    END IF
+
+    ' Create the directory
+    MKDIR fullPath
+
+    ' Verify creation succeeded
+    IF _DIREXISTS(fullPath) THEN
+        ' Refresh listing and navigate into the new folder
+        FD_FS_navigate fullPath
+    ELSE
+        _MESSAGEBOX "New Folder", "Failed to create folder '" + folderName + "'.", "error"
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
 ' FD_FS_sort — Sort entries array in-place
 '   Directories always sorted to the top.
 '   sortField: FD_SORT_NAME, FD_SORT_TYPE, FD_SORT_SIZE, FD_SORT_DATE
