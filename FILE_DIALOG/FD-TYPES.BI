@@ -252,6 +252,11 @@ TYPE FD_STATE_OBJ
     oldMouseB5 AS INTEGER            ' Previous frame forward thumb button
     mouseWheel AS INTEGER            ' Scroll wheel delta
 
+    ' Modifier key state (captured during poll to avoid timing issues)
+    modCtrl AS INTEGER               ' Ctrl held (left or right)
+    modAlt AS INTEGER                ' Alt/Option held (left or right)
+    modShift AS INTEGER              ' Shift held (left or right)
+
     ' Navigation history (for mouse back/forward buttons)
     navBackTop AS INTEGER            ' Top of back stack (-1 = empty)
     navFwdTop AS INTEGER             ' Top of forward stack (-1 = empty)

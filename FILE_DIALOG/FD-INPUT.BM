@@ -68,8 +68,7 @@ SUB FD_INPUT_poll
     ' Poll mouse events
     $IF MAC THEN
         ' macOS: Capture button presses during drain — trackpad tap-to-click
-        ' can press+release within a single drain cycle, so the final
-        ' _MOUSEBUTTON() call after the loop sees the button already released.
+        ' can press+release within a single drain cycle.
         DIM mac_b1 AS INTEGER, mac_b2 AS INTEGER
         mac_b1% = FALSE: mac_b2% = FALSE
         DO WHILE _MOUSEINPUT
@@ -96,6 +95,11 @@ SUB FD_INPUT_poll
     ' Buttons 4 (back) and 5 (forward) — supported on all platforms via SDL2
     FD_STATE.mouseB4 = _MOUSEBUTTON(4)
     FD_STATE.mouseB5 = _MOUSEBUTTON(5)
+
+    ' Capture modifier key state (Shift for range-select)
+    FD_STATE.modCtrl = (_KEYDOWN(100305) OR _KEYDOWN(100306))
+    FD_STATE.modAlt = (_KEYDOWN(100307) OR _KEYDOWN(100308))
+    FD_STATE.modShift = (_KEYDOWN(100303) OR _KEYDOWN(100304))
 
     ' Update cursor blink
     IF TIMER(.001) - FD_STATE.cursorTimer > FD_CURSOR_BLINK_MS THEN
@@ -333,7 +337,7 @@ SUB FD_INPUT_mouse
     ' --- Scroll wheel on content ---
     IF FD_STATE.mouseWheel <> 0 THEN
         DIM ctrlHeldScr AS INTEGER
-        ctrlHeldScr = (_KEYDOWN(100306) OR _KEYDOWN(100305))
+        ctrlHeldScr = FD_STATE.modCtrl
         IF ctrlHeldScr AND FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
             ' Ctrl+wheel = zoom thumbnails
             DIM step1 AS INTEGER
@@ -737,7 +741,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
     ' Scroll wheel
     IF FD_STATE.mouseWheel <> 0 THEN
         DIM ctrlHeldCnt AS INTEGER
-        ctrlHeldCnt = (_KEYDOWN(100306) OR _KEYDOWN(100305))
+        ctrlHeldCnt = FD_STATE.modCtrl
         IF ctrlHeldCnt AND FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
             ' Ctrl+wheel = zoom thumbnails
             DIM step2 AS INTEGER
@@ -824,9 +828,10 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
             IF FD_STATE.multiSelect THEN
                 DIM ctrlHeldMS AS INTEGER
                 DIM shiftHeldMS AS INTEGER
-                ' Ctrl (Win/Linux) or Cmd (macOS) for toggle; 100311/100312 = Left/Right Super/Cmd
-                ctrlHeldMS = (_KEYDOWN(100306) OR _KEYDOWN(100305) OR _KEYDOWN(100311) OR _KEYDOWN(100312))
-                shiftHeldMS = (_KEYDOWN(100304) OR _KEYDOWN(100303))
+                ' Use modifier state captured during FD_INPUT_poll (same instant as mouse)
+                ' Ctrl (Win/Linux) or Option/Alt (macOS) for toggle
+                ctrlHeldMS = (FD_STATE.modCtrl OR FD_STATE.modAlt)
+                shiftHeldMS = FD_STATE.modShift
 
                 IF ctrlHeldMS THEN
                     ' Ctrl+click: toggle individual entry
@@ -855,18 +860,26 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         END IF
     END IF
 
-    ' Right-click on a directory — add to favorites
+    ' Right-click handling: toggle-select in multi-select mode, or add dir to favorites
     DIM justPressedR AS INTEGER
     justPressedR = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
     IF justPressedR AND hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
         DIM entIdx AS INTEGER
         entIdx = FD_filtered(hitIndex)
         IF FD_entries(entIdx).isDirectory THEN
+            ' Right-click directory — add to favorites
             DIM favDir AS STRING
             favDir = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entIdx).fileName))
             FD_add_favorite favDir
             FD_save_favorites
             FD_init_places
+            FD_STATE.dirty = -1
+        ELSEIF FD_STATE.multiSelect THEN
+            ' Right-click file in multi-select mode — toggle selection
+            ' (On macOS, Ctrl+Click = right-click, so this gives Ctrl+Click toggle)
+            FD_toggle_selected hitIndex
+            FD_STATE.selectedIndex = hitIndex
+            FD_STATE.anchorIndex = hitIndex
             FD_STATE.dirty = -1
         END IF
     END IF
