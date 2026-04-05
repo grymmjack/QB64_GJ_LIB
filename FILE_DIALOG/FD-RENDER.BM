@@ -537,8 +537,10 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
 
         entryIdx = FD_filtered(i)
 
-        ' Selection / hover highlight
-        IF i = FD_STATE.selectedIndex THEN
+        ' Selection / hover highlight (multi-select: .selected flag; single: selectedIndex)
+        DIM isSelectedL AS INTEGER
+        isSelectedL = (i = FD_STATE.selectedIndex) OR (FD_STATE.multiSelect AND FD_entries(entryIdx).selected)
+        IF isSelectedL THEN
             IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                 LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED~&, BF
             ELSE
@@ -590,8 +592,10 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
 
         entryIdx = FD_filtered(i)
 
-        ' Selection / hover highlight
-        IF i = FD_STATE.selectedIndex THEN
+        ' Selection / hover highlight (multi-select: .selected flag; single: selectedIndex)
+        DIM isSelectedD AS INTEGER
+        isSelectedD = (i = FD_STATE.selectedIndex) OR (FD_STATE.multiSelect AND FD_entries(entryIdx).selected)
+        IF isSelectedD THEN
             IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                 LINE (x1, drawY)-(x1 + contentW - 1, drawY + rh - 1), FD_CLR_SELECTED~&, BF
             ELSE
@@ -709,8 +713,10 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
 
         entryIdx = FD_filtered(i)
 
-        ' Selection / hover highlight
-        IF i = FD_STATE.selectedIndex THEN
+        ' Selection / hover highlight (multi-select: .selected flag; single: selectedIndex)
+        DIM isSelectedT AS INTEGER
+        isSelectedT = (i = FD_STATE.selectedIndex) OR (FD_STATE.multiSelect AND FD_entries(entryIdx).selected)
+        IF isSelectedT THEN
             LINE (cellX, cellY)-(cellX + cellW - 1, cellY + cellH - 1), FD_CLR_SELECTED~&, BF
         ELSEIF i = FD_STATE.hoverIndex THEN
             LINE (cellX, cellY)-(cellX + cellW - 1, cellY + cellH - 1), FD_CLR_HOVER~&, BF
@@ -883,8 +889,10 @@ SUB FD_RENDER_status_bar
         statusText = statusText + " (of " + LTRIM$(STR$(FD_STATE.entryCount)) + ")"
     END IF
 
-    ' Show selected filename
-    IF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
+    ' Show selection info
+    IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 0 THEN
+        statusText = statusText + "  |  " + LTRIM$(STR$(FD_STATE.multiSelectCount)) + " selected"
+    ELSEIF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
         DIM selIdx AS INTEGER
         selIdx = FD_filtered(FD_STATE.selectedIndex)
         statusText = statusText + "  |  " + RTRIM$(FD_entries(selIdx).fileName)

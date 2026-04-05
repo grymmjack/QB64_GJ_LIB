@@ -7,6 +7,54 @@ $INCLUDEONCE
 ' ============================================================================
 
 ' --------------------------------------------------------------------------
+' FD_clear_all_selected — Clear .selected flag on all entries
+' --------------------------------------------------------------------------
+SUB FD_clear_all_selected ()
+    DIM ci AS INTEGER
+    FOR ci = 0 TO FD_STATE.entryCount - 1
+        FD_entries(ci).selected = 0
+    NEXT ci
+    FD_STATE.multiSelectCount = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_toggle_selected — Toggle selected state of filtered entry
+' --------------------------------------------------------------------------
+SUB FD_toggle_selected (filteredIndex AS INTEGER)
+    IF filteredIndex < 0 OR filteredIndex >= FD_STATE.visibleCount THEN EXIT SUB
+    DIM eidx AS INTEGER
+    eidx = FD_filtered(filteredIndex)
+    IF FD_entries(eidx).isDirectory THEN EXIT SUB ' Don't multi-select directories
+    IF FD_entries(eidx).selected THEN
+        FD_entries(eidx).selected = 0
+        FD_STATE.multiSelectCount = FD_STATE.multiSelectCount - 1
+    ELSE
+        FD_entries(eidx).selected = -1
+        FD_STATE.multiSelectCount = FD_STATE.multiSelectCount + 1
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_select_range — Select all non-directory entries between two filtered indices
+' --------------------------------------------------------------------------
+SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
+    DIM lo AS INTEGER, hi AS INTEGER, ri AS INTEGER
+    IF fromIdx <= toIdx THEN lo = fromIdx: hi = toIdx ELSE lo = toIdx: hi = fromIdx
+    IF lo < 0 THEN lo = 0
+    IF hi >= FD_STATE.visibleCount THEN hi = FD_STATE.visibleCount - 1
+    FOR ri = lo TO hi
+        DIM eidx AS INTEGER
+        eidx = FD_filtered(ri)
+        IF NOT FD_entries(eidx).isDirectory THEN
+            IF NOT FD_entries(eidx).selected THEN
+                FD_entries(eidx).selected = -1
+                FD_STATE.multiSelectCount = FD_STATE.multiSelectCount + 1
+            END IF
+        END IF
+    NEXT ri
+END SUB
+
+' --------------------------------------------------------------------------
 ' FD_INPUT_poll — Poll mouse and keyboard state
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_poll
@@ -772,8 +820,34 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
             FD_INPUT_activate_selected
             FD_STATE.lastClickIndex = -1
         ELSE
-            ' Single click — select
-            FD_STATE.selectedIndex = hitIndex
+            ' Single click — select (with multi-select modifier support)
+            IF FD_STATE.multiSelect THEN
+                DIM ctrlHeldMS AS INTEGER
+                DIM shiftHeldMS AS INTEGER
+                ' Ctrl (Win/Linux) or Cmd (macOS) for toggle; 100311/100312 = Left/Right Super/Cmd
+                ctrlHeldMS = (_KEYDOWN(100306) OR _KEYDOWN(100305) OR _KEYDOWN(100311) OR _KEYDOWN(100312))
+                shiftHeldMS = (_KEYDOWN(100304) OR _KEYDOWN(100303))
+
+                IF ctrlHeldMS THEN
+                    ' Ctrl+click: toggle individual entry
+                    FD_toggle_selected hitIndex
+                    FD_STATE.selectedIndex = hitIndex
+                    FD_STATE.anchorIndex = hitIndex
+                ELSEIF shiftHeldMS AND FD_STATE.anchorIndex >= 0 THEN
+                    ' Shift+click: range select from anchor
+                    FD_clear_all_selected
+                    FD_select_range FD_STATE.anchorIndex, hitIndex
+                    FD_STATE.selectedIndex = hitIndex
+                ELSE
+                    ' Plain click: clear all, select one
+                    FD_clear_all_selected
+                    FD_toggle_selected hitIndex
+                    FD_STATE.selectedIndex = hitIndex
+                    FD_STATE.anchorIndex = hitIndex
+                END IF
+            ELSE
+                FD_STATE.selectedIndex = hitIndex
+            END IF
             FD_STATE.lastClickTime = now
             FD_STATE.lastClickIndex = hitIndex
             FD_INPUT_update_preview
@@ -1204,7 +1278,25 @@ SUB FD_INPUT_confirm
         resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), fn)
     ELSE
         ' Open mode
-        IF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
+        IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 0 THEN
+            ' Multi-select: build result array from all selected entries
+            DIM mri AS INTEGER, mrc AS INTEGER
+            mrc = 0
+            FOR mri = 0 TO FD_STATE.visibleCount - 1
+                DIM msEntIdx AS INTEGER
+                msEntIdx = FD_filtered(mri)
+                IF FD_entries(msEntIdx).selected AND NOT FD_entries(msEntIdx).isDirectory THEN
+                    IF mrc < FD_MAX_MULTI_RESULTS THEN
+                        FD_multiResults(mrc) = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(msEntIdx).fileName))
+                        mrc = mrc + 1
+                    END IF
+                END IF
+            NEXT mri
+            IF mrc = 0 THEN EXIT SUB
+            FD_STATE.resultCount = mrc
+            ' Also set resultPath to the first selected file for compatibility
+            resultPath = RTRIM$(FD_multiResults(0))
+        ELSEIF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
             DIM entryIdx AS INTEGER
             entryIdx = FD_filtered(FD_STATE.selectedIndex)
             IF FD_entries(entryIdx).isDirectory THEN
@@ -1215,6 +1307,8 @@ SUB FD_INPUT_confirm
                 EXIT SUB
             END IF
             resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIdx).fileName))
+            FD_STATE.resultCount = 1
+            FD_multiResults(0) = resultPath
         ELSE
             EXIT SUB  ' Nothing selected
         END IF

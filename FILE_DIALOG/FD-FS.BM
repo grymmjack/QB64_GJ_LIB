@@ -18,6 +18,8 @@ SUB FD_FS_refresh
     FD_STATE.scrollOffset = 0
     FD_STATE.selectedIndex = -1
     FD_STATE.hoverIndex = -1
+    FD_STATE.multiSelectCount = 0
+    FD_STATE.anchorIndex = -1
 
     ' Apply sort
     IF count > 1 THEN

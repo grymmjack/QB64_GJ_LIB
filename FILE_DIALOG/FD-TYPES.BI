@@ -19,6 +19,7 @@ CONST FD_MAX_COLUMNS = 4             ' Name, Type, Size, Modified
 CONST FD_MAX_THUMB_CACHE = 256       ' Thumbnail pool size
 CONST FD_MAX_PLACES = 40             ' Max places bar entries (drives + XDG + custom + favorites)
 CONST FD_MAX_NAV_HIST = 32           ' Max navigation history depth (back/forward stacks)
+CONST FD_MAX_MULTI_RESULTS = 4096    ' Max selected files in multi-select mode
 
 ' Dialog modes
 CONST FD_MODE_OPEN = 0
@@ -196,8 +197,13 @@ TYPE FD_STATE_OBJ
     visibleCount AS INTEGER          ' Number of entries after filtering
     scrollOffset AS INTEGER          ' Pixel scroll offset
     maxScroll AS INTEGER             ' Maximum scroll offset
-    selectedIndex AS INTEGER         ' Selected entry index (-1 = none)
+    selectedIndex AS INTEGER         ' Selected/focused entry index (-1 = none)
     hoverIndex AS INTEGER            ' Hovered entry index (-1 = none)
+
+    ' Multi-select state
+    multiSelect AS INTEGER           ' TRUE = multi-select mode enabled
+    multiSelectCount AS INTEGER      ' Number of entries with .selected = TRUE
+    anchorIndex AS INTEGER           ' Anchor index for Shift+click range selection
 
     ' Dialog geometry (screen coordinates)
     dialogX AS INTEGER               ' Dialog X position on screen
@@ -267,7 +273,8 @@ TYPE FD_STATE_OBJ
     ' Result
     done AS INTEGER                  ' TRUE if dialog should close
     confirmed AS INTEGER             ' TRUE if user confirmed (OK/Open/Save)
-    resultPath AS STRING * 260       ' Full path of selected/entered file
+    resultPath AS STRING * 260       ' Full path of selected/entered file (single-select)
+    resultCount AS INTEGER           ' Number of results (multi-select; 0 or 1 for single)
 
     ' Rendering
     imgHandle AS LONG                ' Offscreen dialog image buffer
@@ -339,9 +346,17 @@ END TYPE
 DIM SHARED FD_customPlaces(FD_MAX_CUSTOM_PLACES - 1) AS FD_CUSTOM_PLACE
 DIM SHARED FD_customPlaceCount AS INTEGER
 
+' Multi-select results array (full paths, populated on confirm)
+DIM SHARED FD_multiResults(FD_MAX_MULTI_RESULTS - 1) AS STRING * 260
+
 ' Forward declarations for custom places API
 DECLARE SUB FD_add_custom_place (label AS STRING, dir AS STRING, iconId AS INTEGER, iconColor AS _UNSIGNED LONG, hotkey AS STRING)
 DECLARE SUB FD_clear_custom_places ()
+
+' Forward declarations for multi-select helpers
+DECLARE SUB FD_clear_all_selected ()
+DECLARE SUB FD_toggle_selected (filteredIndex AS INTEGER)
+DECLARE SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
 
 ' Thumbnail cache pool
 DIM SHARED FD_thumbs(FD_MAX_THUMB_CACHE - 1) AS FD_THUMB_SLOT
