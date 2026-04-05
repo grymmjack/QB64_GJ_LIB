@@ -14,7 +14,7 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
 
     SELECT CASE e
         ' Images
-        CASE "png", "jpg", "jpeg", "bmp", "gif", "tga", "pcx", "ico", "svg", "webp", "tif", "tiff"
+        CASE "png", "jpg", "jpeg", "bmp", "gif", "tga", "pcx", "ico", "svg", "webp", "tif", "tiff", "qoi", "psd", "aseprite"
             FD_ICONS_for_extension% = FD_ICON_IMAGE
 
         ' DRAW-specific
@@ -24,7 +24,7 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
             FD_ICONS_for_extension% = FD_ICON_DSET
         CASE "pal", "gpl"
             FD_ICONS_for_extension% = FD_ICON_PALETTE
-        CASE "grad"
+        CASE "grad", "grd"
             FD_ICONS_for_extension% = FD_ICON_GRADIENT
 
         ' Archives
@@ -44,11 +44,11 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
             FD_ICONS_for_extension% = FD_ICON_TEXT
 
         ' Config files
-        CASE "cfg", "ini", "conf", "json", "xml", "yaml", "yml", "toml"
+        CASE "cfg", "ini", "conf", "json", "xml", "yaml", "yml", "toml", "rc"
             FD_ICONS_for_extension% = FD_ICON_CONFIG
 
         ' Fonts
-        CASE "ttf", "otf", "psf", "fon", "fnt"
+        CASE "ttf", "otf", "psf", "fon", "fnt", "f08", "f09", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31", "f32"
             FD_ICONS_for_extension% = FD_ICON_FONT
 
         ' Executables / scripts
@@ -60,11 +60,11 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
             FD_ICONS_for_extension% = FD_ICON_SOUND
 
         ' Text mode art
-        CASE "ans", "asc", "nfo", "diz", "xb", "bin"
+        CASE "ans", "asc", "nfo", "diz", "xb", "bin", "xbin", "tnd"
             FD_ICONS_for_extension% = FD_ICON_TEXTMODE
 
         ' Documents
-        CASE "pdf", "doc", "docx", "odt", "rtf", "html", "htm"
+        CASE "pdf", "doc", "docx", "odt", "rtf", "html", "htm", "md", "mkd", "markdown", "epub", "fb2", "djvu"
             FD_ICONS_for_extension% = FD_ICON_DOCUMENT
 
         CASE ELSE
