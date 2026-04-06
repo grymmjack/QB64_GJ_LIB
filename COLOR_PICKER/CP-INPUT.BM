@@ -16,13 +16,28 @@ SUB CP_INPUT_poll
     CP_STATE.oldMouseB1 = CP_STATE.mouseB1
     CP_STATE.mouseWheel = 0
 
-    DO WHILE _MOUSEINPUT
-        CP_STATE.mouseWheel = CP_STATE.mouseWheel + _MOUSEWHEEL
-    LOOP
+    $IF MAC THEN
+        ' macOS: Capture button presses during drain — trackpad tap-to-click
+        ' can press+release within a single drain cycle.
+        DIM cp_mac_b1 AS INTEGER
+        cp_mac_b1% = FALSE
+        DO WHILE _MOUSEINPUT
+            CP_STATE.mouseWheel = CP_STATE.mouseWheel + _MOUSEWHEEL
+            IF _MOUSEBUTTON(1) THEN cp_mac_b1% = TRUE
+        LOOP
+    $ELSE
+        DO WHILE _MOUSEINPUT
+            CP_STATE.mouseWheel = CP_STATE.mouseWheel + _MOUSEWHEEL
+        LOOP
+    $END IF
 
     CP_STATE.mouseX = _MOUSEX \ CP_STATE.scale - CP_STATE.dialogX
     CP_STATE.mouseY = _MOUSEY \ CP_STATE.scale - CP_STATE.dialogY
-    CP_STATE.mouseB1 = _MOUSEBUTTON(1)
+    $IF MAC THEN
+        CP_STATE.mouseB1 = cp_mac_b1% OR _MOUSEBUTTON(1)
+    $ELSE
+        CP_STATE.mouseB1 = _MOUSEBUTTON(1)
+    $END IF
 END SUB
 
 ' --------------------------------------------------------------------------

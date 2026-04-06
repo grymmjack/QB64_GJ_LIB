@@ -15,15 +15,28 @@ SUB MB_INPUT_poll
     ' Save old button state for transition detection
     MB_STATE.oldMouseB1 = MB_STATE.mouseB1
 
-    ' Drain all queued mouse events (we only care about final position)
-    DO WHILE _MOUSEINPUT
-    LOOP
+    $IF MAC THEN
+        ' macOS: Capture button presses during drain — trackpad tap-to-click
+        ' can press+release within a single drain cycle.
+        DIM mb_mac_b1 AS INTEGER
+        mb_mac_b1% = FALSE
+        DO WHILE _MOUSEINPUT
+            IF _MOUSEBUTTON(1) THEN mb_mac_b1% = TRUE
+        LOOP
+    $ELSE
+        ' Drain all queued mouse events (we only care about final position)
+        DO WHILE _MOUSEINPUT
+        LOOP
+    $END IF
 
-    ' Read current mouse state AFTER drain (gets hardware state, not event state)
     ' Store as dialog-relative coordinates
     MB_STATE.mouseX = _MOUSEX \ MB_STATE.scale - MB_STATE.dialogX
     MB_STATE.mouseY = _MOUSEY \ MB_STATE.scale - MB_STATE.dialogY
-    MB_STATE.mouseB1 = _MOUSEBUTTON(1)
+    $IF MAC THEN
+        MB_STATE.mouseB1 = mb_mac_b1% OR _MOUSEBUTTON(1)
+    $ELSE
+        MB_STATE.mouseB1 = _MOUSEBUTTON(1)
+    $END IF
 END SUB
 
 ' --------------------------------------------------------------------------
