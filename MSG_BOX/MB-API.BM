@@ -178,6 +178,16 @@ SUB MB_cleanup
         MB_STATE.tiInputId = 0
     END IF
 
+    ' Free icon images
+    IF MB_STATE.iconImgInfo < -1 THEN _FREEIMAGE MB_STATE.iconImgInfo
+    MB_STATE.iconImgInfo = 0
+    IF MB_STATE.iconImgWarning < -1 THEN _FREEIMAGE MB_STATE.iconImgWarning
+    MB_STATE.iconImgWarning = 0
+    IF MB_STATE.iconImgError < -1 THEN _FREEIMAGE MB_STATE.iconImgError
+    MB_STATE.iconImgError = 0
+    IF MB_STATE.iconImgQuestion < -1 THEN _FREEIMAGE MB_STATE.iconImgQuestion
+    MB_STATE.iconImgQuestion = 0
+
     ' Free offscreen buffer
     IF MB_STATE.imgHandle < -1 THEN
         _FREEIMAGE MB_STATE.imgHandle
@@ -450,9 +460,13 @@ SUB MB_layout_calculate
         cx = cx + MB_ICON_SIZE + MB_ICON_GAP
     END IF
 
-    ' Message position
+    ' Message position (vertically center first line with icon)
     MB_STATE.messageX = cx
-    MB_STATE.messageY = cy
+    IF MB_STATE.icon <> MB_ICON_NONE THEN
+        MB_STATE.messageY = cy + (MB_ICON_SIZE - MB_STATE.fontH) \ 2
+    ELSE
+        MB_STATE.messageY = cy
+    END IF
 
     ' Input field position (below message)
     IF MB_STATE.mode = MB_MODE_INPUT THEN

@@ -120,6 +120,12 @@ TYPE MB_STATE_OBJ
     fontH AS INTEGER                    ' Char height in pixels
     lineHeight AS INTEGER               ' Line height (fontH + 2)
     autoSelectText AS INTEGER           ' TRUE = auto-select input text on open
+
+    ' Icon images (set by caller before modal loop; 0 = use procedural fallback)
+    iconImgInfo AS LONG                 ' Image handle for MB_ICON_INFO
+    iconImgWarning AS LONG              ' Image handle for MB_ICON_WARNING
+    iconImgError AS LONG                ' Image handle for MB_ICON_ERROR
+    iconImgQuestion AS LONG             ' Image handle for MB_ICON_QUESTION
 END TYPE
 
 ' --- Shared State ------------------------------------------------------------

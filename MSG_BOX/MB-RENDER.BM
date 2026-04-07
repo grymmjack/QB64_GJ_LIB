@@ -130,6 +130,25 @@ END SUB
 ' MB_RENDER_icon — Draw a simple text-based icon glyph
 ' --------------------------------------------------------------------------
 SUB MB_RENDER_icon (x AS INTEGER, y AS INTEGER)
+    ' Try image-based icon first
+    DIM iconImg AS LONG
+    iconImg& = 0
+    SELECT CASE MB_STATE.icon
+        CASE MB_ICON_INFO:     iconImg& = MB_STATE.iconImgInfo
+        CASE MB_ICON_WARNING:  iconImg& = MB_STATE.iconImgWarning
+        CASE MB_ICON_ERROR:    iconImg& = MB_STATE.iconImgError
+        CASE MB_ICON_QUESTION: iconImg& = MB_STATE.iconImgQuestion
+        CASE ELSE: EXIT SUB
+    END SELECT
+
+    IF iconImg& < -1 THEN
+        ' Render loaded PNG icon scaled to MB_ICON_SIZE
+        _BLEND MB_STATE.imgHandle
+        _PUTIMAGE (x%, y%)-(x% + MB_ICON_SIZE - 1, y% + MB_ICON_SIZE - 1), iconImg&, MB_STATE.imgHandle
+        EXIT SUB
+    END IF
+
+    ' Procedural fallback
     DIM clr AS _UNSIGNED LONG
     DIM glyph AS STRING
 
