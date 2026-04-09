@@ -482,9 +482,97 @@ FUNCTION PSD_load% (filename AS STRING)
     PSD_IMG.is_valid = PSD_TRUE
 
     CLOSE #fh%
+
+    ' Compute group depth and parent relationships
+    PSD_compute_group_relations
+
     PSD_load% = PSD_TRUE
     _LOGINFO "PSD: Parsed" + STR$(layerCount%) + " layers successfully"
 END FUNCTION
+
+
+' ===========================================================================
+' PSD_compute_group_relations — build group depth + parent index
+' ===========================================================================
+
+''
+' Walk the parsed layer records and compute group_depth and parent_group
+' for each layer. PSD stores groups as:
+'   is_group_end (bottom marker) → children → is_group (header at top)
+' Layers are stored bottom-to-top (index 1 = bottommost).
+'
+' Uses a depth counter to handle nested groups. Each layer gets:
+'   group_depth  = nesting depth (0 = top-level)
+'   parent_group = index of the nearest enclosing group header (0 = none)
+'
+' Must be called after PSD_load% has populated PSD_LAYERS().
+'
+SUB PSD_compute_group_relations
+    DIM i AS INTEGER
+    DIM depth AS INTEGER
+    ' Stack of group header indices (for parent assignment)
+    DIM groupStack(1 TO PSD_MAX_LAYERS) AS INTEGER
+    DIM stackTop AS INTEGER
+
+    depth% = 0
+    stackTop% = 0
+
+    ' Clear fields first
+    FOR i% = 1 TO PSD_IMG.layer_count
+        PSD_LAYERS(i%).group_depth = 0
+        PSD_LAYERS(i%).parent_group = 0
+    NEXT i%
+
+    FOR i% = 1 TO PSD_IMG.layer_count
+        IF PSD_LAYERS(i%).is_group_end THEN
+            ' Entering a group scope (bottom marker)
+            depth% = depth% + 1
+            PSD_LAYERS(i%).group_depth = depth%
+            ' Parent is the group above this scope (if any)
+            IF stackTop% > 0 THEN
+                PSD_LAYERS(i%).parent_group = groupStack%(stackTop%)
+            END IF
+
+        ELSEIF PSD_LAYERS(i%).is_group THEN
+            ' Group header (top marker) — closes the current scope
+            PSD_LAYERS(i%).group_depth = depth%
+            ' Parent is the group above this scope (peek under current)
+            IF stackTop% > 0 THEN
+                ' This group's parent is whatever was on stack before we pushed
+                ' But we haven't pushed yet for this header — stackTop holds outer
+                PSD_LAYERS(i%).parent_group = groupStack%(stackTop%)
+            END IF
+
+            ' Push this group header index so children above it
+            ' (in a different scope) can reference it — but actually
+            ' we're closing scope here, so pop instead
+            IF depth% > 0 THEN depth% = depth% - 1
+
+            ' Now assign: all children between the matching group_end and
+            ' this header get parent_group = i%
+            ' Walk backwards to find children at depth% + 1
+            DIM j AS INTEGER
+            FOR j% = i% - 1 TO 1 STEP -1
+                ' Stop when we hit the matching group_end
+                IF PSD_LAYERS(j%).is_group_end THEN
+                    IF PSD_LAYERS(j%).group_depth = depth% + 1 THEN
+                        EXIT FOR
+                    END IF
+                END IF
+                ' Assign direct children (not nested deeper)
+                IF PSD_LAYERS(j%).group_depth = depth% + 1 THEN
+                    IF PSD_LAYERS(j%).parent_group = 0 THEN
+                        PSD_LAYERS(j%).parent_group = i%
+                    END IF
+                END IF
+            NEXT j%
+
+        ELSE
+            ' Normal layer — inherits current depth
+            PSD_LAYERS(i%).group_depth = depth%
+        END IF
+    NEXT i%
+END SUB
 
 
 ' ===========================================================================

@@ -79,12 +79,13 @@ _ECHO ""
 ' --- Display layer details ---
 IF PSD_IMG.layer_count > 0 THEN
     _ECHO "Layer Details:"
-    _ECHO "  # | Name                           | Size       | Opacity | Visible | Blend"
-    _ECHO "----+--------------------------------+------------+---------+---------+------"
+    _ECHO "  # | Depth | Name                           | Size       | Opacity | Visible | Blend"
+    _ECHO "----+-------+--------------------------------+------------+---------+---------+------"
     FOR i% = 1 TO PSD_IMG.layer_count
         DIM lName AS STRING
         DIM lW AS LONG, lH AS LONG
         DIM vis AS STRING, grp AS STRING
+        DIM indent AS STRING
 
         lName$ = LEFT$(PSD_LAYERS(i%).name, PSD_LAYERS(i%).name_len)
         lW& = PSD_LAYERS(i%).right - PSD_LAYERS(i%).left
@@ -99,7 +100,10 @@ IF PSD_IMG.layer_count > 0 THEN
             grp$ = ""
         END IF
 
-        _ECHO " " + RIGHT$("  " + _TRIM$(STR$(i%)), 2) + " | " + LEFT$(lName$ + SPACE$(30), 30) + " | " + RIGHT$(SPACE$(4) + _TRIM$(STR$(lW&)), 5) + "x" + LEFT$(_TRIM$(STR$(lH&)) + SPACE$(4), 4) + " |   " + RIGHT$(SPACE$(3) + _TRIM$(STR$(PSD_LAYERS(i%).opacity)), 3) + " | " + LEFT$(vis$ + SPACE$(7), 7) + " | " + PSD_LAYERS(i%).blend_mode + grp$
+        ' Indent name based on group depth
+        indent$ = STRING$(PSD_LAYERS(i%).group_depth * 2, 32)
+
+        _ECHO " " + RIGHT$("  " + _TRIM$(STR$(i%)), 2) + " |   " + RIGHT$(" " + _TRIM$(STR$(PSD_LAYERS(i%).group_depth)), 2) + "  | " + LEFT$(indent$ + lName$ + SPACE$(30), 30) + " | " + RIGHT$(SPACE$(4) + _TRIM$(STR$(lW&)), 5) + "x" + LEFT$(_TRIM$(STR$(lH&)) + SPACE$(4), 4) + " |   " + RIGHT$(SPACE$(3) + _TRIM$(STR$(PSD_LAYERS(i%).opacity)), 3) + " | " + LEFT$(vis$ + SPACE$(7), 7) + " | " + PSD_LAYERS(i%).blend_mode + grp$
     NEXT i%
     _ECHO ""
 END IF

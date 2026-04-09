@@ -104,6 +104,8 @@ TYPE PSD_LAYER_RECORD
     is_group        AS INTEGER      ' TRUE if group start marker
     is_group_end    AS INTEGER      ' TRUE if group end marker
     section_type    AS INTEGER      ' PSD_SECTION_* constant
+    group_depth     AS INTEGER      ' nesting depth (0=top-level, 1=inside group, etc.)
+    parent_group    AS INTEGER      ' index of containing group header (0 if none)
 END TYPE
 
 TYPE PSD_IMAGE
@@ -132,3 +134,4 @@ DECLARE FUNCTION PSD_read_u32&& (fh AS INTEGER)
 DECLARE FUNCTION PSD_read_i32& (fh AS INTEGER)
 DECLARE FUNCTION PSD_decode_packbits$ (rleData AS STRING, expectedSize AS LONG)
 DECLARE FUNCTION PSD_map_blend_mode% (blend_key AS STRING)
+DECLARE SUB PSD_compute_group_relations
