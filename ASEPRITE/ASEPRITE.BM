@@ -519,8 +519,16 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
         
         ' Process chunks in this frame
         FOR chunk_num = 1 TO num_chunks
+            ' Store position before reading chunk header
+            DIM chunk_start_pos AS LONG
+            chunk_start_pos = SEEK(file_handle)
+            
             ' Read chunk header
             GET #file_handle, , chunk_header
+            
+            ' Calculate where the next chunk should start
+            DIM next_chunk_pos AS LONG
+            next_chunk_pos = chunk_start_pos + chunk_header.chunk_size
             
             IF ASEPRITE_DEBUG_MODE THEN
                 _ECHO "Processing chunk" + STR$(chunk_num) + " of" + STR$(num_chunks)
@@ -593,14 +601,12 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                         
                 END SELECT
                 
-                ' Skip remaining chunk data
-                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6 - LEN(cel_chunk))
-                
             ELSE
                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "  -> Skipping chunk type: 0x" + HEX$(chunk_header.chunk_type)
-                ' Skip non-CEL chunks
-                SEEK #file_handle, SEEK(file_handle) + (chunk_header.chunk_size - 6)
             END IF
+            
+            ' Always advance to the next chunk position
+            SEEK #file_handle, next_chunk_pos
         NEXT chunk_num
     END IF
     
@@ -773,8 +779,11 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     END SELECT
     
     ' Calculate compressed data size
-    ' Chunk contains: layer_index(2) + x_pos(2) + y_pos(2) + opacity(1) + cel_type(2) + z_index(2) + reserved(5) + width(2) + height(2) + compressed_data
-    data_size = chunk_size - 20 ' Header size for compressed cel chunk
+    ' chunk_size includes the 6-byte chunk header (DWORD size + WORD type).
+    ' After that: layer_index(2) + x_pos(2) + y_pos(2) + opacity(1) +
+    '   cel_type(2) + z_index(2) + reserved(5) + width(2) + height(2) = 20
+    ' Total overhead = 6 + 20 = 26 bytes.
+    data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
     IF data_size <= 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
@@ -819,7 +828,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         ELSE
             ' Truncate if too large
             decompressed_data$ = LEFT$(decompressed_data$, expected_size)
-            _ECHO "Truncated to expected size"
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "Truncated to expected size"
         END IF
     END IF
     
@@ -913,8 +922,8 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
             EXIT FUNCTION ' Unsupported color depth
     END SELECT
     
-    ' Calculate compressed data size
-    data_size = chunk_size - 20 ' Header size for compressed cel chunk
+    ' Calculate compressed data size (chunk_size includes the 6-byte chunk header)
+    data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
     IF data_size <= 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
@@ -1758,18 +1767,18 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
                             
                         CASE ELSE
                             ' Skip unsupported CEL types
-                            SEEK #file_handle, next_chunk_pos
                     END SELECT
                 ELSE
                     ' Skip this CEL chunk - it's not our target layer
                     IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping CEL for layer " + STR$(cel_chunk.layer_index) + " (want " + STR$(target_layer_index) + ")"
-                    SEEK #file_handle, next_chunk_pos
                 END IF
             ELSE
                 ' Skip non-CEL chunks
                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Skipping non-CEL chunk type: 0x" + HEX$(chunk_header.chunk_type)
-                SEEK #file_handle, next_chunk_pos
             END IF
+            
+            ' Always advance to the next chunk position
+            SEEK #file_handle, next_chunk_pos
         NEXT chunk_num
         
         ' Move to next frame position
@@ -2185,15 +2194,13 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     ' Composite each layer in file order
     FOR i = 0 TO aseprite_img.layer_count - 1
         layer_img = load_specific_layer_image&(aseprite_img, i)
-        IF layer_img <> 0 THEN
+        IF layer_img < -1 THEN
             ' layer_img uses CEL positions internally, so put at 0,0
             _PUTIMAGE (0, 0), layer_img, composite_img
             _FREEIMAGE layer_img
         ELSE
-            IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: no data for layer " + STR$(i)
-            _FREEIMAGE layer_img
-             create_composite_image_from_aseprite& = 0
-             EXIT FUNCTION
+            ' Group layers and empty layers have no pixel data — skip them
+            IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: no data for layer " + STR$(i) + " (group or empty)"
         END IF
     NEXT i
 
@@ -2530,13 +2537,7 @@ FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, f
         DIM layer_img AS LONG
         layer_img = load_specific_layer_image&(enhanced_img.base_image, render_items(i).layer_index)
         
-        IF layer_img = 0 THEN
-          IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_z_ordered_composite: layer not found"
-          _FREEIMAGE composite_img
-          _FREEIMAGE layer_img
-          create_z_ordered_composite& = 0
-          EXIT FUNCTION
-        ELSEIF layer_img <> 0 THEN
+        IF layer_img < -1 THEN
             ' Use CEL position and opacity
             DIM cel_x AS INTEGER, cel_y AS INTEGER
             cel_x = render_items(i).cel_info.x_position
@@ -2545,6 +2546,8 @@ FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, f
             ' Composite with transparency
             _PUTIMAGE (cel_x, cel_y), layer_img, composite_img
             _FREEIMAGE layer_img
+        ELSE
+          IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_z_ordered_composite: no data for layer " + STR$(render_items(i).layer_index) + " (group or empty)"
         END IF
     NEXT i
     
