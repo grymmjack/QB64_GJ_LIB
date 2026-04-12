@@ -150,7 +150,7 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
                 TI_inputs(MB_STATE.tiInputId).placeholder = placeholder
             END IF
             IF MB_STATE.autoSelectText THEN
-                TI_inputs(MB_STATE.tiInputId).autoSelect = TRUE
+                TI_inputs(MB_STATE.tiInputId).autoSelect = _TRUE
             END IF
             TI_set_focus MB_STATE.tiInputId
         END IF

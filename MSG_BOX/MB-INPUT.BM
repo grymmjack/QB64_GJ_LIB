@@ -19,9 +19,9 @@ SUB MB_INPUT_poll
         ' macOS: Capture button presses during drain — trackpad tap-to-click
         ' can press+release within a single drain cycle.
         DIM mb_mac_b1 AS INTEGER
-        mb_mac_b1% = FALSE
+        mb_mac_b1% = _FALSE
         DO WHILE _MOUSEINPUT
-            IF _MOUSEBUTTON(1) THEN mb_mac_b1% = TRUE
+            IF _MOUSEBUTTON(1) THEN mb_mac_b1% = _TRUE
         LOOP
     $ELSE
         ' Drain all queued mouse events (we only care about final position)
