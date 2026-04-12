@@ -1,0 +1,133 @@
+$INCLUDEONCE
+
+' ============================================================================
+' FD-TOOLTIP.BM — Self-contained tooltip display for QB64_GJ_FILE_DIALOG
+'
+' Tooltips render inside FD_STATE.imgHandle (dialog-space coords) so they
+' scale automatically with FD_STATE.scale. Colors come from FD_THEME.
+'
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+' --------------------------------------------------------------------------
+' FD_TOOLTIP_init — Set built-in English defaults for all tooltip targets.
+'   Called automatically from FD_init.  Host apps may override individual
+'   entries after FD_init by calling FD_set_tooltip(id%, text$).
+' --------------------------------------------------------------------------
+SUB FD_TOOLTIP_init
+    DIM i AS INTEGER
+    FOR i = 0 TO FD_TT_MAX
+        FD_tooltips(i).text = ""
+        FD_tooltips(i).enabled = -1   ' All enabled by default
+    NEXT i
+
+    FD_tooltips(FD_TT_TITLE_CLOSE).text  = "Close"
+    FD_tooltips(FD_TT_BTN_UP).text       = "Navigate up"
+    FD_tooltips(FD_TT_BTN_MKDIR).text    = "New folder"
+    FD_tooltips(FD_TT_BTN_LIST).text     = "List view"
+    FD_tooltips(FD_TT_BTN_DETAILS).text  = "Details view"
+    FD_tooltips(FD_TT_BTN_THUMBS).text   = "Thumbnails view"
+    FD_tooltips(FD_TT_BTN_HIDDEN).text   = "Toggle hidden files"
+    FD_tooltips(FD_TT_BTN_PREVIEW).text  = "Toggle preview pane"
+    FD_tooltips(FD_TT_PATH_BAR).text     = "Current path  (click to edit)"
+    ' FD_TT_PLACE_ENTRY uses FD_TT_dynamicText set by FD_TOOLTIP_set_hover
+
+    FD_TT_hoverTargetId = FD_TT_NONE
+    FD_TT_dynamicText   = ""
+    FD_TT_hoverTimer    = 0
+    FD_TT_visible       = 0
+    FD_TT_tipX          = 0
+    FD_TT_tipY          = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_set_tooltip — Public API: override one tooltip string from outside.
+'   Call after FD_init and before FD_modal_loop.
+'   targetId% : one of the FD_TT_* constants
+'   text$     : new display string  (empty string disables that tooltip)
+' --------------------------------------------------------------------------
+SUB FD_set_tooltip (targetId AS INTEGER, text AS STRING)
+    IF targetId < 0 OR targetId > FD_TT_MAX THEN EXIT SUB
+    FD_tooltips(targetId).text    = LEFT$(text, FD_TT_TEXT_LEN)
+    FD_tooltips(targetId).enabled = (LEN(RTRIM$(text)) > 0)
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_TOOLTIP_set_hover — Called from FD_INPUT_mouse each frame.
+'   When the hovered element changes the delay timer resets.
+'   targetId%   : FD_TT_* constant;  FD_TT_NONE (0) = nothing
+'   dynamicText$ : optional path/label for entries that vary (places pane)
+' --------------------------------------------------------------------------
+SUB FD_TOOLTIP_set_hover (targetId AS INTEGER, dynamicText AS STRING)
+    IF targetId <> FD_TT_hoverTargetId OR dynamicText <> FD_TT_dynamicText THEN
+        FD_TT_hoverTargetId = targetId
+        FD_TT_dynamicText   = dynamicText
+        FD_TT_hoverTimer    = TIMER
+        FD_TT_visible       = 0
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_TOOLTIP_update — Advance tooltip timer; call once per frame.
+'   When the delay has elapsed, marks the tooltip visible and requests a
+'   dirty-render so the tooltip appears without waiting for other events.
+' --------------------------------------------------------------------------
+SUB FD_TOOLTIP_update
+    IF FD_TT_hoverTargetId = FD_TT_NONE THEN
+        FD_TT_visible = 0
+        EXIT SUB
+    END IF
+
+    IF FD_TT_visible THEN EXIT SUB  ' Already showing — nothing more to do
+
+    IF (TIMER - FD_TT_hoverTimer) >= FD_TT_DELAY! THEN
+        FD_TT_visible   = -1
+        FD_STATE.dirty  = -1        ' Force a render frame so the tip appears
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_RENDER_tooltip — Draw the tooltip box into FD_STATE.imgHandle.
+'   Must be called last in FD_RENDER_all (after all other layers).
+'   Position is above the mouse cursor, clamped to dialog bounds.
+' --------------------------------------------------------------------------
+SUB FD_RENDER_tooltip
+    IF NOT FD_TT_visible THEN EXIT SUB
+    IF FD_TT_hoverTargetId = FD_TT_NONE THEN EXIT SUB
+
+    ' --- Determine display text ---
+    DIM tipText AS STRING
+    IF FD_TT_hoverTargetId = FD_TT_PLACE_ENTRY THEN
+        tipText = RTRIM$(FD_TT_dynamicText)
+    ELSE
+        IF FD_TT_hoverTargetId < 0 OR FD_TT_hoverTargetId > FD_TT_MAX THEN EXIT SUB
+        IF NOT FD_tooltips(FD_TT_hoverTargetId).enabled THEN EXIT SUB
+        tipText = RTRIM$(FD_tooltips(FD_TT_hoverTargetId).text)
+    END IF
+    IF LEN(tipText) = 0 THEN EXIT SUB
+
+    ' --- Compute size ---
+    DIM tipPad AS INTEGER
+    tipPad = 4
+    DIM tipW AS INTEGER, tipH AS INTEGER
+    tipW = LEN(tipText) * FD_CFG.fontW + tipPad * 2
+    tipH = FD_CFG.fontH + tipPad * 2
+
+    ' --- Position: just above the mouse cursor, clamped inside dialog ---
+    DIM tx AS INTEGER, ty AS INTEGER
+    tx = FD_TT_tipX
+    ty = FD_TT_tipY - tipH - 4
+    IF ty < 0 THEN ty = FD_TT_tipY + FD_CFG.fontH + 6   ' Flip below if too close to top
+    IF tx + tipW > FD_STATE.dialogW - 1 THEN tx = FD_STATE.dialogW - 1 - tipW
+    IF tx < 1 THEN tx = 1
+    IF ty + tipH > FD_STATE.dialogH - 1 THEN ty = FD_STATE.dialogH - 1 - tipH
+    IF ty < 0 THEN ty = 0
+
+    ' --- Draw box ---
+    LINE (tx, ty)-(tx + tipW - 1, ty + tipH - 1), FD_CLR_CONTENT_BG, BF
+    LINE (tx, ty)-(tx + tipW - 1, ty + tipH - 1), FD_CLR_BORDER_FOCUS, B
+
+    ' --- Draw text ---
+    COLOR FD_CLR_TEXT, _RGBA32(0, 0, 0, 0)
+    FD_print_scaled tx + tipPad, ty + tipPad, tipText, 1
+END SUB

@@ -205,6 +205,68 @@ SUB FD_INPUT_mouse
         FD_STATE.lastCursor = needCursor
     END IF
 
+    ' --- Tooltip hover detection (frame-level, runs before section routing) ---
+    FD_TT_tipX = mx
+    FD_TT_tipY = my
+    DIM ttTarget AS INTEGER
+    ttTarget = FD_TT_NONE
+    DIM ttDyn AS STRING
+    ttDyn = ""
+    IF my >= 0 AND my < FD_STATE.titleBarH THEN
+        ' Title bar — close button
+        IF mx >= FD_STATE.dialogW - FD_STATE.titleBarH THEN ttTarget = FD_TT_TITLE_CLOSE
+    ELSEIF my >= FD_STATE.titleBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH THEN
+        ' Path bar — up / mkdir / path field
+        DIM ttUpW AS INTEGER
+        ttUpW = FD_ICONS_calc_btn_w%
+        IF mx >= FD_PADDING AND mx < FD_PADDING + ttUpW THEN
+            ttTarget = FD_TT_BTN_UP
+        ELSEIF mx >= FD_PADDING + ttUpW + 2 AND mx < FD_PADDING + ttUpW * 2 + 2 THEN
+            ttTarget = FD_TT_BTN_MKDIR
+        ELSE
+            ttTarget = FD_TT_PATH_BAR
+        END IF
+    ELSEIF my >= FD_STATE.titleBarH + FD_STATE.pathBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH THEN
+        ' Toolbar — view buttons, hidden, preview
+        DIM ttBtnPad AS INTEGER: ttBtnPad = 3
+        DIM ttIsc AS INTEGER: ttIsc = FD_CFG.iconScale
+        IF ttIsc < 1 THEN ttIsc = 2
+        DIM ttIconSz AS INTEGER: ttIconSz = 11 * ttIsc
+        IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN ttIconSz = FD_iconW(FD_ICON_TB_LIST) * ttIsc
+        DIM ttBtnW AS INTEGER: ttBtnW = ttIconSz + ttBtnPad * 2
+        DIM ttBx AS INTEGER: ttBx = FD_PADDING
+        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_LIST
+        ttBx = ttBx + ttBtnW + 2
+        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_DETAILS
+        ttBx = ttBx + ttBtnW + 2
+        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_THUMBS
+        ttBx = ttBx + ttBtnW + 8
+        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_HIDDEN
+        ttBx = ttBx + ttBtnW + 4
+        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_PREVIEW
+    ELSEIF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
+        ' Places pane — iterate to find entry under cursor
+        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+            DIM ttPlPy AS INTEGER
+            ttPlPy = FD_STATE.contentY + FD_PADDING
+            DIM ttPlI AS INTEGER
+            FOR ttPlI = 0 TO FD_STATE.placesCount - 1
+                IF FD_places(ttPlI).entryType = FD_PLACE_SEPARATOR THEN
+                    ttPlPy = ttPlPy + FD_STATE.rowHeight \ 2
+                    _CONTINUE
+                END IF
+                IF my >= ttPlPy AND my < ttPlPy + FD_STATE.rowHeight THEN
+                    ttTarget = FD_TT_PLACE_ENTRY
+                    ttDyn = RTRIM$(FD_places(ttPlI).path)
+                    EXIT FOR
+                END IF
+                ttPlPy = ttPlPy + FD_STATE.rowHeight
+            NEXT ttPlI
+        END IF
+    END IF
+    FD_TOOLTIP_set_hover ttTarget, ttDyn
+    ' --- End tooltip hover detection ---
+
     ' --- Check for resize edge hover/start on press ---
     IF justPressed THEN
         DIM edge AS INTEGER

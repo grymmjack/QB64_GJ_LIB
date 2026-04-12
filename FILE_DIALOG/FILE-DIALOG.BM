@@ -31,6 +31,9 @@ $END IF
 ' --- Rendering routines ---
 '$INCLUDE:'FD-RENDER.BM'
 
+' --- Tooltip rendering and state management ---
+'$INCLUDE:'FD-TOOLTIP.BM'
+
 ' --- Mouse and keyboard input handling ---
 '$INCLUDE:'FD-INPUT.BM'
 

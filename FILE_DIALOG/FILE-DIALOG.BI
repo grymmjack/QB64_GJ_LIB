@@ -17,6 +17,9 @@ $INCLUDEONCE
 ' --- Theme / layout constants ---
 '$INCLUDE:'FD-THEME.BI'
 
+' --- Tooltip state / constants ---
+'$INCLUDE:'FD-TOOLTIP.BI'
+
 ' --- Icon constants ---
 '$INCLUDE:'FD-ICONS.BI'
 

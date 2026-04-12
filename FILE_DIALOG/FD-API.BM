@@ -10,7 +10,7 @@ $INCLUDEONCE
 ' FD_open_file$ — Show an Open File dialog. Returns selected path or "".
 ' --------------------------------------------------------------------------
 FUNCTION FD_open_file$ (title AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER)
-    FD_init FD_MODE_OPEN, title, "Open", startDir, filters, defaultFilter, ""
+    FD_init FD_MODE_OPEN, title, "OPEN", startDir, filters, defaultFilter, ""
     FD_modal_loop
     DIM result AS STRING
     IF FD_STATE.confirmed THEN
@@ -26,7 +26,7 @@ END FUNCTION
 ' FD_save_file$ — Show a Save File dialog. Returns selected path or "".
 ' --------------------------------------------------------------------------
 FUNCTION FD_save_file$ (title AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultFileName AS STRING, defaultExt AS STRING)
-    FD_init FD_MODE_SAVE, title, "Save", startDir, filters, defaultFilter, defaultExt
+    FD_init FD_MODE_SAVE, title, "SAVE", startDir, filters, defaultFilter, defaultExt
     IF LEN(defaultFileName) > 0 THEN
         FD_STATE.fileNameInput = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
@@ -47,7 +47,7 @@ END FUNCTION
 ' FD_save_as_file$ — Show a Save As dialog. Returns selected path or "".
 ' --------------------------------------------------------------------------
 FUNCTION FD_save_as_file$ (title AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultFileName AS STRING, defaultExt AS STRING)
-    FD_init FD_MODE_SAVE_AS, title, "Save As", startDir, filters, defaultFilter, defaultExt
+    FD_init FD_MODE_SAVE_AS, title, "SAVE AS", startDir, filters, defaultFilter, defaultExt
     IF LEN(defaultFileName) > 0 THEN
         FD_STATE.fileNameInput = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
@@ -68,7 +68,7 @@ END FUNCTION
 ' FD_choose_folder$ — Show a Choose Folder dialog. Returns selected path or "".
 ' --------------------------------------------------------------------------
 FUNCTION FD_choose_folder$ (title AS STRING, startDir AS STRING)
-    FD_init FD_MODE_CHOOSE_FOLDER, title, "Select", startDir, "", 0, ""
+    FD_init FD_MODE_CHOOSE_FOLDER, title, "SELECT", startDir, "", 0, ""
     FD_modal_loop
     DIM result AS STRING
     IF FD_STATE.confirmed THEN
@@ -81,6 +81,142 @@ FUNCTION FD_choose_folder$ (title AS STRING, startDir AS STRING)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
+' --------------------------------------------------------------------------
+' FD_THEME_init — Populate FD_THEME with built-in dark flat defaults,
+'   then call FD_THEME_sync to copy values into the FD_CLR_* variables.
+' --------------------------------------------------------------------------
+SUB FD_THEME_init
+    ' Backgrounds
+    FD_THEME.bg              = &HFF2D2D30
+    FD_THEME.titleBg         = &HFF3C3C3C
+    FD_THEME.titleBgActive   = &HFF007ACC
+    FD_THEME.toolbarBg       = &HFF333337
+    FD_THEME.placesBg        = &HFF252526
+    FD_THEME.contentBg       = &HFF1E1E1E
+    FD_THEME.previewBg       = &HFF1E1E1E
+    FD_THEME.statusBg        = &HFF007ACC
+    FD_THEME.buttonBarBg     = &HFF2D2D30
+    FD_THEME.colHeaderBg     = &HFF333337
+    FD_THEME.pathBg          = &HFF3C3C3C
+    ' Text
+    FD_THEME.text            = &HFFCCCCCC
+    FD_THEME.textDim         = &HFF808080
+    FD_THEME.textBright      = &HFFFFFFFF
+    FD_THEME.textDisabled    = &HFF5A5A5A
+    FD_THEME.textAccent      = &HFF3794FF
+    ' Interactive
+    FD_THEME.hover           = &HFF2A2D2E
+    FD_THEME.selected        = &HFF094771
+    FD_THEME.selectedUnfocused = &HFF37373D
+    FD_THEME.buttonBg        = &HFF0E639C
+    FD_THEME.buttonHover     = &HFF1177BB
+    FD_THEME.buttonText      = &HFFFFFFFF
+    ' Borders
+    FD_THEME.border          = &HFF3C3C3C
+    FD_THEME.borderFocus     = &HFF007ACC
+    FD_THEME.splitter        = &HFF3C3C3C
+    FD_THEME.divider         = &HFF404040
+    FD_THEME.colResize       = &HFF007ACC
+    ' Inputs
+    FD_THEME.inputBg         = &HFF3C3C3C
+    FD_THEME.inputBorder     = &HFF555555
+    FD_THEME.inputFocusBg    = &HFF1E1E1E
+    FD_THEME.inputCursor     = &HFFAEAFAD
+    ' Scrollbars
+    FD_THEME.scrollbarBg     = &HFF1E1E1E
+    FD_THEME.scrollbarThumb  = &HFF424242
+    FD_THEME.scrollbarHover  = &HFF4F4F4F
+    ' File type icons
+    FD_THEME.iconFolder      = &HFFDCB67A
+    FD_THEME.iconImage       = &HFF6A9955
+    FD_THEME.iconDoc         = &HFF569CD6
+    FD_THEME.iconDefault     = &HFF808080
+    FD_THEME.iconExec        = &HFF4EC9B0
+    FD_THEME.iconSound       = &HFFC586C0
+    FD_THEME.iconConfig      = &HFFCE9178
+    FD_THEME.iconFont        = &HFFDCDCAA
+    FD_THEME.iconTextmode    = &HFF4FC1FF
+    FD_THEME.iconArchive     = &HFF8B7355
+    FD_THEME.iconVideo       = &HFFE06C75
+    FD_THEME.iconMusic       = &HFFC586C0
+    FD_THEME.iconDset        = &HFFE2884B
+    FD_THEME.iconPalette     = &HFFFF6B6B
+    FD_THEME.iconGradient    = &HFF56B6C2
+    ' Checkerboard
+    FD_THEME.checkA          = &HFF404040
+    FD_THEME.checkB          = &HFF606060
+    ' Sort
+    FD_THEME.sortArrow       = &HFFCCCCCC
+    ' Tooltips
+    FD_THEME.tooltipBg       = &HFF252526
+    FD_THEME.tooltipText     = &HFFCCCCCC
+    FD_THEME.tooltipBorder   = &HFF007ACC
+    ' Font (0 = use built-in bitmap font)
+    FD_THEME.fontHandle      = 0
+
+    FD_THEME_sync
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_THEME_sync — Copy FD_THEME.* values into the public FD_CLR_* variables.
+'   Call this after modifying FD_THEME fields to apply changes to rendering.
+' --------------------------------------------------------------------------
+SUB FD_THEME_sync
+    FD_CLR_BG               = FD_THEME.bg
+    FD_CLR_TITLE_BG         = FD_THEME.titleBg
+    FD_CLR_TITLE_BG_ACTIVE  = FD_THEME.titleBgActive
+    FD_CLR_TOOLBAR_BG       = FD_THEME.toolbarBg
+    FD_CLR_PLACES_BG        = FD_THEME.placesBg
+    FD_CLR_CONTENT_BG       = FD_THEME.contentBg
+    FD_CLR_PREVIEW_BG       = FD_THEME.previewBg
+    FD_CLR_STATUS_BG        = FD_THEME.statusBg
+    FD_CLR_BUTTON_BAR_BG    = FD_THEME.buttonBarBg
+    FD_CLR_COL_HEADER_BG    = FD_THEME.colHeaderBg
+    FD_CLR_PATH_BG          = FD_THEME.pathBg
+    FD_CLR_TEXT             = FD_THEME.text
+    FD_CLR_TEXT_DIM         = FD_THEME.textDim
+    FD_CLR_TEXT_BRIGHT      = FD_THEME.textBright
+    FD_CLR_TEXT_DISABLED    = FD_THEME.textDisabled
+    FD_CLR_TEXT_ACCENT      = FD_THEME.textAccent
+    FD_CLR_HOVER            = FD_THEME.hover
+    FD_CLR_SELECTED         = FD_THEME.selected
+    FD_CLR_SELECTED_UNFOCUSED = FD_THEME.selectedUnfocused
+    FD_CLR_BUTTON_BG        = FD_THEME.buttonBg
+    FD_CLR_BUTTON_HOVER     = FD_THEME.buttonHover
+    FD_CLR_BUTTON_TEXT      = FD_THEME.buttonText
+    FD_CLR_BORDER           = FD_THEME.border
+    FD_CLR_BORDER_FOCUS     = FD_THEME.borderFocus
+    FD_CLR_SPLITTER         = FD_THEME.splitter
+    FD_CLR_DIVIDER          = FD_THEME.divider
+    FD_CLR_COL_RESIZE       = FD_THEME.colResize
+    FD_CLR_INPUT_BG         = FD_THEME.inputBg
+    FD_CLR_INPUT_BORDER     = FD_THEME.inputBorder
+    FD_CLR_INPUT_FOCUS_BG   = FD_THEME.inputFocusBg
+    FD_CLR_INPUT_CURSOR     = FD_THEME.inputCursor
+    FD_CLR_SCROLLBAR_BG     = FD_THEME.scrollbarBg
+    FD_CLR_SCROLLBAR_THUMB  = FD_THEME.scrollbarThumb
+    FD_CLR_SCROLLBAR_HOVER  = FD_THEME.scrollbarHover
+    FD_CLR_ICON_FOLDER      = FD_THEME.iconFolder
+    FD_CLR_ICON_IMAGE       = FD_THEME.iconImage
+    FD_CLR_ICON_DOC         = FD_THEME.iconDoc
+    FD_CLR_ICON_DEFAULT     = FD_THEME.iconDefault
+    FD_CLR_ICON_EXEC        = FD_THEME.iconExec
+    FD_CLR_ICON_SOUND       = FD_THEME.iconSound
+    FD_CLR_ICON_CONFIG      = FD_THEME.iconConfig
+    FD_CLR_ICON_FONT        = FD_THEME.iconFont
+    FD_CLR_ICON_TEXTMODE    = FD_THEME.iconTextmode
+    FD_CLR_ICON_ARCHIVE     = FD_THEME.iconArchive
+    FD_CLR_ICON_VIDEO       = FD_THEME.iconVideo
+    FD_CLR_ICON_MUSIC       = FD_THEME.iconMusic
+    FD_CLR_ICON_DSET        = FD_THEME.iconDset
+    FD_CLR_ICON_PALETTE     = FD_THEME.iconPalette
+    FD_CLR_ICON_GRADIENT    = FD_THEME.iconGradient
+    FD_CLR_CHECK_A          = FD_THEME.checkA
+    FD_CLR_CHECK_B          = FD_THEME.checkB
+    FD_CLR_SORT_ARROW       = FD_THEME.sortArrow
+END SUB
+
+' --------------------------------------------------------------------------
 ' FD_init — Initialize dialog state for a new dialog session
 ' --------------------------------------------------------------------------
 SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultExt AS STRING)
@@ -91,7 +227,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     ' Set operating parameters
     FD_STATE.mode = mode
     FD_STATE.title = title
-    FD_STATE.confirmLabel = confirmLabel
+    FD_STATE.confirmLabel = UCASE$(confirmLabel)
     FD_STATE.defaultExt = defaultExt
     FD_STATE.scale = 1
 
@@ -110,6 +246,9 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Load config (or use defaults)
     FD_load_config
+
+    ' Initialize theme colors (defaults; host app may override after FD_init)
+    FD_THEME_init
 
     ' Parse filters
     FD_parse_filters filters
@@ -171,7 +310,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     pathW = FD_STATE.dialogW - pathX - FD_PADDING
     FD_STATE.tiPathId = TI_create%(pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6)
     TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
-    TI_inputs(FD_STATE.tiPathId).placeholder = "Enter path..."
+    TI_inputs(FD_STATE.tiPathId).placeholder = "ENTER PATH..."
     TI_inputs(FD_STATE.tiPathId).theme.bgColor = FD_CLR_INPUT_BG~&
     TI_inputs(FD_STATE.tiPathId).theme.focusBgColor = FD_CLR_INPUT_FOCUS_BG~&
     TI_inputs(FD_STATE.tiPathId).theme.borderColor = FD_CLR_INPUT_BORDER~&
@@ -183,7 +322,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Filename input (positioned later in LAYOUT_calculate, starts hidden)
     FD_STATE.tiFileNameId = TI_create%(0, 0, 100, 22)
-    TI_inputs(FD_STATE.tiFileNameId).placeholder = "Filename..."
+    TI_inputs(FD_STATE.tiFileNameId).placeholder = "FILENAME..."
     TI_inputs(FD_STATE.tiFileNameId).theme.bgColor = FD_CLR_INPUT_BG~&
     TI_inputs(FD_STATE.tiFileNameId).theme.focusBgColor = FD_CLR_INPUT_FOCUS_BG~&
     TI_inputs(FD_STATE.tiFileNameId).theme.borderColor = FD_CLR_INPUT_BORDER~&
@@ -200,15 +339,30 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     ' Initialize thumbnails
     FD_THUMB_init
 
-    FD_STATE.dirty = -1
-END SUB
+    ' Initialize tooltip defaults (host may override after FD_init via FD_set_tooltip)
+    FD_TOOLTIP_init
 
-' --------------------------------------------------------------------------
-' FD_cleanup — Free resources after dialog closes
+    FD_STATE.dirty = -1
+
+    ' Auto-focus the filename input in save modes so user can type immediately
+    IF FD_STATE.mode = FD_MODE_SAVE OR FD_STATE.mode = FD_MODE_SAVE_AS THEN
+        FD_STATE.focusPane = FD_FOCUS_FILENAME
+        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_focus FD_STATE.tiFileNameId
+    END IF
+END SUB
 ' --------------------------------------------------------------------------
 SUB FD_cleanup
     ' Save config
     FD_save_config
+
+    ' Free themed font if one was injected (e.g. by DRAW_FD_apply_theme)
+    ' Reset font on image buffer to built-in first — _FREEFONT fails if the
+    ' handle is still set as the active font on any image/page.
+    IF FD_THEME.fontHandle > 0 THEN
+        IF FD_STATE.imgHandle < -1 THEN _FONT FD_CFG.fontID, FD_STATE.imgHandle
+        _FREEFONT FD_THEME.fontHandle
+        FD_THEME.fontHandle = 0
+    END IF
 
     ' Destroy text input widgets
     IF FD_STATE.tiPathId >= 1 THEN TI_destroy FD_STATE.tiPathId
@@ -275,6 +429,9 @@ SUB FD_modal_loop
 
         ' Tick text input cursor blink
         TI_tick
+
+        ' Advance tooltip timer (shows tooltip after hover delay)
+        FD_TOOLTIP_update
 
         ' Render if dirty
         IF FD_STATE.dirty THEN
@@ -354,7 +511,7 @@ SUB FD_LAYOUT_calculate
 
     ' Content pane (center)
     FD_STATE.contentX = FD_STATE.placesW + FD_SPLITTER_W
-    FD_STATE.contentW = FD_STATE.previewX - FD_STATE.contentX - FD_SPLITTER_W - FD_SCROLLBAR_W
+    FD_STATE.contentW = FD_STATE.previewX - FD_STATE.contentX - FD_SPLITTER_W
     IF FD_STATE.contentW < 100 THEN FD_STATE.contentW = 100
 
     ' Recalculate scroll limits
@@ -380,8 +537,11 @@ SUB FD__update_text_input_geometry
     IF FD_STATE.tiFileNameId >= 1 THEN
         DIM fnX AS INTEGER, fnW AS INTEGER
         DIM btnBarY AS INTEGER
+        DIM ifs2 AS INTEGER
+        ifs2 = FD_CFG.inputFontScale: IF ifs2 < 1 THEN ifs2 = 1
         btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
-        fnX = FD_PADDING + 72  ' After "Filename:" label
+        ' Dynamic label width so TI starts just after "FILENAME:" text + gap
+        fnX = FD_PADDING + FD_text_width%("FILENAME:", ifs2) + FD_PADDING
         fnW = FD_STATE.dialogW - fnX - FD_BUTTON_W * 2 - FD_PADDING * 4
         IF fnW < 50 THEN fnW = 50
         TI_set_geometry FD_STATE.tiFileNameId, fnX, btnBarY + 5, fnW, FD_STATE.buttonBarH - 10
@@ -667,6 +827,8 @@ SUB FD_load_config
     FD_CFG.sortAscending = -1
     FD_CFG.showHidden = 0
     FD_CFG.thumbSize = FD_THUMB_DEFAULT_SIZE
+    FD_CFG.dialogX = 0
+    FD_CFG.dialogY = 0
     FD_CFG.dialogW = 800
     FD_CFG.dialogH = 500
     FD_CFG.colWidth0 = 250
@@ -688,7 +850,7 @@ SUB FD_load_config
     FD_CFG.placesFontScale = 1
     FD_CFG.pathFontScale = 1
     FD_CFG.contentFontScale = 1
-    FD_CFG.previewFontScale = 1
+    FD_CFG.previewFontScale = 2
     FD_CFG.inputFontScale = 1
     FD_CFG.filterFontScale = 1
     FD_CFG.statusFontScale = 1
@@ -724,6 +886,8 @@ SUB FD_load_config
             CASE "SORTASCENDING": FD_CFG.sortAscending = VAL(cfgVal)
             CASE "SHOWHIDDEN": FD_CFG.showHidden = VAL(cfgVal)
             CASE "THUMBSIZE": FD_CFG.thumbSize = VAL(cfgVal)
+            CASE "DIALOGX": FD_CFG.dialogX = VAL(cfgVal)
+            CASE "DIALOGY": FD_CFG.dialogY = VAL(cfgVal)
             CASE "DIALOGW": FD_CFG.dialogW = VAL(cfgVal)
             CASE "DIALOGH": FD_CFG.dialogH = VAL(cfgVal)
             CASE "COLWIDTH0": FD_CFG.colWidth0 = VAL(cfgVal)
@@ -780,6 +944,8 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_save_config
     ' Update config from state
+    FD_CFG.dialogX = FD_STATE.dialogX
+    FD_CFG.dialogY = FD_STATE.dialogY
     FD_CFG.dialogW = FD_STATE.dialogW
     FD_CFG.dialogH = FD_STATE.dialogH
     FD_CFG.placesWidth = FD_STATE.placesW
@@ -799,6 +965,8 @@ SUB FD_save_config
     OPEN cfgPath FOR OUTPUT AS #f
 
     PRINT #f, "# QB64_GJ_FILE_DIALOG config"
+    PRINT #f, "dialogX=" + LTRIM$(STR$(FD_CFG.dialogX))
+    PRINT #f, "dialogY=" + LTRIM$(STR$(FD_CFG.dialogY))
     PRINT #f, "viewMode=" + LTRIM$(STR$(FD_CFG.viewMode))
     PRINT #f, "sortField=" + LTRIM$(STR$(FD_CFG.sortField))
     PRINT #f, "sortAscending=" + LTRIM$(STR$(FD_CFG.sortAscending))

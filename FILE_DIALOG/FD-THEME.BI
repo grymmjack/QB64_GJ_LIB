@@ -41,71 +41,150 @@ CONST FD_CURSOR_BLINK_MS = 0.5      ' Cursor blink interval in seconds
 ' --- Color Palette (Dark Flat Theme) -----------------------------------------
 
 ' Background colors
-CONST FD_CLR_BG~& = &HFF2D2D30              ' Main dialog background
-CONST FD_CLR_TITLE_BG~& = &HFF3C3C3C        ' Title bar background
-CONST FD_CLR_TITLE_BG_ACTIVE~& = &HFF007ACC ' Title bar when focused
-CONST FD_CLR_TOOLBAR_BG~& = &HFF333337      ' Toolbar background
-CONST FD_CLR_PLACES_BG~& = &HFF252526       ' Places bar background
-CONST FD_CLR_CONTENT_BG~& = &HFF1E1E1E      ' Content area background
-CONST FD_CLR_PREVIEW_BG~& = &HFF1E1E1E      ' Preview pane background
-CONST FD_CLR_STATUS_BG~& = &HFF007ACC       ' Status bar background
-CONST FD_CLR_BUTTON_BAR_BG~& = &HFF2D2D30   ' Button bar background
-CONST FD_CLR_COL_HEADER_BG~& = &HFF333337   ' Column header background
-CONST FD_CLR_PATH_BG~& = &HFF3C3C3C         ' Path bar background
+DIM SHARED FD_CLR_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TITLE_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TITLE_BG_ACTIVE AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TOOLBAR_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_PLACES_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_CONTENT_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_PREVIEW_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_STATUS_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_BUTTON_BAR_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_COL_HEADER_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_PATH_BG AS _UNSIGNED LONG
 
 ' Text colors
-CONST FD_CLR_TEXT~& = &HFFCCCCCC            ' Normal text
-CONST FD_CLR_TEXT_DIM~& = &HFF808080        ' Dimmed / secondary text
-CONST FD_CLR_TEXT_BRIGHT~& = &HFFFFFFFF     ' Bright text (titles, selected)
-CONST FD_CLR_TEXT_DISABLED~& = &HFF5A5A5A   ' Disabled text
-CONST FD_CLR_TEXT_ACCENT~& = &HFF3794FF     ' Accent text (links, active filter)
+DIM SHARED FD_CLR_TEXT AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TEXT_DIM AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TEXT_BRIGHT AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TEXT_DISABLED AS _UNSIGNED LONG
+DIM SHARED FD_CLR_TEXT_ACCENT AS _UNSIGNED LONG
 
 ' Interactive element colors
-CONST FD_CLR_HOVER~& = &HFF2A2D2E          ' Row/item hover highlight
-CONST FD_CLR_SELECTED~& = &HFF094771       ' Selected item background
-CONST FD_CLR_SELECTED_UNFOCUSED~& = &HFF37373D ' Selected when pane unfocused
-CONST FD_CLR_BUTTON_BG~& = &HFF0E639C      ' Button background
-CONST FD_CLR_BUTTON_HOVER~& = &HFF1177BB    ' Button hover
-CONST FD_CLR_BUTTON_TEXT~& = &HFFFFFFFF     ' Button text
+DIM SHARED FD_CLR_HOVER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_SELECTED AS _UNSIGNED LONG
+DIM SHARED FD_CLR_SELECTED_UNFOCUSED AS _UNSIGNED LONG
+DIM SHARED FD_CLR_BUTTON_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_BUTTON_HOVER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_BUTTON_TEXT AS _UNSIGNED LONG
 
 ' Border / separator colors
-CONST FD_CLR_BORDER~& = &HFF3C3C3C         ' Panel borders
-CONST FD_CLR_BORDER_FOCUS~& = &HFF007ACC   ' Focused input border
-CONST FD_CLR_SPLITTER~& = &HFF3C3C3C       ' Splitter line
-CONST FD_CLR_DIVIDER~& = &HFF404040        ' Horizontal dividers
-CONST FD_CLR_COL_RESIZE~& = &HFF007ACC     ' Column resize line
+DIM SHARED FD_CLR_BORDER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_BORDER_FOCUS AS _UNSIGNED LONG
+DIM SHARED FD_CLR_SPLITTER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_DIVIDER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_COL_RESIZE AS _UNSIGNED LONG
 
 ' Input field colors
-CONST FD_CLR_INPUT_BG~& = &HFF3C3C3C       ' Text input background
-CONST FD_CLR_INPUT_BORDER~& = &HFF555555    ' Text input border
-CONST FD_CLR_INPUT_FOCUS_BG~& = &HFF1E1E1E ' Text input focused background
-CONST FD_CLR_INPUT_CURSOR~& = &HFFAEAFAD   ' Text cursor color
+DIM SHARED FD_CLR_INPUT_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_INPUT_BORDER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_INPUT_FOCUS_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_INPUT_CURSOR AS _UNSIGNED LONG
 
 ' Scrollbar colors
-CONST FD_CLR_SCROLLBAR_BG~& = &HFF1E1E1E   ' Scrollbar track
-CONST FD_CLR_SCROLLBAR_THUMB~& = &HFF424242 ' Scrollbar thumb
-CONST FD_CLR_SCROLLBAR_HOVER~& = &HFF4F4F4F ' Scrollbar thumb hover
+DIM SHARED FD_CLR_SCROLLBAR_BG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_SCROLLBAR_THUMB AS _UNSIGNED LONG
+DIM SHARED FD_CLR_SCROLLBAR_HOVER AS _UNSIGNED LONG
 
 ' File type icon colors
-CONST FD_CLR_ICON_FOLDER~& = &HFFDCB67A    ' Folder icon color (gold)
-CONST FD_CLR_ICON_IMAGE~& = &HFF6A9955     ' Image file icon color (green)
-CONST FD_CLR_ICON_DOC~& = &HFF569CD6       ' Document icon color (blue)
-CONST FD_CLR_ICON_DEFAULT~& = &HFF808080   ' Default file icon color (gray)
-CONST FD_CLR_ICON_EXEC~& = &HFF4EC9B0      ' Executable icon color (teal)
-CONST FD_CLR_ICON_SOUND~& = &HFFC586C0     ' Sound/music icon color (purple)
-CONST FD_CLR_ICON_CONFIG~& = &HFFCE9178     ' Config file icon color (orange)
-CONST FD_CLR_ICON_FONT~& = &HFFDCDCAA      ' Font file icon color (pale yellow)
-CONST FD_CLR_ICON_TEXTMODE~& = &HFF4FC1FF   ' Text mode file icon color (bright blue)
-CONST FD_CLR_ICON_ARCHIVE~& = &HFF8B7355   ' Archive file icon color (brown)
-CONST FD_CLR_ICON_VIDEO~& = &HFFE06C75     ' Video file icon color (red)
-CONST FD_CLR_ICON_MUSIC~& = &HFFC586C0     ' Music file icon color (purple/magenta)
-CONST FD_CLR_ICON_DSET~& = &HFFE2884B       ' DSET icon color (warm orange)
-CONST FD_CLR_ICON_PALETTE~& = &HFFFF6B6B    ' Palette icon color (red)
-CONST FD_CLR_ICON_GRADIENT~& = &HFF56B6C2   ' Gradient icon color (cyan)
+DIM SHARED FD_CLR_ICON_FOLDER AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_IMAGE AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_DOC AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_DEFAULT AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_EXEC AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_SOUND AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_CONFIG AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_FONT AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_TEXTMODE AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_ARCHIVE AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_VIDEO AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_MUSIC AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_DSET AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_PALETTE AS _UNSIGNED LONG
+DIM SHARED FD_CLR_ICON_GRADIENT AS _UNSIGNED LONG
 
 ' Checkerboard for preview transparency
-CONST FD_CLR_CHECK_A~& = &HFF404040        ' Checker dark
-CONST FD_CLR_CHECK_B~& = &HFF606060        ' Checker light
+DIM SHARED FD_CLR_CHECK_A AS _UNSIGNED LONG
+DIM SHARED FD_CLR_CHECK_B AS _UNSIGNED LONG
 
 ' Sort indicator
-CONST FD_CLR_SORT_ARROW~& = &HFFCCCCCC     ' Sort direction arrow
+DIM SHARED FD_CLR_SORT_ARROW AS _UNSIGNED LONG
+
+' --- Theme Struct (for external customization) --------------------------------
+' External callers set fields then call FD_THEME_sync to apply them.
+' FD_THEME_init fills defaults (same as the dark flat palette above).
+
+TYPE FD_THEME_OBJ
+    ' Backgrounds
+    bg AS _UNSIGNED LONG
+    titleBg AS _UNSIGNED LONG
+    titleBgActive AS _UNSIGNED LONG
+    toolbarBg AS _UNSIGNED LONG
+    placesBg AS _UNSIGNED LONG
+    contentBg AS _UNSIGNED LONG
+    previewBg AS _UNSIGNED LONG
+    statusBg AS _UNSIGNED LONG
+    buttonBarBg AS _UNSIGNED LONG
+    colHeaderBg AS _UNSIGNED LONG
+    pathBg AS _UNSIGNED LONG
+    ' Text
+    text AS _UNSIGNED LONG
+    textDim AS _UNSIGNED LONG
+    textBright AS _UNSIGNED LONG
+    textDisabled AS _UNSIGNED LONG
+    textAccent AS _UNSIGNED LONG
+    ' Interactive
+    hover AS _UNSIGNED LONG
+    selected AS _UNSIGNED LONG
+    selectedUnfocused AS _UNSIGNED LONG
+    buttonBg AS _UNSIGNED LONG
+    buttonHover AS _UNSIGNED LONG
+    buttonText AS _UNSIGNED LONG
+    ' Borders
+    border AS _UNSIGNED LONG
+    borderFocus AS _UNSIGNED LONG
+    splitter AS _UNSIGNED LONG
+    divider AS _UNSIGNED LONG
+    colResize AS _UNSIGNED LONG
+    ' Inputs
+    inputBg AS _UNSIGNED LONG
+    inputBorder AS _UNSIGNED LONG
+    inputFocusBg AS _UNSIGNED LONG
+    inputCursor AS _UNSIGNED LONG
+    ' Scrollbars
+    scrollbarBg AS _UNSIGNED LONG
+    scrollbarThumb AS _UNSIGNED LONG
+    scrollbarHover AS _UNSIGNED LONG
+    ' File type icons
+    iconFolder AS _UNSIGNED LONG
+    iconImage AS _UNSIGNED LONG
+    iconDoc AS _UNSIGNED LONG
+    iconDefault AS _UNSIGNED LONG
+    iconExec AS _UNSIGNED LONG
+    iconSound AS _UNSIGNED LONG
+    iconConfig AS _UNSIGNED LONG
+    iconFont AS _UNSIGNED LONG
+    iconTextmode AS _UNSIGNED LONG
+    iconArchive AS _UNSIGNED LONG
+    iconVideo AS _UNSIGNED LONG
+    iconMusic AS _UNSIGNED LONG
+    iconDset AS _UNSIGNED LONG
+    iconPalette AS _UNSIGNED LONG
+    iconGradient AS _UNSIGNED LONG
+    ' Checkerboard
+    checkA AS _UNSIGNED LONG
+    checkB AS _UNSIGNED LONG
+    ' Sort
+    sortArrow AS _UNSIGNED LONG
+    ' Tooltips
+    tooltipBg AS _UNSIGNED LONG
+    tooltipText AS _UNSIGNED LONG
+    tooltipBorder AS _UNSIGNED LONG
+    ' Font (0 = use built-in bitmap font; > 0 = _LOADFONT handle)
+    fontHandle AS LONG
+END TYPE
+
+DIM SHARED FD_THEME AS FD_THEME_OBJ
+
+DECLARE SUB FD_THEME_init
+DECLARE SUB FD_THEME_sync

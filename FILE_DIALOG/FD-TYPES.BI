@@ -125,6 +125,8 @@ TYPE FD_CONFIG_OBJ
     thumbSize AS INTEGER             ' Thumbnail pixel size (32, 48, 64, 96, 128)
 
     ' Dialog geometry
+    dialogX AS INTEGER               ' Dialog X position (0 = use auto-center)
+    dialogY AS INTEGER               ' Dialog Y position (0 = use auto-center)
     dialogW AS INTEGER               ' Dialog width
     dialogH AS INTEGER               ' Dialog height
 
