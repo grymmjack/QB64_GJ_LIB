@@ -40,8 +40,8 @@ END SUB
 '          Check CP_STATE.result for CP_RESULT_OK vs CP_RESULT_NONE
 ' --------------------------------------------------------------------------
 FUNCTION CP_pick_color& (title AS STRING, initialColor AS _UNSIGNED LONG)
-    DIM dummy AS STRING: dummy = title ' reserved for future use
     CP_init initialColor
+    CP_STATE.title = title
     CP_modal_loop
     DIM chosenColor AS _UNSIGNED LONG
     IF CP_STATE.result = CP_RESULT_OK THEN
@@ -97,6 +97,9 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
 
     ' Apply pre-configured options
     CP_STATE.posterize = CP_OPTIONS.posterize
+
+    ' Default title
+    CP_STATE.title = "Color Picker"
 
     ' Calculate layout
     CP_layout_calculate

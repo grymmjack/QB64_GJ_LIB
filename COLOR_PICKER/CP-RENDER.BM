@@ -83,7 +83,7 @@ SUB CP_RENDER_title_bar
     LINE (0, 0)-(CP_STATE.dialogW - 1, CP_TITLE_BAR_H - 1), CP_CLR_TITLE_BG~&, BF
 
     COLOR CP_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (CP_PADDING \ 2 + 2, (CP_TITLE_BAR_H - CP_STATE.fontH) \ 2 + 1), "Color Picker"
+    _PRINTSTRING (CP_PADDING \ 2 + 2, (CP_TITLE_BAR_H - CP_STATE.fontH) \ 2 + 1), RTRIM$(CP_STATE.title)
 
     ' Close button [X]
     DIM bx AS INTEGER

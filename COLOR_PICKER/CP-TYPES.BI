@@ -136,6 +136,9 @@ TYPE CP_STATE_OBJ
     fontID AS INTEGER                   ' Built-in font ID (8 or 16)
     fontW AS INTEGER                    ' Char width in pixels
     fontH AS INTEGER                    ' Char height in pixels
+
+    ' Title bar text (set before rendering; default "Color Picker")
+    title AS STRING * 32
 END TYPE
 
 ' --- Options (set before calling CP_pick_color&) -----------------------------
