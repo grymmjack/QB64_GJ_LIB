@@ -57,6 +57,9 @@ TYPE TI_THEME_OBJ
     cursorColor     AS _UNSIGNED LONG  ' Cursor
     selectionColor  AS _UNSIGNED LONG  ' Selection highlight
     readonlyBgColor AS _UNSIGNED LONG  ' Read-only background
+    fontHandle      AS LONG            ' TTF font handle (0 = use built-in)
+    fontW           AS INTEGER         ' Per-instance char width (0 = use shared)
+    fontH           AS INTEGER         ' Per-instance char height (0 = use shared)
 END TYPE
 
 ' --- Text Input State --------------------------------------------------------

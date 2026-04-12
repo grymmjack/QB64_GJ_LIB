@@ -19,7 +19,12 @@ SUB CP_RENDER_all
     oldDest = _DEST
     _DEST CP_STATE.imgHandle
 
-    CLS , CP_CLR_BG~&
+    ' Set themed font (TTF handle > 0) or fall back to built-in
+    DIM cpOldFont AS LONG
+    cpOldFont& = _FONT
+    IF CP_THEME.fontHandle& > 0 THEN _FONT CP_THEME.fontHandle&
+
+    CLS , CP_THEME.bg~&
 
     ' Rebuild SV square if hue changed
     IF CP_STATE.svDirty THEN
@@ -39,7 +44,10 @@ SUB CP_RENDER_all
     CP_RENDER_button_bar
 
     ' Border
-    LINE (0, 0)-(CP_STATE.dialogW - 1, CP_STATE.dialogH - 1), CP_CLR_BORDER~&, B
+    LINE (0, 0)-(CP_STATE.dialogW - 1, CP_STATE.dialogH - 1), CP_THEME.border~&, B
+
+    ' Restore previous font
+    IF cpOldFont& > 0 THEN _FONT cpOldFont&
 
     _DEST oldDest
 END SUB
@@ -62,7 +70,7 @@ SUB CP_RENDER_blit
     _BLEND 0
 
     ' Darken overlay
-    LINE (0, 0)-(_WIDTH(0) - 1, _HEIGHT(0) - 1), CP_CLR_OVERLAY~&, BF
+    LINE (0, 0)-(_WIDTH(0) - 1, _HEIGHT(0) - 1), CP_THEME.overlay~&, BF
 
     ' Blit dialog
     DIM sx AS INTEGER, sy AS INTEGER
@@ -80,19 +88,19 @@ END SUB
 ' CP_RENDER_title_bar
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_title_bar
-    LINE (0, 0)-(CP_STATE.dialogW - 1, CP_TITLE_BAR_H - 1), CP_CLR_TITLE_BG~&, BF
+    LINE (0, 0)-(CP_STATE.dialogW - 1, CP_THEME.titleBarH% - 1), CP_THEME.titleBg~&, BF
 
-    COLOR CP_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (CP_PADDING \ 2 + 2, (CP_TITLE_BAR_H - CP_STATE.fontH) \ 2 + 1), RTRIM$(CP_STATE.title)
+    COLOR CP_THEME.titleFg~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (CP_THEME.padding% \ 2 + 2, (CP_THEME.titleBarH% - CP_STATE.fontH) \ 2 + 1), RTRIM$(CP_STATE.title)
 
     ' Close button [X]
     DIM bx AS INTEGER
-    bx = CP_STATE.dialogW - CP_TITLE_BAR_H
+    bx = CP_STATE.dialogW - CP_THEME.titleBarH%
     IF CP_STATE.hoverButton = -2 THEN
-        LINE (bx, 0)-(CP_STATE.dialogW - 1, CP_TITLE_BAR_H - 1), &HFFE81123, BF
+        LINE (bx, 0)-(CP_STATE.dialogW - 1, CP_THEME.titleBarH% - 1), CP_THEME.closeHoverBg~&, BF
     END IF
-    COLOR CP_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (bx + (CP_TITLE_BAR_H - 8) \ 2, (CP_TITLE_BAR_H - CP_STATE.fontH) \ 2 + 1), "X"
+    COLOR CP_THEME.closeFg~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (bx + (CP_THEME.titleBarH% - CP_STATE.fontW) \ 2, (CP_THEME.titleBarH% - CP_STATE.fontH) \ 2 + 1), "X"
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -166,7 +174,7 @@ SUB CP_RENDER_sv_square
     END IF
 
     ' Border
-    LINE (CP_STATE.svX - 1, CP_STATE.svY - 1)-(CP_STATE.svX + CP_STATE.svW, CP_STATE.svY + CP_STATE.svH), CP_CLR_BORDER~&, B
+    LINE (CP_STATE.svX - 1, CP_STATE.svY - 1)-(CP_STATE.svX + CP_STATE.svW, CP_STATE.svY + CP_STATE.svH), CP_THEME.border~&, B
 
     ' Crosshair at current S,V
     DIM cx AS INTEGER, cy AS INTEGER
@@ -187,7 +195,7 @@ SUB CP_RENDER_hue_bar
     END IF
 
     ' Border
-    LINE (CP_STATE.hueBarX - 1, CP_STATE.hueBarY - 1)-(CP_STATE.hueBarX + CP_STATE.hueBarW, CP_STATE.hueBarY + CP_STATE.hueBarH), CP_CLR_BORDER~&, B
+    LINE (CP_STATE.hueBarX - 1, CP_STATE.hueBarY - 1)-(CP_STATE.hueBarX + CP_STATE.hueBarW, CP_STATE.hueBarY + CP_STATE.hueBarH), CP_THEME.border~&, B
 
     ' Arrow marker showing current hue
     DIM markerY AS INTEGER
@@ -217,24 +225,24 @@ SUB CP_RENDER_preview
     DIM y AS INTEGER
     y = CP_STATE.previewY
 
-    COLOR CP_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (CP_STATE.svX, y), "Old"
-    _PRINTSTRING (CP_STATE.svX + CP_PREVIEW_W + 8, y), "New"
+    COLOR CP_THEME.text~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (CP_STATE.svX, y), "OLD"
+    _UPRINTSTRING (CP_STATE.svX + CP_THEME.previewW% + 8, y), "NEW"
 
     DIM swY AS INTEGER
     swY = y + CP_STATE.fontH
 
     ' Old color swatch
-    CP_RENDER_checker CP_STATE.previewOldX, swY, CP_PREVIEW_W, CP_PREVIEW_H
-    LINE (CP_STATE.previewOldX, swY)-(CP_STATE.previewOldX + CP_PREVIEW_W - 1, swY + CP_PREVIEW_H - 1), CP_STATE.origColor, BF
-    LINE (CP_STATE.previewOldX, swY)-(CP_STATE.previewOldX + CP_PREVIEW_W - 1, swY + CP_PREVIEW_H - 1), CP_CLR_BORDER~&, B
+    CP_RENDER_checker CP_STATE.previewOldX, swY, CP_THEME.previewW%, CP_THEME.previewH%
+    LINE (CP_STATE.previewOldX, swY)-(CP_STATE.previewOldX + CP_THEME.previewW% - 1, swY + CP_THEME.previewH% - 1), CP_STATE.origColor, BF
+    LINE (CP_STATE.previewOldX, swY)-(CP_STATE.previewOldX + CP_THEME.previewW% - 1, swY + CP_THEME.previewH% - 1), CP_THEME.border~&, B
 
     ' New color swatch
     DIM newClr AS _UNSIGNED LONG
     newClr = _RGB32(CP_STATE.cR, CP_STATE.cG, CP_STATE.cB)
-    CP_RENDER_checker CP_STATE.previewNewX, swY, CP_PREVIEW_W, CP_PREVIEW_H
-    LINE (CP_STATE.previewNewX, swY)-(CP_STATE.previewNewX + CP_PREVIEW_W - 1, swY + CP_PREVIEW_H - 1), newClr, BF
-    LINE (CP_STATE.previewNewX, swY)-(CP_STATE.previewNewX + CP_PREVIEW_W - 1, swY + CP_PREVIEW_H - 1), CP_CLR_BORDER~&, B
+    CP_RENDER_checker CP_STATE.previewNewX, swY, CP_THEME.previewW%, CP_THEME.previewH%
+    LINE (CP_STATE.previewNewX, swY)-(CP_STATE.previewNewX + CP_THEME.previewW% - 1, swY + CP_THEME.previewH% - 1), newClr, BF
+    LINE (CP_STATE.previewNewX, swY)-(CP_STATE.previewNewX + CP_THEME.previewW% - 1, swY + CP_THEME.previewH% - 1), CP_THEME.border~&, B
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -247,9 +255,9 @@ SUB CP_RENDER_checker (x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER)
     FOR cy = y TO y + h - 1
         FOR cx = x TO x + w - 1
             IF ((cx - x) \ sz + (cy - y) \ sz) MOD 2 = 0 THEN
-                PSET (cx, cy), CP_CLR_CHECK_A~&
+                PSET (cx, cy), CP_THEME.checkA~&
             ELSE
-                PSET (cx, cy), CP_CLR_CHECK_B~&
+                PSET (cx, cy), CP_THEME.checkB~&
             END IF
         NEXT cx
     NEXT cy
@@ -265,8 +273,8 @@ SUB CP_RENDER_sliders_rgb
     sw = CP_STATE.sliderW
 
     CP_RENDER_slider sx, sy, sw, "R:", CP_STATE.cR, 255, _RGB32(255, 0, 0)
-    CP_RENDER_slider sx, sy + CP_SLIDER_H + CP_SLIDER_GAP, sw, "G:", CP_STATE.cG, 255, _RGB32(0, 200, 0)
-    CP_RENDER_slider sx, sy + (CP_SLIDER_H + CP_SLIDER_GAP) * 2, sw, "B:", CP_STATE.cB, 255, _RGB32(80, 80, 255)
+    CP_RENDER_slider sx, sy + CP_THEME.sliderH% + CP_THEME.sliderGap%, sw, "G:", CP_STATE.cG, 255, _RGB32(0, 200, 0)
+    CP_RENDER_slider sx, sy + (CP_THEME.sliderH% + CP_THEME.sliderGap%) * 2, sw, "B:", CP_STATE.cB, 255, _RGB32(80, 80, 255)
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -276,8 +284,8 @@ SUB CP_RENDER_sliders_hsl
     DIM sx AS INTEGER, sy AS INTEGER, sw AS INTEGER
     DIM hslRowH AS INTEGER
     sx = CP_STATE.sliderX
-    hslRowH = CP_SLIDER_H + CP_SLIDER_GAP
-    sy = CP_STATE.sliderY + hslRowH * 3 + CP_SECTION_GAP
+    hslRowH = CP_THEME.sliderH% + CP_THEME.sliderGap%
+    sy = CP_STATE.sliderY + hslRowH * 3 + CP_THEME.sectionGap%
     sw = CP_STATE.sliderW
 
     CP_RENDER_slider sx, sy, sw, "H:", INT(CP_STATE.hslH), 360, _RGB32(200, 200, 200)
@@ -290,17 +298,17 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_slider (x AS INTEGER, y AS INTEGER, w AS INTEGER, label AS STRING, curVal AS INTEGER, maxVal AS INTEGER, trackClr AS _UNSIGNED LONG)
     ' Label
-    COLOR CP_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (x, y + (CP_SLIDER_H - CP_STATE.fontH) \ 2), label
+    COLOR CP_THEME.text~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (x, y + (CP_THEME.sliderH% - CP_STATE.fontH) \ 2), label
 
     ' Track area
     DIM tx AS INTEGER, tw AS INTEGER
-    tx = x + CP_LABEL_W
-    tw = w - CP_LABEL_W - CP_VALUE_W - 4
+    tx = x + CP_THEME.labelW%
+    tw = w - CP_THEME.labelW% - CP_THEME.valueW% - 4
 
     ' Track background
-    LINE (tx, y)-(tx + tw - 1, y + CP_SLIDER_H - 1), CP_CLR_SLIDER_BG~&, BF
-    LINE (tx, y)-(tx + tw - 1, y + CP_SLIDER_H - 1), CP_CLR_SLIDER_BORDER~&, B
+    LINE (tx, y)-(tx + tw - 1, y + CP_THEME.sliderH% - 1), CP_THEME.sliderBg~&, BF
+    LINE (tx, y)-(tx + tw - 1, y + CP_THEME.sliderH% - 1), CP_THEME.sliderBorder~&, B
 
     ' Filled portion
     DIM fillW AS INTEGER
@@ -310,21 +318,21 @@ SUB CP_RENDER_slider (x AS INTEGER, y AS INTEGER, w AS INTEGER, label AS STRING,
         fillW = 0
     END IF
     IF fillW > 0 THEN
-        LINE (tx + 1, y + 1)-(tx + fillW, y + CP_SLIDER_H - 2), trackClr, BF
+        LINE (tx + 1, y + 1)-(tx + fillW, y + CP_THEME.sliderH% - 2), trackClr, BF
     END IF
 
     ' Thumb marker
     DIM thumbX AS INTEGER
     thumbX = tx + 1 + fillW
     IF thumbX > tx + tw - 2 THEN thumbX = tx + tw - 2
-    LINE (thumbX - 1, y)-(thumbX + 1, y + CP_SLIDER_H - 1), CP_CLR_TEXT_BRIGHT~&, BF
+    LINE (thumbX - 1, y)-(thumbX + 1, y + CP_THEME.sliderH% - 1), CP_THEME.textBright~&, BF
 
     ' Value text (right-aligned)
     DIM valStr AS STRING
     valStr = LTRIM$(STR$(curVal))
     DIM vx AS INTEGER
-    vx = x + w - CP_VALUE_W
-    _PRINTSTRING (vx, y + (CP_SLIDER_H - CP_STATE.fontH) \ 2), valStr
+    vx = x + w - CP_THEME.valueW%
+    _UPRINTSTRING (vx, y + (CP_THEME.sliderH% - CP_STATE.fontH) \ 2), valStr
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -335,29 +343,34 @@ SUB CP_RENDER_hex_row
     y = CP_STATE.hexY
 
     ' "Hex:" label
-    COLOR CP_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (CP_STATE.sliderX, y + (CP_HEX_INPUT_H - CP_STATE.fontH) \ 2 + 1), "Hex:"
+    COLOR CP_THEME.text~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (CP_STATE.sliderX, y + (CP_THEME.hexInputH% - CP_STATE.fontH) \ 2 + 1), "HEX:"
 
     ' TI widget renders itself
     IF CP_STATE.tiHexId > 0 THEN
         TI_render CP_STATE.tiHexId, 0, 0
     END IF
 
-    ' Copy button
-    DIM copyX AS INTEGER
-    copyX = CP_STATE.hexInputX + CP_STATE.hexInputW + 4
-    DIM bgClr AS _UNSIGNED LONG
-    IF CP_STATE.hoverButton = 2 THEN bgClr = CP_CLR_BUTTON_SEC_HOVER~& ELSE bgClr = CP_CLR_BUTTON_SECONDARY~&
-    LINE (copyX, y)-(copyX + CP_COPY_BTN_W - 1, y + CP_HEX_INPUT_H - 1), bgClr, BF
-    COLOR CP_CLR_BUTTON_SEC_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (copyX + (CP_COPY_BTN_W - 4 * CP_CHAR_W) \ 2, y + (CP_HEX_INPUT_H - CP_STATE.fontH) \ 2 + 1), "Copy"
-
-    ' Paste button
+    ' Copy button (right-aligned)
     DIM pasteX AS INTEGER
-    pasteX = copyX + CP_COPY_BTN_W + 4
-    IF CP_STATE.hoverButton = 3 THEN bgClr = CP_CLR_BUTTON_SEC_HOVER~& ELSE bgClr = CP_CLR_BUTTON_SECONDARY~&
-    LINE (pasteX, y)-(pasteX + CP_PASTE_BTN_W - 1, y + CP_HEX_INPUT_H - 1), bgClr, BF
-    _PRINTSTRING (pasteX + (CP_PASTE_BTN_W - 5 * CP_CHAR_W) \ 2, y + (CP_HEX_INPUT_H - CP_STATE.fontH) \ 2 + 1), "Paste"
+    pasteX = CP_STATE.sliderX + CP_STATE.sliderW - CP_THEME.pasteBtnW%
+    DIM copyX AS INTEGER
+    copyX = pasteX - 4 - CP_THEME.copyBtnW%
+
+    DIM bgClr AS _UNSIGNED LONG
+    IF CP_STATE.hoverButton = 2 THEN bgClr = CP_THEME.buttonSecHover~& ELSE bgClr = CP_THEME.buttonSecondary~&
+    LINE (copyX, y)-(copyX + CP_THEME.copyBtnW% - 1, y + CP_THEME.hexInputH% - 1), bgClr, BF
+    COLOR CP_THEME.buttonSecText~&, _RGBA32(0, 0, 0, 0)
+    DIM copyTW AS INTEGER
+    copyTW% = _UPRINTWIDTH("COPY")
+    _UPRINTSTRING (copyX + (CP_THEME.copyBtnW% - copyTW%) \ 2, y + (CP_THEME.hexInputH% - CP_STATE.fontH) \ 2 + 1), "COPY"
+
+    ' Paste button (right-aligned)
+    IF CP_STATE.hoverButton = 3 THEN bgClr = CP_THEME.buttonSecHover~& ELSE bgClr = CP_THEME.buttonSecondary~&
+    LINE (pasteX, y)-(pasteX + CP_THEME.pasteBtnW% - 1, y + CP_THEME.hexInputH% - 1), bgClr, BF
+    DIM pasteTW AS INTEGER
+    pasteTW% = _UPRINTWIDTH("PASTE")
+    _UPRINTSTRING (pasteX + (CP_THEME.pasteBtnW% - pasteTW%) \ 2, y + (CP_THEME.hexInputH% - CP_STATE.fontH) \ 2 + 1), "PASTE"
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -368,16 +381,22 @@ SUB CP_RENDER_posterize_row
     y = CP_STATE.posterizeY
 
     ' "Snap:" label
-    COLOR CP_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (CP_STATE.sliderX, y + (CP_POSTERIZE_ROW_H - CP_STATE.fontH) \ 2), "Snap:"
+    COLOR CP_THEME.text~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (CP_STATE.sliderX, y + (CP_THEME.posterizeRowH% - CP_STATE.fontH) \ 2), "SNAP:"
 
-    ' Chip layout — 8 chips
+    ' Chip layout — 8 chips, right-aligned within content area
+    DIM offChipW AS INTEGER
+    offChipW% = 3 * CP_STATE.fontW + 4
+    DIM totalChipW AS INTEGER
+    totalChipW% = offChipW% + CP_THEME.snapChipGap%
+    totalChipW% = totalChipW% + 7 * CP_THEME.snapChipW% + 6 * CP_THEME.snapChipGap%
+
     DIM chipStartX AS INTEGER
-    chipStartX = CP_STATE.sliderX + 5 * CP_CHAR_W + 4
+    chipStartX = CP_STATE.sliderX + CP_STATE.sliderW - totalChipW%
 
     DIM labels(0 TO 7) AS STRING
     DIM snapVals(0 TO 7) AS INTEGER
-    labels(0) = "Off": snapVals(0) = 0
+    labels(0) = "OFF": snapVals(0) = 0
     labels(1) = "2": snapVals(1) = 2
     labels(2) = "3": snapVals(2) = 3
     labels(3) = "4": snapVals(3) = 4
@@ -392,31 +411,31 @@ SUB CP_RENDER_posterize_row
     cx = chipStartX
 
     FOR ci = 0 TO 7
-        IF ci = 0 THEN cw = 3 * CP_CHAR_W + 4 ELSE cw = CP_SNAP_CHIP_W
+        IF ci = 0 THEN cw = 3 * CP_STATE.fontW + 4 ELSE cw = CP_THEME.snapChipW%
 
         DIM isActive AS INTEGER
         isActive = (CP_STATE.posterize = snapVals(ci))
 
         IF isActive THEN
-            bg = CP_CLR_BUTTON_BG~&
-            fg = CP_CLR_BUTTON_TEXT~&
+            bg = CP_THEME.buttonBg~&
+            fg = CP_THEME.buttonText~&
         ELSEIF CP_STATE.hoverPosterize = ci THEN
-            bg = CP_CLR_BUTTON_SEC_HOVER~&
-            fg = CP_CLR_TEXT_BRIGHT~&
+            bg = CP_THEME.buttonSecHover~&
+            fg = CP_THEME.textBright~&
         ELSE
-            bg = CP_CLR_BUTTON_SECONDARY~&
-            fg = CP_CLR_BUTTON_SEC_TEXT~&
+            bg = CP_THEME.buttonSecondary~&
+            fg = CP_THEME.buttonSecText~&
         END IF
 
-        LINE (cx, y)-(cx + cw - 1, y + CP_POSTERIZE_ROW_H - 1), bg, BF
+        LINE (cx, y)-(cx + cw - 1, y + CP_THEME.posterizeRowH% - 1), bg, BF
         COLOR fg, _RGBA32(0, 0, 0, 0)
         DIM lbl AS STRING
         lbl = labels(ci)
         DIM tx AS INTEGER
-        tx = cx + (cw - LEN(lbl) * CP_CHAR_W) \ 2
-        _PRINTSTRING (tx, y + (CP_POSTERIZE_ROW_H - CP_STATE.fontH) \ 2), lbl
+        tx = cx + (cw - _UPRINTWIDTH(lbl)) \ 2
+        _UPRINTSTRING (tx, y + (CP_THEME.posterizeRowH% - CP_STATE.fontH) \ 2), lbl
 
-        cx = cx + cw + CP_SNAP_CHIP_GAP
+        cx = cx + cw + CP_THEME.snapChipGap%
     NEXT ci
 END SUB
 
@@ -427,27 +446,31 @@ SUB CP_RENDER_button_bar
     DIM y1 AS INTEGER
     y1 = CP_STATE.buttonBarY
 
-    LINE (0, y1)-(CP_STATE.dialogW - 1, CP_STATE.dialogH - 1), CP_CLR_BUTTON_BAR_BG~&, BF
-    LINE (0, y1)-(CP_STATE.dialogW - 1, y1), CP_CLR_DIVIDER~&
+    LINE (0, y1)-(CP_STATE.dialogW - 1, CP_STATE.dialogH - 1), CP_THEME.buttonBarBg~&, BF
+    LINE (0, y1)-(CP_STATE.dialogW - 1, y1), CP_THEME.divider~&
 
     DIM totalW AS INTEGER, startX AS INTEGER
-    totalW = CP_BUTTON_W * 2 + CP_BUTTON_GAP
-    startX = CP_STATE.dialogW - CP_PADDING - totalW
+    totalW = CP_THEME.buttonW% * 2 + CP_THEME.buttonGap%
+    startX = CP_STATE.dialogW - CP_THEME.padding% - totalW
     DIM by AS INTEGER
-    by = y1 + (CP_BUTTON_BAR_H - CP_BUTTON_H) \ 2
+    by = y1 + (CP_THEME.buttonBarH% - CP_THEME.buttonH%) \ 2
 
     ' OK button
     DIM bgClr AS _UNSIGNED LONG
-    IF CP_STATE.hoverButton = 0 THEN bgClr = CP_CLR_BUTTON_HOVER~& ELSE bgClr = CP_CLR_BUTTON_BG~&
-    LINE (startX, by)-(startX + CP_BUTTON_W - 1, by + CP_BUTTON_H - 1), bgClr, BF
-    COLOR CP_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (startX + (CP_BUTTON_W - 2 * CP_CHAR_W) \ 2, by + (CP_BUTTON_H - CP_STATE.fontH) \ 2), "OK"
+    IF CP_STATE.hoverButton = 0 THEN bgClr = CP_THEME.buttonHover~& ELSE bgClr = CP_THEME.buttonBg~&
+    LINE (startX, by)-(startX + CP_THEME.buttonW% - 1, by + CP_THEME.buttonH% - 1), bgClr, BF
+    COLOR CP_THEME.buttonText~&, _RGBA32(0, 0, 0, 0)
+    DIM okTW AS INTEGER
+    okTW% = _UPRINTWIDTH("OK")
+    _UPRINTSTRING (startX + (CP_THEME.buttonW% - okTW%) \ 2, by + (CP_THEME.buttonH% - CP_STATE.fontH) \ 2), "OK"
 
     ' Cancel button
     DIM cancelX AS INTEGER
-    cancelX = startX + CP_BUTTON_W + CP_BUTTON_GAP
-    IF CP_STATE.hoverButton = 1 THEN bgClr = CP_CLR_BUTTON_SEC_HOVER~& ELSE bgClr = CP_CLR_BUTTON_SECONDARY~&
-    LINE (cancelX, by)-(cancelX + CP_BUTTON_W - 1, by + CP_BUTTON_H - 1), bgClr, BF
-    COLOR CP_CLR_BUTTON_SEC_TEXT~&, _RGBA32(0, 0, 0, 0)
-    _PRINTSTRING (cancelX + (CP_BUTTON_W - 6 * CP_CHAR_W) \ 2, by + (CP_BUTTON_H - CP_STATE.fontH) \ 2), "Cancel"
+    cancelX = startX + CP_THEME.buttonW% + CP_THEME.buttonGap%
+    IF CP_STATE.hoverButton = 1 THEN bgClr = CP_THEME.buttonSecHover~& ELSE bgClr = CP_THEME.buttonSecondary~&
+    LINE (cancelX, by)-(cancelX + CP_THEME.buttonW% - 1, by + CP_THEME.buttonH% - 1), bgClr, BF
+    COLOR CP_THEME.buttonSecText~&, _RGBA32(0, 0, 0, 0)
+    DIM cancelTW AS INTEGER
+    cancelTW% = _UPRINTWIDTH("CANCEL")
+    _UPRINTSTRING (cancelX + (CP_THEME.buttonW% - cancelTW%) \ 2, by + (CP_THEME.buttonH% - CP_STATE.fontH) \ 2), "CANCEL"
 END SUB

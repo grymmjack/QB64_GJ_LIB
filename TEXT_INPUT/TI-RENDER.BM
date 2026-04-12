@@ -77,9 +77,27 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
     IF TI_inputs(id).multiline THEN
         TI__render_multiline id, x1, y1, w, h, t, txtClr, curClr, selClr, phClr, bgClr
     ELSE
-        ' Single-line rendering (original path)
+        ' Resolve per-instance font overrides
+        DIM eFW AS INTEGER, eFH AS INTEGER, useTTF AS INTEGER
+        useTTF = 0
+        eFW = TI_fontW: eFH = TI_fontH
+        IF TI_inputs(id).theme.fontHandle > 0 THEN
+            IF TI_inputs(id).theme.fontW > 0 THEN eFW = TI_inputs(id).theme.fontW
+            IF TI_inputs(id).theme.fontH > 0 THEN eFH = TI_inputs(id).theme.fontH
+            useTTF = -1
+        END IF
+
+        ' Set per-instance TTF font
+        DIM tiOldFont AS LONG
+        tiOldFont = -1
+        IF useTTF THEN
+            tiOldFont = _FONT
+            _FONT TI_inputs(id).theme.fontHandle
+        END IF
+
+        ' Single-line rendering
         DIM singleTextY AS INTEGER
-        singleTextY = y1 + (h - TI_fontH) \ 2   ' Center font vertically
+        singleTextY = y1 + (h - eFH) \ 2   ' Center font vertically
 
         ' --- Show placeholder if empty and unfocused ---
         IF LEN(t) = 0 AND NOT TI_inputs(id).focused THEN
@@ -87,12 +105,13 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             ph = RTRIM$(TI_inputs(id).placeholder)
             IF LEN(ph) > 0 THEN
                 DIM maxPH AS INTEGER
-                maxPH = visibleW \ TI_fontW
+                maxPH = visibleW \ eFW
                 IF LEN(ph) > maxPH THEN ph = LEFT$(ph, maxPH)
                 COLOR phClr, _RGBA32(0, 0, 0, 0)
-                _PRINTSTRING (textX, singleTextY), ph
+                IF useTTF THEN _UPRINTSTRING (textX, singleTextY), ph ELSE _PRINTSTRING (textX, singleTextY), ph
             END IF
             TI_inputs(id).dirty = 0
+            IF tiOldFont > -1 THEN _FONT tiOldFont
             EXIT SUB
         END IF
 
@@ -108,9 +127,9 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         DIM scrollPx AS INTEGER
         scrollPx = TI_inputs(id).scrollX
         DIM startChar AS INTEGER, endChar AS INTEGER
-        startChar = scrollPx \ TI_fontW
+        startChar = scrollPx \ eFW
         IF startChar < 0 THEN startChar = 0
-        endChar = startChar + (visibleW \ TI_fontW) + 2
+        endChar = startChar + (visibleW \ eFW) + 2
         IF endChar > LEN(displayText) THEN endChar = LEN(displayText)
 
         ' --- Draw selection highlight ---
@@ -125,8 +144,8 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             END IF
 
             DIM selX1 AS INTEGER, selX2 AS INTEGER
-            selX1 = textX + s1 * TI_fontW - scrollPx
-            selX2 = textX + s2 * TI_fontW - scrollPx
+            selX1 = textX + s1 * eFW - scrollPx
+            selX2 = textX + s2 * eFW - scrollPx
 
             ' Clamp to visible area
             IF selX1 < textX THEN selX1 = textX
@@ -142,20 +161,27 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         COLOR txtClr, _RGBA32(0, 0, 0, 0)
         FOR ci = startChar TO endChar - 1
             DIM charX AS INTEGER
-            charX = textX + ci * TI_fontW - scrollPx
-            IF charX >= textX - TI_fontW AND charX < textX + visibleW THEN
-                _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
+            charX = textX + ci * eFW - scrollPx
+            IF charX >= textX - eFW AND charX < textX + visibleW THEN
+                IF useTTF THEN
+                    _UPRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
+                ELSE
+                    _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
+                END IF
             END IF
         NEXT ci
 
         ' --- Draw cursor ---
         IF TI_inputs(id).focused AND TI_inputs(id).cursorBlink THEN
             DIM curX AS INTEGER
-            curX = textX + TI_inputs(id).cursorPos * TI_fontW - scrollPx
+            curX = textX + TI_inputs(id).cursorPos * eFW - scrollPx
             IF curX >= x1 AND curX < x1 + w THEN
                 LINE (curX, y1 + 3)-(curX, y1 + h - 4), curClr
             END IF
         END IF
+
+        ' Restore previous font
+        IF tiOldFont > -1 THEN _FONT tiOldFont
     END IF
 
     TI_inputs(id).dirty = 0

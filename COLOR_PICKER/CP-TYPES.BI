@@ -147,7 +147,81 @@ TYPE CP_OPTIONS_OBJ
     posterize AS INTEGER                ' 0=off, 2/3/4/6/8/12/16 snap levels
 END TYPE
 
+' --- Runtime Theme (host app can override after CP_init) ---------------------
+
+TYPE CP_THEME_OBJ
+    ' Background colors
+    bg              AS _UNSIGNED LONG   ' Dialog background
+    titleBg         AS _UNSIGNED LONG   ' Title bar background (normal)
+    titleHoverBg    AS _UNSIGNED LONG   ' Title bar hover
+    titleDragBg     AS _UNSIGNED LONG   ' Title bar drag highlight
+    buttonBarBg     AS _UNSIGNED LONG   ' Button bar background
+    contentBg       AS _UNSIGNED LONG   ' Content area background
+
+    ' Text colors
+    titleFg         AS _UNSIGNED LONG   ' Title bar text
+    text            AS _UNSIGNED LONG   ' Normal text
+    textBright      AS _UNSIGNED LONG   ' Bright/white text
+    textDim         AS _UNSIGNED LONG   ' Dim/gray text
+
+    ' Button colors
+    buttonBg        AS _UNSIGNED LONG   ' Primary button background
+    buttonHover     AS _UNSIGNED LONG   ' Primary button hover
+    buttonText      AS _UNSIGNED LONG   ' Primary button text
+    buttonSecondary AS _UNSIGNED LONG   ' Secondary button background
+    buttonSecHover  AS _UNSIGNED LONG   ' Secondary button hover
+    buttonSecText   AS _UNSIGNED LONG   ' Secondary button text
+    buttonFocus     AS _UNSIGNED LONG   ' Button focus ring
+
+    ' Close button
+    closeFg         AS _UNSIGNED LONG   ' Close X text color
+    closeHoverBg    AS _UNSIGNED LONG   ' Close X hover background
+
+    ' Border / structural
+    border          AS _UNSIGNED LONG   ' Outer border
+    divider         AS _UNSIGNED LONG   ' Section divider line
+    sliderBg        AS _UNSIGNED LONG   ' Slider track background
+    sliderBorder    AS _UNSIGNED LONG   ' Slider track border
+
+    ' Overlay
+    overlay         AS _UNSIGNED LONG   ' Modal dimming overlay
+
+    ' Checkerboard (transparency preview)
+    checkA          AS _UNSIGNED LONG   ' Checkerboard color A
+    checkB          AS _UNSIGNED LONG   ' Checkerboard color B
+
+    ' Font (0 = use built-in bitmap font; > 0 = _LOADFONT handle)
+    fontHandle      AS LONG             ' External TTF font handle
+    fontW           AS INTEGER          ' Char width (for layout)
+    fontH           AS INTEGER          ' Char height (for layout)
+
+    ' Geometry (default from CP-THEME.BI CONSTs; override or call CP_THEME_scale_geometry)
+    titleBarH       AS INTEGER          ' Title bar height
+    buttonBarH      AS INTEGER          ' Button bar height
+    buttonW         AS INTEGER          ' Standard button width
+    buttonH         AS INTEGER          ' Standard button height
+    buttonGap       AS INTEGER          ' Gap between buttons
+    padding         AS INTEGER          ' General padding
+    sliderH         AS INTEGER          ' Slider track height
+    sliderGap       AS INTEGER          ' Gap between sliders
+    previewH        AS INTEGER          ' Color preview swatch height
+    previewW        AS INTEGER          ' Each preview swatch width
+    hexInputH       AS INTEGER          ' Hex input field height
+    sectionGap      AS INTEGER          ' Gap between major sections
+    labelW          AS INTEGER          ' Width of slider labels
+    valueW          AS INTEGER          ' Width of slider value numbers
+    copyBtnW        AS INTEGER          ' Copy button width
+    pasteBtnW       AS INTEGER          ' Paste button width
+    posterizeRowH   AS INTEGER          ' Posterize option row height
+    snapChipW       AS INTEGER          ' Width of each snap level chip
+    snapChipGap     AS INTEGER          ' Gap between snap chips
+    svSize          AS INTEGER          ' SV square width & height
+    hueBarW         AS INTEGER          ' Hue bar width
+    hueGap          AS INTEGER          ' Gap between SV square and hue bar
+END TYPE
+
 ' --- Shared State ------------------------------------------------------------
 
 DIM SHARED CP_OPTIONS AS CP_OPTIONS_OBJ
 DIM SHARED CP_STATE AS CP_STATE_OBJ
+DIM SHARED CP_THEME AS CP_THEME_OBJ

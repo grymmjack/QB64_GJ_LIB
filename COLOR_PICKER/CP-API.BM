@@ -58,9 +58,163 @@ END FUNCTION
 ' ==========================================================================
 
 ' --------------------------------------------------------------------------
+' CP_THEME_init — Initialize CP_THEME with default colors from CP-THEME.BI
+'
+' Called automatically from CP_init. Host apps can override CP_THEME fields
+' after CP_init returns to apply custom theming before first render.
+' --------------------------------------------------------------------------
+SUB CP_THEME_init
+    CP_THEME.bg~&              = CP_CLR_BG~&
+    CP_THEME.titleBg~&         = CP_CLR_TITLE_BG~&
+    CP_THEME.titleHoverBg~&    = CP_CLR_TITLE_BG~&            ' Default: same as normal
+    CP_THEME.titleDragBg~&     = CP_CLR_TITLE_BG~&            ' Default: same as normal
+    CP_THEME.buttonBarBg~&     = CP_CLR_BUTTON_BAR_BG~&
+    CP_THEME.contentBg~&       = CP_CLR_CONTENT_BG~&
+    CP_THEME.titleFg~&         = CP_CLR_TEXT_BRIGHT~&
+    CP_THEME.text~&            = CP_CLR_TEXT~&
+    CP_THEME.textBright~&      = CP_CLR_TEXT_BRIGHT~&
+    CP_THEME.textDim~&         = CP_CLR_TEXT_DIM~&
+    CP_THEME.buttonBg~&        = CP_CLR_BUTTON_BG~&
+    CP_THEME.buttonHover~&     = CP_CLR_BUTTON_HOVER~&
+    CP_THEME.buttonText~&      = CP_CLR_BUTTON_TEXT~&
+    CP_THEME.buttonSecondary~& = CP_CLR_BUTTON_SECONDARY~&
+    CP_THEME.buttonSecHover~&  = CP_CLR_BUTTON_SEC_HOVER~&
+    CP_THEME.buttonSecText~&   = CP_CLR_BUTTON_SEC_TEXT~&
+    CP_THEME.buttonFocus~&     = CP_CLR_BUTTON_FOCUS~&
+    CP_THEME.closeFg~&         = CP_CLR_TEXT_BRIGHT~&
+    CP_THEME.closeHoverBg~&    = &HFFE81123~&                  ' Red hover
+    CP_THEME.border~&          = CP_CLR_BORDER~&
+    CP_THEME.divider~&         = CP_CLR_DIVIDER~&
+    CP_THEME.sliderBg~&        = CP_CLR_SLIDER_BG~&
+    CP_THEME.sliderBorder~&    = CP_CLR_SLIDER_BORDER~&
+    CP_THEME.overlay~&         = CP_CLR_OVERLAY~&
+    CP_THEME.checkA~&          = CP_CLR_CHECK_A~&
+    CP_THEME.checkB~&          = CP_CLR_CHECK_B~&
+    CP_THEME.fontHandle&       = 0                             ' 0 = use built-in
+    CP_THEME.fontW%            = 0                             ' 0 = use CP_STATE.fontW
+    CP_THEME.fontH%            = 0                             ' 0 = use CP_STATE.fontH
+
+    ' Geometry defaults (from CP-THEME.BI CONSTs)
+    CP_THEME.titleBarH%     = CP_TITLE_BAR_H
+    CP_THEME.buttonBarH%    = CP_BUTTON_BAR_H
+    CP_THEME.buttonW%       = CP_BUTTON_W
+    CP_THEME.buttonH%       = CP_BUTTON_H
+    CP_THEME.buttonGap%     = CP_BUTTON_GAP
+    CP_THEME.padding%       = CP_PADDING
+    CP_THEME.sliderH%       = CP_SLIDER_H
+    CP_THEME.sliderGap%     = CP_SLIDER_GAP
+    CP_THEME.previewH%      = CP_PREVIEW_H
+    CP_THEME.previewW%      = CP_PREVIEW_W
+    CP_THEME.hexInputH%     = CP_HEX_INPUT_H
+    CP_THEME.sectionGap%    = CP_SECTION_GAP
+    CP_THEME.labelW%        = CP_LABEL_W
+    CP_THEME.valueW%        = CP_VALUE_W
+    CP_THEME.copyBtnW%      = CP_COPY_BTN_W
+    CP_THEME.pasteBtnW%     = CP_PASTE_BTN_W
+    CP_THEME.posterizeRowH% = CP_POSTERIZE_ROW_H
+    CP_THEME.snapChipW%     = CP_SNAP_CHIP_W
+    CP_THEME.snapChipGap%   = CP_SNAP_CHIP_GAP
+    CP_THEME.svSize%        = CP_SV_SIZE
+    CP_THEME.hueBarW%       = CP_HUE_BAR_W
+    CP_THEME.hueGap%        = CP_HUE_GAP
+END SUB
+
+' --------------------------------------------------------------------------
+' CP_THEME_scale_geometry — Scale all geometry fields proportionally to font
+'
+' Call after setting CP_THEME.fontH to auto-scale layout for the active font.
+' Scales from the original CP-THEME.BI CONST defaults. Idempotent.
+' --------------------------------------------------------------------------
+SUB CP_THEME_scale_geometry
+    IF CP_THEME.fontH% <= 0 THEN EXIT SUB
+    IF CP_THEME.fontH% = CP_DEFAULT_FONT_H THEN EXIT SUB
+
+    DIM s AS SINGLE
+    s! = CSNG(CP_THEME.fontH%) / CSNG(CP_DEFAULT_FONT_H)
+
+    DIM fw AS INTEGER
+    fw% = CP_STATE.fontW
+    IF fw% < 1 THEN fw% = CP_DEFAULT_FONT_W
+
+    ' --- Scale geometry proportionally ---
+    CP_THEME.titleBarH%     = INT(CSNG(CP_TITLE_BAR_H) * s! + 0.5)
+    CP_THEME.sliderH%       = INT(CSNG(CP_SLIDER_H) * s! + 0.5)
+    CP_THEME.sliderGap%     = INT(CSNG(CP_SLIDER_GAP) * s! + 0.5)
+    CP_THEME.previewH%      = INT(CSNG(CP_PREVIEW_H) * s! + 0.5)
+    CP_THEME.previewW%      = INT(CSNG(CP_PREVIEW_W) * s! + 0.5)
+    CP_THEME.hexInputH%     = INT(CSNG(CP_HEX_INPUT_H) * s! + 0.5)
+    CP_THEME.sectionGap%    = INT(CSNG(CP_SECTION_GAP) * s! + 0.5)
+    CP_THEME.padding%       = INT(CSNG(CP_PADDING) * s! + 0.5)
+    CP_THEME.hueBarW%       = INT(CSNG(CP_HUE_BAR_W) * s! + 0.5)
+    CP_THEME.hueGap%        = INT(CSNG(CP_HUE_GAP) * s! + 0.5)
+    CP_THEME.svSize%        = INT(CSNG(CP_SV_SIZE) * s! + 0.5)
+    CP_THEME.posterizeRowH% = INT(CSNG(CP_POSTERIZE_ROW_H) * s! + 0.5)
+    CP_THEME.snapChipGap%   = INT(CSNG(CP_SNAP_CHIP_GAP) * s! + 0.5)
+
+    ' --- Text-aware sizing: buttons and labels must fit their text ---
+    ' "CANCEL" = 6 chars + 8px padding
+    CP_THEME.buttonW%    = 6 * fw% + 8
+    CP_THEME.buttonH%    = CP_THEME.fontH% + 6
+    CP_THEME.buttonGap%  = fw%
+    CP_THEME.buttonBarH% = CP_THEME.buttonH% + CP_THEME.fontH%
+
+    ' Slider labels: "R:" = 2 chars + 4px gap, value = 3 digits + 2px
+    CP_THEME.labelW%  = 2 * fw% + 4
+    CP_THEME.valueW%  = 3 * fw% + 4
+
+    ' "COPY" = 4 chars + 4px, "PASTE" = 5 chars + 4px
+    CP_THEME.copyBtnW%  = 4 * fw% + 6
+    CP_THEME.pasteBtnW% = 5 * fw% + 6
+
+    ' Snap chips: "OFF" = 3 chars + 4px; digits = max 2 chars + 4px
+    CP_THEME.snapChipW% = 2 * fw% + 4
+
+    ' --- Enforce height minimums ---
+    IF CP_THEME.titleBarH%     < CP_THEME.fontH% + 4  THEN CP_THEME.titleBarH%     = CP_THEME.fontH% + 4
+    IF CP_THEME.sliderH%       < CP_THEME.fontH%       THEN CP_THEME.sliderH%       = CP_THEME.fontH%
+    IF CP_THEME.hexInputH%     < CP_THEME.fontH% + 4  THEN CP_THEME.hexInputH%     = CP_THEME.fontH% + 4
+    IF CP_THEME.posterizeRowH% < CP_THEME.fontH% + 4  THEN CP_THEME.posterizeRowH% = CP_THEME.fontH% + 4
+    IF CP_THEME.padding%       < 4                      THEN CP_THEME.padding%       = 4
+    IF CP_THEME.sectionGap%    < 4                      THEN CP_THEME.sectionGap%    = 4
+    IF CP_THEME.sliderGap%     < 2                      THEN CP_THEME.sliderGap%     = 2
+    IF CP_THEME.snapChipGap%   < 1                      THEN CP_THEME.snapChipGap%   = 1
+    IF CP_THEME.hueBarW%       < 10                     THEN CP_THEME.hueBarW%       = 10
+
+    ' --- Compute minimum content width from widest text row ---
+    ' Hex row: "HEX:" (4fw+4) + hexInput (8fw+4) + 4 + COPY btn + 4 + PASTE btn
+    DIM hexRowW AS INTEGER
+    hexRowW% = (4 * fw% + 4) + (8 * fw% + 4) + 4 + CP_THEME.copyBtnW% + 4 + CP_THEME.pasteBtnW%
+
+    ' Snap row: "SNAP:" (5fw+4) + OFF chip (3fw+4) + 7*(chipW+chipGap)
+    DIM snapRowW AS INTEGER
+    snapRowW% = (5 * fw% + 4) + (3 * fw% + 4) + 7 * (CP_THEME.snapChipW% + CP_THEME.snapChipGap%)
+
+    ' Button bar: 2*buttonW + buttonGap + 2*padding
+    DIM buttonRowW AS INTEGER
+    buttonRowW% = CP_THEME.buttonW% * 2 + CP_THEME.buttonGap%
+
+    ' Minimum content width = widest row
+    DIM minContentW AS INTEGER
+    minContentW% = hexRowW%
+    IF snapRowW%  > minContentW% THEN minContentW% = snapRowW%
+    IF buttonRowW% > minContentW% THEN minContentW% = buttonRowW%
+
+    ' SV square must be wide enough so dialog fits all rows
+    ' dialog width = padding*2 + svSize + hueGap + hueBarW
+    ' content width = svSize + hueGap + hueBarW
+    DIM minSvSize AS INTEGER
+    minSvSize% = minContentW% - CP_THEME.hueGap% - CP_THEME.hueBarW%
+    IF minSvSize% < 100 THEN minSvSize% = 100
+    IF CP_THEME.svSize% < minSvSize% THEN CP_THEME.svSize% = minSvSize%
+END SUB
+
+' --------------------------------------------------------------------------
 ' CP_init — Reset state and prepare color picker
 ' --------------------------------------------------------------------------
 SUB CP_init (initialColor AS _UNSIGNED LONG)
+    ' Initialize theme defaults (host app can override after CP_init)
+    CP_THEME_init
+
     ' Reset all state
     DIM emptyState AS CP_STATE_OBJ
     CP_STATE = emptyState
@@ -99,7 +253,7 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
     CP_STATE.posterize = CP_OPTIONS.posterize
 
     ' Default title
-    CP_STATE.title = "Color Picker"
+    CP_STATE.title = "COLOR PICKER"
 
     ' Calculate layout
     CP_layout_calculate
@@ -111,9 +265,10 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
     CP_STATE.screenShot = _COPYIMAGE(0)
 
     ' Create TI widget for hex input
-    CP_STATE.tiHexId = TI_create%(CP_STATE.hexInputX, CP_STATE.hexY, CP_STATE.hexInputW, CP_HEX_INPUT_H)
+    CP_STATE.tiHexId = TI_create%(CP_STATE.hexInputX, CP_STATE.hexY, CP_STATE.hexInputW, CP_THEME.hexInputH%)
     IF CP_STATE.tiHexId > 0 THEN
         TI_set_text CP_STATE.tiHexId, CP_get_hex_string$
+        CP_wire_hex_ti_theme
     END IF
 
     ' Build pre-rendered images
@@ -258,72 +413,78 @@ SUB CP_layout_calculate
     DIM contentW AS INTEGER
 
     ' SV square + gap + hue bar
-    contentW = CP_SV_SIZE + CP_HUE_GAP + CP_HUE_BAR_W
+    contentW = CP_THEME.svSize% + CP_THEME.hueGap% + CP_THEME.hueBarW%
 
-    ' Width must also accommodate sliders area
-    DIM sliderAreaW AS INTEGER
-    sliderAreaW = CP_SV_SIZE + CP_HUE_GAP + CP_HUE_BAR_W
-    IF sliderAreaW > contentW THEN contentW = sliderAreaW
+    ' Width must also accommodate button bar row
+    DIM btnBarW AS INTEGER
+    btnBarW = CP_THEME.buttonW% * 2 + CP_THEME.buttonGap%
+    IF btnBarW > contentW THEN contentW = btnBarW
 
     ' Dialog width
-    CP_STATE.dialogW = CP_PADDING * 2 + contentW
+    CP_STATE.dialogW = CP_THEME.padding% * 2 + contentW
 
     ' Calculate vertical layout
     DIM y AS INTEGER
-    y = CP_TITLE_BAR_H + CP_PADDING
+    y = CP_THEME.titleBarH% + CP_THEME.padding%
 
     ' SV square
-    CP_STATE.svX = CP_PADDING
+    CP_STATE.svX = CP_THEME.padding%
     CP_STATE.svY = y
-    CP_STATE.svW = CP_SV_SIZE
-    CP_STATE.svH = CP_SV_SIZE
+    CP_STATE.svW = CP_THEME.svSize%
+    CP_STATE.svH = CP_THEME.svSize%
 
     ' Hue bar (same height as SV square, to its right)
-    CP_STATE.hueBarX = CP_STATE.svX + CP_SV_SIZE + CP_HUE_GAP
+    CP_STATE.hueBarX = CP_STATE.svX + CP_THEME.svSize% + CP_THEME.hueGap%
     CP_STATE.hueBarY = y
-    CP_STATE.hueBarW = CP_HUE_BAR_W
-    CP_STATE.hueBarH = CP_SV_SIZE
+    CP_STATE.hueBarW = CP_THEME.hueBarW%
+    CP_STATE.hueBarH = CP_THEME.svSize%
 
-    y = y + CP_SV_SIZE + CP_SECTION_GAP
+    y = y + CP_THEME.svSize% + CP_THEME.sectionGap%
 
     ' Preview swatches
     CP_STATE.previewY = y
-    CP_STATE.previewOldX = CP_PADDING
-    CP_STATE.previewNewX = CP_PADDING + CP_PREVIEW_W + 8
-    y = y + CP_STATE.fontH + CP_PREVIEW_H + CP_SECTION_GAP
+    CP_STATE.previewOldX = CP_THEME.padding%
+    CP_STATE.previewNewX = CP_THEME.padding% + CP_THEME.previewW% + 8
+    y = y + CP_STATE.fontH + CP_THEME.previewH% + CP_THEME.sectionGap%
 
     ' Slider area
-    CP_STATE.sliderX = CP_PADDING
+    CP_STATE.sliderX = CP_THEME.padding%
     CP_STATE.sliderY = y
     CP_STATE.sliderW = contentW
 
     ' RGB sliders (3 rows)
     DIM rowH AS INTEGER
-    rowH = CP_SLIDER_H + CP_SLIDER_GAP
+    rowH = CP_THEME.sliderH% + CP_THEME.sliderGap%
     y = y + rowH * 3
 
     ' Section gap before HSL
-    y = y + CP_SECTION_GAP
+    y = y + CP_THEME.sectionGap%
 
     ' HSL sliders (3 rows)
-    y = y + rowH * 3 + CP_SECTION_GAP
+    y = y + rowH * 3 + CP_THEME.sectionGap%
 
-    ' Hex row
+    ' Hex row — right-align Copy/Paste, expand hex input to fill
     CP_STATE.hexY = y
-    CP_STATE.hexInputX = CP_PADDING + 4 * CP_CHAR_W + 4  ' After "Hex:" label
-    CP_STATE.hexInputW = 8 * CP_CHAR_W + 4  ' "#RRGGBB" = 7 chars + padding
-    y = y + CP_HEX_INPUT_H + CP_SECTION_GAP
+    CP_STATE.hexInputX = CP_THEME.padding% + 4 * CP_STATE.fontW + 4  ' After "HEX:" label
+    DIM hexPasteX AS INTEGER, hexCopyX AS INTEGER
+    hexPasteX = CP_THEME.padding% + contentW - CP_THEME.pasteBtnW%
+    hexCopyX = hexPasteX - 4 - CP_THEME.copyBtnW%
+    CP_STATE.hexInputW = hexCopyX - 4 - CP_STATE.hexInputX
+    IF CP_STATE.hexInputW < 8 * CP_STATE.fontW + 4 THEN
+        CP_STATE.hexInputW = 8 * CP_STATE.fontW + 4
+    END IF
+    y = y + CP_THEME.hexInputH% + CP_THEME.sectionGap%
 
     ' Posterize / snap row
     CP_STATE.posterizeY = y
     CP_STATE.hoverPosterize = -1
-    y = y + CP_POSTERIZE_ROW_H + CP_SECTION_GAP
+    y = y + CP_THEME.posterizeRowH% + CP_THEME.sectionGap%
 
     ' Button bar
     CP_STATE.buttonBarY = y
 
     ' Dialog height
-    CP_STATE.dialogH = y + CP_BUTTON_BAR_H
+    CP_STATE.dialogH = y + CP_THEME.buttonBarH%
 
     ' Center on screen
     DIM scrW AS INTEGER, scrH AS INTEGER
@@ -618,3 +779,23 @@ FUNCTION CP_hue_to_rgb! (p AS SINGLE, q AS SINGLE, t AS SINGLE)
         CP_hue_to_rgb! = p
     END IF
 END FUNCTION
+
+' --------------------------------------------------------------------------
+' CP_wire_hex_ti_theme — Apply CP theme colors and font to the hex TI widget
+' --------------------------------------------------------------------------
+SUB CP_wire_hex_ti_theme
+    IF CP_STATE.tiHexId < 1 OR CP_STATE.tiHexId > TI_MAX_INPUTS THEN EXIT SUB
+    ' Wire per-instance font
+    TI_inputs(CP_STATE.tiHexId).theme.fontHandle = CP_THEME.fontHandle&
+    TI_inputs(CP_STATE.tiHexId).theme.fontW = CP_STATE.fontW
+    TI_inputs(CP_STATE.tiHexId).theme.fontH = CP_STATE.fontH
+    ' Wire colors to match dialog theme
+    TI_inputs(CP_STATE.tiHexId).theme.bgColor = CP_THEME.sliderBg~&
+    TI_inputs(CP_STATE.tiHexId).theme.focusBgColor = CP_THEME.bg~&
+    TI_inputs(CP_STATE.tiHexId).theme.borderColor = CP_THEME.border~&
+    TI_inputs(CP_STATE.tiHexId).theme.focusBorderColor = CP_THEME.buttonFocus~&
+    TI_inputs(CP_STATE.tiHexId).theme.textColor = CP_THEME.textBright~&
+    TI_inputs(CP_STATE.tiHexId).theme.cursorColor = CP_THEME.textBright~&
+    TI_inputs(CP_STATE.tiHexId).theme.selectionColor = CP_THEME.buttonBg~&
+    TI_inputs(CP_STATE.tiHexId).theme.placeholderColor = CP_THEME.textDim~&
+END SUB

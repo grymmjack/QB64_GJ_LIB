@@ -22,6 +22,32 @@ SUB TI_set_font (fontID AS INTEGER, fontW AS INTEGER, fontH AS INTEGER)
 END SUB
 
 ' --------------------------------------------------------------------------
+' TI__eff_fontW% — Effective font width for an instance (per-instance or shared)
+' --------------------------------------------------------------------------
+FUNCTION TI__eff_fontW% (id AS INTEGER)
+    IF id >= 1 AND id <= TI_MAX_INPUTS THEN
+        IF TI_inputs(id).theme.fontW > 0 THEN
+            TI__eff_fontW% = TI_inputs(id).theme.fontW
+            EXIT FUNCTION
+        END IF
+    END IF
+    TI__eff_fontW% = TI_fontW
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' TI__eff_fontH% — Effective font height for an instance (per-instance or shared)
+' --------------------------------------------------------------------------
+FUNCTION TI__eff_fontH% (id AS INTEGER)
+    IF id >= 1 AND id <= TI_MAX_INPUTS THEN
+        IF TI_inputs(id).theme.fontH > 0 THEN
+            TI__eff_fontH% = TI_inputs(id).theme.fontH
+            EXIT FUNCTION
+        END IF
+    END IF
+    TI__eff_fontH% = TI_fontH
+END FUNCTION
+
+' --------------------------------------------------------------------------
 ' TI_create% — Create a new text input instance, returns its ID (0 on fail)
 ' --------------------------------------------------------------------------
 FUNCTION TI_create% (x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER)
@@ -216,7 +242,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relMX AS INTEGER
         relMX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM clickCol AS INTEGER
-        clickCol = relMX \ TI_fontW
+        clickCol = relMX \ TI__eff_fontW%(hitId)
         IF clickCol < 0 THEN clickCol = 0
 
         cp = TI__pos_from_row_col%(hitId, clickRow, clickCol)
@@ -225,7 +251,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relX AS INTEGER
         relX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM charPos AS INTEGER
-        charPos = relX \ TI_fontW
+        charPos = relX \ TI__eff_fontW%(hitId)
         IF charPos < 0 THEN charPos = 0
         IF charPos > TI_inputs(hitId).textLen THEN charPos = TI_inputs(hitId).textLen
         cp = charPos
@@ -1020,13 +1046,15 @@ SUB TI__ensure_cursor_visible (id AS INTEGER)
         END IF
     ELSE
         ' --- Single-line: horizontal only ---
-        curPixel = TI_inputs(id).cursorPos * TI_fontW
+        DIM eFW AS INTEGER
+        eFW = TI__eff_fontW%(id)
+        curPixel = TI_inputs(id).cursorPos * eFW
         visibleW = TI_inputs(id).w - TI_SCROLL_PADDING * 2
 
         IF curPixel - TI_inputs(id).scrollX > visibleW THEN
-            TI_inputs(id).scrollX = curPixel - visibleW + TI_fontW
+            TI_inputs(id).scrollX = curPixel - visibleW + eFW
         ELSEIF curPixel < TI_inputs(id).scrollX THEN
-            TI_inputs(id).scrollX = curPixel - TI_fontW
+            TI_inputs(id).scrollX = curPixel - eFW
             IF TI_inputs(id).scrollX < 0 THEN TI_inputs(id).scrollX = 0
         END IF
     END IF
