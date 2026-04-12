@@ -108,7 +108,7 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
                 maxPH = visibleW \ eFW
                 IF LEN(ph) > maxPH THEN ph = LEFT$(ph, maxPH)
                 COLOR phClr, _RGBA32(0, 0, 0, 0)
-                IF useTTF THEN _UPRINTSTRING (textX, singleTextY), ph ELSE _PRINTSTRING (textX, singleTextY), ph
+                _PRINTSTRING (textX, singleTextY), ph
             END IF
             TI_inputs(id).dirty = 0
             IF tiOldFont > -1 THEN _FONT tiOldFont
@@ -126,11 +126,10 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         ' --- Calculate visible portion ---
         DIM scrollPx AS INTEGER
         scrollPx = TI_inputs(id).scrollX
-        DIM startChar AS INTEGER, endChar AS INTEGER
-        startChar = scrollPx \ eFW
-        IF startChar < 0 THEN startChar = 0
-        endChar = startChar + (visibleW \ eFW) + 2
-        IF endChar > LEN(displayText) THEN endChar = LEN(displayText)
+        DIM ci AS INTEGER
+
+        ' Helper: pixel offset of char n accounting for proportional vs monospace
+        ' For TTF use _UPRINTWIDTH; for built-in use n * eFW
 
         ' --- Draw selection highlight ---
         IF TI_inputs(id).selStart >= 0 AND TI_inputs(id).selStart <> TI_inputs(id).selEnd THEN
@@ -144,8 +143,13 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             END IF
 
             DIM selX1 AS INTEGER, selX2 AS INTEGER
-            selX1 = textX + s1 * eFW - scrollPx
-            selX2 = textX + s2 * eFW - scrollPx
+            IF useTTF THEN
+                selX1 = textX + _PRINTWIDTH(LEFT$(displayText, s1)) - scrollPx
+                selX2 = textX + _PRINTWIDTH(LEFT$(displayText, s2)) - scrollPx
+            ELSE
+                selX1 = textX + s1 * eFW - scrollPx
+                selX2 = textX + s2 * eFW - scrollPx
+            END IF
 
             ' Clamp to visible area
             IF selX1 < textX THEN selX1 = textX
@@ -156,25 +160,36 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             END IF
         END IF
 
-        ' --- Draw text character by character (clipped) ---
-        DIM ci AS INTEGER
+        ' --- Draw text ---
         COLOR txtClr, _RGBA32(0, 0, 0, 0)
-        FOR ci = startChar TO endChar - 1
-            DIM charX AS INTEGER
-            charX = textX + ci * eFW - scrollPx
-            IF charX >= textX - eFW AND charX < textX + visibleW THEN
-                IF useTTF THEN
-                    _UPRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
-                ELSE
+        IF useTTF THEN
+            ' Proportional: render whole string at scrolled position
+            ' Background clipping is handled by the BF fill drawn before this
+            _PRINTSTRING (textX - scrollPx, singleTextY), displayText
+        ELSE
+            ' Monospace: char by char with bounds check
+            DIM startChar AS INTEGER, endChar AS INTEGER
+            startChar = scrollPx \ eFW
+            IF startChar < 0 THEN startChar = 0
+            endChar = startChar + (visibleW \ eFW) + 2
+            IF endChar > LEN(displayText) THEN endChar = LEN(displayText)
+            FOR ci = startChar TO endChar - 1
+                DIM charX AS INTEGER
+                charX = textX + ci * eFW - scrollPx
+                IF charX >= textX - eFW AND charX < textX + visibleW THEN
                     _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
                 END IF
-            END IF
-        NEXT ci
+            NEXT ci
+        END IF
 
         ' --- Draw cursor ---
         IF TI_inputs(id).focused AND TI_inputs(id).cursorBlink THEN
             DIM curX AS INTEGER
-            curX = textX + TI_inputs(id).cursorPos * eFW - scrollPx
+            IF useTTF THEN
+                curX = textX + _PRINTWIDTH(LEFT$(displayText, TI_inputs(id).cursorPos)) - scrollPx
+            ELSE
+                curX = textX + TI_inputs(id).cursorPos * eFW - scrollPx
+            END IF
             IF curX >= x1 AND curX < x1 + w THEN
                 LINE (curX, y1 + 3)-(curX, y1 + h - 4), curClr
             END IF
