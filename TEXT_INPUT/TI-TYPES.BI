@@ -117,25 +117,25 @@ END TYPE
 ' --- Global array of text input instances ------------------------------------
 
 DIM SHARED TI_inputs(1 TO TI_MAX_INPUTS) AS TI_INPUT_OBJ
-DIM SHARED TI_focusedId AS INTEGER                  ' Currently focused input ID (0 = none)
+DIM SHARED TI_focusedId AS INTEGER                             ' Currently focused input ID (0 = none)
 
 ' --- Multi-click detection state (shared) ------------------------------------
 
-CONST TI_MULTI_CLICK_MS                      = 0.35 ' Max seconds between clicks for multi-click
-DIM SHARED TI_clickCount    AS INTEGER              ' 1 = single, 2=double, 3=triple, 4=quad
-DIM SHARED TI_lastClickTime AS DOUBLE               ' TIMER of last click
-DIM SHARED TI_lastClickId   AS INTEGER              ' Which input was last clicked
-DIM SHARED TI_lastClickX    AS INTEGER              ' Last click X (screen coords)
-DIM SHARED TI_lastClickY    AS INTEGER              ' Last click Y (screen coords)
+CONST TI_MULTI_CLICK_MS                                 = 0.35 ' Max seconds between clicks for multi-click
+DIM SHARED TI_clickCount    AS INTEGER                         ' 1 = single, 2=double, 3=triple, 4=quad
+DIM SHARED TI_lastClickTime AS DOUBLE                          ' TIMER of last click
+DIM SHARED TI_lastClickId   AS INTEGER                         ' Which input was last clicked
+DIM SHARED TI_lastClickX    AS INTEGER                         ' Last click X (screen coords)
+DIM SHARED TI_lastClickY    AS INTEGER                         ' Last click Y (screen coords)
 
 ' --- Undo/Redo system --------------------------------------------------------
 
-CONST TI_UNDO_MAX      = 32                         ' Max undo states per input (ring buffer)
-CONST TI_UNDO_GROUP_MS = 0.4                        ' Seconds before a new undo group starts
-CONST TI_UNDO_NONE     = 0                          ' No previous action
-CONST TI_UNDO_INSERT   = 1                          ' Last action was character insert
-CONST TI_UNDO_DELETE   = 2                          ' Last action was character delete
-CONST TI_UNDO_BULK     = 3                          ' Last action was paste/cut/bulk (always new group)
+CONST TI_UNDO_MAX      = 32                                    ' Max undo states per input (ring buffer)
+CONST TI_UNDO_GROUP_MS = 0.4                                   ' Seconds before a new undo group starts
+CONST TI_UNDO_NONE     = 0                                     ' No previous action
+CONST TI_UNDO_INSERT   = 1                                     ' Last action was character insert
+CONST TI_UNDO_DELETE   = 2                                     ' Last action was character delete
+CONST TI_UNDO_BULK     = 3                                     ' Last action was paste/cut/bulk (always new group)
 
 TYPE TI_UNDO_STATE
     text      AS STRING * 4096 ' Snapshot of text buffer

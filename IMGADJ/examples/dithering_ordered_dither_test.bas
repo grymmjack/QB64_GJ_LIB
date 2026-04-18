@@ -139,8 +139,8 @@ DO
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
         CASE CHR$(0) + "K" ' LEFT arrow
             SELECT CASE matrixSize
-                CASE 4  : matrixSize  = 2
-                CASE 8  : matrixSize  = 4
+                CASE 4  : matrixSize = 2
+                CASE 8  : matrixSize = 4
                 CASE 16 : matrixSize = 8
             END SELECT
         CASE CHR$(0) + "M" ' RIGHT arrow

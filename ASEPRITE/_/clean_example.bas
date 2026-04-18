@@ -185,7 +185,7 @@ FUNCTION load_compressed_pixel_data_clean% (file_handle AS INTEGER, target_image
     
     ' Calculate bytes per pixel and expected decompressed size
     SELECT CASE color_depth_bpp
-        CASE 8    : bytes_per_pixel  = 1
+        CASE 8    : bytes_per_pixel = 1
         CASE 16   : bytes_per_pixel = 2
         CASE 32   : bytes_per_pixel = 4
         CASE ELSE : EXIT FUNCTION

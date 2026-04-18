@@ -161,9 +161,9 @@ SUB FD_RENDER_title_bar
     title = UCASE$(RTRIM$(FD_STATE.title))
     IF LEN(title) = 0 THEN
         SELECT CASE FD_STATE.mode
-            CASE FD_MODE_OPEN          : title          = "OPEN FILE"
-            CASE FD_MODE_SAVE          : title          = "SAVE FILE"
-            CASE FD_MODE_SAVE_AS       : title       = "SAVE AS"
+            CASE FD_MODE_OPEN          : title = "OPEN FILE"
+            CASE FD_MODE_SAVE          : title = "SAVE FILE"
+            CASE FD_MODE_SAVE_AS       : title = "SAVE AS"
             CASE FD_MODE_CHOOSE_FOLDER : title = "CHOOSE FOLDER"
         END SELECT
     END IF
@@ -370,11 +370,11 @@ SUB FD_RENDER_places
             iconClr = FD_places(i).iconColor
         ELSE
             SELECT CASE FD_places(i).entryType
-                CASE FD_PLACE_DRIVE    : iconClr    = FD_CLR_TEXT_DIM~&
-                CASE FD_PLACE_XDG      : iconClr      = FD_CLR_ICON_FOLDER~&
+                CASE FD_PLACE_DRIVE    : iconClr = FD_CLR_TEXT_DIM~&
+                CASE FD_PLACE_XDG      : iconClr = FD_CLR_ICON_FOLDER~&
                 CASE FD_PLACE_FAVORITE : iconClr = FD_CLR_TEXT_ACCENT~&
-                CASE FD_PLACE_CUSTOM   : iconClr   = FD_CLR_TEXT_ACCENT~&
-                CASE ELSE              : iconClr              = FD_CLR_TEXT_DIM~&
+                CASE FD_PLACE_CUSTOM   : iconClr = FD_CLR_TEXT_ACCENT~&
+                CASE ELSE              : iconClr = FD_CLR_TEXT_DIM~&
             END SELECT
         END IF
 
@@ -962,9 +962,9 @@ SUB FD_RENDER_button_bar
     okLabel = RTRIM$(FD_STATE.confirmLabel)
     IF LEN(okLabel) = 0 THEN
         SELECT CASE FD_STATE.mode
-            CASE FD_MODE_OPEN                  : okLabel                  = "OPEN"
+            CASE FD_MODE_OPEN                  : okLabel = "OPEN"
             CASE FD_MODE_SAVE, FD_MODE_SAVE_AS : okLabel = "SAVE"
-            CASE FD_MODE_CHOOSE_FOLDER         : okLabel         = "SELECT"
+            CASE FD_MODE_CHOOSE_FOLDER         : okLabel = "SELECT"
         END SELECT
     END IF
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
@@ -1052,7 +1052,7 @@ SUB FD_RENDER_filter_dropdown
     filterX = okX - filterW - FD_PADDING
 
     ' Calculate popup dimensions — use widest label for popup width
-    DIM popW                   AS INTEGER, i AS INTEGER
+    DIM popW                                                                                AS INTEGER, i AS INTEGER
     popW = filterW                                                               ' At least AS wide as the button
     FOR i = 0 TO FD_STATE.filterCount - 1
         DIM lbl  AS STRING
@@ -1181,22 +1181,22 @@ SUB FD_RENDER_file_icon (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY)
     ELSE
         iconId = FD_ICONS_for_extension%(RTRIM$(entry.extension))
         SELECT CASE iconId
-            CASE FD_ICON_IMAGE      : clr      = FD_CLR_ICON_IMAGE~&
-            CASE FD_ICON_DOCUMENT   : clr   = FD_CLR_ICON_DOC~&
+            CASE FD_ICON_IMAGE      : clr = FD_CLR_ICON_IMAGE~&
+            CASE FD_ICON_DOCUMENT   : clr = FD_CLR_ICON_DOC~&
             CASE FD_ICON_EXECUTABLE : clr = FD_CLR_ICON_EXEC~&
-            CASE FD_ICON_SOUND      : clr      = FD_CLR_ICON_SOUND~&
-            CASE FD_ICON_CONFIG     : clr     = FD_CLR_ICON_CONFIG~&
-            CASE FD_ICON_FONT       : clr       = FD_CLR_ICON_FONT~&
-            CASE FD_ICON_TEXTMODE   : clr   = FD_CLR_ICON_TEXTMODE~&
-            CASE FD_ICON_ARCHIVE    : clr    = FD_CLR_ICON_ARCHIVE~&
-            CASE FD_ICON_VIDEO      : clr      = FD_CLR_ICON_VIDEO~&
-            CASE FD_ICON_MUSIC      : clr      = FD_CLR_ICON_MUSIC~&
-            CASE FD_ICON_DSET       : clr       = FD_CLR_ICON_DSET~&
-            CASE FD_ICON_PALETTE    : clr    = FD_CLR_ICON_PALETTE~&
-            CASE FD_ICON_GRADIENT   : clr   = FD_CLR_ICON_GRADIENT~&
-            CASE FD_ICON_DRW        : clr        = FD_CLR_TEXT_ACCENT~&
-            CASE FD_ICON_TEXT       : clr       = FD_CLR_ICON_DOC~&
-            CASE ELSE               : clr               = FD_CLR_ICON_DEFAULT~&
+            CASE FD_ICON_SOUND      : clr = FD_CLR_ICON_SOUND~&
+            CASE FD_ICON_CONFIG     : clr = FD_CLR_ICON_CONFIG~&
+            CASE FD_ICON_FONT       : clr = FD_CLR_ICON_FONT~&
+            CASE FD_ICON_TEXTMODE   : clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_ARCHIVE    : clr = FD_CLR_ICON_ARCHIVE~&
+            CASE FD_ICON_VIDEO      : clr = FD_CLR_ICON_VIDEO~&
+            CASE FD_ICON_MUSIC      : clr = FD_CLR_ICON_MUSIC~&
+            CASE FD_ICON_DSET       : clr = FD_CLR_ICON_DSET~&
+            CASE FD_ICON_PALETTE    : clr = FD_CLR_ICON_PALETTE~&
+            CASE FD_ICON_GRADIENT   : clr = FD_CLR_ICON_GRADIENT~&
+            CASE FD_ICON_DRW        : clr = FD_CLR_TEXT_ACCENT~&
+            CASE FD_ICON_TEXT       : clr = FD_CLR_ICON_DOC~&
+            CASE ELSE               : clr = FD_CLR_ICON_DEFAULT~&
         END SELECT
     END IF
 
@@ -1217,22 +1217,22 @@ SUB FD_RENDER_file_icon_large (x AS INTEGER, y AS INTEGER, entry AS FD_DIR_ENTRY
     ELSE
         iconId = FD_ICONS_for_extension%(RTRIM$(entry.extension))
         SELECT CASE iconId
-            CASE FD_ICON_IMAGE      : clr      = FD_CLR_ICON_IMAGE~&
-            CASE FD_ICON_DOCUMENT   : clr   = FD_CLR_ICON_DOC~&
+            CASE FD_ICON_IMAGE      : clr = FD_CLR_ICON_IMAGE~&
+            CASE FD_ICON_DOCUMENT   : clr = FD_CLR_ICON_DOC~&
             CASE FD_ICON_EXECUTABLE : clr = FD_CLR_ICON_EXEC~&
-            CASE FD_ICON_SOUND      : clr      = FD_CLR_ICON_SOUND~&
-            CASE FD_ICON_CONFIG     : clr     = FD_CLR_ICON_CONFIG~&
-            CASE FD_ICON_FONT       : clr       = FD_CLR_ICON_FONT~&
-            CASE FD_ICON_TEXTMODE   : clr   = FD_CLR_ICON_TEXTMODE~&
-            CASE FD_ICON_ARCHIVE    : clr    = FD_CLR_ICON_ARCHIVE~&
-            CASE FD_ICON_VIDEO      : clr      = FD_CLR_ICON_VIDEO~&
-            CASE FD_ICON_MUSIC      : clr      = FD_CLR_ICON_MUSIC~&
-            CASE FD_ICON_DSET       : clr       = FD_CLR_ICON_DSET~&
-            CASE FD_ICON_PALETTE    : clr    = FD_CLR_ICON_PALETTE~&
-            CASE FD_ICON_GRADIENT   : clr   = FD_CLR_ICON_GRADIENT~&
-            CASE FD_ICON_DRW        : clr        = FD_CLR_TEXT_ACCENT~&
-            CASE FD_ICON_TEXT       : clr       = FD_CLR_ICON_DOC~&
-            CASE ELSE               : clr               = FD_CLR_ICON_DEFAULT~&
+            CASE FD_ICON_SOUND      : clr = FD_CLR_ICON_SOUND~&
+            CASE FD_ICON_CONFIG     : clr = FD_CLR_ICON_CONFIG~&
+            CASE FD_ICON_FONT       : clr = FD_CLR_ICON_FONT~&
+            CASE FD_ICON_TEXTMODE   : clr = FD_CLR_ICON_TEXTMODE~&
+            CASE FD_ICON_ARCHIVE    : clr = FD_CLR_ICON_ARCHIVE~&
+            CASE FD_ICON_VIDEO      : clr = FD_CLR_ICON_VIDEO~&
+            CASE FD_ICON_MUSIC      : clr = FD_CLR_ICON_MUSIC~&
+            CASE FD_ICON_DSET       : clr = FD_CLR_ICON_DSET~&
+            CASE FD_ICON_PALETTE    : clr = FD_CLR_ICON_PALETTE~&
+            CASE FD_ICON_GRADIENT   : clr = FD_CLR_ICON_GRADIENT~&
+            CASE FD_ICON_DRW        : clr = FD_CLR_TEXT_ACCENT~&
+            CASE FD_ICON_TEXT       : clr = FD_CLR_ICON_DOC~&
+            CASE ELSE               : clr = FD_CLR_ICON_DEFAULT~&
         END SELECT
     END IF
 

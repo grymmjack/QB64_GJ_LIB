@@ -192,10 +192,10 @@ FUNCTION get_aseprite_info$ (aseprite_img AS ASEPRITE_IMAGE)
     out$ = out$ + "Height: " + STR$(aseprite_img.header.height) + " pixels" + nl$
     out$ = out$ + "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp ("
     SELECT CASE aseprite_img.header.color_depth_bpp
-        CASE ASEPRITE_COLOR_INDEXED   : out$   = out$ + "Indexed)"
+        CASE ASEPRITE_COLOR_INDEXED   : out$ = out$ + "Indexed)"
         CASE ASEPRITE_COLOR_GRAYSCALE : out$ = out$ + "Grayscale)"
-        CASE ASEPRITE_COLOR_RGBA      : out$      = out$ + "RGBA)"
-        CASE ELSE                     : out$                     = out$ + "Unknown)"
+        CASE ASEPRITE_COLOR_RGBA      : out$ = out$ + "RGBA)"
+        CASE ELSE                     : out$ = out$ + "Unknown)"
     END SELECT
     out$ = out$ + nl$
     
@@ -275,26 +275,26 @@ END FUNCTION
 '
 FUNCTION get_blend_mode_name$ (blend_mode AS _UNSIGNED INTEGER)
     SELECT CASE blend_mode
-        CASE ASEPRITE_BLEND_NORMAL      : get_blend_mode_name$      = "Normal"
-        CASE ASEPRITE_BLEND_MULTIPLY    : get_blend_mode_name$    = "Multiply"
-        CASE ASEPRITE_BLEND_SCREEN      : get_blend_mode_name$      = "Screen"
-        CASE ASEPRITE_BLEND_OVERLAY     : get_blend_mode_name$     = "Overlay"
-        CASE ASEPRITE_BLEND_DARKEN      : get_blend_mode_name$      = "Darken"
-        CASE ASEPRITE_BLEND_LIGHTEN     : get_blend_mode_name$     = "Lighten"
+        CASE ASEPRITE_BLEND_NORMAL      : get_blend_mode_name$ = "Normal"
+        CASE ASEPRITE_BLEND_MULTIPLY    : get_blend_mode_name$ = "Multiply"
+        CASE ASEPRITE_BLEND_SCREEN      : get_blend_mode_name$ = "Screen"
+        CASE ASEPRITE_BLEND_OVERLAY     : get_blend_mode_name$ = "Overlay"
+        CASE ASEPRITE_BLEND_DARKEN      : get_blend_mode_name$ = "Darken"
+        CASE ASEPRITE_BLEND_LIGHTEN     : get_blend_mode_name$ = "Lighten"
         CASE ASEPRITE_BLEND_COLOR_DODGE : get_blend_mode_name$ = "Color Dodge"
-        CASE ASEPRITE_BLEND_COLOR_BURN  : get_blend_mode_name$  = "Color Burn"
-        CASE ASEPRITE_BLEND_HARD_LIGHT  : get_blend_mode_name$  = "Hard Light"
-        CASE ASEPRITE_BLEND_SOFT_LIGHT  : get_blend_mode_name$  = "Soft Light"
-        CASE ASEPRITE_BLEND_DIFFERENCE  : get_blend_mode_name$  = "Difference"
-        CASE ASEPRITE_BLEND_EXCLUSION   : get_blend_mode_name$   = "Exclusion"
-        CASE ASEPRITE_BLEND_HUE         : get_blend_mode_name$         = "Hue"
-        CASE ASEPRITE_BLEND_SATURATION  : get_blend_mode_name$  = "Saturation"
-        CASE ASEPRITE_BLEND_COLOR       : get_blend_mode_name$       = "Color"
-        CASE ASEPRITE_BLEND_LUMINOSITY  : get_blend_mode_name$  = "Luminosity"
-        CASE ASEPRITE_BLEND_ADDITION    : get_blend_mode_name$    = "Addition"
-        CASE ASEPRITE_BLEND_SUBTRACT    : get_blend_mode_name$    = "Subtract"
-        CASE ASEPRITE_BLEND_DIVIDE      : get_blend_mode_name$      = "Divide"
-        CASE ELSE                       : get_blend_mode_name$                       = "Unknown (" + STR$(blend_mode) + ")"
+        CASE ASEPRITE_BLEND_COLOR_BURN  : get_blend_mode_name$ = "Color Burn"
+        CASE ASEPRITE_BLEND_HARD_LIGHT  : get_blend_mode_name$ = "Hard Light"
+        CASE ASEPRITE_BLEND_SOFT_LIGHT  : get_blend_mode_name$ = "Soft Light"
+        CASE ASEPRITE_BLEND_DIFFERENCE  : get_blend_mode_name$ = "Difference"
+        CASE ASEPRITE_BLEND_EXCLUSION   : get_blend_mode_name$ = "Exclusion"
+        CASE ASEPRITE_BLEND_HUE         : get_blend_mode_name$ = "Hue"
+        CASE ASEPRITE_BLEND_SATURATION  : get_blend_mode_name$ = "Saturation"
+        CASE ASEPRITE_BLEND_COLOR       : get_blend_mode_name$ = "Color"
+        CASE ASEPRITE_BLEND_LUMINOSITY  : get_blend_mode_name$ = "Luminosity"
+        CASE ASEPRITE_BLEND_ADDITION    : get_blend_mode_name$ = "Addition"
+        CASE ASEPRITE_BLEND_SUBTRACT    : get_blend_mode_name$ = "Subtract"
+        CASE ASEPRITE_BLEND_DIVIDE      : get_blend_mode_name$ = "Divide"
+        CASE ELSE                       : get_blend_mode_name$ = "Unknown (" + STR$(blend_mode) + ")"
     END SELECT
 END FUNCTION
 
@@ -306,11 +306,11 @@ END FUNCTION
 '
 FUNCTION get_animation_direction_name$ (direction AS _UNSIGNED _BYTE)
     SELECT CASE direction
-        CASE ASEPRITE_ANIM_FORWARD           : get_animation_direction_name$           = "Forward"
-        CASE ASEPRITE_ANIM_REVERSE           : get_animation_direction_name$           = "Reverse"
-        CASE ASEPRITE_ANIM_PING_PONG         : get_animation_direction_name$         = "Ping-pong"
+        CASE ASEPRITE_ANIM_FORWARD           : get_animation_direction_name$ = "Forward"
+        CASE ASEPRITE_ANIM_REVERSE           : get_animation_direction_name$ = "Reverse"
+        CASE ASEPRITE_ANIM_PING_PONG         : get_animation_direction_name$ = "Ping-pong"
         CASE ASEPRITE_ANIM_PING_PONG_REVERSE : get_animation_direction_name$ = "Ping-pong Reverse"
-        CASE ELSE                            : get_animation_direction_name$                            = "Unknown (" + STR$(direction) + ")"
+        CASE ELSE                            : get_animation_direction_name$ = "Unknown (" + STR$(direction) + ")"
     END SELECT
 END FUNCTION
 
@@ -1038,22 +1038,22 @@ FUNCTION get_indexed_color& (index_val AS _UNSIGNED _BYTE)
     ' In a full implementation, this would use the actual palette from the ASEPRITE file
     
     SELECT CASE index_val
-        CASE 0  : get_indexed_color&  = _RGB32(0, 0, 0)       ' Black
-        CASE 1  : get_indexed_color&  = _RGB32(255, 255, 255) ' White  
-        CASE 2  : get_indexed_color&  = _RGB32(255, 0, 0)     ' Red
-        CASE 3  : get_indexed_color&  = _RGB32(0, 255, 0)     ' Green
-        CASE 4  : get_indexed_color&  = _RGB32(0, 0, 255)     ' Blue
-        CASE 5  : get_indexed_color&  = _RGB32(255, 255, 0)   ' Yellow
-        CASE 6  : get_indexed_color&  = _RGB32(255, 0, 255)   ' Magenta
-        CASE 7  : get_indexed_color&  = _RGB32(0, 255, 255)   ' Cyan
-        CASE 8  : get_indexed_color&  = _RGB32(128, 128, 128) ' Gray
-        CASE 9  : get_indexed_color&  = _RGB32(192, 192, 192) ' Light Gray
-        CASE 10 : get_indexed_color& = _RGB32(128, 0, 0)      ' Dark Red
-        CASE 11 : get_indexed_color& = _RGB32(0, 128, 0)      ' Dark Green
-        CASE 12 : get_indexed_color& = _RGB32(0, 0, 128)      ' Dark Blue
-        CASE 13 : get_indexed_color& = _RGB32(128, 128, 0)    ' Olive
-        CASE 14 : get_indexed_color& = _RGB32(128, 0, 128)    ' Purple
-        CASE 15 : get_indexed_color& = _RGB32(0, 128, 128)    ' Teal
+        CASE 0  : get_indexed_color& = _RGB32(0, 0, 0)       ' Black
+        CASE 1  : get_indexed_color& = _RGB32(255, 255, 255) ' White  
+        CASE 2  : get_indexed_color& = _RGB32(255, 0, 0)     ' Red
+        CASE 3  : get_indexed_color& = _RGB32(0, 255, 0)     ' Green
+        CASE 4  : get_indexed_color& = _RGB32(0, 0, 255)     ' Blue
+        CASE 5  : get_indexed_color& = _RGB32(255, 255, 0)   ' Yellow
+        CASE 6  : get_indexed_color& = _RGB32(255, 0, 255)   ' Magenta
+        CASE 7  : get_indexed_color& = _RGB32(0, 255, 255)   ' Cyan
+        CASE 8  : get_indexed_color& = _RGB32(128, 128, 128) ' Gray
+        CASE 9  : get_indexed_color& = _RGB32(192, 192, 192) ' Light Gray
+        CASE 10 : get_indexed_color& = _RGB32(128, 0, 0)     ' Dark Red
+        CASE 11 : get_indexed_color& = _RGB32(0, 128, 0)     ' Dark Green
+        CASE 12 : get_indexed_color& = _RGB32(0, 0, 128)     ' Dark Blue
+        CASE 13 : get_indexed_color& = _RGB32(128, 128, 0)   ' Olive
+        CASE 14 : get_indexed_color& = _RGB32(128, 0, 128)   ' Purple
+        CASE 15 : get_indexed_color& = _RGB32(0, 128, 128)   ' Teal
         CASE ELSE
             ' For other values, create a gradient
             get_indexed_color& = _RGB32(index_val, index_val, index_val)

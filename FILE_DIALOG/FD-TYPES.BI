@@ -312,7 +312,7 @@ TYPE FD_THUMB_CACHE_OBJ
     loadQueue   AS INTEGER ' Index of next entry to attempt loading
     loadActive  AS INTEGER ' TRUE if currently loading a batch
     cacheHits   AS LONG    ' Stats : cache hits
-    cacheMisses AS LONG    ' Stats   : cache misses
+    cacheMisses AS LONG    ' Stats : cache misses
 END TYPE
 
 ' --- Shared state arrays (DIM SHARED in the BI, filled in BM) ---------------
