@@ -40,8 +40,8 @@ LOCATE 1,1,1 ' Initialize the cursor and turn it on
 
 DIM SHARED nil AS STRING
 DIM SHARED AS INTEGER w, h, cw, ch, i
-w% = _WIDTH(0)
-h% = _HEIGHT(0)
+w%  = _WIDTH(0)
+h%  = _HEIGHT(0)
 cw% = w% \ 2 - 1
 ch% = h% \ 2 - 1
 
@@ -485,7 +485,7 @@ SUB test_ansi_mode_bold_reset()
     nil$ = ANSI.mode_bold + "This is bold"
     IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     CALL anykey
-    nil$ =  ANSI.mode_bold_reset + " - and this is NOT bold"
+    nil$ = ANSI.mode_bold_reset + " - and this is NOT bold"
     nil$ = nil$ + "_"
     IF GJ_LIB_ANSI_OUTPUT THEN PRINT nil$;
     CALL anykey : CALL test_complete
@@ -648,8 +648,8 @@ SUB test_ansi_move_column()
     PRINT "Press a key to move across screen by 5's with ANSI.move_column()..."
     CALL anykey
     CLS
-    w$ = _TRIM$(STR$(w%-1))
-    h$ = _TRIM$(STR$(h%))
+    w$   = _TRIM$(STR$(w%-1))
+    h$   = _TRIM$(STR$(h%))
     nil$ = ""
     FOR i% = 5 TO (w% - 5) STEP 5
         nil$ = nil$ + ANSI.move_column(i%) + STR$(i%)
@@ -754,8 +754,8 @@ SUB test_ansi_locate()
     PRINT "Press a key to locate to corners of the screen with ANSI.locate()...";
     CALL anykey
     CLS
-    w$ = _TRIM$(STR$(w%-1))
-    h$ = _TRIM$(STR$(h%))
+    w$   = _TRIM$(STR$(w%-1))
+    h$   = _TRIM$(STR$(h%))
     nil$ = ANSI.locate(ch%, cw%)              + "A = 1,1"
     nil$ = nil$ + ANSI.locate(ch% + 1, cw%)   + "B = 1," + w$
     nil$ = nil$ + ANSI.locate(ch% + 2, cw%)   + "C = " + h$ + ",1"

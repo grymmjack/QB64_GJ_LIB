@@ -18,11 +18,11 @@ DIM CANVAS AS LONG
 CANVAS& = _NEWIMAGE(132 * _FONTWIDTH, 50 * _FONTHEIGHT, 32)
 SCREEN CANVAS&
 
-_BLINK OFF      ' Allow high intensity background colors > 7
-_CONTROLCHR OFF ' Allow printing of any characters including control chars
+_BLINK OFF                                                          ' Allow high intensity background colors > 7
+_CONTROLCHR OFF                                                     ' Allow printing of any characters including control chars
 
-DIM menu AS LIGHTBAR32                ' Create a LIGHTBAR menu
-DIM options(13) AS LIGHTBAR32_OPTION  ' Menu options storage
+DIM menu AS LIGHTBAR32                                              ' Create a LIGHTBAR menu
+DIM options(13) AS LIGHTBAR32_OPTION                                ' Menu options storage
 
 ' choice variable will contain the choice the user made using either the 
 ' hot key directly, or by using the home, end, or arrow keys to select 
@@ -44,7 +44,7 @@ menu.delimeter$ = "|"
 ' Set max width to screen width
 menu.max_width% = _WIDTH(0)
 ' Setup sounds
-menu.use_sounds% = 1
+menu.use_sounds%   = 1
 menu.snd_move_frq! = 150
 menu.snd_move_dur! = 1
 menu.snd_move_vol! = 0.5
@@ -71,7 +71,7 @@ IF menu.opt_vertical% = 1 THEN ' Vertical LIGHTBAR menu
     options(10).txt$ = " |F|ettucinni Alfredo Bowl " ' ...
     options(11).txt$ = " |J|uice for the Bambinos  " ' ...
     options(12).txt$ = " |W|ine for Padre + Madre  " ' All of the same length
-    options(13).txt$ = " |Q|uit " ' However, each can have diff bar length like this.
+    options(13).txt$ = " |Q|uit "                    ' However, each can have diff bar length like this.
 END IF
 
 ' Populate the LIGHTBAR options - NOTE: Horizontal options aren't padded.
@@ -95,7 +95,7 @@ END IF
 ' Draw some basic goofy screen under which we will have a LIGHTBAR32 menu
 COLOR LB_EGA(12), LB_EGA(0) : PRINT "----------------------------------------"
 COLOR LB_EGA(7),  LB_EGA(0) : PRINT " Welcome to"; 
-COLOR LB_EGA(12), LB_EGA(0) : PRINT " ANTONIOS"; : COLOR LB_EGA(10), LB_EGA(0): PRINT " PIZZERIA!"
+COLOR LB_EGA(12), LB_EGA(0) : PRINT " ANTONIOS"; : COLOR LB_EGA(10), LB_EGA(0) : PRINT " PIZZERIA!"
 COLOR LB_EGA(7),  LB_EGA(0) : PRINT " Pick your favorite food from our menu!"
 COLOR LB_EGA(14), LB_EGA(0) : PRINT "----------------------------------------"
 COLOR LB_EGA(2),  LB_EGA(0) : PRINT " ..if you're not hungry press ESCAPE.. "

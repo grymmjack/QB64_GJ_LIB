@@ -25,8 +25,8 @@ $End If
 
 ' CHANGE THIS STUFF
 const indent = 8
-target$  = "_OPTION_TEST.bas"
-outfile$ = "_OPTION_TEST_FLATTENED.BAS"
+target$      = "_OPTION_TEST.bas"
+outfile$     = "_OPTION_TEST_FLATTENED.BAS"
 
 ' -----------------------------------------------------------------------------
 ' MAIN PROGRAM
@@ -44,10 +44,10 @@ Dim SHARED stack AS INTEGER
 stack% = 0
 
 Sub MergeFile (whatfile$)
-    f = FreeFile
+    f           = FreeFile
     CurrentDir$ = _CWD$
-    i = _InStrRev(whatfile$, Slash$)
-    newdir$ = Left$(whatfile$, i)
+    i           = _InStrRev(whatfile$, Slash$)
+    newdir$     = Left$(whatfile$, i)
     If i > 0 Then
         ChDir newdir$
         whatfile$ = Mid$(whatfile$, i + 1)

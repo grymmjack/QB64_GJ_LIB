@@ -9,15 +9,15 @@ PRINT "Error Diffusion Comparison Test Starting..."
 PRINT "Comparing multiple error diffusion algorithms"
 
 DIM originalImage AS LONG
-DIM floydImage AS LONG
-DIM jarvisImage AS LONG
-DIM stuckiImage AS LONG
-DIM burkesImage AS LONG
-DIM ditherAmount AS SINGLE
-DIM oldAmount AS SINGLE
+DIM floydImage    AS LONG
+DIM jarvisImage   AS LONG
+DIM stuckiImage   AS LONG
+DIM burkesImage   AS LONG
+DIM ditherAmount  AS SINGLE
+DIM oldAmount     AS SINGLE
 
-ditherAmount = 0.8    ' Default dithering strength
-oldAmount = -1        ' Force initial update
+ditherAmount = 0.8 ' Default dithering strength
+oldAmount    = -1  ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -49,7 +49,7 @@ DO
         IF stuckiImage <> 0 THEN _FREEIMAGE stuckiImage
         IF burkesImage <> 0 THEN _FREEIMAGE burkesImage
         
-        floydImage = GJ_IMGADJ_DitherFloydSteinberg(originalImage, ditherAmount)
+        floydImage  = GJ_IMGADJ_DitherFloydSteinberg(originalImage, ditherAmount)
         jarvisImage = GJ_IMGADJ_DitherJarvisJudiceNinke(originalImage, ditherAmount)
         stuckiImage = GJ_IMGADJ_DitherStucki(originalImage, ditherAmount)
         burkesImage = GJ_IMGADJ_DitherBurkes(originalImage, ditherAmount)
@@ -57,7 +57,7 @@ DO
         oldAmount = ditherAmount
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -65,19 +65,19 @@ DO
         _PRINTSTRING (10, 10), "Error Diffusion Algorithm Comparison - Using GJ_IMGADJ Library"
         
         ' Show current settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current amount
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current amount
         _PRINTSTRING (10, 30), "Dither Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full effect)"
         
         COLOR _RGB32(255, 255, 255)
         _PRINTSTRING (10, 50), "Controls: UP/DOWN adjust amount, ESC exit"
         
         ' Algorithm descriptions
-        COLOR _RGB32(200, 255, 200)  ' Light green for descriptions
+        COLOR _RGB32(200, 255, 200) ' Light green for descriptions
         _PRINTSTRING (10, 70), "Error diffusion spreads quantization errors to neighboring pixels:"
         
         ' Show all algorithms side by side
         DIM imgWidth AS INTEGER, imgHeight AS INTEGER
-        imgWidth = _WIDTH(originalImage)
+        imgWidth  = _WIDTH(originalImage)
         imgHeight = _HEIGHT(originalImage)
         
         DIM xOffset AS INTEGER, yOffset AS INTEGER
@@ -92,7 +92,7 @@ DO
         ' Floyd-Steinberg
         xOffset = 10 + imgWidth + 20
         IF floydImage <> 0 THEN
-            COLOR _RGB32(255, 200, 200)  ' Light red
+            COLOR _RGB32(255, 200, 200) ' Light red
             _PRINTSTRING (xOffset, yOffset), "Floyd-Steinberg (1976)"
             _PRINTSTRING (xOffset, yOffset + 15), "4 neighbors, 7/16 + 3/16 + 5/16 + 1/16"
             _PUTIMAGE (xOffset, yOffset + 35), floydImage
@@ -101,7 +101,7 @@ DO
         ' Jarvis-Judice-Ninke
         xOffset = 10 + (imgWidth + 20) * 2
         IF jarvisImage <> 0 THEN
-            COLOR _RGB32(200, 255, 200)  ' Light green
+            COLOR _RGB32(200, 255, 200) ' Light green
             _PRINTSTRING (xOffset, yOffset), "Jarvis-Judice-Ninke (1976)"
             _PRINTSTRING (xOffset, yOffset + 15), "12 neighbors, more diffusion area"
             _PUTIMAGE (xOffset, yOffset + 35), jarvisImage
@@ -110,7 +110,7 @@ DO
         ' Stucki
         xOffset = 10 + (imgWidth + 20) * 3
         IF stuckiImage <> 0 THEN
-            COLOR _RGB32(200, 200, 255)  ' Light blue
+            COLOR _RGB32(200, 200, 255) ' Light blue
             _PRINTSTRING (xOffset, yOffset), "Stucki (1981)"
             _PRINTSTRING (xOffset, yOffset + 15), "12 neighbors, sharper than Jarvis"
             _PUTIMAGE (xOffset, yOffset + 35), stuckiImage
@@ -122,7 +122,7 @@ DO
         ' Burkes
         xOffset = 10
         IF burkesImage <> 0 THEN
-            COLOR _RGB32(255, 255, 200)  ' Light yellow
+            COLOR _RGB32(255, 255, 200) ' Light yellow
             _PRINTSTRING (xOffset, yOffset), "Burkes (1988)"
             _PRINTSTRING (xOffset, yOffset + 15), "7 neighbors, good speed/quality balance"
             _PUTIMAGE (xOffset, yOffset + 35), burkesImage
@@ -130,7 +130,7 @@ DO
         
         ' Comparison details
         xOffset = 10 + imgWidth + 40
-        COLOR _RGB32(255, 200, 255)  ' Light magenta
+        COLOR _RGB32(255, 200, 255) ' Light magenta
         _PRINTSTRING (xOffset, yOffset), "Error Diffusion Characteristics:"
         _PRINTSTRING (xOffset, yOffset + 20), "• Floyd-Steinberg: Classic, minimal neighbors, fast"
         _PRINTSTRING (xOffset, yOffset + 40), "• Jarvis-Judice-Ninke: Smoother, more diffusion"
@@ -139,12 +139,12 @@ DO
         
         ' Effect level description
         yOffset = yOffset + 120
-        COLOR _RGB32(200, 200, 255)  ' Light blue for effect details
-        IF ditherAmount <= 0.2 THEN
+        COLOR _RGB32(200, 200, 255) ' Light blue for effect details
+        IF ditherAmount < = 0.2 THEN
             _PRINTSTRING (xOffset, yOffset), "Low amount: Subtle texture, preserves smooth gradients"
-        ELSEIF ditherAmount <= 0.5 THEN
+        ELSEIF ditherAmount < = 0.5 THEN
             _PRINTSTRING (xOffset, yOffset), "Medium amount: Visible texture, good detail balance"
-        ELSEIF ditherAmount <= 0.8 THEN
+        ELSEIF ditherAmount < = 0.8 THEN
             _PRINTSTRING (xOffset, yOffset), "High amount: Strong texture, artistic effect"
         ELSE
             _PRINTSTRING (xOffset, yOffset), "Maximum amount: Full error diffusion, maximum detail"
@@ -158,10 +158,10 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H"          ' UP arrow
             ditherAmount = ditherAmount + 0.05
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P"          ' DOWN arrow
             ditherAmount = ditherAmount - 0.05
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
     END SELECT

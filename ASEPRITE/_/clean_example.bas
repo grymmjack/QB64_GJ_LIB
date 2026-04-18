@@ -11,14 +11,14 @@ OPTION _EXPLICIT
 ' Set up your own screen however you want
 SCREEN _NEWIMAGE(800, 600, 32)
 _TITLE "My Custom ASEPRITE Display"
-CLS , _RGB32(40, 40, 60) ' Dark blue background
+CLS , _RGB32(40, 40, 60)                                             ' Dark blue background
 
 ' Your 2-line solution:
-DIM my_sprite AS ASEPRITE_IMAGE
+DIM my_sprite     AS ASEPRITE_IMAGE
 DIM sprite_handle AS LONG
 
-CALL load_aseprite_image("test-files/CAVE CITY.aseprite", my_sprite)  ' 1. Load
-sprite_handle = create_image_from_aseprite_clean&(my_sprite)           ' 2. Get image handle (clean)
+CALL load_aseprite_image("test-files/CAVE CITY.aseprite", my_sprite) ' 1. Load
+sprite_handle = create_image_from_aseprite_clean&(my_sprite)         ' 2. Get image handle (clean)
 
 ' Now you have full _PUTIMAGE control:
 ' Original size at (10, 10)
@@ -45,8 +45,8 @@ _FREEIMAGE sprite_handle
 
 FUNCTION create_image_from_aseprite_clean& (aseprite_img AS ASEPRITE_IMAGE)
     DIM image_handle AS LONG
-    DIM x AS INTEGER, y AS INTEGER
-    DIM pixel_color AS _UNSIGNED LONG
+    DIM x            AS INTEGER, y AS INTEGER
+    DIM pixel_color  AS _UNSIGNED LONG
     
     IF aseprite_img.is_valid = 0 THEN
         create_image_from_aseprite_clean& = 0
@@ -54,7 +54,7 @@ FUNCTION create_image_from_aseprite_clean& (aseprite_img AS ASEPRITE_IMAGE)
     END IF
     
     ' Create a new 32-bit image with the Aseprite dimensions
-    IF aseprite_img.header.width <= 0 OR aseprite_img.header.height <= 0 THEN
+    IF aseprite_img.header.width < = 0 OR aseprite_img.header.height < = 0 THEN
         create_image_from_aseprite_clean& = 0
         EXIT FUNCTION
     END IF
@@ -76,9 +76,9 @@ FUNCTION create_image_from_aseprite_clean& (aseprite_img AS ASEPRITE_IMAGE)
         FOR y = 0 TO aseprite_img.header.height - 1
             FOR x = 0 TO aseprite_img.header.width - 1
                 IF aseprite_img.header.width > 0 AND aseprite_img.header.height > 0 THEN
-                    r = (x * 255) \ aseprite_img.header.width
-                    g = (y * 255) \ aseprite_img.header.height
-                    b = ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height)
+                    r           = (x * 255) \ aseprite_img.header.width
+                    g           = (y * 255) \ aseprite_img.header.height
+                    b           = ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height)
                     pixel_color = _RGB32(r, g, b)
                     PSET (x, y), pixel_color
                 END IF
@@ -92,18 +92,18 @@ END FUNCTION
 
 FUNCTION load_aseprite_pixels_clean% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
     ' Simplified clean version - just loads pixels without debug output
-    DIM file_handle AS INTEGER
+    DIM file_handle  AS INTEGER
     DIM frame_header AS ASEPRITE_FRAME_HEADER
     DIM chunk_header AS ASEPRITE_CHUNK_HEADER
-    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
-    DIM cel_width AS _UNSIGNED INTEGER
-    DIM cel_height AS _UNSIGNED INTEGER
-    DIM num_chunks AS _UNSIGNED INTEGER
-    DIM chunk_num AS INTEGER
+    DIM cel_chunk    AS ASEPRITE_CEL_CHUNK
+    DIM cel_width    AS _UNSIGNED INTEGER
+    DIM cel_height   AS _UNSIGNED INTEGER
+    DIM num_chunks   AS _UNSIGNED INTEGER
+    DIM chunk_num    AS INTEGER
     DIM chunks_found AS INTEGER
     
     load_aseprite_pixels_clean% = 0 ' Default to failure
-    chunks_found = 0
+    chunks_found                = 0
     
     ' Open file
     file_handle = FREEFILE
@@ -172,23 +172,23 @@ END FUNCTION
 
 FUNCTION load_compressed_pixel_data_clean% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, cel_width AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS _UNSIGNED LONG)
     DIM compressed_data_size AS _UNSIGNED LONG
-    DIM compressed_data AS STRING
-    DIM decompressed_data AS STRING
-    DIM expected_size AS _UNSIGNED LONG
-    DIM bytes_per_pixel AS INTEGER
-    DIM x AS INTEGER, y AS INTEGER
-    DIM pixel_offset AS _UNSIGNED LONG
-    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM pixel_color AS _UNSIGNED LONG
+    DIM compressed_data      AS STRING
+    DIM decompressed_data    AS STRING
+    DIM expected_size        AS _UNSIGNED LONG
+    DIM bytes_per_pixel      AS INTEGER
+    DIM x                    AS INTEGER, y AS INTEGER
+    DIM pixel_offset         AS _UNSIGNED LONG
+    DIM r                    AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM pixel_color          AS _UNSIGNED LONG
     
-    load_compressed_pixel_data_clean% = 0 ' Default to failure
+    load_compressed_pixel_data_clean% = 0                      ' Default to failure
     
     ' Calculate bytes per pixel and expected decompressed size
     SELECT CASE color_depth_bpp
-        CASE 8: bytes_per_pixel = 1
-        CASE 16: bytes_per_pixel = 2
-        CASE 32: bytes_per_pixel = 4
-        CASE ELSE: EXIT FUNCTION
+        CASE 8    : bytes_per_pixel  = 1
+        CASE 16   : bytes_per_pixel = 2
+        CASE 32   : bytes_per_pixel = 4
+        CASE ELSE : EXIT FUNCTION
     END SELECT
     
     expected_size = cel_width * cel_height * bytes_per_pixel
@@ -214,10 +214,10 @@ FUNCTION load_compressed_pixel_data_clean% (file_handle AS INTEGER, target_image
             pixel_offset = (y * cel_width + x) * bytes_per_pixel + 1
             
             IF color_depth_bpp = 32 THEN ' RGBA
-                r = ASC(MID$(decompressed_data, pixel_offset, 1))
-                g = ASC(MID$(decompressed_data, pixel_offset + 1, 1))
-                b = ASC(MID$(decompressed_data, pixel_offset + 2, 1))
-                a = ASC(MID$(decompressed_data, pixel_offset + 3, 1))
+                r           = ASC(MID$(decompressed_data, pixel_offset, 1))
+                g           = ASC(MID$(decompressed_data, pixel_offset + 1, 1))
+                b           = ASC(MID$(decompressed_data, pixel_offset + 2, 1))
+                a           = ASC(MID$(decompressed_data, pixel_offset + 3, 1))
                 pixel_color = _RGBA32(r, g, b, a)
                 PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
             END IF
@@ -225,7 +225,7 @@ FUNCTION load_compressed_pixel_data_clean% (file_handle AS INTEGER, target_image
     NEXT y
     
     _DEST 0
-    load_compressed_pixel_data_clean% = -1 ' Success
+    load_compressed_pixel_data_clean% = -1                     ' Success
 END FUNCTION
 
 FUNCTION load_raw_pixel_data_clean% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, cel_width AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)

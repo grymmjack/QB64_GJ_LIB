@@ -8,7 +8,7 @@ $CONSOLE:ONLY
 '$INCLUDE:'ASEPRITE.BI'
 
 DIM aseprite_img AS ASEPRITE_IMAGE
-DIM filename AS STRING
+DIM filename     AS STRING
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
 PRINT "=== ASEPRITE LAYER VISIBILITY ANALYZER ==="
@@ -34,11 +34,11 @@ PRINT "=== LAYER VISIBILITY ANALYSIS ==="
 PRINT "This analysis shows why we fixed the 'black box' issue:"
 PRINT
 
-DIM i AS INTEGER
+DIM i             AS INTEGER
 DIM visible_count AS INTEGER
-DIM hidden_count AS INTEGER
+DIM hidden_count  AS INTEGER
 visible_count = 0
-hidden_count = 0
+hidden_count  = 0
 
 ' Count layers by processing each one
 FOR i = 0 TO aseprite_img.layer_count - 1

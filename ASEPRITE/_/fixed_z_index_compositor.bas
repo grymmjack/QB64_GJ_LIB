@@ -87,7 +87,7 @@ FOR i = 1 TO num_items
         
         ' **CRITICAL FIX**: Use source rectangle to prevent stretching
         ' This ensures each pixel maps 1:1 without interpolation
-        IF cel_x >= 0 AND cel_y >= 0 AND cel_x + layer_w <= 32 AND cel_y + layer_h <= 32 THEN
+        IF cel_x > = 0 AND cel_y > = 0 AND cel_x + layer_w < = 32 AND cel_y + layer_h < = 32 THEN
             ' Layer fits completely within bounds
             _PUTIMAGE (cel_x, cel_y)-(cel_x + layer_w - 1, cel_y + layer_h - 1), layer_img, composite, (0, 0)-(layer_w - 1, layer_h - 1)
         ELSE
@@ -96,10 +96,10 @@ FOR i = 1 TO num_items
             DIM dst_x AS INTEGER, dst_y AS INTEGER, dst_w AS INTEGER, dst_h AS INTEGER
             
             ' Calculate clipped source rectangle
-            src_x = 0: src_y = 0
-            src_w = layer_w: src_h = layer_h
-            dst_x = cel_x: dst_y = cel_y
-            dst_w = layer_w: dst_h = layer_h
+            src_x = 0       : src_y = 0
+            src_w = layer_w : src_h = layer_h
+            dst_x = cel_x   : dst_y = cel_y
+            dst_w = layer_w : dst_h = layer_h
             
             ' Clip to composite bounds
             IF dst_x < 0 THEN
@@ -139,7 +139,7 @@ PRINT "No stretching applied - each pixel placed exactly"
 ' Add debug check for composite content
 _DEST composite
 DIM test_pixel AS _UNSIGNED LONG
-test_pixel = POINT(16, 16) ' Check center pixel
+test_pixel = POINT(16, 16)  ' Check center pixel
 _DEST 0
 
 PRINT "Debug: Center pixel color: "; test_pixel

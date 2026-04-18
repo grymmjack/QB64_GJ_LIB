@@ -70,13 +70,13 @@ DO
     END IF
 
     ' --- Draw status panel ---
-    COLOR 14: LOCATE 5, 2:  PRINT "Current States:"
-    COLOR 10: LOCATE 6, 4:  PRINT "Shift:"; StateTxt$(sShiftNow%)
-    COLOR 10: LOCATE 7, 4:  PRINT "Ctrl :"; StateTxt$(sCtrlNow%)
-    COLOR 11: LOCATE 9, 4:  PRINT "Left :"; StateTxt$(sLeftNow%)
-    COLOR 11: LOCATE 10, 4: PRINT "Right:"; StateTxt$(sRightNow%)
-    COLOR 11: LOCATE 11, 4: PRINT "Up   :"; StateTxt$(sUpNow%)
-    COLOR 11: LOCATE 12, 4: PRINT "Down :"; StateTxt$(sDownNow%)
+    COLOR 14 : LOCATE 5, 2  : PRINT "Current States:"
+    COLOR 10 : LOCATE 6, 4  : PRINT "Shift:"; StateTxt$(sShiftNow%)
+    COLOR 10 : LOCATE 7, 4  : PRINT "Ctrl :"; StateTxt$(sCtrlNow%)
+    COLOR 11 : LOCATE 9, 4  : PRINT "Left :"; StateTxt$(sLeftNow%)
+    COLOR 11 : LOCATE 10, 4 : PRINT "Right:"; StateTxt$(sRightNow%)
+    COLOR 11 : LOCATE 11, 4 : PRINT "Up   :"; StateTxt$(sUpNow%)
+    COLOR 11 : LOCATE 12, 4 : PRINT "Down :"; StateTxt$(sDownNow%)
 
     ' --- Draw event log ---
     COLOR 14: LOCATE 5, 30: PRINT "Events (latest first):"
@@ -85,8 +85,8 @@ DO
     row = 6
     FOR i = 0 TO EV_MAX - 1
         idx = ((evHead - 2 - i + EV_MAX) MOD EV_MAX) + 1
-        LOCATE row + i, 30: PRINT SPACE$(45);
-        LOCATE row + i, 30: PRINT ev$(idx)
+        LOCATE row + i, 30 : PRINT SPACE$(45);
+        LOCATE row + i, 30 : PRINT ev$(idx)
     NEXT
 
     ' --- Save prev states for next loop ---
@@ -107,7 +107,7 @@ END
 ' --- Helpers ---
 SUB AddLog (msg$)
     DIM t$
-    t$ = Secs2$(TIMER) + "  " + msg$
+    t$          = Secs2$(TIMER) + "  " + msg$
     ev$(evHead) = t$
     evHead = evHead + 1: IF evHead > EV_MAX THEN evHead = 1
 END SUB
@@ -120,7 +120,7 @@ FUNCTION Secs2$ (t AS DOUBLE)
     ' Format seconds as ###.## without USING$
     DIM whole AS LONG, hund AS LONG
     whole = INT(t)
-    hund = INT((t - whole) * 100 + 0.5)
+    hund  = INT((t - whole) * 100 + 0.5)
     IF hund = 100 THEN hund = 0: whole = whole + 1
     Secs2$ = LTRIM$(STR$(whole)) + "." + RIGHT$("0" + LTRIM$(STR$(hund)), 2)
 END FUNCTION

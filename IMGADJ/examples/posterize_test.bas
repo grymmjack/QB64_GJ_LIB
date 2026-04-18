@@ -8,12 +8,12 @@
 PRINT "Posterize Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
-DIM colorLevels AS INTEGER
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
+DIM colorLevels    AS INTEGER
 DIM oldColorLevels AS INTEGER
 
-colorLevels = 8     ' Default color levels (2-16)
+colorLevels    = 8  ' Default color levels (2-16)
 oldColorLevels = -1 ' Force initial update
 
 PRINT "Creating test image..."
@@ -44,11 +44,11 @@ DO
     IF colorLevels <> oldColorLevels THEN
         ' Apply posterize effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
-        adjustedImage = GJ_IMGADJ_Posterize(originalImage, colorLevels)
+        adjustedImage  = GJ_IMGADJ_Posterize(originalImage, colorLevels)
         oldColorLevels = colorLevels
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info

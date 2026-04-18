@@ -7,7 +7,7 @@ $CONSOLE:ONLY
 '$INCLUDE:'ASEPRITE.BI'
 
 DIM aseprite_img AS ASEPRITE_IMAGE
-DIM filename AS STRING
+DIM filename     AS STRING
 filename = "test-files/pumpkin-16x16-5frames-10layers-complex.aseprite"
 
 PRINT "Loading ASEPRITE file: "; filename

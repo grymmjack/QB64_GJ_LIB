@@ -8,21 +8,21 @@
 PRINT "Hue/Saturation Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
-DIM hueShift AS INTEGER
-DIM saturation AS INTEGER
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
+DIM hueShift       AS INTEGER
+DIM saturation     AS INTEGER
 DIM parameterIndex AS INTEGER
-DIM oldHue AS INTEGER
-DIM oldSaturation AS INTEGER
-DIM oldParam AS INTEGER
+DIM oldHue         AS INTEGER
+DIM oldSaturation  AS INTEGER
+DIM oldParam       AS INTEGER
 
-hueShift = 0        ' Default hue shift (-180 to +180 degrees)
-saturation = 0      ' Default saturation adjustment (-100 to +100 percent)
-parameterIndex = 0  ' 0=hue, 1=saturation
-oldHue = -999       ' Force initial update
-oldSaturation = -999
-oldParam = -1
+hueShift       = 0    ' Default hue shift (-180 to +180 degrees)
+saturation     = 0    ' Default saturation adjustment (-100 to +100 percent)
+parameterIndex = 0    ' 0=hue, 1=saturation
+oldHue         = -999 ' Force initial update
+oldSaturation  = -999
+oldParam       = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -86,12 +86,12 @@ DO
             adjustedImage = tempImage
         END IF
         
-        oldHue = hueShift
+        oldHue        = hueShift
         oldSaturation = saturation
-        oldParam = parameterIndex
+        oldParam      = parameterIndex
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0      ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -139,10 +139,10 @@ DO
             ELSE
                 IF saturation > -100 THEN saturation = saturation - 10  ' Larger increments and range
             END IF
-        CASE CHR$(9)  ' TAB key
+        CASE CHR$(9) ' TAB key
             parameterIndex = (parameterIndex + 1) MOD 2
         CASE "r", "R"
-            hueShift = 0
+            hueShift   = 0
             saturation = 0
     END SELECT
     

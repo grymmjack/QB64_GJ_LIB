@@ -17,15 +17,15 @@ $INCLUDEONCE
 ' --------------------------------------------------------------------------
 SUB TI_set_font (fontID AS INTEGER, fontW AS INTEGER, fontH AS INTEGER)
     TI_fontID = fontID
-    TI_fontW = fontW
-    TI_fontH = fontH
+    TI_fontW  = fontW
+    TI_fontH  = fontH
 END SUB
 
 ' --------------------------------------------------------------------------
 ' TI__eff_fontW% — Effective font width for an instance (per-instance or shared)
 ' --------------------------------------------------------------------------
 FUNCTION TI__eff_fontW% (id AS INTEGER)
-    IF id >= 1 AND id <= TI_MAX_INPUTS THEN
+    IF id > = 1 AND id < = TI_MAX_INPUTS THEN
         IF TI_inputs(id).theme.fontW > 0 THEN
             TI__eff_fontW% = TI_inputs(id).theme.fontW
             EXIT FUNCTION
@@ -38,7 +38,7 @@ END FUNCTION
 ' TI__eff_fontH% — Effective font height for an instance (per-instance or shared)
 ' --------------------------------------------------------------------------
 FUNCTION TI__eff_fontH% (id AS INTEGER)
-    IF id >= 1 AND id <= TI_MAX_INPUTS THEN
+    IF id > = 1 AND id < = TI_MAX_INPUTS THEN
         IF TI_inputs(id).theme.fontH > 0 THEN
             TI__eff_fontH% = TI_inputs(id).theme.fontH
             EXIT FUNCTION
@@ -59,18 +59,18 @@ FUNCTION TI_create% (x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER)
     FOR i = 1 TO TI_MAX_INPUTS
         IF NOT TI_inputs(i).active THEN
             DIM empty AS TI_INPUT_OBJ
-            TI_inputs(i) = empty
-            TI_inputs(i).id = i
-            TI_inputs(i).active = -1
-            TI_inputs(i).x = x
-            TI_inputs(i).y = y
-            TI_inputs(i).w = w
-            TI_inputs(i).h = h
+            TI_inputs(i)           = empty
+            TI_inputs(i).id        = i
+            TI_inputs(i).active    = -1
+            TI_inputs(i).x         = x
+            TI_inputs(i).y         = y
+            TI_inputs(i).w         = w
+            TI_inputs(i).h         = h
             TI_inputs(i).cursorPos = 0
-            TI_inputs(i).selStart = -1
-            TI_inputs(i).selEnd = -1
-            TI_inputs(i).maxLen = TI_MAX_TEXT_LEN
-            TI_inputs(i).dirty = -1
+            TI_inputs(i).selStart  = -1
+            TI_inputs(i).selEnd    = -1
+            TI_inputs(i).maxLen    = TI_MAX_TEXT_LEN
+            TI_inputs(i).dirty     = -1
             TI__undo_reset i
             TI_create% = i
             EXIT FUNCTION
@@ -98,17 +98,17 @@ SUB TI_set_text (id AS INTEGER, txt AS STRING)
     IF NOT TI_inputs(id).active THEN EXIT SUB
     DIM maxL AS INTEGER
     maxL = TI_inputs(id).maxLen
-    IF maxL <= 0 THEN maxL = TI_MAX_TEXT_LEN
+    IF maxL < = 0 THEN maxL = TI_MAX_TEXT_LEN
     IF LEN(txt) > maxL THEN txt = LEFT$(txt, maxL)
-    TI_inputs(id).text = txt
-    TI_inputs(id).textLen = LEN(txt)
-    TI_inputs(id).cursorPos = LEN(txt)
-    TI_inputs(id).selStart = -1
-    TI_inputs(id).selEnd = -1
-    TI_inputs(id).scrollX = 0
-    TI_inputs(id).scrollY = 0
+    TI_inputs(id).text       = txt
+    TI_inputs(id).textLen    = LEN(txt)
+    TI_inputs(id).cursorPos  = LEN(txt)
+    TI_inputs(id).selStart   = -1
+    TI_inputs(id).selEnd     = -1
+    TI_inputs(id).scrollX    = 0
+    TI_inputs(id).scrollY    = 0
     TI_inputs(id).desiredCol = -1
-    TI_inputs(id).dirty = -1
+    TI_inputs(id).dirty      = -1
     ' Push initial state for undo
     TI__undo_reset id
     TI__undo_push id, TI_UNDO_NONE
@@ -118,8 +118,8 @@ END SUB
 ' TI_get_text$ — Get the current text content (trimmed)
 ' --------------------------------------------------------------------------
 FUNCTION TI_get_text$ (id AS INTEGER)
-    IF id < 1 OR id > TI_MAX_INPUTS THEN TI_get_text$ = "": EXIT FUNCTION
-    IF NOT TI_inputs(id).active THEN TI_get_text$ = "": EXIT FUNCTION
+    IF id < 1 OR id > TI_MAX_INPUTS THEN TI_get_text$ = "" : EXIT FUNCTION
+    IF NOT TI_inputs(id).active THEN TI_get_text$ = ""     : EXIT FUNCTION
     TI_get_text$ = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
 END FUNCTION
 
@@ -128,20 +128,20 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 SUB TI_set_focus (id AS INTEGER)
     ' Unfocus previous
-    IF TI_focusedId > 0 AND TI_focusedId <= TI_MAX_INPUTS THEN
+    IF TI_focusedId > 0 AND TI_focusedId < = TI_MAX_INPUTS THEN
         TI_inputs(TI_focusedId).focused = 0
-        TI_inputs(TI_focusedId).dirty = -1
+        TI_inputs(TI_focusedId).dirty   = -1
     END IF
     IF id < 1 OR id > TI_MAX_INPUTS THEN
         TI_focusedId = 0
         EXIT SUB
     END IF
     IF NOT TI_inputs(id).active THEN EXIT SUB
-    TI_focusedId = id
-    TI_inputs(id).focused = -1
+    TI_focusedId              = id
+    TI_inputs(id).focused     = -1
     TI_inputs(id).cursorBlink = -1
     TI_inputs(id).cursorTimer = TIMER(.001)
-    TI_inputs(id).dirty = -1
+    TI_inputs(id).dirty       = -1
 
     ' Auto-select all text on focus if requested
     IF TI_inputs(id).autoSelect THEN
@@ -158,10 +158,10 @@ SUB TI_select_all (id AS INTEGER)
     DIM tLen AS INTEGER
     tLen = TI_inputs(id).textLen
     IF tLen > 0 THEN
-        TI_inputs(id).selStart = 0
-        TI_inputs(id).selEnd = tLen
+        TI_inputs(id).selStart  = 0
+        TI_inputs(id).selEnd    = tLen
         TI_inputs(id).cursorPos = tLen
-        TI_inputs(id).dirty = -1
+        TI_inputs(id).dirty     = -1
     END IF
 END SUB
 
@@ -179,8 +179,8 @@ FUNCTION TI_hit_test% (px AS INTEGER, py AS INTEGER)
     DIM i AS INTEGER
     FOR i = 1 TO TI_MAX_INPUTS
         IF TI_inputs(i).active THEN
-            IF px >= TI_inputs(i).x AND px < TI_inputs(i).x + TI_inputs(i).w THEN
-                IF py >= TI_inputs(i).y AND py < TI_inputs(i).y + TI_inputs(i).h THEN
+            IF px > = TI_inputs(i).x AND px < TI_inputs(i).x + TI_inputs(i).w THEN
+                IF py > = TI_inputs(i).y AND py < TI_inputs(i).y + TI_inputs(i).h THEN
                     TI_hit_test% = i
                     EXIT FUNCTION
                 END IF
@@ -201,7 +201,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
     DIM hitId AS INTEGER
     hitId = TI_hit_test%(px, py)
 
-    IF hitId <= 0 THEN
+    IF hitId < = 0 THEN
         ' Click outside all inputs — clear focus
         TI_clear_focus
         TI_clickCount = 0
@@ -209,7 +209,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
     END IF
 
     ' --- Multi-click detection ---
-    DIM nowTime AS DOUBLE
+    DIM nowTime   AS DOUBLE
     nowTime = TIMER(.001)
     DIM clickDist AS INTEGER
     clickDist = ABS(px - TI_lastClickX) + ABS(py - TI_lastClickY)
@@ -221,34 +221,34 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         TI_clickCount = 1
     END IF
     TI_lastClickTime = nowTime
-    TI_lastClickId = hitId
-    TI_lastClickX = px
-    TI_lastClickY = py
+    TI_lastClickId   = hitId
+    TI_lastClickX    = px
+    TI_lastClickY    = py
 
     TI_set_focus hitId
 
     ' --- Position cursor at click location ---
     DIM cp AS INTEGER
     IF TI_inputs(hitId).multiline THEN
-        DIM relMY AS INTEGER
+        DIM relMY    AS INTEGER
         relMY = py - TI_inputs(hitId).y - TI_SCROLL_PADDING + TI_inputs(hitId).scrollY
         DIM clickRow AS INTEGER
         clickRow = relMY \ TI_fontH
         IF clickRow < 0 THEN clickRow = 0
-        DIM maxRow AS INTEGER
+        DIM maxRow   AS INTEGER
         maxRow = TI__line_count%(hitId) - 1
         IF clickRow > maxRow THEN clickRow = maxRow
 
-        DIM relMX AS INTEGER
+        DIM relMX    AS INTEGER
         relMX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM clickCol AS INTEGER
         clickCol = relMX \ TI__eff_fontW%(hitId)
         IF clickCol < 0 THEN clickCol = 0
 
-        cp = TI__pos_from_row_col%(hitId, clickRow, clickCol)
+        cp                          = TI__pos_from_row_col%(hitId, clickRow, clickCol)
         TI_inputs(hitId).desiredCol = -1
     ELSE
-        DIM relX AS INTEGER
+        DIM relX    AS INTEGER
         relX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM charPos AS INTEGER
         charPos = relX \ TI__eff_fontW%(hitId)
@@ -266,13 +266,13 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         CASE 1
             ' Single click — just position cursor, clear selection
             TI_inputs(hitId).selStart = -1
-            TI_inputs(hitId).selEnd = -1
+            TI_inputs(hitId).selEnd   = -1
 
         CASE 2
             ' Double-click — select word under cursor
             DIM wSelStart AS INTEGER, wSelEnd AS INTEGER
             wSelStart = cp
-            wSelEnd = cp
+            wSelEnd   = cp
             ' Expand left to word boundary
             DO WHILE wSelStart > 0
                 DIM lchr AS STRING
@@ -287,8 +287,8 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
                 IF rchr = " " OR rchr = CHR$(10) OR rchr = CHR$(9) OR rchr = "/" OR rchr = "\" OR rchr = "." OR rchr = "," OR rchr = ";" OR rchr = ":" OR rchr = "(" OR rchr = ")" OR rchr = "[" OR rchr = "]" OR rchr = "{" OR rchr = "}" OR rchr = CHR$(34) OR rchr = "'" THEN EXIT DO
                 wSelEnd = wSelEnd + 1
             LOOP
-            TI_inputs(hitId).selStart = wSelStart
-            TI_inputs(hitId).selEnd = wSelEnd
+            TI_inputs(hitId).selStart  = wSelStart
+            TI_inputs(hitId).selEnd    = wSelEnd
             TI_inputs(hitId).cursorPos = wSelEnd
 
         CASE 3
@@ -296,23 +296,23 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
             IF TI_inputs(hitId).multiline THEN
                 DIM curRowT AS INTEGER
                 curRowT = TI__cursor_row%(hitId)
-                DIM ls AS INTEGER, le AS INTEGER
-                ls = TI__line_start%(hitId, curRowT)
-                le = TI__line_end%(hitId, curRowT)
-                TI_inputs(hitId).selStart = ls
-                TI_inputs(hitId).selEnd = le
+                DIM ls      AS INTEGER, le AS INTEGER
+                ls                         = TI__line_start%(hitId, curRowT)
+                le                         = TI__line_end%(hitId, curRowT)
+                TI_inputs(hitId).selStart  = ls
+                TI_inputs(hitId).selEnd    = le
                 TI_inputs(hitId).cursorPos = le
             ELSE
                 ' Single-line: select all text
-                TI_inputs(hitId).selStart = 0
-                TI_inputs(hitId).selEnd = LEN(t)
+                TI_inputs(hitId).selStart  = 0
+                TI_inputs(hitId).selEnd    = LEN(t)
                 TI_inputs(hitId).cursorPos = LEN(t)
             END IF
 
         CASE 4
             ' Quadruple-click — select all
-            TI_inputs(hitId).selStart = 0
-            TI_inputs(hitId).selEnd = LEN(t)
+            TI_inputs(hitId).selStart  = 0
+            TI_inputs(hitId).selEnd    = LEN(t)
             TI_inputs(hitId).cursorPos = LEN(t)
     END SELECT
 
@@ -328,7 +328,7 @@ SUB TI_process_mousewheel (px AS INTEGER, py AS INTEGER, wheelDir AS INTEGER)
 
     DIM hitId AS INTEGER
     hitId = TI_hit_test%(px, py)
-    IF hitId <= 0 THEN EXIT SUB
+    IF hitId < = 0 THEN EXIT SUB
     IF NOT TI_inputs(hitId).multiline THEN EXIT SUB
 
     ' Scroll 3 lines per wheel notch
@@ -340,8 +340,8 @@ SUB TI_process_mousewheel (px AS INTEGER, py AS INTEGER, wheelDir AS INTEGER)
     ' Clamp to valid range
     IF TI_inputs(hitId).scrollY < 0 THEN TI_inputs(hitId).scrollY = 0
 
-    DIM totalH AS INTEGER, visibleH AS INTEGER
-    totalH = TI__line_count%(hitId) * TI_fontH
+    DIM totalH    AS INTEGER, visibleH AS INTEGER
+    totalH   = TI__line_count%(hitId) * TI_fontH
     visibleH = TI_inputs(hitId).h - TI_SCROLL_PADDING * 2
     DIM maxScroll AS INTEGER
     maxScroll = totalH - visibleH
@@ -366,31 +366,31 @@ FUNCTION TI_process_key% (k AS LONG)
 
     ' Reset callback hints
     TI_inputs(id).submitted = 0
-    TI_inputs(id).escaped = 0
-    TI_inputs(id).tabbed = 0
-    TI_inputs(id).changed = 0
+    TI_inputs(id).escaped   = 0
+    TI_inputs(id).tabbed    = 0
+    TI_inputs(id).changed   = 0
 
-    DIM t AS STRING
+    DIM t    AS STRING
     t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    DIM cp AS INTEGER
+    DIM cp   AS INTEGER
     cp = TI_inputs(id).cursorPos
     DIM maxL AS INTEGER
     maxL = TI_inputs(id).maxLen
-    IF maxL <= 0 THEN maxL = TI_MAX_TEXT_LEN
+    IF maxL < = 0 THEN maxL = TI_MAX_TEXT_LEN
 
     DIM hasSelection AS INTEGER
     hasSelection = (TI_inputs(id).selStart >= 0 AND TI_inputs(id).selStart <> TI_inputs(id).selEnd)
 
     DIM ctrlHeld AS INTEGER
-    ctrlHeld = (_KEYDOWN(100306) OR _KEYDOWN(100305))   ' Left/Right Ctrl
+    ctrlHeld = (_KEYDOWN(100306) OR _KEYDOWN(100305))  ' Left/Right Ctrl
 
     DIM shiftHeld AS INTEGER
-    shiftHeld = (_KEYDOWN(100304) OR _KEYDOWN(100303))   ' Left/Right Shift
+    shiftHeld = (_KEYDOWN(100304) OR _KEYDOWN(100303)) ' Left/Right Shift
 
     ' Normalize: on Linux/SDL2, _KEYHIT may return the letter code instead of
     ' the ASCII control code when Ctrl is held (e.g. 97 instead of 1 for Ctrl+A)
-    IF ctrlHeld AND k >= 65 AND k <= 122 THEN
-        k = ASC(UCASE$(CHR$(k))) - 64  ' A→1, C→3, V→22, X→24
+    IF ctrlHeld AND k > = 65 AND k < = 122 THEN
+        k = ASC(UCASE$(CHR$(k))) - 64 ' A→1, C→3, V→22, X→24
     END IF
 
     SELECT CASE k
@@ -406,7 +406,7 @@ FUNCTION TI_process_key% (k AS LONG)
                 IF LEN(t) < maxL THEN
                     t = LEFT$(t, cp) + CHR$(10) + MID$(t, cp + 1)
                     cp = cp + 1
-                    TI_inputs(id).changed = -1
+                    TI_inputs(id).changed    = -1
                     TI_inputs(id).desiredCol = 0
                 END IF
             ELSE
@@ -460,7 +460,7 @@ FUNCTION TI_process_key% (k AS LONG)
                     TI__extend_selection id, cp, wl
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
                 cp = wl
             ELSE
@@ -472,9 +472,9 @@ FUNCTION TI_process_key% (k AS LONG)
                     cp = nl
                 ELSE
                     IF hasSelection THEN
-                        cp = TI__sel_min%(id)
+                        cp                     = TI__sel_min%(id)
                         TI_inputs(id).selStart = -1
-                        TI_inputs(id).selEnd = -1
+                        TI_inputs(id).selEnd   = -1
                     ELSEIF cp > 0 THEN
                         cp = cp - 1
                     END IF
@@ -492,7 +492,7 @@ FUNCTION TI_process_key% (k AS LONG)
                     TI__extend_selection id, cp, wr
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
                 cp = wr
             ELSE
@@ -504,9 +504,9 @@ FUNCTION TI_process_key% (k AS LONG)
                     cp = nr
                 ELSE
                     IF hasSelection THEN
-                        cp = TI__sel_max%(id)
+                        cp                     = TI__sel_max%(id)
                         TI_inputs(id).selStart = -1
-                        TI_inputs(id).selEnd = -1
+                        TI_inputs(id).selEnd   = -1
                     ELSEIF cp < LEN(t) THEN
                         cp = cp + 1
                     END IF
@@ -518,7 +518,7 @@ FUNCTION TI_process_key% (k AS LONG)
         CASE 18176
             IF TI_inputs(id).multiline AND NOT ctrlHeld THEN
                 ' Go to start of current line
-                DIM homeRow AS INTEGER
+                DIM homeRow    AS INTEGER
                 homeRow = TI__cursor_row%(id)
                 DIM homeTarget AS INTEGER
                 homeTarget = TI__line_start%(id, homeRow)
@@ -526,16 +526,16 @@ FUNCTION TI_process_key% (k AS LONG)
                     TI__extend_selection id, cp, homeTarget
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
-                cp = homeTarget
+                cp                       = homeTarget
                 TI_inputs(id).desiredCol = 0
             ELSE
                 IF shiftHeld THEN
                     TI__extend_selection id, cp, 0
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
                 cp = 0
             END IF
@@ -544,7 +544,7 @@ FUNCTION TI_process_key% (k AS LONG)
         CASE 20224
             IF TI_inputs(id).multiline AND NOT ctrlHeld THEN
                 ' Go to end of current line
-                DIM endRow AS INTEGER
+                DIM endRow    AS INTEGER
                 endRow = TI__cursor_row%(id)
                 DIM endTarget AS INTEGER
                 endTarget = TI__line_end%(id, endRow)
@@ -552,16 +552,16 @@ FUNCTION TI_process_key% (k AS LONG)
                     TI__extend_selection id, cp, endTarget
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
-                cp = endTarget
+                cp                       = endTarget
                 TI_inputs(id).desiredCol = -1
             ELSE
                 IF shiftHeld THEN
                     TI__extend_selection id, cp, LEN(t)
                 ELSE
                     TI_inputs(id).selStart = -1
-                    TI_inputs(id).selEnd = -1
+                    TI_inputs(id).selEnd   = -1
                 END IF
                 cp = LEN(t)
             END IF
@@ -572,7 +572,7 @@ FUNCTION TI_process_key% (k AS LONG)
                 DIM upRow AS INTEGER, upCol AS INTEGER
                 upRow = TI__cursor_row%(id)
                 upCol = TI__cursor_col%(id)
-                IF TI_inputs(id).desiredCol >= 0 THEN upCol = TI_inputs(id).desiredCol
+                IF TI_inputs(id).desiredCol > = 0 THEN upCol = TI_inputs(id).desiredCol
                 IF upRow > 0 THEN
                     DIM upTarget AS INTEGER
                     upTarget = TI__pos_from_row_col%(id, upRow - 1, upCol)
@@ -580,7 +580,7 @@ FUNCTION TI_process_key% (k AS LONG)
                         TI__extend_selection id, cp, upTarget
                     ELSE
                         TI_inputs(id).selStart = -1
-                        TI_inputs(id).selEnd = -1
+                        TI_inputs(id).selEnd   = -1
                     END IF
                     cp = upTarget
                     IF TI_inputs(id).desiredCol < 0 THEN TI_inputs(id).desiredCol = upCol
@@ -590,10 +590,10 @@ FUNCTION TI_process_key% (k AS LONG)
         ' ----- Down arrow (multiline only) -----
         CASE 20480
             IF TI_inputs(id).multiline THEN
-                DIM dnRow AS INTEGER, dnCol AS INTEGER
+                DIM dnRow      AS INTEGER, dnCol AS INTEGER
                 dnRow = TI__cursor_row%(id)
                 dnCol = TI__cursor_col%(id)
-                IF TI_inputs(id).desiredCol >= 0 THEN dnCol = TI_inputs(id).desiredCol
+                IF TI_inputs(id).desiredCol > = 0 THEN dnCol = TI_inputs(id).desiredCol
                 DIM totalLines AS INTEGER
                 totalLines = TI__line_count%(id)
                 IF dnRow < totalLines - 1 THEN
@@ -603,7 +603,7 @@ FUNCTION TI_process_key% (k AS LONG)
                         TI__extend_selection id, cp, dnTarget
                     ELSE
                         TI_inputs(id).selStart = -1
-                        TI_inputs(id).selEnd = -1
+                        TI_inputs(id).selEnd   = -1
                     END IF
                     cp = dnTarget
                     IF TI_inputs(id).desiredCol < 0 THEN TI_inputs(id).desiredCol = dnCol
@@ -619,7 +619,7 @@ FUNCTION TI_process_key% (k AS LONG)
                     TI__undo_pop id
                 END IF
                 ' Refresh t and cp from restored state
-                t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
+                t  = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
                 cp = TI_inputs(id).cursorPos
             END IF
 
@@ -627,7 +627,7 @@ FUNCTION TI_process_key% (k AS LONG)
         CASE 25
             IF ctrlHeld THEN
                 TI__redo_pop id
-                t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
+                t  = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
                 cp = TI_inputs(id).cursorPos
             END IF
 
@@ -635,18 +635,18 @@ FUNCTION TI_process_key% (k AS LONG)
         CASE 1
             IF ctrlHeld THEN
                 TI_inputs(id).selStart = 0
-                TI_inputs(id).selEnd = LEN(t)
-                cp = LEN(t)
+                TI_inputs(id).selEnd   = LEN(t)
+                cp                     = LEN(t)
             END IF
 
         ' ----- Ctrl+C (Copy) -----
         CASE 3
             IF ctrlHeld AND hasSelection THEN
                 DIM copyS AS INTEGER, copyE AS INTEGER
-                copyS = TI__sel_min%(id)
-                copyE = TI__sel_max%(id)
+                copyS        = TI__sel_min%(id)
+                copyE        = TI__sel_max%(id)
                 TI_clipboard = MID$(t, copyS + 1, copyE - copyS)
-                _CLIPBOARD$ = TI_clipboard
+                _CLIPBOARD$  = TI_clipboard
             END IF
 
         ' ----- Ctrl+X (Cut) -----
@@ -655,10 +655,10 @@ FUNCTION TI_process_key% (k AS LONG)
                 IF TI_inputs(id).readOnly THEN GOTO ti_done
                 TI__undo_push id, TI_UNDO_BULK
                 DIM cutS AS INTEGER, cutE AS INTEGER
-                cutS = TI__sel_min%(id)
-                cutE = TI__sel_max%(id)
+                cutS         = TI__sel_min%(id)
+                cutE         = TI__sel_max%(id)
                 TI_clipboard = MID$(t, cutS + 1, cutE - cutS)
-                _CLIPBOARD$ = TI_clipboard
+                _CLIPBOARD$  = TI_clipboard
                 TI__delete_selection id, t, cp
                 TI_inputs(id).changed = -1
             END IF
@@ -667,16 +667,16 @@ FUNCTION TI_process_key% (k AS LONG)
         CASE 22
             IF ctrlHeld THEN
                 IF TI_inputs(id).readOnly THEN GOTO ti_done
-                DIM pasteStr AS STRING
+                DIM pasteStr   AS STRING
                 pasteStr = _CLIPBOARD$
                 ' Strip non-printable chars (allow newlines in multiline)
                 DIM cleanPaste AS STRING
                 cleanPaste = ""
-                DIM pi AS INTEGER
+                DIM pi         AS INTEGER
                 FOR pi = 1 TO LEN(pasteStr)
                     DIM pc AS INTEGER
                     pc = ASC(pasteStr, pi)
-                    IF pc >= 32 AND pc <= 126 THEN
+                    IF pc > = 32 AND pc < = 126 THEN
                         cleanPaste = cleanPaste + CHR$(pc)
                     ELSEIF pc = 10 AND TI_inputs(id).multiline THEN
                         cleanPaste = cleanPaste + CHR$(10)
@@ -696,14 +696,14 @@ FUNCTION TI_process_key% (k AS LONG)
                     IF hasSelection THEN
                         TI__delete_selection id, t, cp
                     END IF
-                    IF LEN(t) + LEN(cleanPaste) <= maxL THEN
+                    IF LEN(t) + LEN(cleanPaste) < = maxL THEN
                         t = LEFT$(t, cp) + cleanPaste + MID$(t, cp + 1)
                         cp = cp + LEN(cleanPaste)
                         TI_inputs(id).changed = -1
                     ELSEIF LEN(t) < maxL THEN
                         DIM room AS INTEGER
                         room = maxL - LEN(t)
-                        t = LEFT$(t, cp) + LEFT$(cleanPaste, room) + MID$(t, cp + 1)
+                        t    = LEFT$(t, cp) + LEFT$(cleanPaste, room) + MID$(t, cp + 1)
                         cp = cp + room
                         TI_inputs(id).changed = -1
                     END IF
@@ -731,8 +731,8 @@ FUNCTION TI_process_key% (k AS LONG)
     END SELECT
 
     ti_done:
-    TI_inputs(id).text = t
-    TI_inputs(id).textLen = LEN(t)
+    TI_inputs(id).text      = t
+    TI_inputs(id).textLen   = LEN(t)
     TI_inputs(id).cursorPos = cp
     TI__ensure_cursor_visible id
     TI_inputs(id).dirty = -1
@@ -748,7 +748,7 @@ SUB TI_tick
             IF TIMER(.001) - TI_inputs(i).cursorTimer > TI_CURSOR_BLINK_MS THEN
                 TI_inputs(i).cursorBlink = NOT TI_inputs(i).cursorBlink
                 TI_inputs(i).cursorTimer = TIMER(.001)
-                TI_inputs(i).dirty = -1
+                TI_inputs(i).dirty       = -1
             END IF
         END IF
     NEXT i
@@ -782,8 +782,8 @@ SUB TI__undo_push (id AS INTEGER, actionType AS INTEGER)
     DIM slot AS INTEGER
     slot = TI_undoPos(id)
 
-    TI_undoStack(id, slot).text = TI_inputs(id).text
-    TI_undoStack(id, slot).textLen = TI_inputs(id).textLen
+    TI_undoStack(id, slot).text      = TI_inputs(id).text
+    TI_undoStack(id, slot).textLen   = TI_inputs(id).textLen
     TI_undoStack(id, slot).cursorPos = TI_inputs(id).cursorPos
 
     TI_undoPos(id) = (slot + 1) MOD TI_UNDO_MAX
@@ -792,7 +792,7 @@ SUB TI__undo_push (id AS INTEGER, actionType AS INTEGER)
     END IF
 
     ' Any new edit clears the redo stack
-    TI_redoCount(id) = 0
+    TI_redoCount(id)    = 0
     TI_undoLastTime(id) = TIMER(.001)
     TI_undoLastType(id) = actionType
 END SUB
@@ -843,9 +843,9 @@ SUB TI__undo_pop (id AS INTEGER)
     ' Push current state to redo (reuse undo ring for redo — separate tracking)
     ' We store redo in a mirrored direction from undoPos
     DIM redoSlot AS INTEGER
-    redoSlot = (TI_undoPos(id) + TI_redoCount(id)) MOD TI_UNDO_MAX
-    TI_undoStack(id, redoSlot).text = TI_inputs(id).text
-    TI_undoStack(id, redoSlot).textLen = TI_inputs(id).textLen
+    redoSlot                             = (TI_undoPos(id) + TI_redoCount(id)) MOD TI_UNDO_MAX
+    TI_undoStack(id, redoSlot).text      = TI_inputs(id).text
+    TI_undoStack(id, redoSlot).textLen   = TI_inputs(id).textLen
     TI_undoStack(id, redoSlot).cursorPos = TI_inputs(id).cursorPos
     TI_redoCount(id) = TI_redoCount(id) + 1
     IF TI_redoCount(id) > TI_UNDO_MAX THEN TI_redoCount(id) = TI_UNDO_MAX
@@ -857,15 +857,15 @@ SUB TI__undo_pop (id AS INTEGER)
     DIM slot AS INTEGER
     slot = TI_undoPos(id)
 
-    TI_inputs(id).text = TI_undoStack(id, slot).text
-    TI_inputs(id).textLen = TI_undoStack(id, slot).textLen
+    TI_inputs(id).text      = TI_undoStack(id, slot).text
+    TI_inputs(id).textLen   = TI_undoStack(id, slot).textLen
     TI_inputs(id).cursorPos = TI_undoStack(id, slot).cursorPos
-    TI_inputs(id).selStart = -1
-    TI_inputs(id).selEnd = -1
+    TI_inputs(id).selStart  = -1
+    TI_inputs(id).selEnd    = -1
 
-    TI_undoLastType(id) = TI_UNDO_NONE
+    TI_undoLastType(id)   = TI_UNDO_NONE
     TI_inputs(id).changed = -1
-    TI_inputs(id).dirty = -1
+    TI_inputs(id).dirty   = -1
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -877,11 +877,11 @@ SUB TI__redo_pop (id AS INTEGER)
 
     ' Push current state back to undo
     DIM undoSlot AS INTEGER
-    undoSlot = TI_undoPos(id)
-    TI_undoStack(id, undoSlot).text = TI_inputs(id).text
-    TI_undoStack(id, undoSlot).textLen = TI_inputs(id).textLen
+    undoSlot                             = TI_undoPos(id)
+    TI_undoStack(id, undoSlot).text      = TI_inputs(id).text
+    TI_undoStack(id, undoSlot).textLen   = TI_inputs(id).textLen
     TI_undoStack(id, undoSlot).cursorPos = TI_inputs(id).cursorPos
-    TI_undoPos(id) = (TI_undoPos(id) + 1) MOD TI_UNDO_MAX
+    TI_undoPos(id)                       = (TI_undoPos(id) + 1) MOD TI_UNDO_MAX
     TI_undoCount(id) = TI_undoCount(id) + 1
     IF TI_undoCount(id) > TI_UNDO_MAX THEN TI_undoCount(id) = TI_UNDO_MAX
 
@@ -890,15 +890,15 @@ SUB TI__redo_pop (id AS INTEGER)
     DIM redoSlot AS INTEGER
     redoSlot = (TI_undoPos(id) + TI_redoCount(id)) MOD TI_UNDO_MAX
 
-    TI_inputs(id).text = TI_undoStack(id, redoSlot).text
-    TI_inputs(id).textLen = TI_undoStack(id, redoSlot).textLen
+    TI_inputs(id).text      = TI_undoStack(id, redoSlot).text
+    TI_inputs(id).textLen   = TI_undoStack(id, redoSlot).textLen
     TI_inputs(id).cursorPos = TI_undoStack(id, redoSlot).cursorPos
-    TI_inputs(id).selStart = -1
-    TI_inputs(id).selEnd = -1
+    TI_inputs(id).selStart  = -1
+    TI_inputs(id).selEnd    = -1
 
-    TI_undoLastType(id) = TI_UNDO_NONE
+    TI_undoLastType(id)   = TI_UNDO_NONE
     TI_inputs(id).changed = -1
-    TI_inputs(id).dirty = -1
+    TI_inputs(id).dirty   = -1
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -906,9 +906,9 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB TI__undo_reset (id AS INTEGER)
     IF id < 1 OR id > TI_MAX_INPUTS THEN EXIT SUB
-    TI_undoPos(id) = 0
-    TI_undoCount(id) = 0
-    TI_redoCount(id) = 0
+    TI_undoPos(id)      = 0
+    TI_undoCount(id)    = 0
+    TI_redoCount(id)    = 0
     TI_undoLastTime(id) = 0
     TI_undoLastType(id) = TI_UNDO_NONE
 END SUB
@@ -918,12 +918,12 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB TI__delete_selection (id AS INTEGER, t AS STRING, cp AS INTEGER)
     DIM s1 AS INTEGER, s2 AS INTEGER
-    s1 = TI__sel_min%(id)
-    s2 = TI__sel_max%(id)
-    t = LEFT$(t, s1) + MID$(t, s2 + 1)
-    cp = s1
+    s1                     = TI__sel_min%(id)
+    s2                     = TI__sel_max%(id)
+    t                      = LEFT$(t, s1) + MID$(t, s2 + 1)
+    cp                     = s1
     TI_inputs(id).selStart = -1
-    TI_inputs(id).selEnd = -1
+    TI_inputs(id).selEnd   = -1
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -933,7 +933,7 @@ SUB TI__extend_selection (id AS INTEGER, oldPos AS INTEGER, newPos AS INTEGER)
     IF TI_inputs(id).selStart < 0 THEN
         ' Start new selection
         TI_inputs(id).selStart = oldPos
-        TI_inputs(id).selEnd = newPos
+        TI_inputs(id).selEnd   = newPos
     ELSE
         ' Extend existing — move the end that matches oldPos
         IF TI_inputs(id).selEnd = oldPos THEN
@@ -948,7 +948,7 @@ END SUB
 ' TI__sel_min% / TI__sel_max% — Get normalized selection bounds
 ' --------------------------------------------------------------------------
 FUNCTION TI__sel_min% (id AS INTEGER)
-    IF TI_inputs(id).selStart <= TI_inputs(id).selEnd THEN
+    IF TI_inputs(id).selStart < = TI_inputs(id).selEnd THEN
         TI__sel_min% = TI_inputs(id).selStart
     ELSE
         TI__sel_min% = TI_inputs(id).selEnd
@@ -956,7 +956,7 @@ FUNCTION TI__sel_min% (id AS INTEGER)
 END FUNCTION
 
 FUNCTION TI__sel_max% (id AS INTEGER)
-    IF TI_inputs(id).selStart >= TI_inputs(id).selEnd THEN
+    IF TI_inputs(id).selStart > = TI_inputs(id).selEnd THEN
         TI__sel_max% = TI_inputs(id).selStart
     ELSE
         TI__sel_max% = TI_inputs(id).selEnd
@@ -986,13 +986,13 @@ END FUNCTION
 ' TI__word_right% — Find word boundary to the right
 ' --------------------------------------------------------------------------
 FUNCTION TI__word_right% (t AS STRING, curPos AS INTEGER)
-    DIM p AS INTEGER
+    DIM p  AS INTEGER
     DIM tl AS INTEGER
-    p = curPos
+    p  = curPos
     tl = LEN(t)
     ' Skip current word chars
     DO WHILE p < tl
-        DIM c AS STRING
+        DIM c  AS STRING
         c = MID$(t, p + 1, 1)
         IF c = " " OR c = "/" OR c = "\" THEN EXIT DO
         p = p + 1
@@ -1046,8 +1046,8 @@ SUB TI__ensure_cursor_visible (id AS INTEGER)
         END IF
     ELSE
         ' --- Single-line: horizontal only ---
-        DIM eFW AS INTEGER
-        eFW = TI__eff_fontW%(id)
+        DIM eFW      AS INTEGER
+        eFW      = TI__eff_fontW%(id)
         curPixel = TI_inputs(id).cursorPos * eFW
         visibleW = TI_inputs(id).w - TI_SCROLL_PADDING * 2
 
@@ -1082,12 +1082,12 @@ END FUNCTION
 ' TI__cursor_col% — Get 0-based column within the current line
 ' --------------------------------------------------------------------------
 FUNCTION TI__cursor_col% (id AS INTEGER)
-    DIM t AS STRING
+    DIM t  AS STRING
     t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
     DIM cp AS INTEGER
     cp = TI_inputs(id).cursorPos
     ' Scan backwards to find line start
-    DIM i AS INTEGER
+    DIM i  AS INTEGER
     FOR i = cp TO 1 STEP -1
         IF MID$(t, i, 1) = CHR$(10) THEN
             TI__cursor_col% = cp - i
@@ -1103,14 +1103,14 @@ END FUNCTION
 FUNCTION TI__line_start% (id AS INTEGER, row AS INTEGER)
     DIM t AS STRING
     t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    IF row <= 0 THEN TI__line_start% = 0: EXIT FUNCTION
+    IF row < = 0 THEN TI__line_start% = 0: EXIT FUNCTION
     DIM r AS INTEGER, i AS INTEGER
     r = 0
     FOR i = 1 TO LEN(t)
         IF MID$(t, i, 1) = CHR$(10) THEN
             r = r + 1
             IF r = row THEN
-                TI__line_start% = i   ' offset right after the newline
+                TI__line_start% = i ' offset right after the newline
                 EXIT FUNCTION
             END IF
         END IF
@@ -1123,14 +1123,14 @@ END FUNCTION
 ' TI__line_end% — Get flat offset of line end (before newline) for `row`
 ' --------------------------------------------------------------------------
 FUNCTION TI__line_end% (id AS INTEGER, row AS INTEGER)
-    DIM t AS STRING
+    DIM t         AS STRING
     t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
     DIM lineStart AS INTEGER
     lineStart = TI__line_start%(id, row)
-    DIM i AS INTEGER
+    DIM i         AS INTEGER
     FOR i = lineStart + 1 TO LEN(t)
         IF MID$(t, i, 1) = CHR$(10) THEN
-            TI__line_end% = i - 1   ' just before the newline
+            TI__line_end% = i - 1 ' just before the newline
             EXIT FUNCTION
         END IF
     NEXT i
@@ -1155,12 +1155,12 @@ END FUNCTION
 ' TI__pos_from_row_col% — Flat offset from row and col (clamped to line)
 ' --------------------------------------------------------------------------
 FUNCTION TI__pos_from_row_col% (id AS INTEGER, row AS INTEGER, col AS INTEGER)
-    DIM ls AS INTEGER, le AS INTEGER
+    DIM ls      AS INTEGER, le AS INTEGER
     ls = TI__line_start%(id, row)
     le = TI__line_end%(id, row)
     DIM lineLen AS INTEGER
     lineLen = le - ls
-    DIM c AS INTEGER
+    DIM c       AS INTEGER
     c = col
     IF c > lineLen THEN c = lineLen
     IF c < 0 THEN c = 0

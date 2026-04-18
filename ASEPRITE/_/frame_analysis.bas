@@ -2,10 +2,10 @@ $CONSOLE:ONLY
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM file_handle AS INTEGER
-DIM frame_header AS ASEPRITE_FRAME_HEADER
+DIM file_handle     AS INTEGER
+DIM frame_header    AS ASEPRITE_FRAME_HEADER
 DIM frame_start_pos AS LONG
-DIM file_path AS STRING
+DIM file_path       AS STRING
 
 file_path = "test-files\jup-jerk.aseprite"
 
@@ -18,7 +18,7 @@ OPEN file_path FOR BINARY AS #file_handle
 ' Skip to frame data (after main header)
 SEEK #file_handle, 129 ' ASEPRITE_HEADER_SIZE + 1
 
-frame_start_pos = 129 ' Start after main header
+frame_start_pos = 129  ' Start after main header
 
 PRINT "Frame start position: "; frame_start_pos
 

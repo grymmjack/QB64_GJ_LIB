@@ -8,17 +8,17 @@
 PRINT "Threshold Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
 DIM thresholdValue AS INTEGER
-DIM thresholdMode AS INTEGER
-DIM oldThreshold AS INTEGER
-DIM oldMode AS INTEGER
+DIM thresholdMode  AS INTEGER
+DIM oldThreshold   AS INTEGER
+DIM oldMode        AS INTEGER
 
-thresholdValue = 128    ' Default threshold value (0-255)
-thresholdMode = GJ_IMGADJ_THRESHOLD_BINARY  ' Default mode (binary)
-oldThreshold = -1       ' Force initial update
-oldMode = -1
+thresholdValue = 128                        ' Default threshold value (0-255)
+thresholdMode  = GJ_IMGADJ_THRESHOLD_BINARY ' Default mode (binary)
+oldThreshold   = -1                         ' Force initial update
+oldMode        = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -50,8 +50,8 @@ DO
         ' Apply threshold effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Threshold(originalImage, thresholdValue, thresholdMode)
-        oldThreshold = thresholdValue
-        oldMode = thresholdMode
+        oldThreshold  = thresholdValue
+        oldMode       = thresholdMode
         
         ' Update display
         _DEST 0  ' Graphics screen
@@ -92,7 +92,7 @@ DO
             IF thresholdValue < 255 THEN thresholdValue = thresholdValue + 5
         CASE "-"
             IF thresholdValue > 0 THEN thresholdValue = thresholdValue - 5
-        CASE " "  ' SPACE key
+        CASE " " ' SPACE key
             ' Toggle between binary and inverted modes
             IF thresholdMode = GJ_IMGADJ_THRESHOLD_BINARY THEN
                 thresholdMode = GJ_IMGADJ_THRESHOLD_INVERTED
@@ -101,7 +101,7 @@ DO
             END IF
         CASE "r", "R"
             thresholdValue = 128
-            thresholdMode = GJ_IMGADJ_THRESHOLD_BINARY
+            thresholdMode  = GJ_IMGADJ_THRESHOLD_BINARY
     END SELECT
     
     _LIMIT 60

@@ -10,17 +10,17 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM glowRadius AS INTEGER
+DIM glowRadius    AS INTEGER
 DIM glowIntensity AS INTEGER
-DIM currentParam AS INTEGER  ' 0 = radius, 1 = intensity
-DIM oldRadius AS INTEGER
-DIM oldIntensity AS INTEGER
+DIM currentParam  AS INTEGER ' 0 = radius, 1 = intensity
+DIM oldRadius     AS INTEGER
+DIM oldIntensity  AS INTEGER
 
-glowRadius = 5      ' Default glow radius
-glowIntensity = 50  ' Default glow intensity
-currentParam = 0    ' Start with radius
-oldRadius = -1      ' Force initial update
-oldIntensity = -1
+glowRadius    = 5            ' Default glow radius
+glowIntensity = 50           ' Default glow intensity
+currentParam  = 0            ' Start with radius
+oldRadius     = -1           ' Force initial update
+oldIntensity  = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -52,11 +52,11 @@ DO
         ' Apply glow effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Glow(originalImage, glowRadius, glowIntensity)
-        oldRadius = glowRadius
-        oldIntensity = glowIntensity
+        oldRadius     = glowRadius
+        oldIntensity  = glowIntensity
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -65,14 +65,14 @@ DO
         
         ' Highlight current parameter
         IF currentParam = 0 THEN
-            COLOR _RGB32(255, 255, 0)  ' Yellow for selected
+            COLOR _RGB32(255, 255, 0)   ' Yellow for selected
             _PRINTSTRING (10, 30), ">>> Radius: " + STR$(glowRadius) + " pixels"
-            COLOR _RGB32(255, 255, 255)  ' White for normal
+            COLOR _RGB32(255, 255, 255) ' White for normal
             _PRINTSTRING (10, 50), "    Intensity: " + STR$(glowIntensity) + "%"
         ELSE
-            COLOR _RGB32(255, 255, 255)  ' White for normal
+            COLOR _RGB32(255, 255, 255) ' White for normal
             _PRINTSTRING (10, 30), "    Radius: " + STR$(glowRadius) + " pixels"
-            COLOR _RGB32(255, 255, 0)  ' Yellow for selected
+            COLOR _RGB32(255, 255, 0)   ' Yellow for selected
             _PRINTSTRING (10, 50), ">>> Intensity: " + STR$(glowIntensity) + "%"
         END IF
         
@@ -108,10 +108,10 @@ DO
             ELSE
                 IF glowIntensity > 0 THEN glowIntensity = glowIntensity - 5
             END IF
-        CASE CHR$(9)  ' TAB key
-            currentParam = 1 - currentParam  ' Toggle between 0 and 1
+        CASE CHR$(9) ' TAB key
+            currentParam = 1 - currentParam ' Toggle between 0 and 1
         CASE "r", "R"
-            glowRadius = 5
+            glowRadius    = 5
             glowIntensity = 50
     END SELECT
     

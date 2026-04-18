@@ -66,8 +66,8 @@ END FUNCTION
 SUB CP_THEME_init
     CP_THEME.bg~&              = CP_CLR_BG~&
     CP_THEME.titleBg~&         = CP_CLR_TITLE_BG~&
-    CP_THEME.titleHoverBg~&    = CP_CLR_TITLE_BG~&            ' Default: same as normal
-    CP_THEME.titleDragBg~&     = CP_CLR_TITLE_BG~&            ' Default: same as normal
+    CP_THEME.titleHoverBg~&    = CP_CLR_TITLE_BG~& ' Default : same AS normal
+    CP_THEME.titleDragBg~&     = CP_CLR_TITLE_BG~& ' Default : same AS normal
     CP_THEME.buttonBarBg~&     = CP_CLR_BUTTON_BAR_BG~&
     CP_THEME.contentBg~&       = CP_CLR_CONTENT_BG~&
     CP_THEME.titleFg~&         = CP_CLR_TEXT_BRIGHT~&
@@ -82,7 +82,7 @@ SUB CP_THEME_init
     CP_THEME.buttonSecText~&   = CP_CLR_BUTTON_SEC_TEXT~&
     CP_THEME.buttonFocus~&     = CP_CLR_BUTTON_FOCUS~&
     CP_THEME.closeFg~&         = CP_CLR_TEXT_BRIGHT~&
-    CP_THEME.closeHoverBg~&    = &HFFE81123~&                  ' Red hover
+    CP_THEME.closeHoverBg~&    = &HFFE81123~&      ' Red hover
     CP_THEME.border~&          = CP_CLR_BORDER~&
     CP_THEME.divider~&         = CP_CLR_DIVIDER~&
     CP_THEME.sliderBg~&        = CP_CLR_SLIDER_BG~&
@@ -90,9 +90,9 @@ SUB CP_THEME_init
     CP_THEME.overlay~&         = CP_CLR_OVERLAY~&
     CP_THEME.checkA~&          = CP_CLR_CHECK_A~&
     CP_THEME.checkB~&          = CP_CLR_CHECK_B~&
-    CP_THEME.fontHandle&       = 0                             ' 0 = use built-in
-    CP_THEME.fontW%            = 0                             ' 0 = use CP_STATE.fontW
-    CP_THEME.fontH%            = 0                             ' 0 = use CP_STATE.fontH
+    CP_THEME.fontHandle&       = 0                 ' 0 = use built-in
+    CP_THEME.fontW%            = 0                 ' 0 = use CP_STATE.fontW
+    CP_THEME.fontH%            = 0                 ' 0 = use CP_STATE.fontH
 
     ' Geometry defaults (from CP-THEME.BI CONSTs)
     CP_THEME.titleBarH%     = CP_TITLE_BAR_H
@@ -126,7 +126,7 @@ END SUB
 ' Scales from the original CP-THEME.BI CONST defaults. Idempotent.
 ' --------------------------------------------------------------------------
 SUB CP_THEME_scale_geometry
-    IF CP_THEME.fontH% <= 0 THEN EXIT SUB
+    IF CP_THEME.fontH% < = 0 THEN EXIT SUB
     IF CP_THEME.fontH% = CP_DEFAULT_FONT_H THEN EXIT SUB
 
     DIM s AS SINGLE
@@ -159,8 +159,8 @@ SUB CP_THEME_scale_geometry
     CP_THEME.buttonBarH% = CP_THEME.buttonH% + CP_THEME.fontH%
 
     ' Slider labels: "R:" = 2 chars + 4px gap, value = 3 digits + 2px
-    CP_THEME.labelW%  = 2 * fw% + 4
-    CP_THEME.valueW%  = 3 * fw% + 4
+    CP_THEME.labelW% = 2 * fw% + 4
+    CP_THEME.valueW% = 3 * fw% + 4
 
     ' "COPY" = 4 chars + 4px, "PASTE" = 5 chars + 4px
     CP_THEME.copyBtnW%  = 4 * fw% + 6
@@ -170,15 +170,15 @@ SUB CP_THEME_scale_geometry
     CP_THEME.snapChipW% = 2 * fw% + 4
 
     ' --- Enforce height minimums ---
-    IF CP_THEME.titleBarH%     < CP_THEME.fontH% + 4  THEN CP_THEME.titleBarH%     = CP_THEME.fontH% + 4
-    IF CP_THEME.sliderH%       < CP_THEME.fontH%       THEN CP_THEME.sliderH%       = CP_THEME.fontH%
-    IF CP_THEME.hexInputH%     < CP_THEME.fontH% + 4  THEN CP_THEME.hexInputH%     = CP_THEME.fontH% + 4
+    IF CP_THEME.titleBarH%     < CP_THEME.fontH% + 4  THEN CP_THEME.titleBarH% = CP_THEME.fontH% + 4
+    IF CP_THEME.sliderH%       < CP_THEME.fontH%       THEN CP_THEME.sliderH% = CP_THEME.fontH%
+    IF CP_THEME.hexInputH%     < CP_THEME.fontH% + 4  THEN CP_THEME.hexInputH% = CP_THEME.fontH% + 4
     IF CP_THEME.posterizeRowH% < CP_THEME.fontH% + 4  THEN CP_THEME.posterizeRowH% = CP_THEME.fontH% + 4
-    IF CP_THEME.padding%       < 4                      THEN CP_THEME.padding%       = 4
-    IF CP_THEME.sectionGap%    < 4                      THEN CP_THEME.sectionGap%    = 4
-    IF CP_THEME.sliderGap%     < 2                      THEN CP_THEME.sliderGap%     = 2
-    IF CP_THEME.snapChipGap%   < 1                      THEN CP_THEME.snapChipGap%   = 1
-    IF CP_THEME.hueBarW%       < 10                     THEN CP_THEME.hueBarW%       = 10
+    IF CP_THEME.padding%       < 4                      THEN CP_THEME.padding% = 4
+    IF CP_THEME.sectionGap%    < 4                      THEN CP_THEME.sectionGap% = 4
+    IF CP_THEME.sliderGap%     < 2                      THEN CP_THEME.sliderGap% = 2
+    IF CP_THEME.snapChipGap%   < 1                      THEN CP_THEME.snapChipGap% = 1
+    IF CP_THEME.hueBarW%       < 10                     THEN CP_THEME.hueBarW% = 10
 
     ' --- Compute minimum content width from widest text row ---
     ' Hex row: "HEX:" (4fw+4) + hexInput (8fw+4) + 4 + COPY btn + 4 + PASTE btn
@@ -217,10 +217,10 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
 
     ' Reset all state
     DIM emptyState AS CP_STATE_OBJ
-    CP_STATE = emptyState
-    CP_STATE.imgHandle = -1
-    CP_STATE.screenShot = -1
-    CP_STATE.svImage = -1
+    CP_STATE             = emptyState
+    CP_STATE.imgHandle   = -1
+    CP_STATE.screenShot  = -1
+    CP_STATE.svImage     = -1
     CP_STATE.hueBarImage = -1
 
     ' Store original color
@@ -238,10 +238,10 @@ SUB CP_init (initialColor AS _UNSIGNED LONG)
     CP_rgb_to_hsl CP_STATE.cR, CP_STATE.cG, CP_STATE.cB, CP_STATE.hslH, CP_STATE.hslS, CP_STATE.hslL
 
     ' Result
-    CP_STATE.result = CP_RESULT_NONE
-    CP_STATE.hoverButton = -1
+    CP_STATE.result         = CP_RESULT_NONE
+    CP_STATE.hoverButton    = -1
     CP_STATE.hoverPosterize = -1
-    CP_STATE.scale = 1
+    CP_STATE.scale          = 1
 
     ' Font defaults (caller can override before modal loop)
     IF CP_STATE.fontID = 0 THEN CP_STATE.fontID = CP_DEFAULT_FONT_ID
@@ -336,11 +336,11 @@ SUB CP_modal_loop
 
     ' Drain stale mouse input
     DO WHILE _MOUSEINPUT: LOOP
-    CP_STATE.mouseB1 = _MOUSEBUTTON(1)
+    CP_STATE.mouseB1    = _MOUSEBUTTON(1)
     CP_STATE.oldMouseB1 = CP_STATE.mouseB1
 
     DIM cpFrameIdle AS INTEGER
-    DIM cpPrevMX AS INTEGER, cpPrevMY AS INTEGER
+    DIM cpPrevMX    AS INTEGER, cpPrevMY AS INTEGER
     cpPrevMX = -1: cpPrevMY = -1
 
     DO UNTIL CP_STATE.done
@@ -377,7 +377,7 @@ SUB CP_modal_loop
         DIM cpTIDirty AS INTEGER
         cpTIDirty = 0
         IF CP_STATE.tiHexId > 0 THEN
-            IF CP_STATE.tiHexId <= TI_MAX_INPUTS THEN
+            IF CP_STATE.tiHexId < = TI_MAX_INPUTS THEN
                 IF TI_inputs(CP_STATE.tiHexId).dirty THEN cpTIDirty = -1
             END IF
         END IF
@@ -387,7 +387,7 @@ SUB CP_modal_loop
         IF CP_STATE.dirty THEN
             CP_RENDER_all
             CP_STATE.dirty = 0
-            cpFrameIdle = 0
+            cpFrameIdle    = 0
         END IF
 
         ' Only blit + display when something changed
@@ -442,7 +442,7 @@ SUB CP_layout_calculate
     y = y + CP_THEME.svSize% + CP_THEME.sectionGap%
 
     ' Preview swatches
-    CP_STATE.previewY = y
+    CP_STATE.previewY    = y
     CP_STATE.previewOldX = CP_THEME.padding%
     CP_STATE.previewNewX = CP_THEME.padding% + CP_THEME.previewW% + 8
     y = y + CP_STATE.fontH + CP_THEME.previewH% + CP_THEME.sectionGap%
@@ -464,11 +464,11 @@ SUB CP_layout_calculate
     y = y + rowH * 3 + CP_THEME.sectionGap%
 
     ' Hex row — right-align Copy/Paste, expand hex input to fill
-    CP_STATE.hexY = y
-    CP_STATE.hexInputX = CP_THEME.padding% + 4 * CP_STATE.fontW + 4  ' After "HEX:" label
+    CP_STATE.hexY      = y
+    CP_STATE.hexInputX = CP_THEME.padding% + 4 * CP_STATE.fontW + 4 ' After "HEX:" label
     DIM hexPasteX AS INTEGER, hexCopyX AS INTEGER
-    hexPasteX = CP_THEME.padding% + contentW - CP_THEME.pasteBtnW%
-    hexCopyX = hexPasteX - 4 - CP_THEME.copyBtnW%
+    hexPasteX          = CP_THEME.padding% + contentW - CP_THEME.pasteBtnW%
+    hexCopyX           = hexPasteX - 4 - CP_THEME.copyBtnW%
     CP_STATE.hexInputW = hexCopyX - 4 - CP_STATE.hexInputX
     IF CP_STATE.hexInputW < 8 * CP_STATE.fontW + 4 THEN
         CP_STATE.hexInputW = 8 * CP_STATE.fontW + 4
@@ -476,7 +476,7 @@ SUB CP_layout_calculate
     y = y + CP_THEME.hexInputH% + CP_THEME.sectionGap%
 
     ' Posterize / snap row
-    CP_STATE.posterizeY = y
+    CP_STATE.posterizeY     = y
     CP_STATE.hoverPosterize = -1
     y = y + CP_THEME.posterizeRowH% + CP_THEME.sectionGap%
 
@@ -488,8 +488,8 @@ SUB CP_layout_calculate
 
     ' Center on screen
     DIM scrW AS INTEGER, scrH AS INTEGER
-    scrW = _WIDTH(0) \ CP_STATE.scale
-    scrH = _HEIGHT(0) \ CP_STATE.scale
+    scrW             = _WIDTH(0) \ CP_STATE.scale
+    scrH             = _HEIGHT(0) \ CP_STATE.scale
     CP_STATE.dialogX = (scrW - CP_STATE.dialogW) \ 2
     CP_STATE.dialogY = (scrH - CP_STATE.dialogH) \ 2
     IF CP_STATE.dialogX < 0 THEN CP_STATE.dialogX = 0
@@ -538,7 +538,7 @@ END SUB
 ' --------------------------------------------------------------------------
 FUNCTION CP_get_hex_string$
     DIM h AS STRING
-    h = "#" + CP_hex_byte$(CP_STATE.cR) + CP_hex_byte$(CP_STATE.cG) + CP_hex_byte$(CP_STATE.cB)
+    h                  = "#" + CP_hex_byte$(CP_STATE.cR) + CP_hex_byte$(CP_STATE.cG) + CP_hex_byte$(CP_STATE.cB)
     CP_get_hex_string$ = h
 END FUNCTION
 
@@ -589,17 +589,17 @@ END SUB
 ' h: 0-360, s: 0-1, v: 0-1 => r,g,b: 0-255
 ' --------------------------------------------------------------------------
 SUB CP_hsv_to_rgb (h AS SINGLE, s AS SINGLE, v AS SINGLE, r AS INTEGER, g AS INTEGER, b AS INTEGER)
-    IF s <= 0.0 THEN
+    IF s < = 0.0 THEN
         r = INT(v * 255): g = r: b = r
         EXIT SUB
     END IF
 
     DIM hh AS SINGLE, ff AS SINGLE
-    DIM p AS SINGLE, q AS SINGLE, t AS SINGLE
+    DIM p  AS SINGLE, q AS SINGLE, t AS SINGLE
     DIM ii AS INTEGER
 
     hh = h
-    IF hh >= 360.0 THEN hh = 0.0
+    IF hh > = 360.0 THEN hh = 0.0
     hh = hh / 60.0
     ii = INT(hh)
     ff = hh - CSNG(ii)
@@ -650,7 +650,7 @@ SUB CP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
 
     v = cMax
 
-    IF cMax <= 0.0 THEN
+    IF cMax < = 0.0 THEN
         s = 0.0
         h = 0.0
         EXIT SUB
@@ -663,9 +663,9 @@ SUB CP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
         EXIT SUB
     END IF
 
-    IF rf >= cMax THEN
+    IF rf > = cMax THEN
         h = (gf - bf) / delta
-    ELSEIF gf >= cMax THEN
+    ELSEIF gf > = cMax THEN
         h = 2.0 + (bf - rf) / delta
     ELSE
         h = 4.0 + (rf - gf) / delta
@@ -707,9 +707,9 @@ SUB CP_rgb_to_hsl (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
         s = delta / (cMax + cMin)
     END IF
 
-    IF rf >= cMax THEN
+    IF rf > = cMax THEN
         h = (gf - bf) / delta
-    ELSEIF gf >= cMax THEN
+    ELSEIF gf > = cMax THEN
         h = 2.0 + (bf - rf) / delta
     ELSE
         h = 4.0 + (rf - gf) / delta
@@ -787,15 +787,15 @@ SUB CP_wire_hex_ti_theme
     IF CP_STATE.tiHexId < 1 OR CP_STATE.tiHexId > TI_MAX_INPUTS THEN EXIT SUB
     ' Wire per-instance font
     TI_inputs(CP_STATE.tiHexId).theme.fontHandle = CP_THEME.fontHandle&
-    TI_inputs(CP_STATE.tiHexId).theme.fontW = CP_STATE.fontW
-    TI_inputs(CP_STATE.tiHexId).theme.fontH = CP_STATE.fontH
+    TI_inputs(CP_STATE.tiHexId).theme.fontW      = CP_STATE.fontW
+    TI_inputs(CP_STATE.tiHexId).theme.fontH      = CP_STATE.fontH
     ' Wire colors to match dialog theme
-    TI_inputs(CP_STATE.tiHexId).theme.bgColor = CP_THEME.sliderBg~&
-    TI_inputs(CP_STATE.tiHexId).theme.focusBgColor = CP_THEME.bg~&
-    TI_inputs(CP_STATE.tiHexId).theme.borderColor = CP_THEME.border~&
+    TI_inputs(CP_STATE.tiHexId).theme.bgColor          = CP_THEME.sliderBg~&
+    TI_inputs(CP_STATE.tiHexId).theme.focusBgColor     = CP_THEME.bg~&
+    TI_inputs(CP_STATE.tiHexId).theme.borderColor      = CP_THEME.border~&
     TI_inputs(CP_STATE.tiHexId).theme.focusBorderColor = CP_THEME.buttonFocus~&
-    TI_inputs(CP_STATE.tiHexId).theme.textColor = CP_THEME.textBright~&
-    TI_inputs(CP_STATE.tiHexId).theme.cursorColor = CP_THEME.textBright~&
-    TI_inputs(CP_STATE.tiHexId).theme.selectionColor = CP_THEME.buttonBg~&
+    TI_inputs(CP_STATE.tiHexId).theme.textColor        = CP_THEME.textBright~&
+    TI_inputs(CP_STATE.tiHexId).theme.cursorColor      = CP_THEME.textBright~&
+    TI_inputs(CP_STATE.tiHexId).theme.selectionColor   = CP_THEME.buttonBg~&
     TI_inputs(CP_STATE.tiHexId).theme.placeholderColor = CP_THEME.textDim~&
 END SUB

@@ -8,19 +8,19 @@
 PRINT "Random and Noise Dithering Test Starting..."
 PRINT "Using noise-based dithering algorithms"
 
-DIM originalImage AS LONG
-DIM ditheredImage AS LONG
-DIM ditherAmount AS SINGLE
-DIM oldAmount AS SINGLE
-DIM algorithmType AS INTEGER
+DIM originalImage    AS LONG
+DIM ditheredImage    AS LONG
+DIM ditherAmount     AS SINGLE
+DIM oldAmount        AS SINGLE
+DIM algorithmType    AS INTEGER
 DIM oldAlgorithmType AS INTEGER
-DIM randomSeed AS INTEGER
+DIM randomSeed       AS INTEGER
 
-ditherAmount = 0.8        ' Default dithering strength
-oldAmount = -1            ' Force initial update
-algorithmType = 0         ' 0=Random, 1=Blue Noise
-oldAlgorithmType = -1     ' Force initial update
-randomSeed = 12345        ' Fixed seed for reproducible results
+ditherAmount     = 0.8   ' Default dithering strength
+oldAmount        = -1    ' Force initial update
+algorithmType    = 0     ' 0=Random, 1=Blue Noise
+oldAlgorithmType = -1    ' Force initial update
+randomSeed       = 12345 ' Fixed seed for reproducible results
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -55,17 +55,17 @@ DO
         RANDOMIZE randomSeed
         
         SELECT CASE algorithmType
-            CASE 0  ' Random dithering
+            CASE 0 ' Random dithering
                 ditheredImage = GJ_IMGADJ_DitherRandom(originalImage, ditherAmount)
-            CASE 1  ' Blue noise dithering
+            CASE 1 ' Blue noise dithering
                 ditheredImage = GJ_IMGADJ_DitherBlueNoise(originalImage, ditherAmount)
         END SELECT
         
-        oldAmount = ditherAmount
+        oldAmount        = ditherAmount
         oldAlgorithmType = algorithmType
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -73,11 +73,11 @@ DO
         _PRINTSTRING (10, 10), "Random and Noise Dithering - Using GJ_IMGADJ Library"
         
         ' Show current settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current settings
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current settings
         DIM algoName AS STRING
         SELECT CASE algorithmType
-            CASE 0: algoName = "Random"
-            CASE 1: algoName = "Blue Noise"
+            CASE 0 : algoName = "Random"
+            CASE 1 : algoName = "Blue Noise"
         END SELECT
         _PRINTSTRING (10, 30), "Algorithm: " + algoName
         _PRINTSTRING (10, 50), "Dither Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full effect)"
@@ -87,13 +87,13 @@ DO
         _PRINTSTRING (10, 90), "Controls: LEFT/RIGHT algorithm, UP/DOWN amount, SPACE new seed, ESC exit"
         
         ' Algorithm description
-        COLOR _RGB32(200, 255, 200)  ' Light green for description
+        COLOR _RGB32(200, 255, 200) ' Light green for description
         SELECT CASE algorithmType
-            CASE 0  ' Random
+            CASE 0                      ' Random
                 _PRINTSTRING (10, 110), "Random Dithering: Uses pure random noise for threshold comparison."
                 _PRINTSTRING (10, 130), "Creates organic, film grain-like texture with no visible patterns."
                 _PRINTSTRING (10, 150), "Good for photographic effects and breaking up banding."
-            CASE 1  ' Blue Noise
+            CASE 1                      ' Blue Noise
                 _PRINTSTRING (10, 110), "Blue Noise Dithering: Uses high-frequency noise with no low-frequency content."
                 _PRINTSTRING (10, 130), "Creates more pleasing visual texture than white noise."
                 _PRINTSTRING (10, 150), "Reduces visual clustering and maintains detail better."
@@ -112,12 +112,12 @@ DO
             DIM detailY AS INTEGER
             detailY = 200 + _HEIGHT(originalImage) + 20
             
-            COLOR _RGB32(200, 200, 255)  ' Light blue for effect details
-            IF ditherAmount <= 0.2 THEN
+            COLOR _RGB32(200, 200, 255) ' Light blue for effect details
+            IF ditherAmount < = 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Subtle noise texture, minimal impact on original"
-            ELSEIF ditherAmount <= 0.5 THEN
+            ELSEIF ditherAmount < = 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Visible noise pattern, good for film grain effect"
-            ELSEIF ditherAmount <= 0.8 THEN
+            ELSEIF ditherAmount < = 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong noise texture, artistic grain effect"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full noise impact, maximum randomization"
@@ -131,7 +131,7 @@ DO
             END SELECT
             
             ' Show noise characteristics
-            COLOR _RGB32(255, 200, 255)  ' Light magenta
+            COLOR _RGB32(255, 200, 255) ' Light magenta
             _PRINTSTRING (10, detailY + 40), "Press SPACE to see effect with different random seed"
         END IF
         
@@ -143,19 +143,19 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H" ' UP arrow
             ditherAmount = ditherAmount + 0.05
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P" ' DOWN arrow
             ditherAmount = ditherAmount - 0.05
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
-        CASE CHR$(0) + "K"  ' LEFT arrow
+        CASE CHR$(0) + "K" ' LEFT arrow
             algorithmType = algorithmType - 1
             IF algorithmType < 0 THEN algorithmType = 1
-        CASE CHR$(0) + "M"  ' RIGHT arrow
+        CASE CHR$(0) + "M" ' RIGHT arrow
             algorithmType = algorithmType + 1
             IF algorithmType > 1 THEN algorithmType = 0
-        CASE " "  ' SPACE - new random seed
+        CASE " "           ' SPACE - new random seed
             randomSeed = INT(RND * 32767) + 1
             ' Force update with new seed
             oldAmount = -1

@@ -119,13 +119,13 @@ search$    = "apple"
 replace$   = "bananafosters"
 num_times% = -1
 PRINT STR.replace$(target$, search$, replace$, num_times%)
-target$    = "apple orange apple grapes apple apple pear orange"
+target$ = "apple orange apple grapes apple apple pear orange"
 PRINT STR.remove$(target$, search$ + " ", num_times%)
-target$    = "apple orange apple grapes apple apple pear orange"
+target$ = "apple orange apple grapes apple apple pear orange"
 PRINT STR.insert$(target$, "pumpkin ", 0)
-target$    = "apple orange apple grapes apple apple pear orange"
+target$ = "apple orange apple grapes apple apple pear orange"
 PRINT STR.insert$(target$, " pumpkin ", 1)
-target$    = "apple orange apple grapes apple apple pear orange"
+target$ = "apple orange apple grapes apple apple pear orange"
 PRINT STR.insert$(target$, "pumpkin ", 12)
 
 
@@ -134,7 +134,7 @@ phrase$ = "Dragon's Dogma provides plentiful grapes. Grangrapes, even."
 PRINT phrase$
 '$DYNAMIC
 DIM SHARED parts%(20)
-found%=0
+found% = 0
 STR.find_pos phrase$, " ", parts%(), found%
 REDIM _PRESERVE parts%(found%)
 PRINT DUMP.integer_array(parts%(), "parts")
@@ -151,15 +151,15 @@ PRINT "cat butt starts with 'cat' -> "; STR.starts_with%("cat butt", "cat")
 PRINT "cat butt ends with 'bum' -> "; STR.ends_with%("cat butt", "bum")
 PRINT "cat butt starts with 'dog' -> "; STR.starts_with%("cat butt", "dog")
 
-DIM ub AS _UNSIGNED _BYTE       : ub~%% = 255
-DIM ui AS _UNSIGNED INTEGER     : ui~%  = 65535
-DIM ul AS _UNSIGNED LONG        : ul~&  = 3133731337
-DIM b AS _BYTE                  : b%%   = 127
-DIM i AS INTEGER                : i%    = 10
-DIM l AS LONG                   : l&    = 31337
-DIM s AS SINGLE                 : s!    = 101010.10
-DIM d AS DOUBLE                 : d#    = 101010.101010
-DIM f AS _FLOAT                 : f##   = 3.14259102835901
+DIM ub AS _UNSIGNED _BYTE   : ub~%% = 255
+DIM ui AS _UNSIGNED INTEGER : ui~%  = 65535
+DIM ul AS _UNSIGNED LONG    : ul~&  = 3133731337
+DIM b  AS _BYTE             : b%%   = 127
+DIM i  AS INTEGER           : i%    = 10
+DIM l  AS LONG              : l&    = 31337
+DIM s  AS SINGLE            : s!    = 101010.10
+DIM d  AS DOUBLE            : d#    = 101010.101010
+DIM f  AS _FLOAT            : f##   = 3.14259102835901
 
 PRINT
 PRINT ": [" + STR.ub$(ub~%%) + "]"

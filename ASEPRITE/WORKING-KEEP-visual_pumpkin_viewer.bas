@@ -48,7 +48,7 @@ IF pumpkin_img <> 0 THEN
     _PRINTSTRING (10, 90), "Original size (top-left):"
     
     ' Add some debugging - draw a test rectangle first
-    LINE (10, 110)-(60, 140), _RGB32(255, 0, 0), BF ' Red test rectangle
+    LINE (10, 110)-(60, 140), _RGB32(255, 0, 0), BF                       ' Red test rectangle
     _PRINTSTRING (70, 115), "Test red box (should be visible)"
     
     ' Display the image at original size
@@ -91,7 +91,7 @@ IF pumpkin_img <> 0 THEN
     NEXT frame
     
     _PRINTSTRING (10, 650), "Press any key to exit..."
-    _DISPLAY ' Make sure everything is visible!
+    _DISPLAY                                                              ' Make sure everything is visible!
     
     ' Clean up
     _FREEIMAGE pumpkin_img

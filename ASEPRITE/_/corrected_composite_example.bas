@@ -6,14 +6,14 @@ $CONSOLE:ONLY
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM aseprite_img AS ASEPRITE_IMAGE
+DIM filename        AS STRING
+DIM aseprite_img    AS ASEPRITE_IMAGE
 DIM composite_image AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
-DIM layer_width AS INTEGER
-DIM layer_height AS INTEGER
-DIM save_filename AS STRING
+DIM layer_count     AS INTEGER
+DIM i               AS INTEGER
+DIM layer_width     AS INTEGER
+DIM layer_height    AS INTEGER
+DIM save_filename   AS STRING
 
 ' We'll need to track individual layer images and their positions
 DIM layer_images(0 TO 9) AS LONG
@@ -43,8 +43,8 @@ PRINT "Number of frames: "; aseprite_img.header.num_frames
 PRINT
 
 ' Create a composite image with white background
-layer_width = aseprite_img.header.width
-layer_height = aseprite_img.header.height
+layer_width     = aseprite_img.header.width
+layer_height    = aseprite_img.header.height
 composite_image = _NEWIMAGE(layer_width, layer_height, 32)
 
 ' Fill with white background
@@ -58,9 +58,9 @@ PRINT
 ' Initialize arrays
 FOR i = 0 TO 9
     layer_images(i) = -1
-    layer_x_pos(i) = 0
-    layer_y_pos(i) = 0
-    layer_valid(i) = 0
+    layer_x_pos(i)  = 0
+    layer_y_pos(i)  = 0
+    layer_valid(i)  = 0
 NEXT i
 
 ' Load layers using the enhanced function that gives us position data
@@ -79,16 +79,16 @@ FOR i = 0 TO 9
         ' Note: We need to get the position data from the file
         ' For now, let's use the debug output positions we saw earlier
         SELECT CASE i
-            CASE 0: layer_x_pos(i) = 0: layer_y_pos(i) = 0
-            CASE 1: layer_x_pos(i) = 7: layer_y_pos(i) = 0
-            CASE 2: layer_x_pos(i) = 10: layer_y_pos(i) = 22
-            CASE 3: layer_x_pos(i) = 8: layer_y_pos(i) = 0
-            CASE 4: layer_x_pos(i) = 9: layer_y_pos(i) = 10
-            CASE 5: layer_x_pos(i) = 11: layer_y_pos(i) = 11
-            CASE 6: layer_x_pos(i) = 9: layer_y_pos(i) = 10
-            CASE 7: layer_x_pos(i) = 1: layer_y_pos(i) = 0
-            CASE 8: layer_x_pos(i) = 11: layer_y_pos(i) = 12
-            CASE 9: layer_x_pos(i) = 22: layer_y_pos(i) = 13
+            CASE 0 : layer_x_pos(i) = 0  : layer_y_pos(i) = 0
+            CASE 1 : layer_x_pos(i) = 7  : layer_y_pos(i) = 0
+            CASE 2 : layer_x_pos(i) = 10 : layer_y_pos(i) = 22
+            CASE 3 : layer_x_pos(i) = 8  : layer_y_pos(i) = 0
+            CASE 4 : layer_x_pos(i) = 9  : layer_y_pos(i) = 10
+            CASE 5 : layer_x_pos(i) = 11 : layer_y_pos(i) = 11
+            CASE 6 : layer_x_pos(i) = 9  : layer_y_pos(i) = 10
+            CASE 7 : layer_x_pos(i) = 1  : layer_y_pos(i) = 0
+            CASE 8 : layer_x_pos(i) = 11 : layer_y_pos(i) = 12
+            CASE 9 : layer_x_pos(i) = 22 : layer_y_pos(i) = 13
         END SELECT
         
         PRINT "    Position: ("; layer_x_pos(i); ","; layer_y_pos(i); ")"

@@ -100,7 +100,7 @@ FUNCTION DUMP.bit_array$(arr`(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
     lb% = LBOUND(arr`) : ub% = UBOUND(arr`) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "`(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + STR$(arr`(i%))
         r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
@@ -121,7 +121,7 @@ FUNCTION DUMP.unsigned_bit_array$(arr~`(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
     lb% = LBOUND(arr~`) : ub% = UBOUND(arr~`) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "~`(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + STR$(arr~`(i%))
         r$ = r$ + " [" + t$ + "]" + GJ_LIB_NL$
@@ -142,7 +142,7 @@ FUNCTION DUMP.string_array$(arr$(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r
     lb% = LBOUND(arr$) : ub% = UBOUND(arr$) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "STRING ARRAY: " + label$ + "$(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + CHR$(34) + arr$(i%) + CHR$(34)
         r$ = r$ + " [" + _TRIM$(STR$(LEN(arr$(i%)))) + "]" + GJ_LIB_NL$
@@ -163,7 +163,7 @@ FUNCTION DUMP.integer_array$(arr%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING t, r, num
     lb% = LBOUND(arr%) : ub% = UBOUND(arr%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "%(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         num$ = _TRIM$(STR$(arr%(i%)))
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
@@ -184,7 +184,7 @@ FUNCTION DUMP.unsigned_integer_array$(arr~%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
     lb% = LBOUND(arr~%) : ub% = UBOUND(arr~%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "INTEGER ARRAY: " + label$ + "~%(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         num$ = _TRIM$(STR$(arr~%(i%)))
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
@@ -205,7 +205,7 @@ FUNCTION DUMP.single_array$(arr!(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
     lb% = LBOUND(arr!) : ub% = UBOUND(arr!) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "SINGLE ARRAY: " + label$ + "!(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "SINGLE ARRAY: " + label$ + "!(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         num$ = _TRIM$(STR$(arr!(i%)))
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
@@ -226,7 +226,7 @@ FUNCTION DUMP.long_array$(arr&(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
     lb% = LBOUND(arr&) : ub% = UBOUND(arr&) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "LONG ARRAY: " + label$ + "&(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "LONG ARRAY: " + label$ + "&(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         num$ = _TRIM$(STR$(arr&(i%)))
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
@@ -247,7 +247,7 @@ FUNCTION DUMP.double_array$(arr#(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num
     lb% = LBOUND(arr#) : ub% = UBOUND(arr#) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "DOUBLE ARRAY: " + label$ + "#(" + t$ + ") {" + GJ_LIB_NL$
+    r$  = GJ_LIB_NL$ + "DOUBLE ARRAY: " + label$ + "#(" + t$ + ") {" + GJ_LIB_NL$
     FOR i% = lb% TO ub%
         num$ = _TRIM$(STR$(arr#(i%)))
         r$ = r$ + "  (" + _TRIM$(STR$(i%)) + "): " + num$ + GJ_LIB_NL$
@@ -268,7 +268,7 @@ FUNCTION DUMP.byte_array$(arr%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si
     lb% = LBOUND(arr%%) : ub% = UBOUND(arr%%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {"
+    r$  = GJ_LIB_NL$ + "BYTE ARRAY: " + label$ + "%%(" + t$ + ") {"
     FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
@@ -310,7 +310,7 @@ FUNCTION DUMP.unsigned_byte_array$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si
     lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    r$  = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
@@ -342,7 +342,7 @@ FUNCTION DUMP.unsigned_byte_array_as_hex$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si, h
     lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    r$  = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         IF LEN(si$) = 1 THEN si$ = "0" + si$
@@ -371,7 +371,7 @@ FUNCTION DUMP.unsigned_byte_array_as_ascii$(arr~%%(), label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, num, si, h, c
     lb% = LBOUND(arr~%%) : ub% = UBOUND(arr~%%) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
+    r$  = GJ_LIB_NL$ + "UNSIGNED BYTE ARRAY: " + label$ + "~%%(" + t$ + ") {"
     FOR i% = lb% TO ub%
         si$ = _TRIM$(STR$(i%))
         DO WHILE LEN(si$) < LEN(STR$(ub%))-1
@@ -419,8 +419,8 @@ FUNCTION DUMP.dict$(d() AS DICTIONARY, label$)
     DIM AS INTEGER lb, ub, i
     DIM AS STRING r, t, q, skey, sval
     lb% = LBOUND(d) : ub% = UBOUND(d) : t$ = _TRIM$(STR$(ub% - lb%))
-    r$ = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
-    q$ = CHR$(34)
+    r$  = GJ_LIB_NL$ + "DICT: " + label$ + "(" + t$ + ") {" + GJ_LIB_NL$
+    q$  = CHR$(34)
     FOR i% = lb% TO ub%
         skey$ = d(i%).key$
         sval$ = d(i%).val$

@@ -8,21 +8,21 @@
 PRINT "Colorize Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
-DIM hue AS INTEGER
-DIM saturation AS SINGLE
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
+DIM hue            AS INTEGER
+DIM saturation     AS SINGLE
 DIM parameterIndex AS INTEGER
-DIM oldHue AS INTEGER
-DIM oldSaturation AS SINGLE
-DIM oldParam AS INTEGER
+DIM oldHue         AS INTEGER
+DIM oldSaturation  AS SINGLE
+DIM oldParam       AS INTEGER
 
-hue = 180           ' Default hue (0-360 degrees)
-saturation = 0.5    ' Default saturation (0.0-1.0)
-parameterIndex = 0  ' 0=hue, 1=saturation
-oldHue = -1         ' Force initial update
-oldSaturation = -1
-oldParam = -1
+hue            = 180 ' Default hue (0-360 degrees)
+saturation     = 0.5 ' Default saturation (0.0-1.0)
+parameterIndex = 0   ' 0=hue, 1=saturation
+oldHue         = -1  ' Force initial update
+oldSaturation  = -1
+oldParam       = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -54,12 +54,12 @@ DO
         ' Apply colorize effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Colorize(originalImage, hue, saturation)
-        oldHue = hue
+        oldHue        = hue
         oldSaturation = saturation
-        oldParam = parameterIndex
+        oldParam      = parameterIndex
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0      ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -109,10 +109,10 @@ DO
             ELSE
                 IF saturation > 0.0 THEN saturation = saturation - 0.05
             END IF
-        CASE CHR$(9)  ' TAB key
+        CASE CHR$(9) ' TAB key
             parameterIndex = (parameterIndex + 1) MOD 2
         CASE "r", "R"
-            hue = 180
+            hue        = 180
             saturation = 0.5
     END SELECT
     

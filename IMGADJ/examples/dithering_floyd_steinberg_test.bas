@@ -10,11 +10,11 @@ PRINT "Using GJ_IMGADJ_DitherFloydSteinberg function"
 
 DIM originalImage AS LONG
 DIM ditheredImage AS LONG
-DIM ditherAmount AS SINGLE
-DIM oldAmount AS SINGLE
+DIM ditherAmount  AS SINGLE
+DIM oldAmount     AS SINGLE
 
-ditherAmount = 0.8    ' Default dithering strength
-oldAmount = -1        ' Force initial update
+ditherAmount = 0.8 ' Default dithering strength
+oldAmount    = -1  ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -49,7 +49,7 @@ DO
         oldAmount = ditherAmount
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -57,14 +57,14 @@ DO
         _PRINTSTRING (10, 10), "Floyd-Steinberg Error Diffusion Dithering - Using GJ_IMGADJ Library"
         
         ' Show current settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current amount
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current amount
         _PRINTSTRING (10, 30), "Dither Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full effect)"
         
         COLOR _RGB32(255, 255, 255)
         _PRINTSTRING (10, 50), "Controls: UP/DOWN adjust amount, R reset, ESC exit"
         
         ' Algorithm description
-        COLOR _RGB32(200, 255, 200)  ' Light green for description
+        COLOR _RGB32(200, 255, 200) ' Light green for description
         _PRINTSTRING (10, 70), "Floyd-Steinberg is the classic error diffusion algorithm developed in 1976."
         _PRINTSTRING (10, 90), "It distributes quantization error to 4 neighboring pixels:"
         _PRINTSTRING (10, 110), "  Right: 7/16    Below-Left: 3/16    Below: 5/16    Below-Right: 1/16"
@@ -82,12 +82,12 @@ DO
             DIM detailY AS INTEGER
             detailY = 160 + _HEIGHT(originalImage) + 20
             
-            COLOR _RGB32(200, 200, 255)  ' Light blue for effect details
-            IF ditherAmount <= 0.2 THEN
+            COLOR _RGB32(200, 200, 255) ' Light blue for effect details
+            IF ditherAmount < = 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Minimal dithering, mostly solid areas"
-            ELSEIF ditherAmount <= 0.5 THEN
+            ELSEIF ditherAmount < = 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Balanced dithering, good detail preservation"
-            ELSEIF ditherAmount <= 0.8 THEN
+            ELSEIF ditherAmount < = 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong dithering, good for artistic effects"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full error diffusion, maximum texture"
@@ -104,10 +104,10 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H" ' UP arrow
             ditherAmount = ditherAmount + 0.05
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P" ' DOWN arrow
             ditherAmount = ditherAmount - 0.05
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
         CASE "r", "R"

@@ -13,7 +13,7 @@ $INCLUDEONCE
 ' CP_RENDER_all — Master render: draw entire dialog to offscreen buffer
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_all
-    IF CP_STATE.imgHandle >= -1 THEN EXIT SUB
+    IF CP_STATE.imgHandle > = -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -56,8 +56,8 @@ END SUB
 ' CP_RENDER_blit — Composite dialog over screen background
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_blit
-    IF CP_STATE.imgHandle >= -1 THEN EXIT SUB
-    IF CP_STATE.screenShot >= -1 THEN EXIT SUB
+    IF CP_STATE.imgHandle > = -1 THEN EXIT SUB
+    IF CP_STATE.screenShot > = -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -115,8 +115,8 @@ SUB CP_RENDER_build_sv
     _DEST CP_STATE.svImage
 
     DIM px AS INTEGER, py AS INTEGER
-    DIM s AS SINGLE, v AS SINGLE
-    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    DIM s  AS SINGLE, v AS SINGLE
+    DIM r  AS INTEGER, g AS INTEGER, b AS INTEGER
 
     FOR py = 0 TO CP_STATE.svH - 1
         v = 1.0 - (CSNG(py) / CSNG(CP_STATE.svH - 1))
@@ -153,8 +153,8 @@ SUB CP_RENDER_build_hue_bar
     _DEST CP_STATE.hueBarImage
 
     DIM py AS INTEGER
-    DIM h AS SINGLE
-    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    DIM h  AS SINGLE
+    DIM r  AS INTEGER, g AS INTEGER, b AS INTEGER
 
     FOR py = 0 TO CP_STATE.hueBarH - 1
         h = (CSNG(py) / CSNG(CP_STATE.hueBarH - 1)) * 360.0
@@ -281,12 +281,12 @@ END SUB
 ' CP_RENDER_sliders_hsl — H, S, L sliders
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_sliders_hsl
-    DIM sx AS INTEGER, sy AS INTEGER, sw AS INTEGER
+    DIM sx      AS INTEGER, sy AS INTEGER, sw AS INTEGER
     DIM hslRowH AS INTEGER
-    sx = CP_STATE.sliderX
+    sx      = CP_STATE.sliderX
     hslRowH = CP_THEME.sliderH% + CP_THEME.sliderGap%
-    sy = CP_STATE.sliderY + hslRowH * 3 + CP_THEME.sectionGap%
-    sw = CP_STATE.sliderW
+    sy      = CP_STATE.sliderY + hslRowH * 3 + CP_THEME.sectionGap%
+    sw      = CP_STATE.sliderW
 
     CP_RENDER_slider sx, sy, sw, "H:", INT(CP_STATE.hslH), 360, _RGB32(200, 200, 200)
     CP_RENDER_slider sx, sy + hslRowH, sw, "S:", INT(CP_STATE.hslS), 100, _RGB32(200, 200, 200)
@@ -330,7 +330,7 @@ SUB CP_RENDER_slider (x AS INTEGER, y AS INTEGER, w AS INTEGER, label AS STRING,
     ' Value text (right-aligned)
     DIM valStr AS STRING
     valStr = LTRIM$(STR$(curVal))
-    DIM vx AS INTEGER
+    DIM vx     AS INTEGER
     vx = x + w - CP_THEME.valueW%
     _UPRINTSTRING (vx, y + (CP_THEME.sliderH% - CP_STATE.fontH) \ 2), valStr
 END SUB
@@ -354,10 +354,10 @@ SUB CP_RENDER_hex_row
     ' Copy button (right-aligned)
     DIM pasteX AS INTEGER
     pasteX = CP_STATE.sliderX + CP_STATE.sliderW - CP_THEME.pasteBtnW%
-    DIM copyX AS INTEGER
+    DIM copyX  AS INTEGER
     copyX = pasteX - 4 - CP_THEME.copyBtnW%
 
-    DIM bgClr AS _UNSIGNED LONG
+    DIM bgClr  AS _UNSIGNED LONG
     IF CP_STATE.hoverButton = 2 THEN bgClr = CP_THEME.buttonSecHover~& ELSE bgClr = CP_THEME.buttonSecondary~&
     LINE (copyX, y)-(copyX + CP_THEME.copyBtnW% - 1, y + CP_THEME.hexInputH% - 1), bgClr, BF
     COLOR CP_THEME.buttonSecText~&, _RGBA32(0, 0, 0, 0)
@@ -385,7 +385,7 @@ SUB CP_RENDER_posterize_row
     _UPRINTSTRING (CP_STATE.sliderX, y + (CP_THEME.posterizeRowH% - CP_STATE.fontH) \ 2), "SNAP:"
 
     ' Chip layout — 8 chips, right-aligned within content area
-    DIM offChipW AS INTEGER
+    DIM offChipW   AS INTEGER
     offChipW% = 3 * CP_STATE.fontW + 4
     DIM totalChipW AS INTEGER
     totalChipW% = offChipW% + CP_THEME.snapChipGap%
@@ -396,14 +396,14 @@ SUB CP_RENDER_posterize_row
 
     DIM labels(0 TO 7) AS STRING
     DIM snapVals(0 TO 7) AS INTEGER
-    labels(0) = "OFF": snapVals(0) = 0
-    labels(1) = "2": snapVals(1) = 2
-    labels(2) = "3": snapVals(2) = 3
-    labels(3) = "4": snapVals(3) = 4
-    labels(4) = "6": snapVals(4) = 6
-    labels(5) = "8": snapVals(5) = 8
-    labels(6) = "12": snapVals(6) = 12
-    labels(7) = "16": snapVals(7) = 16
+    labels(0) = "OFF" : snapVals(0) = 0
+    labels(1) = "2"   : snapVals(1) = 2
+    labels(2) = "3"   : snapVals(2) = 3
+    labels(3) = "4"   : snapVals(3) = 4
+    labels(4) = "6"   : snapVals(4) = 6
+    labels(5) = "8"   : snapVals(5) = 8
+    labels(6) = "12"  : snapVals(6) = 12
+    labels(7) = "16"  : snapVals(7) = 16
 
     DIM ci AS INTEGER, cx AS INTEGER
     DIM cw AS INTEGER
@@ -431,7 +431,7 @@ SUB CP_RENDER_posterize_row
         COLOR fg, _RGBA32(0, 0, 0, 0)
         DIM lbl AS STRING
         lbl = labels(ci)
-        DIM tx AS INTEGER
+        DIM tx  AS INTEGER
         tx = cx + (cw - _UPRINTWIDTH(lbl)) \ 2
         _UPRINTSTRING (tx, y + (CP_THEME.posterizeRowH% - CP_STATE.fontH) \ 2), lbl
 
@@ -452,7 +452,7 @@ SUB CP_RENDER_button_bar
     DIM totalW AS INTEGER, startX AS INTEGER
     totalW = CP_THEME.buttonW% * 2 + CP_THEME.buttonGap%
     startX = CP_STATE.dialogW - CP_THEME.padding% - totalW
-    DIM by AS INTEGER
+    DIM by     AS INTEGER
     by = y1 + (CP_THEME.buttonBarH% - CP_THEME.buttonH%) \ 2
 
     ' OK button
@@ -460,12 +460,12 @@ SUB CP_RENDER_button_bar
     IF CP_STATE.hoverButton = 0 THEN bgClr = CP_THEME.buttonHover~& ELSE bgClr = CP_THEME.buttonBg~&
     LINE (startX, by)-(startX + CP_THEME.buttonW% - 1, by + CP_THEME.buttonH% - 1), bgClr, BF
     COLOR CP_THEME.buttonText~&, _RGBA32(0, 0, 0, 0)
-    DIM okTW AS INTEGER
+    DIM okTW  AS INTEGER
     okTW% = _UPRINTWIDTH("OK")
     _UPRINTSTRING (startX + (CP_THEME.buttonW% - okTW%) \ 2, by + (CP_THEME.buttonH% - CP_STATE.fontH) \ 2), "OK"
 
     ' Cancel button
-    DIM cancelX AS INTEGER
+    DIM cancelX  AS INTEGER
     cancelX = startX + CP_THEME.buttonW% + CP_THEME.buttonGap%
     IF CP_STATE.hoverButton = 1 THEN bgClr = CP_THEME.buttonSecHover~& ELSE bgClr = CP_THEME.buttonSecondary~&
     LINE (cancelX, by)-(cancelX + CP_THEME.buttonW% - 1, by + CP_THEME.buttonH% - 1), bgClr, BF

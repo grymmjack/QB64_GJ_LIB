@@ -21,9 +21,9 @@ SUB console.box(msg$, kolor%)
     $IF DEBUGGING = TRUE THEN
         DIM AS STRING e, color_code, lines, intensity
         DIM AS INTEGER afg
-        intensity$ = "0"
-        e$ = CHR$(27)
-        afg% = ANSI_COLOR%(kolor%)
+        intensity$  = "0"
+        e$          = CHR$(27)
+        afg%        = ANSI_COLOR%(kolor%)
         color_code$ = e$ + "["
         IF kolor% > 7 THEN intensity$ = "1"
         color_code$ = color_code$ + intensity$ + ";3"
@@ -46,11 +46,11 @@ SUB console.banner(msg$, kolor%)
     $IF DEBUGGING = TRUE THEN
         DIM AS STRING e, color_code, intensity
         DIM AS INTEGER afg
-        intensity$ = "0"
-        e$ = CHR$(27)
-        afg% = ANSI_COLOR(kolor%)
-        msg$ = STR.replace$(msg$, "\n", CHR$(10), -1)
-        msg$ = STR.replace$(msg$, "\t", CHR$(9), -1)
+        intensity$  = "0"
+        e$          = CHR$(27)
+        afg%        = ANSI_COLOR(kolor%)
+        msg$        = STR.replace$(msg$, "\n", CHR$(10), -1)
+        msg$        = STR.replace$(msg$, "\t", CHR$(9), -1)
         color_code$ = e$ + "["
         IF kolor% > 7 THEN intensity$ = "1"
         color_code$ = color_code$ + intensity$ + ";3"

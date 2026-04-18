@@ -10,11 +10,11 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM pixelSize AS INTEGER
-DIM oldPixelSize AS INTEGER
+DIM pixelSize     AS INTEGER
+DIM oldPixelSize  AS INTEGER
 
-pixelSize = 8       ' Default pixel size (1-50)
-oldPixelSize = -1   ' Force initial update
+pixelSize    = 8  ' Default pixel size (1-50)
+oldPixelSize = -1 ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -45,10 +45,10 @@ DO
         ' Apply pixelate effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Pixelate(originalImage, pixelSize)
-        oldPixelSize = pixelSize
+        oldPixelSize  = pixelSize
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info

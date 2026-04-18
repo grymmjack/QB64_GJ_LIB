@@ -68,7 +68,7 @@ END SUB
 ' --------------------------------------------------------------------------
 FUNCTION MB_confirm% (title AS STRING, message AS STRING)
     DIM r AS INTEGER
-    r = MB_message_box%(title, message, MB_BTN_YES_NO, MB_ICON_QUESTION)
+    r           = MB_message_box%(title, message, MB_BTN_YES_NO, MB_ICON_QUESTION)
     MB_confirm% = (r = MB_RESULT_1)
 END FUNCTION
 
@@ -78,7 +78,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION MB_warning% (title AS STRING, message AS STRING)
     DIM r AS INTEGER
-    r = MB_message_box%(title, message, MB_BTN_OK_CANCEL, MB_ICON_WARNING)
+    r           = MB_message_box%(title, message, MB_BTN_OK_CANCEL, MB_ICON_WARNING)
     MB_warning% = (r = MB_RESULT_1)
 END FUNCTION
 
@@ -104,21 +104,21 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
 
     ' ---- Reset all state ----
     DIM emptyState AS MB_STATE_OBJ
-    MB_STATE = emptyState
-    MB_STATE.imgHandle = -1
-    MB_STATE.screenShot = -1
+    MB_STATE                = emptyState
+    MB_STATE.imgHandle      = -1
+    MB_STATE.screenShot     = -1
     MB_STATE.autoSelectText = savedAutoSelect
 
     ' ---- Basic settings ----
-    MB_STATE.mode = mode
-    MB_STATE.title = title
-    MB_STATE.icon = icon
-    MB_STATE.buttonPreset = buttons
-    MB_STATE.message = message
-    MB_STATE.result = MB_RESULT_NONE
-    MB_STATE.hoverButton = -1
+    MB_STATE.mode          = mode
+    MB_STATE.title         = title
+    MB_STATE.icon          = icon
+    MB_STATE.buttonPreset  = buttons
+    MB_STATE.message       = message
+    MB_STATE.result        = MB_RESULT_NONE
+    MB_STATE.hoverButton   = -1
     MB_STATE.focusedButton = -1
-    MB_STATE.scale = 1
+    MB_STATE.scale         = 1
 
     ' Font defaults (caller can override before modal loop)
     IF MB_STATE.fontID = 0 THEN MB_STATE.fontID = MB_DEFAULT_FONT_ID
@@ -224,7 +224,7 @@ SUB MB_modal_loop
 
     ' Drain stale mouse input so first frame starts clean
     DO WHILE _MOUSEINPUT: LOOP
-    MB_STATE.mouseB1 = _MOUSEBUTTON(1)
+    MB_STATE.mouseB1    = _MOUSEBUTTON(1)
     MB_STATE.oldMouseB1 = MB_STATE.mouseB1
 
     DO UNTIL MB_STATE.done
@@ -262,47 +262,47 @@ END SUB
 SUB MB_setup_buttons (btnPreset AS INTEGER)
     DIM i AS INTEGER
     FOR i = 0 TO MB_MAX_BUTTONS - 1
-        MB_buttons(i).label = ""
-        MB_buttons(i).hotkey = 0
+        MB_buttons(i).label     = ""
+        MB_buttons(i).hotkey    = 0
         MB_buttons(i).isDefault = 0
-        MB_buttons(i).isCancel = 0
+        MB_buttons(i).isCancel  = 0
     NEXT i
 
     SELECT CASE btnPreset
         CASE MB_BTN_OK
-            MB_STATE.buttonCount = 1
-            MB_buttons(0).label = "OK"
+            MB_STATE.buttonCount    = 1
+            MB_buttons(0).label     = "OK"
             MB_buttons(0).isDefault = -1
-            MB_buttons(0).isCancel = -1  ' Escape also triggers OK for single-button
+            MB_buttons(0).isCancel  = -1 ' Escape also triggers OK for single-button
 
         CASE MB_BTN_OK_CANCEL
-            MB_STATE.buttonCount = 2
-            MB_buttons(0).label = "OK"
+            MB_STATE.buttonCount    = 2
+            MB_buttons(0).label     = "OK"
             MB_buttons(0).isDefault = -1
-            MB_buttons(1).label = "Cancel"
-            MB_buttons(1).isCancel = -1
+            MB_buttons(1).label     = "Cancel"
+            MB_buttons(1).isCancel  = -1
 
         CASE MB_BTN_YES_NO
-            MB_STATE.buttonCount = 2
-            MB_buttons(0).label = "Yes"
+            MB_STATE.buttonCount    = 2
+            MB_buttons(0).label     = "Yes"
             MB_buttons(0).isDefault = -1
-            MB_buttons(1).label = "No"
-            MB_buttons(1).isCancel = -1
+            MB_buttons(1).label     = "No"
+            MB_buttons(1).isCancel  = -1
 
         CASE MB_BTN_YES_NO_CANCEL
-            MB_STATE.buttonCount = 3
-            MB_buttons(0).label = "Yes"
+            MB_STATE.buttonCount    = 3
+            MB_buttons(0).label     = "Yes"
             MB_buttons(0).isDefault = -1
-            MB_buttons(1).label = "No"
-            MB_buttons(2).label = "Cancel"
-            MB_buttons(2).isCancel = -1
+            MB_buttons(1).label     = "No"
+            MB_buttons(2).label     = "Cancel"
+            MB_buttons(2).isCancel  = -1
 
         CASE MB_BTN_RETRY_CANCEL
-            MB_STATE.buttonCount = 2
-            MB_buttons(0).label = "Retry"
+            MB_STATE.buttonCount    = 2
+            MB_buttons(0).label     = "Retry"
             MB_buttons(0).isDefault = -1
-            MB_buttons(1).label = "Cancel"
-            MB_buttons(1).isCancel = -1
+            MB_buttons(1).label     = "Cancel"
+            MB_buttons(1).isCancel  = -1
 
         CASE ELSE
             ' Custom — caller must set MB_buttons() manually
@@ -326,20 +326,20 @@ SUB MB_wrap_text (message AS STRING)
     IF charsPerLine < 20 THEN charsPerLine = 20
 
     MB_STATE.messageLineCount = 0
-    MB_STATE.maxLineWidth = 0
+    MB_STATE.maxLineWidth     = 0
 
     DIM msg AS STRING
     msg = message
 
     ' Split on CHR$(10) first, then word-wrap each paragraph
-    DIM para AS STRING
+    DIM para      AS STRING
     DIM paraStart AS INTEGER, nlPos AS INTEGER
     paraStart = 1
 
-    DO WHILE paraStart <= LEN(msg)
+    DO WHILE paraStart < = LEN(msg)
         nlPos = INSTR(paraStart, msg, CHR$(10))
         IF nlPos = 0 THEN nlPos = LEN(msg) + 1
-        para = MID$(msg, paraStart, nlPos - paraStart)
+        para      = MID$(msg, paraStart, nlPos - paraStart)
         paraStart = nlPos + 1
 
         ' Word-wrap this paragraph
@@ -360,20 +360,20 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB MB_wrap_paragraph (para AS STRING, charsPerLine AS INTEGER)
     DIM remaining AS STRING
-    DIM lineOut AS STRING
-    DIM spacePos AS INTEGER
-    DIM lineW AS INTEGER
+    DIM lineOut   AS STRING
+    DIM spacePos  AS INTEGER
+    DIM lineW     AS INTEGER
 
     remaining = para
 
     DO WHILE LEN(remaining) > 0 AND MB_STATE.messageLineCount < MB_MAX_MESSAGE_LINES
-        IF LEN(remaining) <= charsPerLine THEN
+        IF LEN(remaining) < = charsPerLine THEN
             ' Fits on one line
-            lineOut = remaining
+            lineOut   = remaining
             remaining = ""
         ELSE
             ' Find last space within limit
-            lineOut = LEFT$(remaining, charsPerLine)
+            lineOut  = LEFT$(remaining, charsPerLine)
             spacePos = 0
             DIM si AS INTEGER
             FOR si = LEN(lineOut) TO 1 STEP -1
@@ -384,17 +384,17 @@ SUB MB_wrap_paragraph (para AS STRING, charsPerLine AS INTEGER)
             NEXT si
 
             IF spacePos > 0 THEN
-                lineOut = LEFT$(remaining, spacePos - 1)
+                lineOut   = LEFT$(remaining, spacePos - 1)
                 remaining = LTRIM$(MID$(remaining, spacePos + 1))
             ELSE
                 ' No space found — force break
-                lineOut = LEFT$(remaining, charsPerLine)
+                lineOut   = LEFT$(remaining, charsPerLine)
                 remaining = MID$(remaining, charsPerLine + 1)
             END IF
         END IF
 
         MB_messageLines(MB_STATE.messageLineCount) = lineOut
-        lineW = LEN(lineOut) * MB_STATE.fontW
+        lineW                                      = LEN(lineOut) * MB_STATE.fontW
         IF lineW > MB_STATE.maxLineWidth THEN MB_STATE.maxLineWidth = lineW
         MB_STATE.messageLineCount = MB_STATE.messageLineCount + 1
     LOOP
@@ -406,8 +406,8 @@ END SUB
 SUB MB_layout_calculate
     DIM contentW AS INTEGER
     DIM contentH AS INTEGER
-    DIM textW AS INTEGER
-    DIM textH AS INTEGER
+    DIM textW    AS INTEGER
+    DIM textH    AS INTEGER
 
     ' ---- Text dimensions ----
     textH = MB_STATE.messageLineCount * MB_STATE.lineHeight
@@ -443,8 +443,8 @@ SUB MB_layout_calculate
 
     ' ---- Center on screen ----
     DIM scrW AS INTEGER, scrH AS INTEGER
-    scrW = _WIDTH(0) \ MB_STATE.scale
-    scrH = _HEIGHT(0) \ MB_STATE.scale
+    scrW             = _WIDTH(0) \ MB_STATE.scale
+    scrH             = _HEIGHT(0) \ MB_STATE.scale
     MB_STATE.dialogX = (scrW - MB_STATE.dialogW) \ 2
     MB_STATE.dialogY = (scrH - MB_STATE.dialogH) \ 2
 

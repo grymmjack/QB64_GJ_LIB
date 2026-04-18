@@ -8,7 +8,7 @@ PRINT "Sepia Tone Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
-DIM sepiaImage AS LONG
+DIM sepiaImage    AS LONG
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage

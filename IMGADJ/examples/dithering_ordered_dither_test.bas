@@ -10,15 +10,15 @@ PRINT "Using various GJ_IMGADJ_DitherBayer* functions"
 
 DIM originalImage AS LONG
 DIM ditheredImage AS LONG
-DIM ditherAmount AS SINGLE
-DIM oldAmount AS SINGLE
-DIM matrixSize AS INTEGER
+DIM ditherAmount  AS SINGLE
+DIM oldAmount     AS SINGLE
+DIM matrixSize    AS INTEGER
 DIM oldMatrixSize AS INTEGER
 
-ditherAmount = 0.8    ' Default dithering strength
-oldAmount = -1        ' Force initial update
-matrixSize = 2        ' Start with 2x2
-oldMatrixSize = -1    ' Force initial update
+ditherAmount  = 0.8 ' Default dithering strength
+oldAmount     = -1  ' Force initial update
+matrixSize    = 2   ' Start with 2x2
+oldMatrixSize = -1  ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -59,11 +59,11 @@ DO
                 ditheredImage = GJ_IMGADJ_DitherBayer16x16(originalImage, ditherAmount)
         END SELECT
         
-        oldAmount = ditherAmount
+        oldAmount     = ditherAmount
         oldMatrixSize = matrixSize
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -71,7 +71,7 @@ DO
         _PRINTSTRING (10, 10), "Ordered Dithering - Bayer Matrix - Using GJ_IMGADJ Library"
         
         ' Show current settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current settings
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current settings
         _PRINTSTRING (10, 30), "Matrix Size: " + _TRIM$(STR$(matrixSize)) + "x" + _TRIM$(STR$(matrixSize))
         _PRINTSTRING (10, 50), "Dither Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full effect)"
         
@@ -79,12 +79,12 @@ DO
         _PRINTSTRING (10, 70), "Controls: LEFT/RIGHT matrix size, UP/DOWN amount, ESC exit"
         
         ' Algorithm description
-        COLOR _RGB32(200, 255, 200)  ' Light green for description
+        COLOR _RGB32(200, 255, 200) ' Light green for description
         _PRINTSTRING (10, 90), "Ordered dithering uses threshold matrices to create regular patterns."
         _PRINTSTRING (10, 110), "Larger matrices produce smoother gradients but need more colors to be effective."
         
         ' Matrix description
-        COLOR _RGB32(255, 200, 255)  ' Light magenta for matrix details
+        COLOR _RGB32(255, 200, 255) ' Light magenta for matrix details
         SELECT CASE matrixSize
             CASE 2
                 _PRINTSTRING (10, 130), "2x2 Bayer: Creates 4-level patterns, coarse but fast. Good for high contrast."
@@ -109,12 +109,12 @@ DO
             DIM detailY AS INTEGER
             detailY = 180 + _HEIGHT(originalImage) + 20
             
-            COLOR _RGB32(200, 200, 255)  ' Light blue for effect details
-            IF ditherAmount <= 0.2 THEN
+            COLOR _RGB32(200, 200, 255) ' Light blue for effect details
+            IF ditherAmount < = 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Minimal pattern visibility, preserves original tones"
-            ELSEIF ditherAmount <= 0.5 THEN
+            ELSEIF ditherAmount < = 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Visible patterns, good balance of detail and effect"
-            ELSEIF ditherAmount <= 0.8 THEN
+            ELSEIF ditherAmount < = 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong patterns, artistic effect"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full threshold patterns, maximum texture"
@@ -131,23 +131,23 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H" ' UP arrow
             ditherAmount = ditherAmount + 0.05
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P" ' DOWN arrow
             ditherAmount = ditherAmount - 0.05
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
-        CASE CHR$(0) + "K"  ' LEFT arrow
+        CASE CHR$(0) + "K" ' LEFT arrow
             SELECT CASE matrixSize
-                CASE 4: matrixSize = 2
-                CASE 8: matrixSize = 4
-                CASE 16: matrixSize = 8
+                CASE 4  : matrixSize  = 2
+                CASE 8  : matrixSize  = 4
+                CASE 16 : matrixSize = 8
             END SELECT
-        CASE CHR$(0) + "M"  ' RIGHT arrow
+        CASE CHR$(0) + "M" ' RIGHT arrow
             SELECT CASE matrixSize
-                CASE 2: matrixSize = 4
-                CASE 4: matrixSize = 8
-                CASE 8: matrixSize = 16
+                CASE 2 : matrixSize = 4
+                CASE 4 : matrixSize = 8
+                CASE 8 : matrixSize = 16
             END SELECT
     END SELECT
     

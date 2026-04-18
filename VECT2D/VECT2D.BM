@@ -256,8 +256,8 @@ END SUB
 ' 
 FUNCTION VECT2D.distance!(vec1 AS VECT2D, vec2 AS VECT2D)
     DIM AS SINGLE x, y
-    x! = vec1.x! - vec2.x!
-    y! = vec1.y! - vec2.y!
+    x!               = vec1.x! - vec2.x!
+    y!               = vec1.y! - vec2.y!
     VECT2D.distance! = SQR(x! * x! + y! * y!)
 END FUNCTION
 

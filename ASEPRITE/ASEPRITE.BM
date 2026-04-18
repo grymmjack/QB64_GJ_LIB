@@ -81,7 +81,7 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     END IF
     
     ' Copy header to result
-    result.header = temp_header
+    result.header      = temp_header
     result.frame_count = temp_header.num_frames
     
     ' Enhanced parsing: Count layers, cels, and other chunks by analyzing frames
@@ -144,7 +144,7 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     NEXT i
     
     ' Mark as successfully loaded
-    result.is_valid = _TRUE
+    result.is_valid      = _TRUE
     result.frames_loaded = temp_header.num_frames
     
     IF ASEPRITE_DEBUG_MODE THEN
@@ -168,7 +168,7 @@ END SUB
 '
 FUNCTION get_aseprite_info$ (aseprite_img AS ASEPRITE_IMAGE)
     DIM nl$, out$, temp$
-    nl$ = CHR$(13) + CHR$(10)
+    nl$  = CHR$(13) + CHR$(10)
     out$ = ""
     
     IF aseprite_img.is_valid = _FALSE THEN
@@ -192,10 +192,10 @@ FUNCTION get_aseprite_info$ (aseprite_img AS ASEPRITE_IMAGE)
     out$ = out$ + "Height: " + STR$(aseprite_img.header.height) + " pixels" + nl$
     out$ = out$ + "Color Depth: " + STR$(aseprite_img.header.color_depth_bpp) + " bpp ("
     SELECT CASE aseprite_img.header.color_depth_bpp
-        CASE ASEPRITE_COLOR_INDEXED: out$ = out$ + "Indexed)"
-        CASE ASEPRITE_COLOR_GRAYSCALE: out$ = out$ + "Grayscale)"
-        CASE ASEPRITE_COLOR_RGBA: out$ = out$ + "RGBA)"
-        CASE ELSE: out$ = out$ + "Unknown)"
+        CASE ASEPRITE_COLOR_INDEXED   : out$   = out$ + "Indexed)"
+        CASE ASEPRITE_COLOR_GRAYSCALE : out$ = out$ + "Grayscale)"
+        CASE ASEPRITE_COLOR_RGBA      : out$      = out$ + "RGBA)"
+        CASE ELSE                     : out$                     = out$ + "Unknown)"
     END SELECT
     out$ = out$ + nl$
     
@@ -275,26 +275,26 @@ END FUNCTION
 '
 FUNCTION get_blend_mode_name$ (blend_mode AS _UNSIGNED INTEGER)
     SELECT CASE blend_mode
-        CASE ASEPRITE_BLEND_NORMAL: get_blend_mode_name$      = "Normal"
-        CASE ASEPRITE_BLEND_MULTIPLY: get_blend_mode_name$    = "Multiply"
-        CASE ASEPRITE_BLEND_SCREEN: get_blend_mode_name$      = "Screen"
-        CASE ASEPRITE_BLEND_OVERLAY: get_blend_mode_name$     = "Overlay"
-        CASE ASEPRITE_BLEND_DARKEN: get_blend_mode_name$      = "Darken"
-        CASE ASEPRITE_BLEND_LIGHTEN: get_blend_mode_name$     = "Lighten"
-        CASE ASEPRITE_BLEND_COLOR_DODGE: get_blend_mode_name$ = "Color Dodge"
-        CASE ASEPRITE_BLEND_COLOR_BURN: get_blend_mode_name$  = "Color Burn"
-        CASE ASEPRITE_BLEND_HARD_LIGHT: get_blend_mode_name$  = "Hard Light"
-        CASE ASEPRITE_BLEND_SOFT_LIGHT: get_blend_mode_name$  = "Soft Light"
-        CASE ASEPRITE_BLEND_DIFFERENCE: get_blend_mode_name$  = "Difference"
-        CASE ASEPRITE_BLEND_EXCLUSION: get_blend_mode_name$   = "Exclusion"
-        CASE ASEPRITE_BLEND_HUE: get_blend_mode_name$         = "Hue"
-        CASE ASEPRITE_BLEND_SATURATION: get_blend_mode_name$  = "Saturation"
-        CASE ASEPRITE_BLEND_COLOR: get_blend_mode_name$       = "Color"
-        CASE ASEPRITE_BLEND_LUMINOSITY: get_blend_mode_name$  = "Luminosity"
-        CASE ASEPRITE_BLEND_ADDITION: get_blend_mode_name$    = "Addition"
-        CASE ASEPRITE_BLEND_SUBTRACT: get_blend_mode_name$    = "Subtract"
-        CASE ASEPRITE_BLEND_DIVIDE: get_blend_mode_name$      = "Divide"
-        CASE ELSE: get_blend_mode_name$ = "Unknown (" + STR$(blend_mode) + ")"
+        CASE ASEPRITE_BLEND_NORMAL      : get_blend_mode_name$      = "Normal"
+        CASE ASEPRITE_BLEND_MULTIPLY    : get_blend_mode_name$    = "Multiply"
+        CASE ASEPRITE_BLEND_SCREEN      : get_blend_mode_name$      = "Screen"
+        CASE ASEPRITE_BLEND_OVERLAY     : get_blend_mode_name$     = "Overlay"
+        CASE ASEPRITE_BLEND_DARKEN      : get_blend_mode_name$      = "Darken"
+        CASE ASEPRITE_BLEND_LIGHTEN     : get_blend_mode_name$     = "Lighten"
+        CASE ASEPRITE_BLEND_COLOR_DODGE : get_blend_mode_name$ = "Color Dodge"
+        CASE ASEPRITE_BLEND_COLOR_BURN  : get_blend_mode_name$  = "Color Burn"
+        CASE ASEPRITE_BLEND_HARD_LIGHT  : get_blend_mode_name$  = "Hard Light"
+        CASE ASEPRITE_BLEND_SOFT_LIGHT  : get_blend_mode_name$  = "Soft Light"
+        CASE ASEPRITE_BLEND_DIFFERENCE  : get_blend_mode_name$  = "Difference"
+        CASE ASEPRITE_BLEND_EXCLUSION   : get_blend_mode_name$   = "Exclusion"
+        CASE ASEPRITE_BLEND_HUE         : get_blend_mode_name$         = "Hue"
+        CASE ASEPRITE_BLEND_SATURATION  : get_blend_mode_name$  = "Saturation"
+        CASE ASEPRITE_BLEND_COLOR       : get_blend_mode_name$       = "Color"
+        CASE ASEPRITE_BLEND_LUMINOSITY  : get_blend_mode_name$  = "Luminosity"
+        CASE ASEPRITE_BLEND_ADDITION    : get_blend_mode_name$    = "Addition"
+        CASE ASEPRITE_BLEND_SUBTRACT    : get_blend_mode_name$    = "Subtract"
+        CASE ASEPRITE_BLEND_DIVIDE      : get_blend_mode_name$      = "Divide"
+        CASE ELSE                       : get_blend_mode_name$                       = "Unknown (" + STR$(blend_mode) + ")"
     END SELECT
 END FUNCTION
 
@@ -306,11 +306,11 @@ END FUNCTION
 '
 FUNCTION get_animation_direction_name$ (direction AS _UNSIGNED _BYTE)
     SELECT CASE direction
-        CASE ASEPRITE_ANIM_FORWARD: get_animation_direction_name$           = "Forward"
-        CASE ASEPRITE_ANIM_REVERSE: get_animation_direction_name$           = "Reverse"
-        CASE ASEPRITE_ANIM_PING_PONG: get_animation_direction_name$         = "Ping-pong"
-        CASE ASEPRITE_ANIM_PING_PONG_REVERSE: get_animation_direction_name$ = "Ping-pong Reverse"
-        CASE ELSE: get_animation_direction_name$ = "Unknown (" + STR$(direction) + ")"
+        CASE ASEPRITE_ANIM_FORWARD           : get_animation_direction_name$           = "Forward"
+        CASE ASEPRITE_ANIM_REVERSE           : get_animation_direction_name$           = "Reverse"
+        CASE ASEPRITE_ANIM_PING_PONG         : get_animation_direction_name$         = "Ping-pong"
+        CASE ASEPRITE_ANIM_PING_PONG_REVERSE : get_animation_direction_name$ = "Ping-pong Reverse"
+        CASE ELSE                            : get_animation_direction_name$                            = "Unknown (" + STR$(direction) + ")"
     END SELECT
 END FUNCTION
 
@@ -322,8 +322,8 @@ END FUNCTION
 '
 FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     DIM image_handle AS LONG
-    DIM x AS INTEGER, y AS INTEGER
-    DIM pixel_color AS _UNSIGNED LONG
+    DIM x            AS INTEGER, y AS INTEGER
+    DIM pixel_color  AS _UNSIGNED LONG
     
     IF aseprite_img.is_valid = _FALSE THEN
         create_image_from_aseprite& = 0
@@ -331,7 +331,7 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     END IF
     
     ' Create a new 32-bit image with the Aseprite dimensions
-    IF aseprite_img.header.width <= 0 OR aseprite_img.header.height <= 0 THEN
+    IF aseprite_img.header.width < = 0 OR aseprite_img.header.height < = 0 THEN
         create_image_from_aseprite& = 0
         EXIT FUNCTION
     END IF
@@ -349,16 +349,16 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
         ' Success - real pixel data loaded
     ELSE
         ' Fall back to placeholder pattern
-        DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+        DIM r        AS INTEGER, g AS INTEGER, b AS INTEGER
         DIM old_dest AS LONG
         old_dest& = _DEST
         _DEST image_handle
         FOR y = 0 TO aseprite_img.header.height - 1
             FOR x = 0 TO aseprite_img.header.width - 1
                 IF aseprite_img.header.width > 0 AND aseprite_img.header.height > 0 THEN
-                    r = (x * 255) \ aseprite_img.header.width
-                    g = (y * 255) \ aseprite_img.header.height
-                    b = ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height)
+                    r           = (x * 255) \ aseprite_img.header.width
+                    g           = (y * 255) \ aseprite_img.header.height
+                    b           = ((x + y) * 255) \ (aseprite_img.header.width + aseprite_img.header.height)
                     pixel_color = _RGB32(r, g, b)
                     PSET (x, y), pixel_color
                 END IF
@@ -378,11 +378,11 @@ END FUNCTION
 ' @param center_display 1 to center image on screen, 0 for top-left
 '
 SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, center_display AS INTEGER)
-    DIM image_handle AS LONG
-    DIM screen_width AS INTEGER, screen_height AS INTEGER
+    DIM image_handle  AS LONG
+    DIM screen_width  AS INTEGER, screen_height AS INTEGER
     DIM display_width AS INTEGER, display_height AS INTEGER
-    DIM x_pos AS INTEGER, y_pos AS INTEGER
-    DIM old_dest AS LONG
+    DIM x_pos         AS INTEGER, y_pos AS INTEGER
+    DIM old_dest      AS LONG
     
     IF aseprite_img.is_valid = _FALSE THEN
         _ECHO "Cannot display: Invalid Aseprite image"
@@ -408,11 +408,11 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     display_width  = INT(aseprite_img.header.width * scale)
     display_height = INT(aseprite_img.header.height * scale)
     
-    screen_width   = _WIDTH(0)
-    screen_height  = _HEIGHT(0)
+    screen_width  = _WIDTH(0)
+    screen_height = _HEIGHT(0)
     
-    screen_width   = _WIDTH(0)
-    screen_height  = _HEIGHT(0)
+    screen_width  = _WIDTH(0)
+    screen_height = _HEIGHT(0)
     
     ' Calculate position
     IF center_display THEN
@@ -469,20 +469,20 @@ END SUB
 ' @return boolean _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
-    DIM file_handle AS INTEGER
-    DIM file_pos AS LONG
-    DIM frame_num AS INTEGER
-    DIM chunk_num AS LONG
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
-    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
-    DIM cel_width AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
-    DIM x AS INTEGER, y AS INTEGER
+    DIM file_handle            AS INTEGER
+    DIM file_pos               AS LONG
+    DIM frame_num              AS INTEGER
+    DIM chunk_num              AS LONG
+    DIM frame_header           AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header           AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk              AS ASEPRITE_CEL_CHUNK
+    DIM cel_width              AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
+    DIM x                      AS INTEGER, y AS INTEGER
     DIM pixel_data$, temp_byte AS _UNSIGNED _BYTE
-    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM pixel_color AS _UNSIGNED LONG
-    DIM old_dest AS LONG
-    DIM chunks_found AS INTEGER
+    DIM r                      AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM pixel_color            AS _UNSIGNED LONG
+    DIM old_dest               AS LONG
+    DIM chunks_found           AS INTEGER
     
     load_aseprite_pixels% = 0 ' Default to failure
     
@@ -493,7 +493,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
     OPEN aseprite_img.file_path FOR BINARY AS #file_handle
     
     ' Skip the header (128 bytes) to get to frame data
-    file_pos = 129 ' Start after header
+    file_pos = 129            ' Start after header
     
     ' Read the first frame only for now
     IF aseprite_img.header.num_frames > 0 THEN
@@ -588,7 +588,7 @@ FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS 
                             END IF
                         END IF
                         
-                    CASE ASEPRITE_CEL_LINKED ' Linked cel (type 1)
+                    CASE ASEPRITE_CEL_LINKED  ' Linked cel (type 1)
                         IF ASEPRITE_DEBUG_MODE THEN _ECHO "    -> LINKED CEL (not implemented)"
                         ' Skip for now - would need to reference another frame
                         
@@ -629,12 +629,12 @@ END FUNCTION
 ' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_raw_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
-    DIM x AS INTEGER, y AS INTEGER
-    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
-    DIM index_val AS _UNSIGNED _BYTE
+    DIM x           AS INTEGER, y AS INTEGER
+    DIM r           AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val    AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val   AS _UNSIGNED _BYTE
     DIM pixel_color AS _UNSIGNED LONG
-    DIM old_dest AS LONG
+    DIM old_dest    AS LONG
     
     load_raw_pixel_data% = 0 ' Default to failure
     
@@ -701,10 +701,10 @@ END FUNCTION
 ' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION create_compressed_placeholder% (target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER)
-    DIM x AS INTEGER, y AS INTEGER
+    DIM x           AS INTEGER, y AS INTEGER
     DIM pixel_color AS _UNSIGNED LONG
-    DIM old_dest AS LONG
-    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    DIM old_dest    AS LONG
+    DIM r           AS INTEGER, g AS INTEGER, b AS INTEGER
     
     create_compressed_placeholder% = _TRUE ' Success by default
     
@@ -750,16 +750,16 @@ END FUNCTION
 FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
     DIM compressed_data$
     DIM decompressed_data$
-    DIM data_size AS LONG
-    DIM x AS INTEGER, y AS INTEGER, byte_pos AS LONG
-    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
-    DIM index_val AS _UNSIGNED _BYTE
-    DIM pixel_color AS _UNSIGNED LONG
-    DIM old_dest AS LONG
-    DIM expected_size AS LONG
+    DIM data_size       AS LONG
+    DIM x               AS INTEGER, y AS INTEGER, byte_pos AS LONG
+    DIM r               AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val        AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val       AS _UNSIGNED _BYTE
+    DIM pixel_color     AS _UNSIGNED LONG
+    DIM old_dest        AS LONG
+    DIM expected_size   AS LONG
     DIM bytes_per_pixel AS INTEGER
-    DIM current_pos AS LONG
+    DIM current_pos     AS LONG
     
     load_compressed_pixel_data% = 0 ' Default to failure
     
@@ -767,13 +767,13 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     SELECT CASE color_depth_bpp
         CASE 32 ' RGBA: 4 bytes per pixel
             bytes_per_pixel = 4
-            expected_size = width * height * 4
+            expected_size   = width * height * 4
         CASE 16 ' Grayscale: 2 bytes per pixel
             bytes_per_pixel = 2
-            expected_size = width * height * 2
-        CASE 8 ' Indexed: 1 byte per pixel
+            expected_size   = width * height * 2
+        CASE 8  ' Indexed: 1 byte per pixel
             bytes_per_pixel = 1
-            expected_size = width * height
+            expected_size   = width * height
         CASE ELSE
             EXIT FUNCTION ' Unsupported color depth
     END SELECT
@@ -785,7 +785,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' Total overhead = 6 + 20 = 26 bytes.
     data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
-    IF data_size <= 0 THEN
+    IF data_size < = 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
         EXIT FUNCTION
     END IF
@@ -842,11 +842,11 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         CASE 32 ' RGBA format (4 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 3 <= LEN(decompressed_data$) THEN
-                        r = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        g = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        b = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        a = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    IF byte_pos + 3 < = LEN(decompressed_data$) THEN
+                        r = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        g = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        b = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        a = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(r, g, b, a)
                         PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
@@ -857,9 +857,9 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         CASE 16 ' Grayscale format (2 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 1 <= LEN(decompressed_data$) THEN
-                        gray_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        gray_alpha = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    IF byte_pos + 1 < = LEN(decompressed_data$) THEN
+                        gray_val   = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        gray_alpha = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
                         PSET (cel_chunk.x_position + x, cel_chunk.y_position + y), pixel_color
@@ -867,10 +867,10 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
                 NEXT x
             NEXT y
             
-        CASE 8 ' Indexed format (1 byte per pixel)
+        CASE 8  ' Indexed format (1 byte per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos <= LEN(decompressed_data$) THEN
+                    IF byte_pos < = LEN(decompressed_data$) THEN
                         index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         ' Map index to a color - for testing, use a simple palette
@@ -894,16 +894,16 @@ END FUNCTION
 FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
     DIM compressed_data$
     DIM decompressed_data$
-    DIM data_size AS LONG
-    DIM x AS INTEGER, y AS INTEGER, byte_pos AS LONG
-    DIM r AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM gray_val AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
-    DIM index_val AS _UNSIGNED _BYTE
-    DIM pixel_color AS _UNSIGNED LONG
-    DIM old_dest AS LONG
-    DIM expected_size AS LONG
+    DIM data_size       AS LONG
+    DIM x               AS INTEGER, y AS INTEGER, byte_pos AS LONG
+    DIM r               AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
+    DIM gray_val        AS _UNSIGNED _BYTE, gray_alpha AS _UNSIGNED _BYTE
+    DIM index_val       AS _UNSIGNED _BYTE
+    DIM pixel_color     AS _UNSIGNED LONG
+    DIM old_dest        AS LONG
+    DIM expected_size   AS LONG
     DIM bytes_per_pixel AS INTEGER
-    DIM current_pos AS LONG
+    DIM current_pos     AS LONG
     
     load_compressed_pixel_data_for_layer% = 0 ' Default to failure
     
@@ -911,13 +911,13 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
     SELECT CASE color_depth_bpp
         CASE 32 ' RGBA: 4 bytes per pixel
             bytes_per_pixel = 4
-            expected_size = width * height * 4
+            expected_size   = width * height * 4
         CASE 16 ' Grayscale: 2 bytes per pixel
             bytes_per_pixel = 2
-            expected_size = width * height * 2
-        CASE 8 ' Indexed: 1 byte per pixel
+            expected_size   = width * height * 2
+        CASE 8  ' Indexed: 1 byte per pixel
             bytes_per_pixel = 1
-            expected_size = width * height
+            expected_size   = width * height
         CASE ELSE
             EXIT FUNCTION ' Unsupported color depth
     END SELECT
@@ -925,7 +925,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
     ' Calculate compressed data size (chunk_size includes the 6-byte chunk header)
     data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
-    IF data_size <= 0 THEN
+    IF data_size < = 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
         EXIT FUNCTION
     END IF
@@ -978,11 +978,11 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
         CASE 32 ' RGBA format (4 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 3 <= LEN(decompressed_data$) THEN
-                        r = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        g = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        b = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        a = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    IF byte_pos + 3 < = LEN(decompressed_data$) THEN
+                        r = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        g = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        b = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        a = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(r, g, b, a)
                         ' For layer extraction, position at (0,0) instead of CEL position
@@ -994,9 +994,9 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
         CASE 16 ' Grayscale format (2 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 1 <= LEN(decompressed_data$) THEN
-                        gray_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
-                        gray_alpha = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
+                    IF byte_pos + 1 < = LEN(decompressed_data$) THEN
+                        gray_val   = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
+                        gray_alpha = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
                         pixel_color = _RGBA32(gray_val, gray_val, gray_val, gray_alpha)
                         ' For layer extraction, position at (0,0) instead of CEL position
@@ -1005,10 +1005,10 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
                 NEXT x
             NEXT y
             
-        CASE 8 ' Indexed format (1 byte per pixel)
+        CASE 8  ' Indexed format (1 byte per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos <= LEN(decompressed_data$) THEN
+                    IF byte_pos < = LEN(decompressed_data$) THEN
                         index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         ' Map index to a color - for testing, use a simple palette
@@ -1038,22 +1038,22 @@ FUNCTION get_indexed_color& (index_val AS _UNSIGNED _BYTE)
     ' In a full implementation, this would use the actual palette from the ASEPRITE file
     
     SELECT CASE index_val
-        CASE 0: get_indexed_color& = _RGB32(0, 0, 0)           ' Black
-        CASE 1: get_indexed_color& = _RGB32(255, 255, 255)     ' White  
-        CASE 2: get_indexed_color& = _RGB32(255, 0, 0)         ' Red
-        CASE 3: get_indexed_color& = _RGB32(0, 255, 0)         ' Green
-        CASE 4: get_indexed_color& = _RGB32(0, 0, 255)         ' Blue
-        CASE 5: get_indexed_color& = _RGB32(255, 255, 0)       ' Yellow
-        CASE 6: get_indexed_color& = _RGB32(255, 0, 255)       ' Magenta
-        CASE 7: get_indexed_color& = _RGB32(0, 255, 255)       ' Cyan
-        CASE 8: get_indexed_color& = _RGB32(128, 128, 128)     ' Gray
-        CASE 9: get_indexed_color& = _RGB32(192, 192, 192)     ' Light Gray
-        CASE 10: get_indexed_color& = _RGB32(128, 0, 0)        ' Dark Red
-        CASE 11: get_indexed_color& = _RGB32(0, 128, 0)        ' Dark Green
-        CASE 12: get_indexed_color& = _RGB32(0, 0, 128)        ' Dark Blue
-        CASE 13: get_indexed_color& = _RGB32(128, 128, 0)      ' Olive
-        CASE 14: get_indexed_color& = _RGB32(128, 0, 128)      ' Purple
-        CASE 15: get_indexed_color& = _RGB32(0, 128, 128)      ' Teal
+        CASE 0  : get_indexed_color&  = _RGB32(0, 0, 0)       ' Black
+        CASE 1  : get_indexed_color&  = _RGB32(255, 255, 255) ' White  
+        CASE 2  : get_indexed_color&  = _RGB32(255, 0, 0)     ' Red
+        CASE 3  : get_indexed_color&  = _RGB32(0, 255, 0)     ' Green
+        CASE 4  : get_indexed_color&  = _RGB32(0, 0, 255)     ' Blue
+        CASE 5  : get_indexed_color&  = _RGB32(255, 255, 0)   ' Yellow
+        CASE 6  : get_indexed_color&  = _RGB32(255, 0, 255)   ' Magenta
+        CASE 7  : get_indexed_color&  = _RGB32(0, 255, 255)   ' Cyan
+        CASE 8  : get_indexed_color&  = _RGB32(128, 128, 128) ' Gray
+        CASE 9  : get_indexed_color&  = _RGB32(192, 192, 192) ' Light Gray
+        CASE 10 : get_indexed_color& = _RGB32(128, 0, 0)      ' Dark Red
+        CASE 11 : get_indexed_color& = _RGB32(0, 128, 0)      ' Dark Green
+        CASE 12 : get_indexed_color& = _RGB32(0, 0, 128)      ' Dark Blue
+        CASE 13 : get_indexed_color& = _RGB32(128, 128, 0)    ' Olive
+        CASE 14 : get_indexed_color& = _RGB32(128, 0, 128)    ' Purple
+        CASE 15 : get_indexed_color& = _RGB32(0, 128, 128)    ' Teal
         CASE ELSE
             ' For other values, create a gradient
             get_indexed_color& = _RGB32(index_val, index_val, index_val)
@@ -1128,17 +1128,17 @@ END SUB
 ' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    DIM file_pos AS LONG
-    DIM frame_num AS INTEGER
-    DIM chunk_num AS LONG
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
-    DIM layer_chunk AS ASEPRITE_LAYER_CHUNK
-    DIM layer_info AS ASEPRITE_LAYER_INFO
+    DIM file_pos       AS LONG
+    DIM frame_num      AS INTEGER
+    DIM chunk_num      AS LONG
+    DIM frame_header   AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header   AS ASEPRITE_CHUNK_HEADER
+    DIM layer_chunk    AS ASEPRITE_LAYER_CHUNK
+    DIM layer_info     AS ASEPRITE_LAYER_INFO
     DIM layer_name_len AS _UNSIGNED INTEGER
-    DIM layer_name AS STRING
+    DIM layer_name     AS STRING
     
-    parse_layer_chunks% = 0 ' Default to failure
+    parse_layer_chunks% = 0     ' Default to failure
     
     ' Start after header (128 bytes)
     file_pos = 129
@@ -1175,13 +1175,13 @@ FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
             END IF
             
             ' Populate layer info
-            layer_info.layer_name = layer_name
-            layer_info.flags = layer_chunk.flags
-            layer_info.layer_type = layer_chunk.layer_type
-            layer_info.child_level = layer_chunk.child_level
-            layer_info.blend_mode = layer_chunk.blend_mode
-            layer_info.opacity = layer_chunk.opacity
-            layer_info.is_visible = (layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE) <> 0
+            layer_info.layer_name    = layer_name
+            layer_info.flags         = layer_chunk.flags
+            layer_info.layer_type    = layer_chunk.layer_type
+            layer_info.child_level   = layer_chunk.child_level
+            layer_info.blend_mode    = layer_chunk.blend_mode
+            layer_info.opacity       = layer_chunk.opacity
+            layer_info.is_visible    = (layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE) <> 0
             layer_info.is_background = (layer_chunk.flags AND ASEPRITE_LAYER_BACKGROUND) <> 0
             
             ' Store layer info (simplified serialization)
@@ -1213,7 +1213,7 @@ END FUNCTION
 ' @return BOOLEAN _TRUE if successful, _FALSE if failed
 '
 FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    DIM frame_info AS ASEPRITE_FRAME_INFO
+    DIM frame_info     AS ASEPRITE_FRAME_INFO
     DIM total_duration AS LONG
     
     parse_frame_chunks% = 0 ' Default to failure
@@ -1226,9 +1226,9 @@ FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
     DIM i AS INTEGER
     FOR i = 0 TO enhanced_img.num_frames - 1
         frame_info.frame_index = i
-        frame_info.duration = enhanced_img.base_image.header.frame_speed ' Default speed
-        frame_info.num_cels = 1 ' Assume 1 cel per frame for now
-        frame_info.has_data = _TRUE ' Assume all frames have data
+        frame_info.duration    = enhanced_img.base_image.header.frame_speed ' Default speed
+        frame_info.num_cels    = 1                                          ' Assume 1 cel per frame for now
+        frame_info.has_data    = _TRUE                                      ' Assume all frames have data
         
         total_duration = total_duration + frame_info.duration
         
@@ -1237,7 +1237,7 @@ FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_E
     NEXT i
     
     enhanced_img.animation.total_duration = total_duration
-    enhanced_img.animation.total_frames = enhanced_img.num_frames
+    enhanced_img.animation.total_frames   = enhanced_img.num_frames
     
     parse_frame_chunks% = _TRUE ' Success
 END FUNCTION
@@ -1261,36 +1261,36 @@ END SUB
 ' @param enhanced_img Enhanced image structure
 '
 SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    DIM current_time AS DOUBLE
-    DIM delta_time AS LONG
+    DIM current_time   AS DOUBLE
+    DIM delta_time     AS LONG
     DIM frame_duration AS LONG
     
     IF enhanced_img.animation.is_playing = _FALSE THEN EXIT SUB
-    IF enhanced_img.animation.total_frames <= 1 THEN EXIT SUB
+    IF enhanced_img.animation.total_frames < = 1 THEN EXIT SUB
     
-    current_time = TIMER
-    delta_time = (current_time - enhanced_img.animation.last_update) * 1000 ' Convert to ms
+    current_time                       = TIMER
+    delta_time                         = (current_time - enhanced_img.animation.last_update) * 1000 ' Convert to ms
     enhanced_img.animation.last_update = current_time
     
     enhanced_img.animation.elapsed_time = enhanced_img.animation.elapsed_time + delta_time
     
     ' Get current frame duration (simplified - using default speed)
     frame_duration = enhanced_img.base_image.header.frame_speed
-    IF frame_duration <= 0 THEN frame_duration = 100 ' Default 100ms
+    IF frame_duration < = 0 THEN frame_duration = 100 ' Default 100ms
     
     ' Check if it's time to advance frame
-    IF enhanced_img.animation.elapsed_time >= frame_duration THEN
+    IF enhanced_img.animation.elapsed_time > = frame_duration THEN
         enhanced_img.animation.elapsed_time = enhanced_img.animation.elapsed_time - frame_duration
         
         ' Advance to next frame
         enhanced_img.animation.current_frame = enhanced_img.animation.current_frame + 1
         
         ' Handle looping
-        IF enhanced_img.animation.current_frame >= enhanced_img.animation.total_frames THEN
+        IF enhanced_img.animation.current_frame > = enhanced_img.animation.total_frames THEN
             SELECT CASE enhanced_img.animation.loop_mode
                 CASE 0 ' Play once
                     enhanced_img.animation.current_frame = enhanced_img.animation.total_frames - 1
-                    enhanced_img.animation.is_playing = _FALSE
+                    enhanced_img.animation.is_playing    = _FALSE
                 CASE 1 ' Loop
                     enhanced_img.animation.current_frame = 0
                 CASE 2 ' Ping-pong (TODO: implement reverse direction)
@@ -1306,7 +1306,7 @@ END SUB
 ' @param enhanced_img Enhanced image structure
 '
 SUB play_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    enhanced_img.animation.is_playing = _TRUE
+    enhanced_img.animation.is_playing  = _TRUE
     enhanced_img.animation.last_update = TIMER
 END SUB
 
@@ -1326,9 +1326,9 @@ END SUB
 ' @param frame_index Frame index to display (0-based)
 '
 SUB set_aseprite_frame (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER)
-    IF frame_index >= 0 AND frame_index < enhanced_img.animation.total_frames THEN
+    IF frame_index > = 0 AND frame_index < enhanced_img.animation.total_frames THEN
         enhanced_img.animation.current_frame = frame_index
-        enhanced_img.animation.elapsed_time = 0
+        enhanced_img.animation.elapsed_time  = 0
     END IF
 END SUB
 
@@ -1413,7 +1413,7 @@ END FUNCTION
 ' @author grymmjack
 ''
 FUNCTION is_valid_layer_index% (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER)
-    IF layer_index >= 0 AND layer_index < aseprite_img.layer_count THEN
+    IF layer_index > = 0 AND layer_index < aseprite_img.layer_count THEN
         is_valid_layer_index% = _TRUE
     ELSE
         is_valid_layer_index% = _FALSE
@@ -1435,7 +1435,7 @@ END FUNCTION
 ' @author grymmjack
 ''
 FUNCTION is_valid_frame_index% (aseprite_img AS ASEPRITE_IMAGE, frame_index AS INTEGER)
-    IF frame_index >= 0 AND frame_index < aseprite_img.frame_count THEN
+    IF frame_index > = 0 AND frame_index < aseprite_img.frame_count THEN
         is_valid_frame_index% = _TRUE
     ELSE
         is_valid_frame_index% = _FALSE
@@ -1462,19 +1462,19 @@ END FUNCTION
 '
 FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
     DIM layer_names() AS STRING
-    DIM name_count AS INTEGER
+    DIM name_count   AS INTEGER
     DIM current_name AS STRING
-    DIM search_pos AS INTEGER
-    DIM start_pos AS INTEGER
-    DIM i AS INTEGER
+    DIM search_pos   AS INTEGER
+    DIM start_pos    AS INTEGER
+    DIM i            AS INTEGER
     
     ' Parse layer names from serialized string 
-    IF LEN(enhanced_img.layer_info) > 0 AND layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
+    IF LEN(enhanced_img.layer_info) > 0 AND layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
         ' Split by CHR$(0) to extract individual layer names
         start_pos = 1
-        i = 0
+        i         = 0
         
-        DO WHILE start_pos <= LEN(enhanced_img.layer_info) AND i <= layer_index
+        DO WHILE start_pos < = LEN(enhanced_img.layer_info) AND i < = layer_index
             ' Find next separator
             search_pos = INSTR(start_pos, enhanced_img.layer_info, CHR$(0))
             IF search_pos = 0 THEN search_pos = LEN(enhanced_img.layer_info) + 1
@@ -1509,7 +1509,7 @@ END FUNCTION
 '
 FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
     ' Check if layer index is valid
-    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN
+    IF layer_index < 0 OR layer_index > = enhanced_img.num_layers THEN
         is_layer_visible% = _FALSE
         EXIT FUNCTION
     END IF
@@ -1537,7 +1537,7 @@ END FUNCTION
 '
 SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
     ' Validate layer index
-    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN EXIT SUB
+    IF layer_index < 0 OR layer_index > = enhanced_img.num_layers THEN EXIT SUB
     IF LEN(enhanced_img.layer_visibility) < enhanced_img.num_layers THEN EXIT SUB
     
     ' Check if visibility is already set to the desired state
@@ -1568,10 +1568,10 @@ END SUB
 ' @param enhanced_img Enhanced image structure
 '
 SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
-    DIM old_dest AS LONG
-    DIM temp_image AS LONG
-    DIM i AS INTEGER
-    DIM visible_count AS INTEGER
+    DIM old_dest           AS LONG
+    DIM temp_image         AS LONG
+    DIM i                  AS INTEGER
+    DIM visible_count      AS INTEGER
     DIM target_layer_index AS INTEGER
     
     ' Only update if needed
@@ -1581,12 +1581,12 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     IF enhanced_img.current_display <> 0 THEN
         old_dest = _DEST
         _DEST enhanced_img.current_display
-        CLS , _RGBA32(0, 0, 0, 0)  ' Clear with transparent background
+        CLS , _RGBA32(0, 0, 0, 0) ' Clear with transparent background
         _DEST old_dest
     END IF
     
     ' Count visible layers and find the target layer
-    visible_count = 0
+    visible_count      = 0
     target_layer_index = -1
     FOR i = 0 TO enhanced_img.num_layers - 1
         IF is_layer_visible%(enhanced_img, i) THEN
@@ -1595,7 +1595,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
         END IF
     NEXT i
     
-    IF visible_count = 1 AND target_layer_index >= 0 THEN
+    IF visible_count = 1 AND target_layer_index > = 0 THEN
         ' Only one layer is visible - try to load that specific layer's pixel data
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Attempting to load specific layer data for layer " + STR$(target_layer_index)
         temp_image = load_specific_layer_image&(enhanced_img.base_image, target_layer_index)
@@ -1617,7 +1617,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
                 _DEST enhanced_img.current_display
                 
                 ' Clear with transparent pixels (empty layer)
-                CLS , _RGBA32(0, 0, 0, 0)  ' Fully transparent
+                CLS , _RGBA32(0, 0, 0, 0) ' Fully transparent
                 
                 _DEST old_dest
                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Created transparent image for empty layer " + STR$(target_layer_index)
@@ -1652,23 +1652,23 @@ END SUB
 ' @return LONG Image handle containing only the specified layer's pixel data, or 0 on failure
 ''
 FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_layer_index AS INTEGER)
-    DIM file_handle AS INTEGER
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
-    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
-    DIM image_handle AS LONG
-    DIM chunks_found AS INTEGER
-    DIM frame_num AS INTEGER
-    DIM chunk_num AS INTEGER
-    DIM num_chunks AS INTEGER
-    DIM cel_width AS _UNSIGNED INTEGER
-    DIM cel_height AS _UNSIGNED INTEGER
+    DIM file_handle     AS INTEGER
+    DIM frame_header    AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header    AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk       AS ASEPRITE_CEL_CHUNK
+    DIM image_handle    AS LONG
+    DIM chunks_found    AS INTEGER
+    DIM frame_num       AS INTEGER
+    DIM chunk_num       AS INTEGER
+    DIM num_chunks      AS INTEGER
+    DIM cel_width       AS _UNSIGNED INTEGER
+    DIM cel_height      AS _UNSIGNED INTEGER
     DIM chunk_start_pos AS LONG
-    DIM next_chunk_pos AS LONG
+    DIM next_chunk_pos  AS LONG
     
     IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Starting load_specific_layer_image for layer " + STR$(target_layer_index)
     
-    load_specific_layer_image& = 0 ' Default to failure
+    load_specific_layer_image& = 0            ' Default to failure
     
     ' Create image to hold the layer data
     image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
@@ -1681,8 +1681,8 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     DIM old_dest AS LONG
     old_dest = _DEST
     _DEST image_handle
-    CLS , _RGB32(0, 0, 0)  ' Fill with black
-    _CLEARCOLOR _RGB32(0, 0, 0), image_handle  ' Make black transparent
+    CLS , _RGB32(0, 0, 0)                     ' Fill with black
+    _CLEARCOLOR _RGB32(0, 0, 0), image_handle ' Make black transparent
     _DEST old_dest
     
     ' Open file for reading
@@ -1690,13 +1690,13 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     OPEN aseprite_img.file_path FOR BINARY AS #file_handle
     
     ' Skip to frame data (after main header)
-    SEEK #file_handle, 129 ' ASEPRITE_HEADER_SIZE + 1
+    SEEK #file_handle, 129                    ' ASEPRITE_HEADER_SIZE + 1
     
     chunks_found = 0
     
     ' Process ALL frames to find CEL data for the target layer
     DIM frame_start_pos AS LONG
-    frame_start_pos = 129 ' Start after main header
+    frame_start_pos = 129                     ' Start after main header
     
     FOR frame_num = 0 TO aseprite_img.header.num_frames - 1
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "    Searching frame " + STR$(frame_num) + " for layer " + STR$(target_layer_index)
@@ -1747,7 +1747,7 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
                     
                     ' Check CEL type and load pixel data
                     SELECT CASE cel_chunk.cel_type
-                        CASE ASEPRITE_CEL_RAW_IMAGE ' Raw image (type 0)
+                        CASE ASEPRITE_CEL_RAW_IMAGE  ' Raw image (type 0)
                             cel_width = 0: cel_height = 0
                             GET #file_handle, , cel_width
                             GET #file_handle, , cel_height
@@ -1811,7 +1811,7 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
     DIM aseprite_img AS ASEPRITE_IMAGE
     load_aseprite_image filename, aseprite_img
     
-    IF aseprite_img.header.width <= 0 THEN
+    IF aseprite_img.header.width < = 0 THEN
         load_specific_layer_image_enhanced& = 0
         EXIT FUNCTION
     END IF
@@ -1825,15 +1825,15 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
     SEEK #file_handle, 129
     
     ' Variables for chunk processing - DECLARED OUTSIDE LOOPS to fix variable scope
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM frame_header    AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header    AS ASEPRITE_CHUNK_HEADER
     DIM frame_start_pos AS LONG
     DIM chunk_start_pos AS LONG
-    DIM next_chunk_pos AS LONG
+    DIM next_chunk_pos  AS LONG
     
     ' Create target image with proper color depth
     DIM image_handle AS LONG
-    DIM cel_width AS INTEGER, cel_height AS INTEGER
+    DIM cel_width    AS INTEGER, cel_height AS INTEGER
     
     ' We'll resize the image once we find the first CEL to get proper dimensions
     image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
@@ -1842,7 +1842,7 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
     DIM chunks_found AS INTEGER
     chunks_found = 0
     
-    frame_start_pos = 129 ' Start after header
+    frame_start_pos = 129                         ' Start after header
     
     ' Process all frames to find the target frame and layer
     DIM frame_num AS INTEGER
@@ -1949,7 +1949,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers <= 0 THEN
+    IF enhanced_img.num_layers < = 0 THEN
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -1971,7 +1971,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
         NEXT i
     ELSE
         ' Use layer index directly
-        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
+        IF layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
             target_index = layer_index
         END IF
     END IF
@@ -1997,9 +1997,9 @@ END FUNCTION
 ' @param center_display 1 to center on screen, 0 for top-left
 '
 SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS SINGLE, center_display AS INTEGER)
-    DIM screen_width AS INTEGER, screen_height AS INTEGER
+    DIM screen_width  AS INTEGER, screen_height AS INTEGER
     DIM display_width AS INTEGER, display_height AS INTEGER
-    DIM x_pos AS INTEGER, y_pos AS INTEGER
+    DIM x_pos         AS INTEGER, y_pos AS INTEGER
     
     IF enhanced_img.base_image.is_valid = _FALSE THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Cannot display: Invalid enhanced Aseprite image"
@@ -2007,10 +2007,10 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
     END IF
           
     ' Calculate display dimensions
-    display_width = INT(enhanced_img.base_image.header.width * scale)
+    display_width  = INT(enhanced_img.base_image.header.width * scale)
     display_height = INT(enhanced_img.base_image.header.height * scale)
     
-    screen_width = _WIDTH(0)
+    screen_width  = _WIDTH(0)
     screen_height = _HEIGHT(0)
     
     ' Calculate position
@@ -2099,7 +2099,7 @@ FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGE
     
     ' Use introspected dimensions (no hardcoded sizes)
     DIM image_width AS INTEGER, image_height AS INTEGER
-    image_width = enhanced_img.base_image.header.width
+    image_width  = enhanced_img.base_image.header.width
     image_height = enhanced_img.base_image.header.height
     
     ' Use proper z-index ordering for composite
@@ -2140,7 +2140,7 @@ FUNCTION load_aseprite_file& (filename AS STRING)
       load_aseprite_file& = 0
       EXIT FUNCTION
   ELSE
-    composite& = create_composite_image_from_aseprite&(ase_img)
+    composite&          = create_composite_image_from_aseprite&(ase_img)
     load_aseprite_file& = composite&
   END IF
 
@@ -2158,20 +2158,20 @@ END FUNCTION
 ' @return LONG Image handle for composite, or 0 on failure
 ''
 FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
-    DIM i AS INTEGER
-    DIM layer_img AS LONG
+    DIM i             AS INTEGER
+    DIM layer_img     AS LONG
     DIM composite_img AS LONG
-    DIM width AS INTEGER, height AS INTEGER
+    DIM width         AS INTEGER, height AS INTEGER
 
     IF aseprite_img.is_valid = _FALSE THEN 
       IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: invalid ASEPRITE image"
       EXIT FUNCTION
     END IF
 
-    width = aseprite_img.header.width
+    width  = aseprite_img.header.width
     height = aseprite_img.header.height
 
-    IF width <= 0 OR height <= 0 THEN
+    IF width < = 0 OR height < = 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: invalid dimensions"
         EXIT FUNCTION
     END IF
@@ -2402,10 +2402,10 @@ FUNCTION collect_render_items% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_i
                 GET #file_handle, chunk_pos + 5, chunk_type
                 
                 IF chunk_type = &H2005 THEN ' CEL chunk
-                    DIM layer_idx AS INTEGER, cel_x AS INTEGER, cel_y AS INTEGER
+                    DIM layer_idx   AS INTEGER, cel_x AS INTEGER, cel_y AS INTEGER
                     DIM cel_opacity AS _UNSIGNED _BYTE, cel_type AS INTEGER, cel_z_index AS INTEGER
                     
-                    GET #file_handle, chunk_pos + 7, layer_idx     ' Layer index
+                    GET #file_handle, chunk_pos + 7, layer_idx    ' Layer index
                     GET #file_handle, chunk_pos + 9, cel_x        ' X position  
                     GET #file_handle, chunk_pos + 11, cel_y       ' Y position
                     GET #file_handle, chunk_pos + 13, cel_opacity ' Opacity
@@ -2414,18 +2414,18 @@ FUNCTION collect_render_items% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_i
                     
                     ' Add to render items array
                     num_items = num_items + 1
-                    render_items(num_items).layer_index = layer_idx
-                    render_items(num_items).cel_z_index = cel_z_index
+                    render_items(num_items).layer_index    = layer_idx
+                    render_items(num_items).cel_z_index    = cel_z_index
                     render_items(num_items).original_order = num_items
-                    render_items(num_items).final_order = num_items + cel_z_index
+                    render_items(num_items).final_order    = num_items + cel_z_index
                     
                     ' Store CEL info for compositing
                     render_items(num_items).cel_info.layer_index = layer_idx
-                    render_items(num_items).cel_info.x_position = cel_x
-                    render_items(num_items).cel_info.y_position = cel_y
-                    render_items(num_items).cel_info.opacity = cel_opacity
-                    render_items(num_items).cel_info.cel_type = cel_type
-                    render_items(num_items).cel_info.z_index = cel_z_index
+                    render_items(num_items).cel_info.x_position  = cel_x
+                    render_items(num_items).cel_info.y_position  = cel_y
+                    render_items(num_items).cel_info.opacity     = cel_opacity
+                    render_items(num_items).cel_info.cel_type    = cel_type
+                    render_items(num_items).cel_info.z_index     = cel_z_index
                 END IF
                 
                 chunk_pos = chunk_pos + chunk_size
@@ -2487,10 +2487,10 @@ SUB process_z_indexes (render_items() AS ASEPRITE_RENDER_ITEM, num_items AS INTE
             IF swap_needed THEN
                 ' Swap items
                 DIM temp_item AS ASEPRITE_RENDER_ITEM
-                temp_item = render_items(i)
-                render_items(i) = render_items(i + 1)
+                temp_item           = render_items(i)
+                render_items(i)     = render_items(i + 1)
                 render_items(i + 1) = temp_item
-                swapped = 1
+                swapped             = 1
             END IF
         NEXT i
     LOOP WHILE swapped

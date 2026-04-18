@@ -35,14 +35,14 @@ composite_img = create_z_ordered_composite&(enhanced_img, 0, _RGBA32(64, 128, 19
 IF composite_img <> -1 THEN
     ' Display info
     COLOR _RGB32(255, 255, 255)
-    LOCATE 1, 1: PRINT "Z-Index Composite Test"
-    LOCATE 2, 1: PRINT "File: "; filename
-    LOCATE 3, 1: PRINT "Dimensions: "; _WIDTH(composite_img); "x"; _HEIGHT(composite_img)
-    LOCATE 4, 1: PRINT "Using official Aseprite z-index algorithm"
-    LOCATE 5, 1: PRINT "Press any key to exit"
+    LOCATE 1, 1 : PRINT "Z-Index Composite Test"
+    LOCATE 2, 1 : PRINT "File: "; filename
+    LOCATE 3, 1 : PRINT "Dimensions: "; _WIDTH(composite_img); "x"; _HEIGHT(composite_img)
+    LOCATE 4, 1 : PRINT "Using official Aseprite z-index algorithm"
+    LOCATE 5, 1 : PRINT "Press any key to exit"
     
     ' Display composite scaled up
-    DIM scale AS SINGLE
+    DIM scale     AS SINGLE
     scale = 8.0
     DIM display_x AS INTEGER, display_y AS INTEGER
     display_x = 100

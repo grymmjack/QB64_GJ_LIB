@@ -17,19 +17,19 @@ $INCLUDEONCE
 SUB FD_TOOLTIP_init
     DIM i AS INTEGER
     FOR i = 0 TO FD_TT_MAX
-        FD_tooltips(i).text = ""
-        FD_tooltips(i).enabled = -1   ' All enabled by default
+        FD_tooltips(i).text    = ""
+        FD_tooltips(i).enabled = -1 ' All enabled by default
     NEXT i
 
-    FD_tooltips(FD_TT_TITLE_CLOSE).text  = "Close"
-    FD_tooltips(FD_TT_BTN_UP).text       = "Navigate up"
-    FD_tooltips(FD_TT_BTN_MKDIR).text    = "New folder"
-    FD_tooltips(FD_TT_BTN_LIST).text     = "List view"
-    FD_tooltips(FD_TT_BTN_DETAILS).text  = "Details view"
-    FD_tooltips(FD_TT_BTN_THUMBS).text   = "Thumbnails view"
-    FD_tooltips(FD_TT_BTN_HIDDEN).text   = "Toggle hidden files"
-    FD_tooltips(FD_TT_BTN_PREVIEW).text  = "Toggle preview pane"
-    FD_tooltips(FD_TT_PATH_BAR).text     = "Current path  (click to edit)"
+    FD_tooltips(FD_TT_TITLE_CLOSE).text = "Close"
+    FD_tooltips(FD_TT_BTN_UP).text      = "Navigate up"
+    FD_tooltips(FD_TT_BTN_MKDIR).text   = "New folder"
+    FD_tooltips(FD_TT_BTN_LIST).text    = "List view"
+    FD_tooltips(FD_TT_BTN_DETAILS).text = "Details view"
+    FD_tooltips(FD_TT_BTN_THUMBS).text  = "Thumbnails view"
+    FD_tooltips(FD_TT_BTN_HIDDEN).text  = "Toggle hidden files"
+    FD_tooltips(FD_TT_BTN_PREVIEW).text = "Toggle preview pane"
+    FD_tooltips(FD_TT_PATH_BAR).text    = "Current path  (click to edit)"
     ' FD_TT_PLACE_ENTRY uses FD_TT_dynamicText set by FD_TOOLTIP_set_hover
 
     FD_TT_hoverTargetId = FD_TT_NONE
@@ -80,9 +80,9 @@ SUB FD_TOOLTIP_update
 
     IF FD_TT_visible THEN EXIT SUB  ' Already showing — nothing more to do
 
-    IF (TIMER - FD_TT_hoverTimer) >= FD_TT_DELAY! THEN
-        FD_TT_visible   = -1
-        FD_STATE.dirty  = -1        ' Force a render frame so the tip appears
+    IF (TIMER - FD_TT_hoverTimer) > = FD_TT_DELAY! THEN
+        FD_TT_visible  = -1
+        FD_STATE.dirty = -1 ' Force a render frame so the tip appears
     END IF
 END SUB
 
@@ -109,7 +109,7 @@ SUB FD_RENDER_tooltip
     ' --- Compute size ---
     DIM tipPad AS INTEGER
     tipPad = 4
-    DIM tipW AS INTEGER, tipH AS INTEGER
+    DIM tipW   AS INTEGER, tipH AS INTEGER
     tipW = LEN(tipText) * FD_CFG.fontW + tipPad * 2
     tipH = FD_CFG.fontH + tipPad * 2
 

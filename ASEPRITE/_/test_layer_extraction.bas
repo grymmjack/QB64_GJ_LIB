@@ -93,7 +93,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers <= 0 THEN
+    IF enhanced_img.num_layers < = 0 THEN
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -115,7 +115,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
         NEXT i
     ELSE
         ' Use layer index directly
-        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
+        IF layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
             target_index = layer_index
         END IF
     END IF
@@ -129,14 +129,14 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     DIM j AS INTEGER
     FOR j = 0 TO enhanced_img.num_layers - 1
         IF j = target_index THEN
-            set_layer_visibility enhanced_img, j, -1  ' Make visible
+            set_layer_visibility enhanced_img, j, -1 ' Make visible
         ELSE
-            set_layer_visibility enhanced_img, j, 0   ' Hide
+            set_layer_visibility enhanced_img, j, 0  ' Hide
         END IF
     NEXT j
     
     ' Set the desired frame
-    IF frame >= 0 AND frame < enhanced_img.num_frames THEN
+    IF frame > = 0 AND frame < enhanced_img.num_frames THEN
         set_aseprite_frame enhanced_img, frame
     END IF
     
@@ -147,7 +147,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     IF enhanced_img.current_display <> 0 THEN
         ' Create a copy of the current display (which now shows only the target layer)
         DIM copy_handle AS LONG
-        copy_handle = _COPYIMAGE(enhanced_img.current_display)
+        copy_handle                       = _COPYIMAGE(enhanced_img.current_display)
         create_aseprite_image_from_layer& = copy_handle
     ELSE
         create_aseprite_image_from_layer& = 0
@@ -163,7 +163,7 @@ FUNCTION create_aseprite_image_from_merged_layers& (filename AS STRING, frame AS
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers <= 0 THEN
+    IF enhanced_img.num_layers < = 0 THEN
         create_aseprite_image_from_merged_layers& = 0
         EXIT FUNCTION
     END IF
@@ -174,12 +174,12 @@ FUNCTION create_aseprite_image_from_merged_layers& (filename AS STRING, frame AS
         DIM is_visible AS INTEGER
         is_visible = is_layer_visible(enhanced_img, i)
         IF is_visible THEN
-            set_layer_visibility enhanced_img, i, -1  ' Ensure visible
+            set_layer_visibility enhanced_img, i, -1 ' Ensure visible
         END IF
     NEXT i
     
     ' Set the desired frame
-    IF frame >= 0 AND frame < enhanced_img.num_frames THEN
+    IF frame > = 0 AND frame < enhanced_img.num_frames THEN
         set_aseprite_frame enhanced_img, frame
     END IF
     
@@ -190,7 +190,7 @@ FUNCTION create_aseprite_image_from_merged_layers& (filename AS STRING, frame AS
     IF enhanced_img.current_display <> 0 THEN
         ' Create a copy of the current display
         DIM copy_handle AS LONG
-        copy_handle = _COPYIMAGE(enhanced_img.current_display)
+        copy_handle                               = _COPYIMAGE(enhanced_img.current_display)
         create_aseprite_image_from_merged_layers& = copy_handle
     ELSE
         create_aseprite_image_from_merged_layers& = 0

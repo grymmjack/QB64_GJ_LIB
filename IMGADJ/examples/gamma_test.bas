@@ -10,11 +10,11 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM gammaAmount AS INTEGER
-DIM oldGamma AS INTEGER
+DIM gammaAmount   AS INTEGER
+DIM oldGamma      AS INTEGER
 
-gammaAmount = 0     ' Default gamma (no change)
-oldGamma = -999     ' Force initial update
+gammaAmount = 0    ' Default gamma (no change)
+oldGamma    = -999 ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -59,7 +59,7 @@ DO
         oldGamma = gammaAmount
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -100,7 +100,7 @@ DO
         CASE "-"
             IF gammaAmount > -100 THEN gammaAmount = gammaAmount - 5
         CASE "R"
-            gammaAmount = 0  ' Reset to no gamma change
+            gammaAmount = 0 ' Reset to no gamma change
     END SELECT
     
     _LIMIT 60

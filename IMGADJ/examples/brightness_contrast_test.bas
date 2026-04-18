@@ -10,17 +10,17 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM brightness AS INTEGER
-DIM contrast AS INTEGER
-DIM currentParam AS INTEGER  ' 0 = brightness, 1 = contrast
+DIM brightness    AS INTEGER
+DIM contrast      AS INTEGER
+DIM currentParam  AS INTEGER ' 0 = brightness, 1 = contrast
 DIM oldBrightness AS INTEGER
-DIM oldContrast AS INTEGER
+DIM oldContrast   AS INTEGER
 
-brightness = 0      ' Default brightness
-contrast = 0        ' Default contrast
-currentParam = 0    ' Start with brightness
-oldBrightness = -999 ' Force initial update
-oldContrast = -999
+brightness    = 0            ' Default brightness
+contrast      = 0            ' Default contrast
+currentParam  = 0            ' Start with brightness
+oldBrightness = -999         ' Force initial update
+oldContrast   = -999
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -84,10 +84,10 @@ DO
         END IF
         
         oldBrightness = brightness
-        oldContrast = contrast
+        oldContrast   = contrast
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -96,14 +96,14 @@ DO
         
         ' Highlight current parameter
         IF currentParam = 0 THEN
-            COLOR _RGB32(255, 255, 0)  ' Yellow for selected
+            COLOR _RGB32(255, 255, 0)   ' Yellow for selected
             _PRINTSTRING (10, 30), ">>> Brightness: " + STR$(brightness)
-            COLOR _RGB32(255, 255, 255)  ' White for normal
+            COLOR _RGB32(255, 255, 255) ' White for normal
             _PRINTSTRING (10, 50), "    Contrast: " + STR$(contrast) + "%"
         ELSE
-            COLOR _RGB32(255, 255, 255)  ' White for normal
+            COLOR _RGB32(255, 255, 255) ' White for normal
             _PRINTSTRING (10, 30), "    Brightness: " + STR$(brightness)
-            COLOR _RGB32(255, 255, 0)  ' Yellow for selected
+            COLOR _RGB32(255, 255, 0)   ' Yellow for selected
             _PRINTSTRING (10, 50), ">>> Contrast: " + STR$(contrast) + "%"
         END IF
         
@@ -139,11 +139,11 @@ DO
             ELSE
                 IF contrast > -100 THEN contrast = contrast - 5
             END IF
-        CASE CHR$(9)  ' TAB key
-            currentParam = 1 - currentParam  ' Toggle between 0 and 1
+        CASE CHR$(9) ' TAB key
+            currentParam = 1 - currentParam ' Toggle between 0 and 1
         CASE "r", "R"
             brightness = 0
-            contrast = 0
+            contrast   = 0
     END SELECT
     
     _LIMIT 60

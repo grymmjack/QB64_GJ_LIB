@@ -19,9 +19,9 @@ $END IF
 
 $CONSOLE
 
-DIM filename  AS STRING
+DIM filename       AS STRING
 DIM aseprite_image AS LONG
-DIM ZOOM AS INTEGER
+DIM ZOOM           AS INTEGER
 ZOOM = 10
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"

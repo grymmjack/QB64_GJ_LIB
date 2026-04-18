@@ -8,17 +8,17 @@
 PRINT "Special Pattern Dithering Test Starting..."
 PRINT "Using artistic and print-oriented dithering algorithms"
 
-DIM originalImage AS LONG
-DIM ditheredImage AS LONG
-DIM ditherAmount AS SINGLE
-DIM oldAmount AS SINGLE
-DIM patternType AS INTEGER
+DIM originalImage  AS LONG
+DIM ditheredImage  AS LONG
+DIM ditherAmount   AS SINGLE
+DIM oldAmount      AS SINGLE
+DIM patternType    AS INTEGER
 DIM oldPatternType AS INTEGER
 
-ditherAmount = 0.8        ' Default dithering strength
-oldAmount = -1            ' Force initial update
-patternType = 0           ' 0=Halftone, 1=Spiral, 2=Clustered Dot
-oldPatternType = -1       ' Force initial update
+ditherAmount   = 0.8 ' Default dithering strength
+oldAmount      = -1  ' Force initial update
+patternType    = 0   ' 0=Halftone, 1=Spiral, 2=Clustered Dot
+oldPatternType = -1  ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -49,19 +49,19 @@ DO
         IF ditheredImage <> 0 THEN _FREEIMAGE ditheredImage
         
         SELECT CASE patternType
-            CASE 0  ' Halftone
+            CASE 0 ' Halftone
                 ditheredImage = GJ_IMGADJ_DitherHalftone(originalImage, ditherAmount)
-            CASE 1  ' Spiral
+            CASE 1 ' Spiral
                 ditheredImage = GJ_IMGADJ_DitherSpiral(originalImage, ditherAmount)
-            CASE 2  ' Clustered Dot
+            CASE 2 ' Clustered Dot
                 ditheredImage = GJ_IMGADJ_DitherClusteredDot(originalImage, ditherAmount)
         END SELECT
         
-        oldAmount = ditherAmount
+        oldAmount      = ditherAmount
         oldPatternType = patternType
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -69,12 +69,12 @@ DO
         _PRINTSTRING (10, 10), "Special Pattern Dithering - Using GJ_IMGADJ Library"
         
         ' Show current settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current settings
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current settings
         DIM patternName AS STRING
         SELECT CASE patternType
-            CASE 0: patternName = "Halftone"
-            CASE 1: patternName = "Spiral"
-            CASE 2: patternName = "Clustered Dot"
+            CASE 0 : patternName = "Halftone"
+            CASE 1 : patternName = "Spiral"
+            CASE 2 : patternName = "Clustered Dot"
         END SELECT
         _PRINTSTRING (10, 30), "Pattern Type: " + patternName
         _PRINTSTRING (10, 50), "Dither Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full effect)"
@@ -83,17 +83,17 @@ DO
         _PRINTSTRING (10, 70), "Controls: LEFT/RIGHT pattern type, UP/DOWN amount, ESC exit"
         
         ' Pattern description
-        COLOR _RGB32(200, 255, 200)  ' Light green for description
+        COLOR _RGB32(200, 255, 200) ' Light green for description
         SELECT CASE patternType
-            CASE 0  ' Halftone
+            CASE 0                      ' Halftone
                 _PRINTSTRING (10, 90), "Halftone Dithering: Simulates traditional print halftone screens."
                 _PRINTSTRING (10, 110), "Creates dot patterns that vary in size based on local brightness."
                 _PRINTSTRING (10, 130), "Classic newspaper and magazine printing effect."
-            CASE 1  ' Spiral
+            CASE 1                      ' Spiral
                 _PRINTSTRING (10, 90), "Spiral Dithering: Uses spiral patterns for artistic effect."
                 _PRINTSTRING (10, 110), "Creates flowing, organic patterns that follow image contours."
                 _PRINTSTRING (10, 130), "Good for artistic and decorative applications."
-            CASE 2  ' Clustered Dot
+            CASE 2                      ' Clustered Dot
                 _PRINTSTRING (10, 90), "Clustered Dot Dithering: Groups pixels into clustered patterns."
                 _PRINTSTRING (10, 110), "Reduces graininess while maintaining detail."
                 _PRINTSTRING (10, 130), "Used in some printing applications for smooth tones."
@@ -112,19 +112,19 @@ DO
             DIM detailY AS INTEGER
             detailY = 180 + _HEIGHT(originalImage) + 20
             
-            COLOR _RGB32(200, 200, 255)  ' Light blue for effect details
-            IF ditherAmount <= 0.2 THEN
+            COLOR _RGB32(200, 200, 255) ' Light blue for effect details
+            IF ditherAmount < = 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Subtle pattern visibility, preserves smooth areas"
-            ELSEIF ditherAmount <= 0.5 THEN
+            ELSEIF ditherAmount < = 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Clear pattern structure, balanced effect"
-            ELSEIF ditherAmount <= 0.8 THEN
+            ELSEIF ditherAmount < = 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong pattern dominance, artistic effect"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full pattern application, maximum stylization"
             END IF
             
             ' Pattern-specific characteristics
-            COLOR _RGB32(255, 200, 255)  ' Light magenta
+            COLOR _RGB32(255, 200, 255) ' Light magenta
             SELECT CASE patternType
                 CASE 0
                     _PRINTSTRING (10, detailY + 20), "Halftone creates variable-sized dots mimicking traditional print reproduction."
@@ -135,7 +135,7 @@ DO
             END SELECT
             
             ' Usage recommendations
-            COLOR _RGB32(200, 255, 255)  ' Light cyan
+            COLOR _RGB32(200, 255, 255) ' Light cyan
             SELECT CASE patternType
                 CASE 0
                     _PRINTSTRING (10, detailY + 40), "Best for: Retro print effects, newspaper style, vintage look"
@@ -154,16 +154,16 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H" ' UP arrow
             ditherAmount = ditherAmount + 0.05
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P" ' DOWN arrow
             ditherAmount = ditherAmount - 0.05
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
-        CASE CHR$(0) + "K"  ' LEFT arrow
+        CASE CHR$(0) + "K" ' LEFT arrow
             patternType = patternType - 1
             IF patternType < 0 THEN patternType = 2
-        CASE CHR$(0) + "M"  ' RIGHT arrow
+        CASE CHR$(0) + "M" ' RIGHT arrow
             patternType = patternType + 1
             IF patternType > 2 THEN patternType = 0
     END SELECT

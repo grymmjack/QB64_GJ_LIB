@@ -8,29 +8,29 @@
 PRINT "Levels Adjustment Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
-DIM inputMin AS INTEGER
-DIM inputMax AS INTEGER
-DIM outputMin AS INTEGER
-DIM outputMax AS INTEGER
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
+DIM inputMin       AS INTEGER
+DIM inputMax       AS INTEGER
+DIM outputMin      AS INTEGER
+DIM outputMax      AS INTEGER
 DIM parameterIndex AS INTEGER
-DIM oldInputMin AS INTEGER
-DIM oldInputMax AS INTEGER
-DIM oldOutputMin AS INTEGER
-DIM oldOutputMax AS INTEGER
-DIM oldParam AS INTEGER
+DIM oldInputMin    AS INTEGER
+DIM oldInputMax    AS INTEGER
+DIM oldOutputMin   AS INTEGER
+DIM oldOutputMax   AS INTEGER
+DIM oldParam       AS INTEGER
 
-inputMin = 0        ' Default input min (0-255)
-inputMax = 255      ' Default input max (0-255)
-outputMin = 0       ' Default output min (0-255)
-outputMax = 255     ' Default output max (0-255)
-parameterIndex = 0  ' 0=inputMin, 1=inputMax, 2=outputMin, 3=outputMax
-oldInputMin = -1    ' Force initial update
-oldInputMax = -1
-oldOutputMin = -1
-oldOutputMax = -1
-oldParam = -1
+inputMin       = 0   ' Default input min (0-255)
+inputMax       = 255 ' Default input max (0-255)
+outputMin      = 0   ' Default output min (0-255)
+outputMax      = 255 ' Default output max (0-255)
+parameterIndex = 0   ' 0=inputMin, 1=inputMax, 2=outputMin, 3=outputMax
+oldInputMin    = -1  ' Force initial update
+oldInputMax    = -1
+oldOutputMin   = -1
+oldOutputMax   = -1
+oldParam       = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -62,14 +62,14 @@ DO
         ' Apply levels effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Levels(originalImage, inputMin, inputMax, outputMin, outputMax)
-        oldInputMin = inputMin
-        oldInputMax = inputMax
-        oldOutputMin = outputMin
-        oldOutputMax = outputMax
-        oldParam = parameterIndex
+        oldInputMin   = inputMin
+        oldInputMax   = inputMax
+        oldOutputMin  = outputMin
+        oldOutputMax  = outputMax
+        oldParam      = parameterIndex
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0      ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -78,8 +78,8 @@ DO
         
         ' Show current parameter values with highlighting
         DIM inMinStr AS STRING, inMaxStr AS STRING, outMinStr AS STRING, outMaxStr AS STRING
-        inMinStr = "Input Min: " + STR$(inputMin)
-        inMaxStr = "Input Max: " + STR$(inputMax)
+        inMinStr  = "Input Min: " + STR$(inputMin)
+        inMaxStr  = "Input Max: " + STR$(inputMax)
         outMinStr = "Output Min: " + STR$(outputMin)
         outMaxStr = "Output Max: " + STR$(outputMax)
         
@@ -112,30 +112,30 @@ DO
     SELECT CASE k
         CASE "+", "="
             SELECT CASE parameterIndex
-                CASE 0: IF inputMin < 254 THEN inputMin = inputMin + 5
-                CASE 1: IF inputMax < 255 THEN inputMax = inputMax + 5
-                CASE 2: IF outputMin < 254 THEN outputMin = outputMin + 5
-                CASE 3: IF outputMax < 255 THEN outputMax = outputMax + 5
+                CASE 0 : IF inputMin < 254 THEN inputMin   = inputMin + 5
+                CASE 1 : IF inputMax < 255 THEN inputMax   = inputMax + 5
+                CASE 2 : IF outputMin < 254 THEN outputMin = outputMin + 5
+                CASE 3 : IF outputMax < 255 THEN outputMax = outputMax + 5
             END SELECT
         CASE "-"
             SELECT CASE parameterIndex
-                CASE 0: IF inputMin > 0 THEN inputMin = inputMin - 5
-                CASE 1: IF inputMax > 1 THEN inputMax = inputMax - 5
-                CASE 2: IF outputMin > 0 THEN outputMin = outputMin - 5
-                CASE 3: IF outputMax > 1 THEN outputMax = outputMax - 5
+                CASE 0 : IF inputMin > 0 THEN inputMin   = inputMin - 5
+                CASE 1 : IF inputMax > 1 THEN inputMax   = inputMax - 5
+                CASE 2 : IF outputMin > 0 THEN outputMin = outputMin - 5
+                CASE 3 : IF outputMax > 1 THEN outputMax = outputMax - 5
             END SELECT
-        CASE CHR$(9)  ' TAB key
+        CASE CHR$(9) ' TAB key
             parameterIndex = (parameterIndex + 1) MOD 4
         CASE "r", "R"
-            inputMin = 0
-            inputMax = 255
+            inputMin  = 0
+            inputMax  = 255
             outputMin = 0
             outputMax = 255
     END SELECT
     
     ' Ensure input min < input max and output min < output max
-    IF inputMin >= inputMax THEN inputMin = inputMax - 1
-    IF outputMin >= outputMax THEN outputMin = outputMax - 1
+    IF inputMin > = inputMax THEN inputMin = inputMax - 1
+    IF outputMin > = outputMax THEN outputMin = outputMax - 1
     
     _LIMIT 60
 LOOP UNTIL _KEYDOWN(27) ' ESC key

@@ -5,8 +5,8 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM ase_img AS ASEPRITE_IMAGE
+DIM filename  AS STRING
+DIM ase_img   AS ASEPRITE_IMAGE
 DIM composite AS LONG
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"

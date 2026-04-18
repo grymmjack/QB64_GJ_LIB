@@ -14,7 +14,7 @@ _TITLE "Message Box / Input Box Test"
 
 '$INCLUDE:'MSG-BOX.BI'
 
-DIM result AS INTEGER
+DIM result      AS INTEGER
 DIM inputResult AS STRING
 
 ' --- Draw background gradient ---
@@ -70,10 +70,10 @@ _DISPLAY
 ' ==========================================================================
 result = MB_message_box%("Unsaved Work", "Save changes to 'untitled.drw'?", MB_BTN_YES_NO_CANCEL, MB_ICON_QUESTION)
 SELECT CASE result
-    CASE MB_RESULT_1: PRINT "Test 5 (Yes/No/Cancel): YES"
-    CASE MB_RESULT_2: PRINT "Test 5 (Yes/No/Cancel): NO"
-    CASE MB_RESULT_3: PRINT "Test 5 (Yes/No/Cancel): CANCEL"
-    CASE ELSE:        PRINT "Test 5 (Yes/No/Cancel): Closed"
+    CASE MB_RESULT_1 : PRINT "Test 5 (Yes/No/Cancel): YES"
+    CASE MB_RESULT_2 : PRINT "Test 5 (Yes/No/Cancel): NO"
+    CASE MB_RESULT_3 : PRINT "Test 5 (Yes/No/Cancel): CANCEL"
+    CASE ELSE        : PRINT "Test 5 (Yes/No/Cancel): Closed"
 END SELECT
 _DISPLAY
 
@@ -93,9 +93,9 @@ _DISPLAY
 ' ==========================================================================
 result = MB_message_box%("Connection Error", "Failed to connect to the server." + CHR$(10) + "Check your network connection and try again.", MB_BTN_RETRY_CANCEL, MB_ICON_ERROR)
 SELECT CASE result
-    CASE MB_RESULT_1: PRINT "Test 7 (Retry/Cancel): RETRY"
-    CASE MB_RESULT_2: PRINT "Test 7 (Retry/Cancel): CANCEL"
-    CASE ELSE:        PRINT "Test 7 (Retry/Cancel): Closed"
+    CASE MB_RESULT_1 : PRINT "Test 7 (Retry/Cancel): RETRY"
+    CASE MB_RESULT_2 : PRINT "Test 7 (Retry/Cancel): CANCEL"
+    CASE ELSE        : PRINT "Test 7 (Retry/Cancel): Closed"
 END SELECT
 _DISPLAY
 

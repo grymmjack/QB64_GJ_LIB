@@ -6,10 +6,10 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
+DIM filename     AS STRING
 DIM aseprite_img AS ASEPRITE_IMAGE
-DIM i AS INTEGER
-DIM layer_count AS INTEGER
+DIM i            AS INTEGER
+DIM layer_count  AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -82,7 +82,7 @@ FOR i = 0 TO 9
     END IF
 NEXT i
 
-_DEST 0 ' Back to screen
+_DEST 0                   ' Back to screen
 
 PRINT "Layer compositing complete!"
 PRINT
@@ -93,7 +93,7 @@ _TITLE "Manual Layer-by-Layer Z-Index Composite"
 CLS , _RGB32(64, 64, 64)
 
 ' Display the composite at large scale
-DIM scale AS SINGLE
+DIM scale     AS SINGLE
 scale = 15.0
 DIM display_x AS INTEGER
 DIM display_y AS INTEGER

@@ -48,7 +48,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_is_dir% (path AS STRING)
     DIM cPath AS STRING
-    cPath = path + CHR$(0)
+    cPath           = path + CHR$(0)
     FD_PLAT_is_dir% = (fd_is_directory%(cPath) <> 0)
 END FUNCTION
 
@@ -57,7 +57,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_get_file_size&& (path AS STRING)
     DIM cPath AS STRING
-    cPath = path + CHR$(0)
+    cPath                   = path + CHR$(0)
     FD_PLAT_get_file_size&& = fd_file_size&&(cPath)
 END FUNCTION
 
@@ -66,7 +66,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_get_file_mtime&& (path AS STRING)
     DIM cPath AS STRING
-    cPath = path + CHR$(0)
+    cPath                    = path + CHR$(0)
     FD_PLAT_get_file_mtime&& = fd_file_mtime&&(cPath)
 END FUNCTION
 
@@ -75,7 +75,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_is_hidden% (path AS STRING)
     DIM cPath AS STRING
-    cPath = path + CHR$(0)
+    cPath              = path + CHR$(0)
     FD_PLAT_is_hidden% = (fd_is_hidden%(cPath) <> 0)
 END FUNCTION
 
@@ -83,7 +83,7 @@ END FUNCTION
 ' FD_PLAT_format_mtime$ — Format epoch seconds to "YYYY-MM-DD HH:MM"
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_format_mtime$ (epoch AS _INTEGER64)
-    DIM buf AS STRING
+    DIM buf    AS STRING
     buf = SPACE$(32)
     DIM result AS INTEGER
     result = fd_format_mtime%(epoch, buf, 32)
@@ -99,26 +99,26 @@ END FUNCTION
 '   Returns number of entries found (0 on error)
 ' --------------------------------------------------------------------------
 FUNCTION FD_PLAT_enumerate_dir% (path AS STRING)
-    DIM cPath AS STRING
-    DIM buf AS STRING
-    DIM slot AS INTEGER
-    DIM count AS INTEGER
+    DIM cPath    AS STRING
+    DIM buf      AS STRING
+    DIM slot     AS INTEGER
+    DIM count    AS INTEGER
     DIM fullPath AS STRING
-    DIM sep AS STRING
+    DIM sep      AS STRING
 
-    sep = FD_PLAT_get_separator$
+    sep   = FD_PLAT_get_separator$
     cPath = path + CHR$(0)
-    slot = fd_open_dir%(cPath)
+    slot  = fd_open_dir%(cPath)
     IF slot < 0 THEN
         FD_PLAT_enumerate_dir% = 0
         EXIT FUNCTION
     END IF
 
     count = 0
-    buf = SPACE$(260)
+    buf   = SPACE$(260)
 
     DO WHILE fd_read_entry%(slot, buf, 260) <> 0
-        IF count >= FD_MAX_ENTRIES THEN EXIT DO
+        IF count > = FD_MAX_ENTRIES THEN EXIT DO
 
         DIM entryName AS STRING
         entryName = FD_PLAT_trim_cstr$(buf)
@@ -137,21 +137,21 @@ FUNCTION FD_PLAT_enumerate_dir% (path AS STRING)
         DIM cFull AS STRING
         cFull = fullPath + CHR$(0)
 
-        FD_entries(count).fileName = entryName
-        FD_entries(count).isDirectory = (fd_is_directory%(cFull) <> 0)
-        FD_entries(count).isHidden = (fd_is_hidden%(cFull) <> 0)
-        FD_entries(count).fileSize = fd_file_size&&(cFull)
+        FD_entries(count).fileName     = entryName
+        FD_entries(count).isDirectory  = (fd_is_directory%(cFull) <> 0)
+        FD_entries(count).isHidden     = (fd_is_hidden%(cFull) <> 0)
+        FD_entries(count).fileSize     = fd_file_size&&(cFull)
         FD_entries(count).modifiedTime = fd_file_mtime&&(cFull)
-        FD_entries(count).thumbHandle = -1
-        FD_entries(count).thumbState = FD_THUMB_PENDING
-        FD_entries(count).selected = 0
+        FD_entries(count).thumbHandle  = -1
+        FD_entries(count).thumbState   = FD_THUMB_PENDING
+        FD_entries(count).selected     = 0
 
         ' Extract extension
         DIM dotPos AS INTEGER
-        DIM ext AS STRING
+        DIM ext    AS STRING
         dotPos = _INSTRREV(entryName, ".")
         IF dotPos > 1 AND NOT FD_entries(count).isDirectory THEN
-            ext = LCASE$(MID$(entryName, dotPos + 1))
+            ext                         = LCASE$(MID$(entryName, dotPos + 1))
             FD_entries(count).extension = ext
         ELSE
             FD_entries(count).extension = ""
@@ -215,7 +215,7 @@ FUNCTION FD_PLAT_path_parent$ (path AS STRING)
     FOR i = LEN(p) TO 1 STEP -1
         IF MID$(p, i, 1) = "/" OR MID$(p, i, 1) = "\" THEN
             IF i = 1 THEN
-                FD_PLAT_path_parent$ = LEFT$(p, 1)   ' Root
+                FD_PLAT_path_parent$ = LEFT$(p, 1) ' Root
             ELSE
                 ' On Windows, keep "C:\" not "C:"
                 IF i = 3 AND MID$(p, 2, 1) = ":" THEN
@@ -227,7 +227,7 @@ FUNCTION FD_PLAT_path_parent$ (path AS STRING)
             EXIT FUNCTION
         END IF
     NEXT i
-    FD_PLAT_path_parent$ = p  ' No separator found, return as-is
+    FD_PLAT_path_parent$ = p ' No separator found, return as-is
 END FUNCTION
 
 ' FD_PLAT_path_filename$ — Get filename from a full path
@@ -244,9 +244,9 @@ END FUNCTION
 
 ' FD_PLAT_path_extension$ — Get lowercase file extension (without dot)
 FUNCTION FD_PLAT_path_extension$ (path AS STRING)
-    DIM fn AS STRING
+    DIM fn     AS STRING
     DIM dotPos AS INTEGER
-    fn = FD_PLAT_path_filename$(path)
+    fn     = FD_PLAT_path_filename$(path)
     dotPos = _INSTRREV(fn, ".")
     IF dotPos > 1 THEN
         FD_PLAT_path_extension$ = LCASE$(MID$(fn, dotPos + 1))
@@ -258,9 +258,9 @@ END FUNCTION
 ' FD_PLAT_normalize_path$ — Normalize separators to platform standard
 FUNCTION FD_PLAT_normalize_path$ (path AS STRING)
     DIM result AS STRING
-    DIM sep AS STRING
-    DIM i AS INTEGER
-    sep = FD_PLAT_get_separator$
+    DIM sep    AS STRING
+    DIM i      AS INTEGER
+    sep    = FD_PLAT_get_separator$
     result = path
 
     ' Expand ~ to home directory

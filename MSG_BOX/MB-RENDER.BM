@@ -13,7 +13,7 @@ $INCLUDEONCE
 ' MB_RENDER_all — Master render function: draws the entire dialog
 ' --------------------------------------------------------------------------
 SUB MB_RENDER_all
-    IF MB_STATE.imgHandle >= -1 THEN EXIT SUB
+    IF MB_STATE.imgHandle > = -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -37,8 +37,8 @@ END SUB
 ' MB_RENDER_blit — Composite dialog over screen background
 ' --------------------------------------------------------------------------
 SUB MB_RENDER_blit
-    IF MB_STATE.imgHandle >= -1 THEN EXIT SUB
-    IF MB_STATE.screenShot >= -1 THEN EXIT SUB
+    IF MB_STATE.imgHandle > = -1 THEN EXIT SUB
+    IF MB_STATE.screenShot > = -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -108,7 +108,7 @@ SUB MB_RENDER_content
     END IF
 
     ' Message text (pre-wrapped lines)
-    DIM i AS INTEGER
+    DIM i        AS INTEGER
     DIM lineText AS STRING
     COLOR MB_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FOR i = 0 TO MB_STATE.messageLineCount - 1
@@ -134,11 +134,11 @@ SUB MB_RENDER_icon (x AS INTEGER, y AS INTEGER)
     DIM iconImg AS LONG
     iconImg& = 0
     SELECT CASE MB_STATE.icon
-        CASE MB_ICON_INFO:     iconImg& = MB_STATE.iconImgInfo
-        CASE MB_ICON_WARNING:  iconImg& = MB_STATE.iconImgWarning
-        CASE MB_ICON_ERROR:    iconImg& = MB_STATE.iconImgError
-        CASE MB_ICON_QUESTION: iconImg& = MB_STATE.iconImgQuestion
-        CASE ELSE: EXIT SUB
+        CASE MB_ICON_INFO     : iconImg& = MB_STATE.iconImgInfo
+        CASE MB_ICON_WARNING  : iconImg& = MB_STATE.iconImgWarning
+        CASE MB_ICON_ERROR    : iconImg& = MB_STATE.iconImgError
+        CASE MB_ICON_QUESTION : iconImg& = MB_STATE.iconImgQuestion
+        CASE ELSE             : EXIT SUB
     END SELECT
 
     IF iconImg& < -1 THEN
@@ -149,21 +149,21 @@ SUB MB_RENDER_icon (x AS INTEGER, y AS INTEGER)
     END IF
 
     ' Procedural fallback
-    DIM clr AS _UNSIGNED LONG
+    DIM clr   AS _UNSIGNED LONG
     DIM glyph AS STRING
 
     SELECT CASE MB_STATE.icon
         CASE MB_ICON_INFO
-            clr = MB_CLR_ICON_INFO~&
+            clr   = MB_CLR_ICON_INFO~&
             glyph = "i"
         CASE MB_ICON_WARNING
-            clr = MB_CLR_ICON_WARNING~&
+            clr   = MB_CLR_ICON_WARNING~&
             glyph = "!"
         CASE MB_ICON_ERROR
-            clr = MB_CLR_ICON_ERROR~&
+            clr   = MB_CLR_ICON_ERROR~&
             glyph = "X"
         CASE MB_ICON_QUESTION
-            clr = MB_CLR_ICON_QUESTION~&
+            clr   = MB_CLR_ICON_QUESTION~&
             glyph = "?"
         CASE ELSE
             EXIT SUB
@@ -173,7 +173,7 @@ SUB MB_RENDER_icon (x AS INTEGER, y AS INTEGER)
     DIM cx AS INTEGER, cy AS INTEGER, r AS INTEGER
     cx = x + MB_ICON_SIZE \ 2
     cy = y + MB_ICON_SIZE \ 2
-    r = MB_ICON_SIZE \ 2 - 2
+    r  = MB_ICON_SIZE \ 2 - 2
     CIRCLE (cx, cy), r, clr
     CIRCLE (cx, cy), r - 1, clr
 
@@ -198,18 +198,18 @@ SUB MB_RENDER_button_bar
     ' Calculate button positions (right-aligned)
     DIM totalW AS INTEGER
     DIM startX AS INTEGER
-    DIM i AS INTEGER
-    DIM bx AS INTEGER, by AS INTEGER
-    DIM lbl AS STRING
-    DIM bgClr AS _UNSIGNED LONG
+    DIM i      AS INTEGER
+    DIM bx     AS INTEGER, by AS INTEGER
+    DIM lbl    AS STRING
+    DIM bgClr  AS _UNSIGNED LONG
     DIM txtClr AS _UNSIGNED LONG
 
     totalW = MB_STATE.buttonCount * MB_BUTTON_W + (MB_STATE.buttonCount - 1) * MB_BUTTON_GAP
     startX = MB_STATE.dialogW - MB_PADDING - totalW
-    by = y1 + (MB_BUTTON_BAR_H - MB_BUTTON_H) \ 2
+    by     = y1 + (MB_BUTTON_BAR_H - MB_BUTTON_H) \ 2
 
     FOR i = 0 TO MB_STATE.buttonCount - 1
-        bx = startX + i * (MB_BUTTON_W + MB_BUTTON_GAP)
+        bx  = startX + i * (MB_BUTTON_W + MB_BUTTON_GAP)
         lbl = RTRIM$(MB_buttons(i).label)
 
         ' Determine colors

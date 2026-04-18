@@ -3,10 +3,10 @@ $CONSOLE:ONLY
 '$INCLUDE:'ASEPRITE.BI'
 
 DIM file_handle AS INTEGER
-DIM file_path AS STRING
-DIM file_size AS LONG
-DIM search_pos AS LONG
-DIM magic AS _UNSIGNED INTEGER
+DIM file_path   AS STRING
+DIM file_size   AS LONG
+DIM search_pos  AS LONG
+DIM magic       AS _UNSIGNED INTEGER
 
 file_path = "test-files\jup-jerk.aseprite"
 
@@ -31,9 +31,9 @@ FOR search_pos = 1 TO file_size - 1
         PRINT "Found frame magic at position: "; search_pos
         
         ' Read a bit more context around this position
-        DIM num_bytes AS _UNSIGNED LONG
+        DIM num_bytes  AS _UNSIGNED LONG
         DIM old_chunks AS _UNSIGNED INTEGER
-        DIM duration AS _UNSIGNED INTEGER
+        DIM duration   AS _UNSIGNED INTEGER
         
         SEEK #file_handle, search_pos - 4
         GET #file_handle, , num_bytes

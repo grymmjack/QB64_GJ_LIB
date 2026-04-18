@@ -58,21 +58,21 @@ SYSTEM
 ' @return LONG Image handle (0 if failed)
 ''
 FUNCTION create_aseprite_image_from_layer_simple& (filename AS STRING, layer_index AS INTEGER)
-    DIM file_handle AS INTEGER
-    DIM header AS ASEPRITE_HEADER
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
-    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
-    DIM layer_chunk AS ASEPRITE_LAYER_CHUNK
+    DIM file_handle         AS INTEGER
+    DIM header              AS ASEPRITE_HEADER
+    DIM frame_header        AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header        AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk           AS ASEPRITE_CEL_CHUNK
+    DIM layer_chunk         AS ASEPRITE_LAYER_CHUNK
     DIM current_layer_index AS INTEGER
-    DIM found_layer AS INTEGER
-    DIM i AS INTEGER
-    DIM j AS INTEGER
-    DIM chunk_start_pos AS LONG
-    DIM chunk_end_pos AS LONG
-    DIM layer_name_len AS INTEGER
-    DIM current_layer_name AS STRING
-    DIM actual_chunks AS LONG
+    DIM found_layer         AS INTEGER
+    DIM i                   AS INTEGER
+    DIM j                   AS INTEGER
+    DIM chunk_start_pos     AS LONG
+    DIM chunk_end_pos       AS LONG
+    DIM layer_name_len      AS INTEGER
+    DIM current_layer_name  AS STRING
+    DIM actual_chunks       AS LONG
     
     create_aseprite_image_from_layer_simple& = 0
     
@@ -98,7 +98,7 @@ FUNCTION create_aseprite_image_from_layer_simple& (filename AS STRING, layer_ind
     IF actual_chunks = 0 THEN actual_chunks = frame_header.old_chunks
     
     current_layer_index = 0
-    found_layer = 0
+    found_layer         = 0
     
     ' Parse chunks to find layers and cels
     FOR j = 1 TO actual_chunks
@@ -151,16 +151,16 @@ END FUNCTION
 ' @return LONG Image handle (0 if failed)
 ''
 FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_CHUNK, color_depth AS INTEGER, chunk_size AS LONG)
-    DIM cel_width AS INTEGER
-    DIM cel_height AS INTEGER
-    DIM compressed_data AS STRING
+    DIM cel_width         AS INTEGER
+    DIM cel_height        AS INTEGER
+    DIM compressed_data   AS STRING
     DIM uncompressed_data AS STRING
-    DIM data_size AS LONG
-    DIM cel_image AS LONG
-    DIM x AS INTEGER
-    DIM y AS INTEGER
-    DIM pixel_color AS _UNSIGNED LONG
-    DIM pixel_offset AS LONG
+    DIM data_size         AS LONG
+    DIM cel_image         AS LONG
+    DIM x                 AS INTEGER
+    DIM y                 AS INTEGER
+    DIM pixel_color       AS _UNSIGNED LONG
+    DIM pixel_offset      AS LONG
     
     extract_cel_simple& = 0
     
@@ -170,10 +170,10 @@ FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_
             GET file_handle, , cel_width
             GET file_handle, , cel_height
             
-            IF cel_width <= 0 OR cel_height <= 0 THEN EXIT FUNCTION
+            IF cel_width < = 0 OR cel_height < = 0 THEN EXIT FUNCTION
             
             ' Read compressed data
-            data_size = chunk_size - 16 - 4 ' chunk header + cel header + width/height
+            data_size       = chunk_size - 16 - 4 ' chunk header + cel header + width/height
             compressed_data = SPACE$(data_size)
             GET file_handle, , compressed_data
             
@@ -191,7 +191,7 @@ FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_
                 FOR x = 0 TO cel_width - 1
                     pixel_offset = (y * cel_width + x) * (color_depth \ 8) + 1
                     
-                    IF pixel_offset + (color_depth \ 8) <= LEN(uncompressed_data) THEN
+                    IF pixel_offset + (color_depth \ 8) < = LEN(uncompressed_data) THEN
                         SELECT CASE color_depth
                             CASE 32 ' RGBA
                                 DIM r AS _UNSIGNED _BYTE
@@ -215,7 +215,7 @@ FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_
                                 
                                 pixel_color = _RGBA32(value, value, value, alpha)
                                 
-                            CASE 8 ' Indexed (simplified - would need palette)
+                            CASE 8  ' Indexed (simplified - would need palette)
                                 DIM index AS _UNSIGNED _BYTE
                                 index = ASC(MID$(uncompressed_data, pixel_offset, 1))
                                 

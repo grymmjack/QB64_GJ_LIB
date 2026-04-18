@@ -14,50 +14,50 @@ _TITLE "Text Input Widget Test"
 '$INCLUDE:'TEXT-INPUT.BI'
 
 ' --- Create some test inputs ---
-DIM pathInput AS INTEGER
-DIM nameInput AS INTEGER
-DIM passInput AS INTEGER
+DIM pathInput     AS INTEGER
+DIM nameInput     AS INTEGER
+DIM passInput     AS INTEGER
 DIM readOnlyInput AS INTEGER
 
-pathInput = TI_create%(10, 40, 780, 24)
+pathInput                        = TI_create%(10, 40, 780, 24)
 TI_inputs(pathInput).placeholder = "Enter a file path here (try ~, Ctrl+A, Ctrl+C/V)..."
 TI_set_text pathInput, "/home/user/documents"
 
-nameInput = TI_create%(10, 100, 400, 24)
+nameInput                        = TI_create%(10, 100, 400, 24)
 TI_inputs(nameInput).placeholder = "Filename..."
 
-passInput = TI_create%(10, 160, 300, 24)
+passInput                        = TI_create%(10, 160, 300, 24)
 TI_inputs(passInput).placeholder = "Password (masked)..."
-TI_inputs(passInput).password = -1
+TI_inputs(passInput).password    = -1
 
-readOnlyInput = TI_create%(10, 220, 780, 24)
+readOnlyInput                     = TI_create%(10, 220, 780, 24)
 TI_inputs(readOnlyInput).readOnly = -1
 TI_set_text readOnlyInput, "This is read-only. You can select and copy (Ctrl+C) but not edit."
 
 ' Custom themed input
 DIM customInput AS INTEGER
-customInput = TI_create%(10, 280, 400, 28)
-TI_inputs(customInput).placeholder = "Custom themed input..."
-TI_inputs(customInput).theme.bgColor = &HFF1A1A2E
-TI_inputs(customInput).theme.focusBgColor = &HFF16213E
-TI_inputs(customInput).theme.borderColor = &HFF0F3460
+customInput                                   = TI_create%(10, 280, 400, 28)
+TI_inputs(customInput).placeholder            = "Custom themed input..."
+TI_inputs(customInput).theme.bgColor          = &HFF1A1A2E
+TI_inputs(customInput).theme.focusBgColor     = &HFF16213E
+TI_inputs(customInput).theme.borderColor      = &HFF0F3460
 TI_inputs(customInput).theme.focusBorderColor = &HFF533483
-TI_inputs(customInput).theme.textColor = &HFFE94560
-TI_inputs(customInput).theme.cursorColor = &HFFE94560
-TI_inputs(customInput).theme.selectionColor = &HFF533483
+TI_inputs(customInput).theme.textColor        = &HFFE94560
+TI_inputs(customInput).theme.cursorColor      = &HFFE94560
+TI_inputs(customInput).theme.selectionColor   = &HFF533483
 
 ' --- Multiline text areas ---
 DIM textArea AS INTEGER
-textArea = TI_create%(10, 345, 380, 160)
-TI_inputs(textArea).multiline = -1
+textArea                        = TI_create%(10, 345, 380, 160)
+TI_inputs(textArea).multiline   = -1
 TI_inputs(textArea).placeholder = "Type or paste multiline text here..."
 TI_set_text textArea, "Line one - hello world" + CHR$(10) + "Line two - arrows Up/Down navigate" + CHR$(10) + "Line three - Home/End per line" + CHR$(10) + "Line four - Ctrl+Home/End for doc edges" + CHR$(10) + "Line five - selection with Shift" + CHR$(10) + "Line six - Enter inserts new lines" + CHR$(10) + "Line seven - scrolls vertically too" + CHR$(10) + "Line eight - try Ctrl+A then Ctrl+C"
 
 DIM readOnlyArea AS INTEGER
-readOnlyArea = TI_create%(400, 345, 390, 160)
-TI_inputs(readOnlyArea).multiline = -1
-TI_inputs(readOnlyArea).readOnly = -1
-TI_inputs(readOnlyArea).theme.bgColor = &HFF2D2D30
+readOnlyArea                              = TI_create%(400, 345, 390, 160)
+TI_inputs(readOnlyArea).multiline         = -1
+TI_inputs(readOnlyArea).readOnly          = -1
+TI_inputs(readOnlyArea).theme.bgColor     = &HFF2D2D30
 TI_inputs(readOnlyArea).theme.borderColor = &HFF444444
 TI_set_text readOnlyArea, "=== Read-Only Text Area ===" + CHR$(10) + CHR$(10) + "This area is read-only." + CHR$(10) + "You can select text and copy it," + CHR$(10) + "but you cannot edit content." + CHR$(10) + CHR$(10) + "Useful for log output, code" + CHR$(10) + "preview, or info display." + CHR$(10) + CHR$(10) + "Scroll with Up/Down/PgUp/PgDn."
 
@@ -68,9 +68,9 @@ totalInputs = 7
 TI_set_focus pathInput
 
 ' --- Main loop ---
-DIM k AS LONG
+DIM k         AS LONG
 DIM focusedId AS INTEGER
-DIM oldMB1 AS INTEGER
+DIM oldMB1    AS INTEGER
 oldMB1 = 0
 
 DO
@@ -149,7 +149,7 @@ DO
         statusLine = "Focused: #" + LTRIM$(STR$(TI_focusedId))
         statusLine = statusLine + "  Cursor: " + LTRIM$(STR$(TI_inputs(TI_focusedId).cursorPos))
         statusLine = statusLine + "  Len: " + LTRIM$(STR$(TI_inputs(TI_focusedId).textLen))
-        IF TI_inputs(TI_focusedId).selStart >= 0 THEN
+        IF TI_inputs(TI_focusedId).selStart > = 0 THEN
             statusLine = statusLine + "  Sel: " + LTRIM$(STR$(TI_inputs(TI_focusedId).selStart))
             statusLine = statusLine + "-" + LTRIM$(STR$(TI_inputs(TI_focusedId).selEnd))
         END IF
@@ -170,7 +170,7 @@ DO
 
     _DISPLAY
     _LIMIT 60
-LOOP UNTIL k = 27 AND TI_focusedId = 0  ' Escape when nothing focused = quit
+LOOP UNTIL k = 27 AND TI_focusedId = 0 ' Escape when nothing focused = quit
 
 ' Clean up
 TI_destroy pathInput

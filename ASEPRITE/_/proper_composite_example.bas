@@ -32,8 +32,8 @@ IF load_aseprite_file(filename, aseprite) THEN
     
     ' Now add other layers with their relative offsets
     DIM layer_list(1 TO 9) AS INTEGER
-    layer_list(1) = 1: layer_list(2) = 2: layer_list(3) = 3: layer_list(4) = 4
-    layer_list(5) = 5: layer_list(6) = 6: layer_list(7) = 7: layer_list(8) = 8
+    layer_list(1) = 1 : layer_list(2) = 2 : layer_list(3) = 3 : layer_list(4) = 4
+    layer_list(5) = 5 : layer_list(6) = 6 : layer_list(7) = 7 : layer_list(8) = 8
     layer_list(9) = 9
     
     DIM i AS INTEGER

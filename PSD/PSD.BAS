@@ -41,12 +41,12 @@ CONST BLEND_LUMINOSITY   = 18
 $CONSOLE
 
 DIM filename AS STRING
-DIM i AS INTEGER
+DIM i        AS INTEGER
 DIM layerImg AS LONG
-DIM ZOOM AS INTEGER
+DIM ZOOM     AS INTEGER
 
 ' --- Parse command line or use default ---
-IF _COMMANDCOUNT >= 1 THEN
+IF _COMMANDCOUNT > = 1 THEN
     filename$ = COMMAND$(1)
 ELSE
     filename$ = "./test-files/DJ Trapezoid - Pumpkin Head.psd"
@@ -69,9 +69,9 @@ _ECHO "  Dimensions: " + _TRIM$(STR$(PSD_IMG.header.width)) + " x " + _TRIM$(STR
 _ECHO "  Channels:   " + _TRIM$(STR$(PSD_IMG.header.channels))
 _ECHO "  Depth:      " + _TRIM$(STR$(PSD_IMG.header.depth)) + " bpp"
 SELECT CASE PSD_IMG.header.color_mode
-    CASE PSD_MODE_RGB:       _ECHO "  Color Mode: RGB"
-    CASE PSD_MODE_GRAYSCALE: _ECHO "  Color Mode: Grayscale"
-    CASE ELSE:               _ECHO "  Color Mode: " + _TRIM$(STR$(PSD_IMG.header.color_mode))
+    CASE PSD_MODE_RGB       : _ECHO "  Color Mode: RGB"
+    CASE PSD_MODE_GRAYSCALE : _ECHO "  Color Mode: Grayscale"
+    CASE ELSE               : _ECHO "  Color Mode: " + _TRIM$(STR$(PSD_IMG.header.color_mode))
 END SELECT
 _ECHO "  Layers:     " + _TRIM$(STR$(PSD_IMG.layer_count))
 _ECHO ""
@@ -82,14 +82,14 @@ IF PSD_IMG.layer_count > 0 THEN
     _ECHO "  # | Depth | Name                           | Size       | Opacity | Visible | Blend"
     _ECHO "----+-------+--------------------------------+------------+---------+---------+------"
     FOR i% = 1 TO PSD_IMG.layer_count
-        DIM lName AS STRING
-        DIM lW AS LONG, lH AS LONG
-        DIM vis AS STRING, grp AS STRING
+        DIM lName  AS STRING
+        DIM lW     AS LONG, lH AS LONG
+        DIM vis    AS STRING, grp AS STRING
         DIM indent AS STRING
 
         lName$ = LEFT$(PSD_LAYERS(i%).name, PSD_LAYERS(i%).name_len)
-        lW& = PSD_LAYERS(i%).right - PSD_LAYERS(i%).left
-        lH& = PSD_LAYERS(i%).bottom - PSD_LAYERS(i%).top
+        lW&    = PSD_LAYERS(i%).right - PSD_LAYERS(i%).left
+        lH&    = PSD_LAYERS(i%).bottom - PSD_LAYERS(i%).top
 
         IF PSD_LAYERS(i%).visible THEN vis$ = "Yes" ELSE vis$ = "No"
         IF PSD_LAYERS(i%).is_group THEN
@@ -119,9 +119,9 @@ IF compositeW& > 0 AND compositeH& > 0 THEN
     DIM maxW AS LONG, maxH AS LONG
     maxW& = _DESKTOPWIDTH - 100
     maxH& = _DESKTOPHEIGHT - 100
-    IF compositeW& * 4 <= maxW& AND compositeH& * 4 <= maxH& THEN
+    IF compositeW& * 4 < = maxW& AND compositeH& * 4 < = maxH& THEN
         ZOOM% = 4
-    ELSEIF compositeW& * 2 <= maxW& AND compositeH& * 2 <= maxH& THEN
+    ELSEIF compositeW& * 2 < = maxW& AND compositeH& * 2 < = maxH& THEN
         ZOOM% = 2
     END IF
 

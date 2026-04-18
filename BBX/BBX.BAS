@@ -55,9 +55,9 @@ GJ_BBX_InitDefaults
 
 DO
     CLS
-    GJ_BBX_Tick _TRUE  ' show HUD
+    GJ_BBX_Tick _TRUE ' show HUD
     _DISPLAY
-    _LIMIT 60  ' High framerate for instant mouse response
+    _LIMIT 60         ' High framerate for instant mouse response
 LOOP UNTIL _KEYHIT = 27
 END
 

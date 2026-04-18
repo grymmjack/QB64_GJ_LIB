@@ -6,15 +6,15 @@ $CONSOLE:ONLY
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM aseprite_img AS ASEPRITE_IMAGE
+DIM filename        AS STRING
+DIM aseprite_img    AS ASEPRITE_IMAGE
 DIM composite_image AS LONG
-DIM layer_image AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
-DIM layer_width AS INTEGER
-DIM layer_height AS INTEGER
-DIM save_filename AS STRING
+DIM layer_image     AS LONG
+DIM layer_count     AS INTEGER
+DIM i               AS INTEGER
+DIM layer_width     AS INTEGER
+DIM layer_height    AS INTEGER
+DIM save_filename   AS STRING
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -39,8 +39,8 @@ PRINT "Number of frames: "; aseprite_img.header.num_frames
 PRINT
 
 ' Create a composite image with white background
-layer_width = aseprite_img.header.width
-layer_height = aseprite_img.header.height
+layer_width     = aseprite_img.header.width
+layer_height    = aseprite_img.header.height
 composite_image = _NEWIMAGE(layer_width, layer_height, 32)
 
 ' Fill with white background

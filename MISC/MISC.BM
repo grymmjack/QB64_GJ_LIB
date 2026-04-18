@@ -22,9 +22,9 @@ $INCLUDEONCE
 FUNCTION num_fix#(num#, places%)
     DIM AS DOUBLE multiplier
     DIM AS STRING mult_str
-    mult_str$ = _TRIM$("1" + STRING$(places%, "0"))
+    mult_str$   = _TRIM$("1" + STRING$(places%, "0"))
     multiplier# = VAL(mult_str$)
-    num_fix# = FIX(num# * multiplier# + SGN(num#) * .5) / multiplier#
+    num_fix#    = FIX(num# * multiplier# + SGN(num#) * .5) / multiplier#
 END FUNCTION
 
 

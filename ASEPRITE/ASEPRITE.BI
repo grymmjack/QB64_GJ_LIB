@@ -67,8 +67,8 @@ TYPE ASEPRITE_HEADER
     color_depth_bpp         AS _UNSIGNED INTEGER ' WORD
     flags                   AS _UNSIGNED LONG    ' DWORD
     frame_speed             AS _UNSIGNED INTEGER ' WORD
-    zero1                   AS _UNSIGNED LONG    ' DWORD - Fixed: was INTEGER
-    zero2                   AS _UNSIGNED LONG    ' DWORD - Fixed: was INTEGER
+    zero1                   AS _UNSIGNED LONG    ' DWORD - Fixed : was INTEGER
+    zero2                   AS _UNSIGNED LONG    ' DWORD - Fixed : was INTEGER
     transparent_color_index AS _UNSIGNED _BYTE   ' BYTE
     ignore1                 AS _UNSIGNED _BYTE   ' BYTE
     ignore2                 AS _UNSIGNED _BYTE   ' BYTE
@@ -116,34 +116,34 @@ TYPE ASEPRITE_CHUNK_HEADER
 END TYPE
 
 ' Chunk type constants (hexadecimal values)
-CONST ASEPRITE_CHUNK_OLD_PAL_0004    = &H0004 ' Old palette chunk
-CONST ASEPRITE_CHUNK_OLD_PAL_0011    = &H0011 ' Old palette chunk (VGA)
-CONST ASEPRITE_CHUNK_LAYER           = &H2004 ' Layer chunk
-CONST ASEPRITE_CHUNK_CEL             = &H2005 ' Cel chunk  
-CONST ASEPRITE_CHUNK_CEL_EXTRA       = &H2006 ' Cel extra chunk
-CONST ASEPRITE_CHUNK_COLOR_PROFILE   = &H2007 ' Color profile chunk
-CONST ASEPRITE_CHUNK_EXTERNAL_FILES  = &H2008 ' External files chunk
-CONST ASEPRITE_CHUNK_MASK            = &H2016 ' Mask chunk (deprecated)
-CONST ASEPRITE_CHUNK_PATH            = &H2017 ' Path chunk (never used)
-CONST ASEPRITE_CHUNK_TAGS            = &H2018 ' Tags chunk
-CONST ASEPRITE_CHUNK_PALETTE         = &H2019 ' Palette chunk
-CONST ASEPRITE_CHUNK_USER_DATA       = &H2020 ' User data chunk
-CONST ASEPRITE_CHUNK_SLICE           = &H2022 ' Slice chunk
-CONST ASEPRITE_CHUNK_TILESET         = &H2023 ' Tileset chunk
+CONST ASEPRITE_CHUNK_OLD_PAL_0004   = &H0004 ' Old palette chunk
+CONST ASEPRITE_CHUNK_OLD_PAL_0011   = &H0011 ' Old palette chunk (VGA)
+CONST ASEPRITE_CHUNK_LAYER          = &H2004 ' Layer chunk
+CONST ASEPRITE_CHUNK_CEL            = &H2005 ' Cel chunk  
+CONST ASEPRITE_CHUNK_CEL_EXTRA      = &H2006 ' Cel extra chunk
+CONST ASEPRITE_CHUNK_COLOR_PROFILE  = &H2007 ' Color profile chunk
+CONST ASEPRITE_CHUNK_EXTERNAL_FILES = &H2008 ' External files chunk
+CONST ASEPRITE_CHUNK_MASK           = &H2016 ' Mask chunk (deprecated)
+CONST ASEPRITE_CHUNK_PATH           = &H2017 ' Path chunk (never used)
+CONST ASEPRITE_CHUNK_TAGS           = &H2018 ' Tags chunk
+CONST ASEPRITE_CHUNK_PALETTE        = &H2019 ' Palette chunk
+CONST ASEPRITE_CHUNK_USER_DATA      = &H2020 ' User data chunk
+CONST ASEPRITE_CHUNK_SLICE          = &H2022 ' Slice chunk
+CONST ASEPRITE_CHUNK_TILESET        = &H2023 ' Tileset chunk
 
 ' Magic numbers
-CONST ASEPRITE_HEADER_MAGIC   = 42464  ' File header magic number (0xA5E0 as unsigned)
-CONST ASEPRITE_FRAME_MAGIC    = 61946  ' Frame header magic number (0xF1FA as unsigned)
+CONST ASEPRITE_HEADER_MAGIC = 42464          ' File header magic number (0xA5E0 as unsigned)
+CONST ASEPRITE_FRAME_MAGIC  = 61946          ' Frame header magic number (0xF1FA as unsigned)
 
 ' Header flags
-CONST ASEPRITE_FLAG_LAYER_OPACITY_VALID = 1 ' Layer opacity has valid value
-CONST ASEPRITE_FLAG_GROUP_BLEND_VALID   = 2 ' Layer blend mode/opacity is valid for groups  
-CONST ASEPRITE_FLAG_LAYERS_HAVE_UUID    = 4 ' Layers have an UUID
+CONST ASEPRITE_FLAG_LAYER_OPACITY_VALID = 1  ' Layer opacity has valid value
+CONST ASEPRITE_FLAG_GROUP_BLEND_VALID   = 2  ' Layer blend mode/opacity is valid for groups  
+CONST ASEPRITE_FLAG_LAYERS_HAVE_UUID    = 4  ' Layers have an UUID
 
 ' Color depths
-CONST ASEPRITE_COLOR_INDEXED   = 8  ' 8 bpp = Indexed
-CONST ASEPRITE_COLOR_GRAYSCALE = 16 ' 16 bpp = Grayscale  
-CONST ASEPRITE_COLOR_RGBA      = 32 ' 32 bpp = RGBA
+CONST ASEPRITE_COLOR_INDEXED   = 8           ' 8 bpp = Indexed
+CONST ASEPRITE_COLOR_GRAYSCALE = 16          ' 16 bpp = Grayscale  
+CONST ASEPRITE_COLOR_RGBA      = 32          ' 32 bpp = RGBA
 
 
 
@@ -223,31 +223,31 @@ TYPE ASEPRITE_LAYER_CHUNK
 '   DWORD     Tileset index
 ' + If file header flags have bit 4:
 '   UUID      Layer's universally unique identifier
-    flags           AS _UNSIGNED INTEGER ' WORD
-    layer_type      AS _UNSIGNED INTEGER ' WORD
-    child_level     AS _UNSIGNED INTEGER ' WORD
-    default_width   AS _UNSIGNED INTEGER ' WORD (ignored)
-    default_height  AS _UNSIGNED INTEGER ' WORD (ignored)
-    blend_mode      AS _UNSIGNED INTEGER ' WORD
-    opacity         AS _UNSIGNED _BYTE   ' BYTE
-    reserved        AS STRING * 3        ' BYTE[3]
+    flags          AS _UNSIGNED INTEGER ' WORD
+    layer_type     AS _UNSIGNED INTEGER ' WORD
+    child_level    AS _UNSIGNED INTEGER ' WORD
+    default_width  AS _UNSIGNED INTEGER ' WORD (ignored)
+    default_height AS _UNSIGNED INTEGER ' WORD (ignored)
+    blend_mode     AS _UNSIGNED INTEGER ' WORD
+    opacity        AS _UNSIGNED _BYTE   ' BYTE
+    reserved       AS STRING * 3        ' BYTE[3]
     ' Note: layer_name and tileset_index are variable-length and handled separately
     ' Note: UUID is handled separately when header flags bit 4 is set
 END TYPE
 
 ' Layer flags
-CONST ASEPRITE_LAYER_VISIBLE          = 1  ' Layer is visible
-CONST ASEPRITE_LAYER_EDITABLE         = 2  ' Layer is editable
-CONST ASEPRITE_LAYER_LOCK_MOVEMENT    = 4  ' Lock movement
-CONST ASEPRITE_LAYER_BACKGROUND       = 8  ' Background layer
-CONST ASEPRITE_LAYER_PREFER_LINKED    = 16 ' Prefer linked cels
-CONST ASEPRITE_LAYER_COLLAPSED        = 32 ' Layer group should be displayed collapsed
-CONST ASEPRITE_LAYER_REFERENCE        = 64 ' Layer is a reference layer
+CONST ASEPRITE_LAYER_VISIBLE       = 1  ' Layer is visible
+CONST ASEPRITE_LAYER_EDITABLE      = 2  ' Layer is editable
+CONST ASEPRITE_LAYER_LOCK_MOVEMENT = 4  ' Lock movement
+CONST ASEPRITE_LAYER_BACKGROUND    = 8  ' Background layer
+CONST ASEPRITE_LAYER_PREFER_LINKED = 16 ' Prefer linked cels
+CONST ASEPRITE_LAYER_COLLAPSED     = 32 ' Layer group should be displayed collapsed
+CONST ASEPRITE_LAYER_REFERENCE     = 64 ' Layer is a reference layer
 
 ' Layer types
-CONST ASEPRITE_LAYER_NORMAL   = 0 ' Normal (image) layer
-CONST ASEPRITE_LAYER_GROUP    = 1 ' Group layer
-CONST ASEPRITE_LAYER_TILEMAP  = 2 ' Tilemap layer
+CONST ASEPRITE_LAYER_NORMAL  = 0        ' Normal (image) layer
+CONST ASEPRITE_LAYER_GROUP   = 1        ' Group layer
+CONST ASEPRITE_LAYER_TILEMAP = 2        ' Tilemap layer
 
 ' Blend modes
 CONST ASEPRITE_BLEND_NORMAL      = 0
@@ -321,10 +321,10 @@ TYPE ASEPRITE_CEL_CHUNK
 END TYPE
 
 ' Cel types
-CONST ASEPRITE_CEL_RAW_IMAGE      = 0 ' Raw Image Data (deprecated)
-CONST ASEPRITE_CEL_LINKED         = 1 ' Linked Cel
-CONST ASEPRITE_CEL_COMPRESSED     = 2 ' Compressed Image
-CONST ASEPRITE_CEL_TILEMAP        = 3 ' Compressed Tilemap
+CONST ASEPRITE_CEL_RAW_IMAGE  = 0 ' Raw Image Data (deprecated)
+CONST ASEPRITE_CEL_LINKED     = 1 ' Linked Cel
+CONST ASEPRITE_CEL_COMPRESSED = 2 ' Compressed Image
+CONST ASEPRITE_CEL_TILEMAP    = 3 ' Compressed Tilemap
 
 
 
@@ -337,12 +337,12 @@ TYPE ASEPRITE_CEL_EXTRA_CHUNK
 ' FIXED       Width of the cel in the sprite (scaled in real-time)
 ' FIXED       Height of the cel in the sprite
 ' BYTE[16]    For future use (set to zero)
-    flags           AS _UNSIGNED LONG ' DWORD - Flags
-    precise_x       AS LONG           ' FIXED - Precise X position (16.16 fixed point)
-    precise_y       AS LONG           ' FIXED - Precise Y position (16.16 fixed point)
-    cel_width       AS LONG           ' FIXED - Width of cel (16.16 fixed point)
-    cel_height      AS LONG           ' FIXED - Height of cel (16.16 fixed point)
-    reserved        AS STRING * 16    ' BYTE[16] - For future use
+    flags      AS _UNSIGNED LONG ' DWORD - Flags
+    precise_x  AS LONG           ' FIXED - Precise X position (16.16 fixed point)
+    precise_y  AS LONG           ' FIXED - Precise Y position (16.16 fixed point)
+    cel_width  AS LONG           ' FIXED - Width of cel (16.16 fixed point)
+    cel_height AS LONG           ' FIXED - Height of cel (16.16 fixed point)
+    reserved   AS STRING * 16    ' BYTE[16] - For future use
 END TYPE
 
 
@@ -394,10 +394,10 @@ TYPE ASEPRITE_EXTERNAL_FILES_CHUNK
 END TYPE
 
 ' External file types
-CONST ASEPRITE_EXT_PALETTE        = 0 ' External palette
-CONST ASEPRITE_EXT_TILESET        = 1 ' External tileset
-CONST ASEPRITE_EXT_PROPERTIES     = 2 ' Extension name for properties
-CONST ASEPRITE_EXT_TILE_MGMT      = 3 ' Extension name for tile management
+CONST ASEPRITE_EXT_PALETTE    = 0 ' External palette
+CONST ASEPRITE_EXT_TILESET    = 1 ' External tileset
+CONST ASEPRITE_EXT_PROPERTIES = 2 ' Extension name for properties
+CONST ASEPRITE_EXT_TILE_MGMT  = 3 ' Extension name for tile management
 
 
 
@@ -455,15 +455,15 @@ TYPE ASEPRITE_TAGS_CHUNK
 '               the tags chunk
 '   BYTE      Extra byte (zero)
 '   STRING    Tag name
-    num_tags   AS _UNSIGNED INTEGER ' WORD
-    reserved   AS STRING * 8        ' BYTE[8]
+    num_tags AS _UNSIGNED INTEGER ' WORD
+    reserved AS STRING * 8        ' BYTE[8]
     ' Note: Variable data follows for each tag
 END TYPE
 
 ' Animation direction constants
-CONST ASEPRITE_ANIM_FORWARD          = 0 ' Forward
-CONST ASEPRITE_ANIM_REVERSE          = 1 ' Reverse  
-CONST ASEPRITE_ANIM_PING_PONG        = 2 ' Ping-pong
+CONST ASEPRITE_ANIM_FORWARD           = 0 ' Forward
+CONST ASEPRITE_ANIM_REVERSE           = 1 ' Reverse  
+CONST ASEPRITE_ANIM_PING_PONG         = 2 ' Ping-pong
 CONST ASEPRITE_ANIM_PING_PONG_REVERSE = 3 ' Ping-pong Reverse
 
 
@@ -482,10 +482,10 @@ TYPE ASEPRITE_PALETTE_CHUNK
 '   BYTE      Alpha (0-255)
 '   + If has name bit in entry flags
 '     STRING  Color name
-    palette_size    AS _UNSIGNED LONG    ' DWORD - New palette size
-    first_index     AS _UNSIGNED LONG    ' DWORD - First color index to change
-    last_index      AS _UNSIGNED LONG    ' DWORD - Last color index to change
-    reserved        AS STRING * 8        ' BYTE[8] - For future use
+    palette_size AS _UNSIGNED LONG ' DWORD - New palette size
+    first_index  AS _UNSIGNED LONG ' DWORD - First color index to change
+    last_index   AS _UNSIGNED LONG ' DWORD - Last color index to change
+    reserved     AS STRING * 8     ' BYTE[8] - For future use
     ' Note: Variable palette entry data follows - handled separately in code
 END TYPE
 
@@ -519,25 +519,25 @@ CONST ASEPRITE_USER_DATA_HAS_COLOR      = 2 ' Has color
 CONST ASEPRITE_USER_DATA_HAS_PROPERTIES = 4 ' Has properties
 
 ' Property types for user data
-CONST ASEPRITE_PROP_BOOL    = &H0001 ' Boolean value
-CONST ASEPRITE_PROP_INT8    = &H0002 ' 8-bit signed integer
-CONST ASEPRITE_PROP_UINT8   = &H0003 ' 8-bit unsigned integer
-CONST ASEPRITE_PROP_INT16   = &H0004 ' 16-bit signed integer
-CONST ASEPRITE_PROP_UINT16  = &H0005 ' 16-bit unsigned integer
-CONST ASEPRITE_PROP_INT32   = &H0006 ' 32-bit signed integer
-CONST ASEPRITE_PROP_UINT32  = &H0007 ' 32-bit unsigned integer
-CONST ASEPRITE_PROP_INT64   = &H0008 ' 64-bit signed integer
-CONST ASEPRITE_PROP_UINT64  = &H0009 ' 64-bit unsigned integer
-CONST ASEPRITE_PROP_FIXED   = &H000A ' Fixed point (16.16)
-CONST ASEPRITE_PROP_FLOAT   = &H000B ' 32-bit float
-CONST ASEPRITE_PROP_DOUBLE  = &H000C ' 64-bit double
-CONST ASEPRITE_PROP_STRING  = &H000D ' String
-CONST ASEPRITE_PROP_POINT   = &H000E ' Point (x,y)
-CONST ASEPRITE_PROP_SIZE    = &H000F ' Size (width,height)
-CONST ASEPRITE_PROP_RECT    = &H0010 ' Rectangle
-CONST ASEPRITE_PROP_VECTOR  = &H0011 ' Vector
-CONST ASEPRITE_PROP_NESTED  = &H0012 ' Nested properties map
-CONST ASEPRITE_PROP_UUID    = &H0013 ' UUID
+CONST ASEPRITE_PROP_BOOL   = &H0001         ' Boolean value
+CONST ASEPRITE_PROP_INT8   = &H0002         ' 8-bit signed integer
+CONST ASEPRITE_PROP_UINT8  = &H0003         ' 8-bit unsigned integer
+CONST ASEPRITE_PROP_INT16  = &H0004         ' 16-bit signed integer
+CONST ASEPRITE_PROP_UINT16 = &H0005         ' 16-bit unsigned integer
+CONST ASEPRITE_PROP_INT32  = &H0006         ' 32-bit signed integer
+CONST ASEPRITE_PROP_UINT32 = &H0007         ' 32-bit unsigned integer
+CONST ASEPRITE_PROP_INT64  = &H0008         ' 64-bit signed integer
+CONST ASEPRITE_PROP_UINT64 = &H0009         ' 64-bit unsigned integer
+CONST ASEPRITE_PROP_FIXED  = &H000A         ' Fixed point (16.16)
+CONST ASEPRITE_PROP_FLOAT  = &H000B         ' 32-bit float
+CONST ASEPRITE_PROP_DOUBLE = &H000C         ' 64-bit double
+CONST ASEPRITE_PROP_STRING = &H000D         ' String
+CONST ASEPRITE_PROP_POINT  = &H000E         ' Point (x,y)
+CONST ASEPRITE_PROP_SIZE   = &H000F         ' Size (width,height)
+CONST ASEPRITE_PROP_RECT   = &H0010         ' Rectangle
+CONST ASEPRITE_PROP_VECTOR = &H0011         ' Vector
+CONST ASEPRITE_PROP_NESTED = &H0012         ' Nested properties map
+CONST ASEPRITE_PROP_UUID   = &H0013         ' UUID
 
 
 
@@ -605,13 +605,13 @@ TYPE ASEPRITE_TILESET_CHUNK
 '   DWORD     Data length of the compressed Tileset image
 '   PIXEL[]   Compressed Tileset image (see NOTE.3):
 '               (Tile Width) x (Tile Height x Number of Tiles)
-    tileset_id    AS _UNSIGNED LONG    ' DWORD
-    flags         AS _UNSIGNED LONG    ' DWORD
-    num_tiles     AS _UNSIGNED LONG    ' DWORD
-    tile_width    AS _UNSIGNED INTEGER ' WORD
-    tile_height   AS _UNSIGNED INTEGER ' WORD
-    base_index    AS INTEGER           ' SHORT
-    reserved      AS STRING * 14       ' BYTE[14]
+    tileset_id  AS _UNSIGNED LONG    ' DWORD
+    flags       AS _UNSIGNED LONG    ' DWORD
+    num_tiles   AS _UNSIGNED LONG    ' DWORD
+    tile_width  AS _UNSIGNED INTEGER ' WORD
+    tile_height AS _UNSIGNED INTEGER ' WORD
+    base_index  AS INTEGER           ' SHORT
+    reserved    AS STRING * 14       ' BYTE[14]
     ' Note: Variable data follows - name string and optional external/tile data
 END TYPE
 
@@ -633,20 +633,20 @@ END TYPE
 
 TYPE ASEPRITE_POINT
 ' POINT: X and Y coordinates
-    x AS LONG ' LONG: X coordinate value
-    y AS LONG ' LONG: Y coordinate value  
+    x AS LONG ' LONG : X coordinate value
+    y AS LONG ' LONG : Y coordinate value  
 END TYPE
 
 TYPE ASEPRITE_SIZE
 ' SIZE: Width and height values
-    width  AS LONG ' LONG: Width value
-    height AS LONG ' LONG: Height value
+    width  AS LONG ' LONG : Width value
+    height AS LONG ' LONG : Height value
 END TYPE
 
 TYPE ASEPRITE_RECT
 ' RECT: Rectangle with origin and size
-    origin AS ASEPRITE_POINT ' POINT: Origin coordinates
-    size   AS ASEPRITE_SIZE  ' SIZE: Rectangle size
+    origin AS ASEPRITE_POINT ' POINT : Origin coordinates
+    size   AS ASEPRITE_SIZE  ' SIZE  : Rectangle size
 END TYPE
 
 TYPE ASEPRITE_PIXEL_RGBA
@@ -672,86 +672,86 @@ END TYPE
 ' Main ASEPRITE image object type
 TYPE ASEPRITE_IMAGE
 ' Complete Aseprite file representation
-    header          AS ASEPRITE_HEADER       ' File header (128 bytes)
-    frames_loaded   AS _UNSIGNED INTEGER     ' Number of frames loaded
-    chunks_loaded   AS _UNSIGNED LONG        ' Total chunks loaded
-    file_path       AS STRING                ' Path to the .ase/.aseprite file
-    is_valid        AS _BYTE                 ' 1 if successfully loaded, 0 otherwise
-    error_message   AS STRING                ' Error message if loading failed
+    header         AS ASEPRITE_HEADER   ' File header (128 bytes)
+    frames_loaded  AS _UNSIGNED INTEGER ' Number of frames loaded
+    chunks_loaded  AS _UNSIGNED LONG    ' Total chunks loaded
+    file_path      AS STRING            ' Path to the .ase/.aseprite file
+    is_valid       AS _BYTE             ' 1 if successfully loaded, 0 otherwise
+    error_message  AS STRING            ' Error message if loading failed
     ' Enhanced metadata for introspection (populated during loading)
-    layer_count     AS INTEGER               ' Number of layers found in file
-    frame_count     AS INTEGER               ' Number of frames found in file  
-    cel_count       AS INTEGER               ' Total number of cels found
-    tag_count       AS INTEGER               ' Number of animation tags found
-    palette_chunks  AS INTEGER               ' Number of palette chunks found
+    layer_count    AS INTEGER           ' Number of layers found in file
+    frame_count    AS INTEGER           ' Number of frames found in file  
+    cel_count      AS INTEGER           ' Total number of cels found
+    tag_count      AS INTEGER           ' Number of animation tags found
+    palette_chunks AS INTEGER           ' Number of palette chunks found
     ' Note: Frame and chunk data are handled separately via arrays/collections
 END TYPE
 
 ' Enhanced layer information structure
 TYPE ASEPRITE_LAYER_INFO
-    layer_name      AS STRING                ' Layer name
-    flags           AS _UNSIGNED INTEGER     ' Layer flags (visible, editable, etc.)
-    layer_type      AS _UNSIGNED INTEGER     ' Layer type (normal, group, tilemap)
-    child_level     AS _UNSIGNED INTEGER     ' Nesting level
-    blend_mode      AS _UNSIGNED INTEGER     ' Blend mode
-    opacity         AS _UNSIGNED _BYTE       ' Layer opacity (0-255)
-    is_visible      AS _BYTE                 ' 1 if visible, 0 if hidden
-    is_background   AS _BYTE                 ' 1 if background layer
+    layer_name    AS STRING            ' Layer name
+    flags         AS _UNSIGNED INTEGER ' Layer flags (visible, editable, etc.)
+    layer_type    AS _UNSIGNED INTEGER ' Layer type (normal, group, tilemap)
+    child_level   AS _UNSIGNED INTEGER ' Nesting level
+    blend_mode    AS _UNSIGNED INTEGER ' Blend mode
+    opacity       AS _UNSIGNED _BYTE   ' Layer opacity (0-255)
+    is_visible    AS _BYTE             ' 1 if visible, 0 if hidden
+    is_background AS _BYTE             ' 1 if background layer
 END TYPE
 
 ' Cel information structure for layer compositing
 TYPE ASEPRITE_CEL_INFO
-    layer_index     AS INTEGER               ' Which layer this cel belongs to
-    x_position      AS INTEGER               ' X position in sprite
-    y_position      AS INTEGER               ' Y position in sprite
-    width           AS INTEGER               ' Cel width
-    height          AS INTEGER               ' Cel height
-    opacity         AS _UNSIGNED _BYTE       ' Cel opacity (0-255)
-    cel_type        AS _UNSIGNED INTEGER     ' Type of cel (raw, compressed, etc.)
-    z_index         AS INTEGER               ' Z-index for layer ordering
-    has_data        AS _BYTE                 ' 1 if cel has pixel data
-    image_handle    AS LONG                  ' QB64PE image handle for this cel
+    layer_index  AS INTEGER           ' Which layer this cel belongs to
+    x_position   AS INTEGER           ' X position in sprite
+    y_position   AS INTEGER           ' Y position in sprite
+    width        AS INTEGER           ' Cel width
+    height       AS INTEGER           ' Cel height
+    opacity      AS _UNSIGNED _BYTE   ' Cel opacity (0-255)
+    cel_type     AS _UNSIGNED INTEGER ' Type of cel (raw, compressed, etc.)
+    z_index      AS INTEGER           ' Z-index for layer ordering
+    has_data     AS _BYTE             ' 1 if cel has pixel data
+    image_handle AS LONG              ' QB64PE image handle for this cel
 END TYPE
 
 ' Frame information structure
 TYPE ASEPRITE_FRAME_INFO
-    frame_index     AS INTEGER               ' Frame number (0-based)
-    duration        AS _UNSIGNED INTEGER     ' Frame duration in milliseconds
-    num_cels        AS INTEGER               ' Number of cels in this frame
-    has_data        AS _BYTE                 ' 1 if frame has pixel data
+    frame_index AS INTEGER           ' Frame number (0-based)
+    duration    AS _UNSIGNED INTEGER ' Frame duration in milliseconds
+    num_cels    AS INTEGER           ' Number of cels in this frame
+    has_data    AS _BYTE             ' 1 if frame has pixel data
 END TYPE
 
 ' Animation information structure  
 TYPE ASEPRITE_ANIMATION_INFO
-    total_frames    AS INTEGER               ' Total number of frames
-    current_frame   AS INTEGER               ' Currently displayed frame
-    is_playing      AS _BYTE                 ' 1 if animation is playing
-    loop_mode       AS _BYTE                 ' Loop mode (0=once, 1=loop, 2=ping-pong)
-    total_duration  AS LONG                  ' Total animation duration in ms
-    elapsed_time    AS LONG                  ' Time elapsed in current cycle
-    last_update     AS DOUBLE                ' Last update time (TIMER)
+    total_frames   AS INTEGER ' Total number of frames
+    current_frame  AS INTEGER ' Currently displayed frame
+    is_playing     AS _BYTE   ' 1 if animation is playing
+    loop_mode      AS _BYTE   ' Loop mode (0 = once, 1=loop, 2=ping-pong)
+    total_duration AS LONG    ' Total animation duration in ms
+    elapsed_time   AS LONG    ' Time elapsed in current cycle
+    last_update    AS DOUBLE  ' Last update time (TIMER)
 END TYPE
 
 ' Enhanced ASEPRITE image with layer and animation support
 TYPE ASEPRITE_ENHANCED_IMAGE
-    base_image      AS ASEPRITE_IMAGE        ' Base image data
-    num_layers      AS INTEGER               ' Number of layers found
-    layer_info      AS STRING                ' Serialized layer information
-    layer_visibility AS STRING              ' Layer visibility states (1 byte per layer)
-    num_frames      AS INTEGER               ' Number of animation frames
-    frame_info      AS STRING                ' Serialized frame information  
-    animation       AS ASEPRITE_ANIMATION_INFO ' Animation state
-    current_display AS LONG                  ' Current composite image handle
-    needs_update    AS _BYTE                 ' 1 if composite needs regeneration
+    base_image       AS ASEPRITE_IMAGE          ' Base image data
+    num_layers       AS INTEGER                 ' Number of layers found
+    layer_info       AS STRING                  ' Serialized layer information
+    layer_visibility AS STRING                  ' Layer visibility states (1 byte per layer)
+    num_frames       AS INTEGER                 ' Number of animation frames
+    frame_info       AS STRING                  ' Serialized frame information  
+    animation        AS ASEPRITE_ANIMATION_INFO ' Animation state
+    current_display  AS LONG                    ' Current composite image handle
+    needs_update     AS _BYTE                   ' 1 if composite needs regeneration
 END TYPE
 
 ' Layer ordering item for z-index processing (based on Aseprite RenderPlan)
 TYPE ASEPRITE_RENDER_ITEM
-    layer_index     AS INTEGER               ' Original layer index from file
-    cel_z_index     AS INTEGER               ' Z-index value from cel
-    original_order  AS INTEGER               ' Original processing order
-    final_order     AS INTEGER               ' Calculated order = original_order + cel_z_index
-    cel_info        AS ASEPRITE_CEL_INFO     ' Cel information for this item
+    layer_index    AS INTEGER           ' Original layer index from file
+    cel_z_index    AS INTEGER           ' Z-index value from cel
+    original_order AS INTEGER           ' Original processing order
+    final_order    AS INTEGER           ' Calculated order = original_order + cel_z_index
+    cel_info       AS ASEPRITE_CEL_INFO ' Cel information for this item
 END TYPE
 
 ' Function declarations for basic and enhanced layer support

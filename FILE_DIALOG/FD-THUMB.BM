@@ -15,14 +15,14 @@ $INCLUDEONCE
 SUB FD_THUMB_init
     DIM i AS INTEGER
     FOR i = 0 TO FD_MAX_THUMB_CACHE - 1
-        FD_thumbs(i).filePath = ""
+        FD_thumbs(i).filePath  = ""
         FD_thumbs(i).imgHandle = -1
-        FD_thumbs(i).lastUsed = 0
-        FD_thumbs(i).inUse = 0
+        FD_thumbs(i).lastUsed  = 0
+        FD_thumbs(i).inUse     = 0
     NEXT i
-    FD_THUMB_CACHE.loadQueue = 0
-    FD_THUMB_CACHE.loadActive = 0
-    FD_THUMB_CACHE.cacheHits = 0
+    FD_THUMB_CACHE.loadQueue   = 0
+    FD_THUMB_CACHE.loadActive  = 0
+    FD_THUMB_CACHE.cacheHits   = 0
     FD_THUMB_CACHE.cacheMisses = 0
 END SUB
 
@@ -35,10 +35,10 @@ SUB FD_THUMB_invalidate_all
         IF FD_thumbs(i).inUse AND FD_thumbs(i).imgHandle < -1 THEN
             _FREEIMAGE FD_thumbs(i).imgHandle
         END IF
-        FD_thumbs(i).filePath = ""
+        FD_thumbs(i).filePath  = ""
         FD_thumbs(i).imgHandle = -1
-        FD_thumbs(i).lastUsed = 0
-        FD_thumbs(i).inUse = 0
+        FD_thumbs(i).lastUsed  = 0
+        FD_thumbs(i).inUse     = 0
     NEXT i
     FD_THUMB_CACHE.loadQueue = 0
 END SUB
@@ -73,8 +73,8 @@ END FUNCTION
 ' FD_THUMB_evict_lru% — Find least-recently-used slot, free it, return index
 ' --------------------------------------------------------------------------
 FUNCTION FD_THUMB_evict_lru%
-    DIM i AS INTEGER
-    DIM oldest AS INTEGER
+    DIM i          AS INTEGER
+    DIM oldest     AS INTEGER
     DIM oldestTime AS DOUBLE
 
     ' Try to find a free slot first
@@ -86,30 +86,30 @@ FUNCTION FD_THUMB_evict_lru%
     NEXT i
 
     ' All slots occupied — evict LRU
-    oldest = 0
+    oldest     = 0
     oldestTime = FD_thumbs(0).lastUsed
     FOR i = 1 TO FD_MAX_THUMB_CACHE - 1
         IF FD_thumbs(i).lastUsed < oldestTime THEN
             oldestTime = FD_thumbs(i).lastUsed
-            oldest = i
+            oldest     = i
         END IF
     NEXT i
 
     ' Free the evicted handle and reset owning entry
     IF FD_thumbs(oldest).imgHandle < -1 THEN
         ' Find the entry that references this handle and reset it
-        DIM ei AS INTEGER
+        DIM ei          AS INTEGER
         DIM evictedPath AS STRING
         evictedPath = RTRIM$(FD_thumbs(oldest).filePath)
         FOR ei = 0 TO FD_STATE.entryCount - 1
             IF FD_entries(ei).thumbHandle = FD_thumbs(oldest).imgHandle THEN
                 FD_entries(ei).thumbHandle = -1
-                FD_entries(ei).thumbState = FD_THUMB_PENDING
+                FD_entries(ei).thumbState  = FD_THUMB_PENDING
             END IF
         NEXT ei
         _FREEIMAGE FD_thumbs(oldest).imgHandle
     END IF
-    FD_thumbs(oldest).inUse = 0
+    FD_thumbs(oldest).inUse     = 0
     FD_thumbs(oldest).imgHandle = -1
 
     FD_THUMB_evict_lru% = oldest
@@ -131,9 +131,9 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     ' Try to load the image
     DIM rawImg AS LONG
     rawImg = _LOADIMAGE(fullPath, 32)
-    IF rawImg = -1 OR rawImg >= 0 THEN
+    IF rawImg = -1 OR rawImg > = 0 THEN
         ' _LOADIMAGE failed — try custom format loaders
-        DIM fdExt AS STRING
+        DIM fdExt  AS STRING
         DIM dotPos AS INTEGER
         dotPos = _INSTRREV(fullPath, ".")
         IF dotPos > 0 THEN fdExt = LCASE$(MID$(fullPath, dotPos + 1)) ELSE fdExt = ""
@@ -152,25 +152,25 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
         END IF
         $END IF
 
-        IF rawImg = -1 OR rawImg >= 0 THEN
+        IF rawImg = -1 OR rawImg > = 0 THEN
             FD_THUMB_load_one& = -1
             EXIT FUNCTION
         END IF
     END IF
 
     ' Scale to thumbnail size maintaining aspect ratio
-    DIM srcW AS INTEGER, srcH AS INTEGER
-    DIM dstW AS INTEGER, dstH AS INTEGER
+    DIM srcW  AS INTEGER, srcH AS INTEGER
+    DIM dstW  AS INTEGER, dstH AS INTEGER
     DIM scale AS SINGLE
     srcW = _WIDTH(rawImg)
     srcH = _HEIGHT(rawImg)
-    IF srcW <= 0 OR srcH <= 0 THEN
+    IF srcW < = 0 OR srcH < = 0 THEN
         _FREEIMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
     END IF
 
-    IF srcW >= srcH THEN
+    IF srcW > = srcH THEN
         scale = thumbSize / srcW
     ELSE
         scale = thumbSize / srcH
@@ -184,7 +184,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
 
     DIM thumbImg AS LONG
     thumbImg = _NEWIMAGE(dstW, dstH, 32)
-    IF thumbImg = -1 OR thumbImg >= 0 THEN
+    IF thumbImg = -1 OR thumbImg > = 0 THEN
         _FREEIMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
@@ -194,15 +194,15 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     DIM srcMem AS _MEM, dstMem AS _MEM
     srcMem = _MEMIMAGE(rawImg)
     dstMem = _MEMIMAGE(thumbImg)
-    DIM dy AS INTEGER, dx AS INTEGER
-    DIM sy AS INTEGER, sx AS INTEGER
-    DIM pixel AS _UNSIGNED LONG
+    DIM dy     AS INTEGER, dx AS INTEGER
+    DIM sy     AS INTEGER, sx AS INTEGER
+    DIM pixel  AS _UNSIGNED LONG
     FOR dy = 0 TO dstH - 1
         sy = INT(dy / scale)
-        IF sy >= srcH THEN sy = srcH - 1
+        IF sy > = srcH THEN sy = srcH - 1
         FOR dx = 0 TO dstW - 1
             sx = INT(dx / scale)
-            IF sx >= srcW THEN sx = srcW - 1
+            IF sx > = srcW THEN sx = srcW - 1
             _MEMGET srcMem, srcMem.OFFSET + (sy * srcW + sx) * 4, pixel
             _MEMPUT dstMem, dstMem.OFFSET + (dy * dstW + dx) * 4, pixel
         NEXT dx
@@ -213,11 +213,11 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
 
     ' Store in cache
     DIM slot AS INTEGER
-    slot = FD_THUMB_evict_lru%
-    FD_thumbs(slot).filePath = fullPath
+    slot                      = FD_THUMB_evict_lru%
+    FD_thumbs(slot).filePath  = fullPath
     FD_thumbs(slot).imgHandle = thumbImg
-    FD_thumbs(slot).lastUsed = TIMER(.001)
-    FD_thumbs(slot).inUse = -1
+    FD_thumbs(slot).lastUsed  = TIMER(.001)
+    FD_thumbs(slot).inUse     = -1
 
     FD_THUMB_load_one& = thumbImg
 END FUNCTION
@@ -232,7 +232,7 @@ SUB FD_THUMB_tick
 
     ' Calculate visible range
     DIM startRow AS INTEGER
-    DIM cols AS INTEGER
+    DIM cols     AS INTEGER
     cols = FD_STATE.contentW \ (FD_CFG.thumbSize + FD_PADDING * 2)
     IF cols < 1 THEN cols = 1
 
@@ -243,16 +243,16 @@ SUB FD_THUMB_tick
     IF startIdx < 0 THEN startIdx = 0
 
     DIM visibleItems AS INTEGER
-    DIM endIdx AS INTEGER
-    visibleItems = ((FD_STATE.contentH \ (FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT)) + 3) * cols  ' +3: visible + 1 above + 1 below
-    endIdx = startIdx + visibleItems
+    DIM endIdx       AS INTEGER
+    visibleItems = ((FD_STATE.contentH \ (FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT)) + 3) * cols ' +3: visible + 1 above + 1 below
+    endIdx       = startIdx + visibleItems
     IF endIdx > FD_STATE.visibleCount THEN endIdx = FD_STATE.visibleCount
 
     ' Find first visible entry needing a thumbnail
-    DIM i AS INTEGER
+    DIM i        AS INTEGER
     DIM entryIdx AS INTEGER
     DIM fullPath AS STRING
-    DIM sep AS STRING
+    DIM sep      AS STRING
     sep = FD_PLAT_get_separator$
 
     FOR i = startIdx TO endIdx - 1
@@ -268,7 +268,7 @@ SUB FD_THUMB_tick
 
         ' Build full path
         DIM curPath AS STRING
-        curPath = RTRIM$(FD_STATE.currentPath)
+        curPath  = RTRIM$(FD_STATE.currentPath)
         fullPath = FD_PLAT_path_join$(curPath, RTRIM$(FD_entries(entryIdx).fileName))
 
         ' Load it
@@ -277,12 +277,12 @@ SUB FD_THUMB_tick
         handle = FD_THUMB_load_one&(fullPath, FD_CFG.thumbSize)
         IF handle < -1 THEN
             FD_entries(entryIdx).thumbHandle = handle
-            FD_entries(entryIdx).thumbState = FD_THUMB_LOADED
+            FD_entries(entryIdx).thumbState  = FD_THUMB_LOADED
         ELSE
             FD_entries(entryIdx).thumbState = FD_THUMB_FAILED
         END IF
 
         FD_STATE.dirty = -1
-        EXIT SUB  ' Only one per frame
+        EXIT SUB ' Only one per frame
     NEXT i
 END SUB

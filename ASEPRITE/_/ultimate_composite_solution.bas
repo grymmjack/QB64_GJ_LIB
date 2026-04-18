@@ -7,20 +7,20 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM aseprite_img AS ASEPRITE_IMAGE
-DIM layer_image AS LONG
+DIM filename        AS STRING
+DIM aseprite_img    AS ASEPRITE_IMAGE
+DIM layer_image     AS LONG
 DIM final_composite AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
+DIM layer_count     AS INTEGER
+DIM i               AS INTEGER
 
 ' Canvas size calculations for extended boundaries
-DIM canvas_width AS INTEGER
+DIM canvas_width  AS INTEGER
 DIM canvas_height AS INTEGER
-DIM offset_x AS INTEGER
-DIM offset_y AS INTEGER
-DIM min_x AS INTEGER, max_x AS INTEGER
-DIM min_y AS INTEGER, max_y AS INTEGER
+DIM offset_x      AS INTEGER
+DIM offset_y      AS INTEGER
+DIM min_x         AS INTEGER, max_x AS INTEGER
+DIM min_y         AS INTEGER, max_y AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -44,8 +44,8 @@ PRINT
 
 ' First pass: Analyze all layer positions to determine required canvas size
 PRINT "Analyzing layer positions for extended canvas size..."
-min_x = 0: max_x = aseprite_img.header.width
-min_y = 0: max_y = aseprite_img.header.height
+min_x = 0 : max_x = aseprite_img.header.width
+min_y = 0 : max_y = aseprite_img.header.height
 
 ' Check positions for each layer (using frame 0 for analysis)
 DIM cel_x AS INTEGER, cel_y AS INTEGER, cel_w AS INTEGER, cel_h AS INTEGER, cel_z AS INTEGER
@@ -63,9 +63,9 @@ FOR i = 0 TO 9
 NEXT i
 
 ' Calculate extended canvas size
-offset_x = -min_x ' Offset to handle negative coordinates
-offset_y = -min_y
-canvas_width = max_x - min_x
+offset_x      = -min_x                           ' Offset to handle negative coordinates
+offset_y      = -min_y
+canvas_width  = max_x - min_x
 canvas_height = max_y - min_y
 
 PRINT
@@ -118,23 +118,23 @@ PRINT
 ' Set up graphics mode to display the result
 SCREEN _NEWIMAGE(1000, 700, 32)
 _TITLE "ULTIMATE ASEPRITE Composite - Complete Character"
-CLS , _RGB32(48, 48, 48) ' Dark background
+CLS , _RGB32(48, 48, 48)                         ' Dark background
 
 ' Calculate scaling for display
-DIM scale_factor AS SINGLE
-DIM display_width AS INTEGER
+DIM scale_factor   AS SINGLE
+DIM display_width  AS INTEGER
 DIM display_height AS INTEGER
-DIM display_x AS INTEGER
-DIM display_y AS INTEGER
+DIM display_x      AS INTEGER
+DIM display_y      AS INTEGER
 
-scale_factor = 10.0 ' Start with 10x scaling
+scale_factor = 10.0                              ' Start with 10x scaling
 IF canvas_width * scale_factor > 800 THEN scale_factor = 800 / canvas_width
 IF canvas_height * scale_factor > 500 THEN scale_factor = 500 / canvas_height
 
-display_width = canvas_width * scale_factor
+display_width  = canvas_width * scale_factor
 display_height = canvas_height * scale_factor
-display_x = (1000 - display_width) / 2
-display_y = (700 - display_height) / 2 + 50 ' Leave room for text
+display_x      = (1000 - display_width) / 2
+display_y      = (700 - display_height) / 2 + 50 ' Leave room for text
 
 ' Display the ultimate composite
 _PUTIMAGE (display_x, display_y)-(display_x + display_width - 1, display_y + display_height - 1), final_composite

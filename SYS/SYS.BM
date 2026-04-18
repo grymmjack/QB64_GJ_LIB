@@ -40,7 +40,7 @@ END SUB
 '
 FUNCTION sys_info$()
     DIM AS STRING sout, nl
-    nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
+    nl$   = CHR$(10) ' For some reason CHR$(13) won't combine strings
     sout$ = ""
     sout$ = sout$ + "QB64 " + _OS$ + nl$
     sout$ = sout$ + "          _CWD$: " + _CWD$ + nl$
@@ -81,12 +81,12 @@ END FUNCTION
 FUNCTION device_info$()
     DIM AS STRING sout, nl, device_name, snum_buttons
     DIM AS INTEGER i, num_buttons, device_count
-    nl$ = CHR$(10) ' For some reason CHR$(13) won't combine strings
-    sout$ = ""
+    nl$           = CHR$(10) ' For some reason CHR$(13) won't combine strings
+    sout$         = ""
     device_count% = _DEVICES
     FOR i% = 1 TO device_count%
-        device_name$ = _DEVICE$(i%)
-        num_buttons% = _LASTBUTTON(i%)
+        device_name$  = _DEVICE$(i%)
+        num_buttons%  = _LASTBUTTON(i%)
         snum_buttons$ = _TRIM$(STR$(num_buttons%))
         sout$ = sout$ + "DEVICE: " + device_name$ + " #BTN: " + snum_buttons$ + nl$
     NEXT i%

@@ -25,7 +25,7 @@ FUNCTION LIGHTBAR%(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION)
     lb% = LBOUND(o) : ub% = UBOUND(o)
 
     ' Capture initial state for cursor and colors
-    row% = CSRLIN : col% = POS(0) ' Store initial cursor position
+    row%     = CSRLIN : col% = POS(0)       ' Store initial cursor position
     orig_fg% = SCREEN(row%, col%, 1) AND 15 ' Store initial foreground color
     orig_bg% = SCREEN(row%, col%, 1) \ 16   ' Store initial background color
 
@@ -40,7 +40,7 @@ FUNCTION LIGHTBAR%(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION)
     IF menu.opt_vertical = 1 THEN
         LOCATE row% + (ub% - lb%) + 1, col% ' Vertical
     ELSE
-        LOCATE o(ub%).row% + 1, col% ' Horizontal
+        LOCATE o(ub%).row% + 1, col%        ' Horizontal
     END IF
 
     LIGHTBAR% = sel%
@@ -62,7 +62,7 @@ SUB LIGHTBAR.get_options(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION, row%, col%, s
     ' Get lower and upper bounds of options array
     lb% = LBOUND(o) : ub% = UBOUND(o)
 
-    w% = menu.max_width% ' Get the max width for horiz menu
+    w%       = menu.max_width%        ' Get the max width for horiz menu
     cur_row% = row% : cur_col% = col% ' Init current row and current col
 
     FOR i% = lb% to ub%
@@ -89,14 +89,14 @@ SUB LIGHTBAR.get_options(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION, row%, col%, s
             o(i%).row% = row% + i% ' In vert LIGHTBAR menu, 1 opt per row
             o(i%).col% = col%      ' In vert LIGHTBAR menu, column is same
         ELSE ' Horizontal
-            IF cur_col% + o(i%).len% >= w% THEN ' Option WILL wrap
-                o(i%).col%   = col%              ' Reset col to init col
-                cur_col% = col% + o(i%).len%     ' Reset cur_col counter
-                cur_row% = cur_row% + 1          ' Increment cur_row
-                o(i%).row%   = cur_row%          ' Set row to cur_row
+            IF cur_col% + o(i%).len% > = w% THEN ' Option WILL wrap
+                o(i%).col% = col%              ' Reset col to init col
+                cur_col%   = col% + o(i%).len% ' Reset cur_col counter
+                cur_row% = cur_row% + 1        ' Increment cur_row
+                o(i%).row% = cur_row%          ' Set row to cur_row
             ELSE ' Option will NOT wrap
-                o(i%).col%   = cur_col%          ' Set col to current col
-                o(i%).row%   = cur_row%          ' Set row to current row
+                o(i%).col% = cur_col%            ' Set col to current col
+                o(i%).row% = cur_row%            ' Set row to current row
                 cur_col% = cur_col% + o(i%).len% ' Increment current col
             END IF
         END IF
@@ -118,11 +118,11 @@ SUB LIGHTBAR.draw(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION, sel%)
     lb% = LBOUND(o) : ub% = UBOUND(o)
 
     FOR i% = lb% TO ub% ' Walk the array of menu options
-        LOCATE o(i%).row%, o(i%).col% ' Position the option
+        LOCATE o(i%).row%, o(i%).col%      ' Position the option
         IF i% = sel% THEN ' Selected colors
             fg% = menu.bar_fg_color% : bg% = menu.bar_bg_color%
             kf% = menu.bar_kf_color% : kb% = menu.bar_kb_color%
-        ELSE ' Unselected colors
+        ELSE                               ' Unselected colors
             fg% = menu.opt_fg_color% : bg% = menu.opt_bg_color%
             kf% = menu.key_fg_color% : kb% = menu.key_bg_color%
         END IF
@@ -165,10 +165,10 @@ FUNCTION LIGHTBAR.get_choice%(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION)
                 SELECT CASE key_code%
                     CASE KEY_HOME:
                         do_move% = 1
-                        sel% = lb% 
+                        sel%     = lb% 
                     CASE KEY_END:
                         do_move% = 1
-                        sel% = ub%
+                        sel%     = ub%
                     CASE KEY_DOWN, KEY_RIGHT:
                         do_move% = 1
                         sel% = sel% + 1
@@ -183,7 +183,7 @@ FUNCTION LIGHTBAR.get_choice%(menu AS LIGHTBAR, o() AS LIGHTBAR_OPTION)
             FOR i% = lb% TO ub% ' Handle option hot keys
                 IF LCASE$(k$) = LCASE$(o(i%).key$) THEN
                     do_move% = 2
-                    sel% = i%
+                    sel%     = i%
                 END IF
             NEXT i%
 

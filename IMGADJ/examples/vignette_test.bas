@@ -8,13 +8,13 @@
 PRINT "Vignette Effect Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
+DIM originalImage    AS LONG
+DIM adjustedImage    AS LONG
 DIM vignetteStrength AS SINGLE
-DIM oldStrength AS SINGLE
+DIM oldStrength      AS SINGLE
 
-vignetteStrength = 0.5  ' Default vignette strength
-oldStrength = -1        ' Force initial update
+vignetteStrength = 0.5 ' Default vignette strength
+oldStrength      = -1  ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -45,10 +45,10 @@ DO
         ' Apply vignette effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Vignette(originalImage, vignetteStrength)
-        oldStrength = vignetteStrength
+        oldStrength   = vignetteStrength
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -79,7 +79,7 @@ DO
         CASE "-"
             IF vignetteStrength > 0.0 THEN vignetteStrength = vignetteStrength - 0.05
         CASE "R"
-            vignetteStrength = 0.5  ' Reset to default
+            vignetteStrength = 0.5 ' Reset to default
     END SELECT
     
     _LIMIT 60

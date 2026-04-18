@@ -55,7 +55,7 @@ END SUB
 '
 SUB ARR_INT.pop(arr%(), var%)
     DIM AS LONG ub, lb
-    lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
+    lb&  = LBOUND(arr%) : ub& = UBOUND(arr%)
     var% = arr%(ub&)
     REDIM _PRESERVE arr(lb& TO (ub& - 1)) AS INTEGER
 END SUB
@@ -69,7 +69,7 @@ END SUB
 '
 SUB ARR_INT.shift(arr%(), var%)
     DIM AS LONG ub, lb, i
-    lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
+    lb&  = LBOUND(arr%) : ub& = UBOUND(arr%)
     var% = arr%(lb&)
     FOR i& = lb& TO ub& - 1
         arr%(i&) = arr%(i& + 1) 
@@ -121,7 +121,7 @@ END SUB
 ' 
 SUB ARR_INT.join(arr%(), s$)
     DIM AS LONG ub, lb, i
-    s$ = ""
+    s$  = ""
     lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
     FOR i& = lb& TO ub&
         s$ = s$ + _TRIM$(STR$(arr%(i&))) + ", "
@@ -169,8 +169,8 @@ END SUB
 '
 FUNCTION ARR_INT.longest%(arr%())
     DIM AS LONG lb, ub, i, res, lw
-    lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    res& = 0 : lw& = 0
+    lb&  = LBOUND(arr%) : ub& = UBOUND(arr%)
+    res& = 0            : lw& = 0
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(STR$(arr%(i&)))) > lw& THEN
             lw&  = LEN(_TRIM$(STR$(arr%(i&))))
@@ -232,7 +232,7 @@ FUNCTION ARR_INT.min%(arr%())
     DIM AS LONG lb, ub, i
     DIM AS INTEGER s
     lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    s% = 127
+    s%  = 127
     FOR i& = lb& TO ub&
         IF arr%(i&) < s% THEN
             s% = arr%(i&)
@@ -252,7 +252,7 @@ FUNCTION ARR_INT.max%(arr%())
     DIM AS LONG lb, ub, i
     DIM AS INTEGER s
     lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    s% = 0
+    s%  = 0
     FOR i& = lb& TO ub&
         IF arr%(i&) > s% THEN
             s% = arr%(i&)
@@ -270,8 +270,8 @@ END FUNCTION
 '
 FUNCTION ARR_INT.shortest%(arr%())
     DIM AS LONG lb, ub, i, res, sw
-    lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    res& = 0 : sw& = 0
+    lb&  = LBOUND(arr%) : ub& = UBOUND(arr%)
+    res& = 0            : sw& = 0
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(STR$(arr%(i&)))) < sw& THEN
             sw&  = LEN(_TRIM$(STR$(arr%(i&))))
@@ -314,7 +314,7 @@ END FUNCTION
 SUB ARR_INT.nth(source_arr%(), dest_arr%(), nth%)
     DIM AS LONG lb, ub, i, n
     lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
-    n& = (ub& - lb&) \ nth%
+    n&  = (ub& - lb&) \ nth%
     REDIM dest_arr(n&) AS INTEGER
     n& = 0
     FOR i& = lb& to ub&
@@ -462,7 +462,7 @@ END FUNCTION
 '
 SUB ARR_INT.shuffle(source_arr%(), dest_arr%())
     DIM AS LONG lb, ub, i, count
-    lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
+    lb&    = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS INTEGER
     CALL ARR_INT.copy(source_arr%(), dest_arr%())
@@ -529,7 +529,7 @@ SUB ARR_INT.gte(source_arr%(), dest_arr%(), value%)
     lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     DIM work_arr(0) AS INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr%(i&) >= value% THEN
+        IF source_arr%(i&) > = value% THEN
             CALL ARR_INT.push(work_arr%(), source_arr%(i&))
         END IF
     NEXT i&
@@ -573,7 +573,7 @@ SUB ARR_INT.lte(source_arr%(), dest_arr%(), value%)
     lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     DIM work_arr(0) AS INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr%(i&) <= value% THEN
+        IF source_arr%(i&) < = value% THEN
             CALL ARR_INT.push(work_arr%(), source_arr%(i&))
         END IF
     NEXT i&
@@ -612,7 +612,7 @@ SUB ARR_INT.insert(arr%(), value%, index%)
     DIM tmp AS INTEGER
     DIM work_arr(0) AS INTEGER
     lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_INT.push(work_arr%(), arr%(i&))
@@ -640,7 +640,7 @@ SUB ARR_INT.remove(arr%(), index%)
     DIM tmp AS INTEGER
     DIM work_arr(0) AS INTEGER
     lb& = LBOUND(arr%) : ub& = UBOUND(arr%)
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_INT.push(work_arr%(), arr%(i&))
@@ -733,7 +733,7 @@ SUB ARR_INT.between(source_arr%(), dest_arr%(), min%, max%)
     lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     DIM work_arr(0) AS INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr%(i&) >= min% _
+        IF source_arr%(i&) > = min% _
         AND source_arr%(i&) <= max% THEN
             CALL ARR_INT.push(work_arr%(), source_arr%(i&))
         END IF
@@ -751,7 +751,7 @@ END SUB
 '
 SUB ARR_INT.sort(source_arr%(), dest_arr%())
     DIM AS LONG lb, ub, count
-    lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
+    lb&    = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS INTEGER
     CALL ARR_INT.copy(source_arr%(), dest_arr%())
@@ -767,7 +767,7 @@ END SUB
 '
 SUB ARR_INT.rsort(source_arr%(), dest_arr%())
     DIM AS LONG lb, ub, count
-    lb& = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
+    lb&    = LBOUND(source_arr%) : ub& = UBOUND(source_arr%)
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS INTEGER
     CALL ARR_INT.copy(source_arr%(), dest_arr%())
@@ -785,25 +785,25 @@ END SUB
 ' @param INTEGER order% to sort by (0 = asc / 1 = desc)
 '
 SUB ARR_INT.quicksort(arr%(), start%, finish%, order%)
-    DIM i AS LONG
-    DIM pivot AS INTEGER
+    DIM i          AS LONG
+    DIM pivot      AS INTEGER
     DIM pivotvalue AS INTEGER
 
     'first, partition the array
-    pivot% = start%
+    pivot%      = start%
     pivotvalue% = arr%(pivot%)
     FOR i& = start% + 1 TO finish%
         IF order% = 0 THEN ' ascending order
             IF arr%(i&) < pivotvalue% THEN
-                arr%(pivot%) = arr%(i&)
-                arr%(i&) = arr%(pivot% + 1)
+                arr%(pivot%)     = arr%(i&)
+                arr%(i&)         = arr%(pivot% + 1)
                 arr%(pivot% + 1) = pivotvalue%
                 pivot% = pivot% + 1
             END IF
         ELSEIF order% = 1 THEN ' descending order
             IF arr%(i&) > pivotvalue% THEN
-                arr%(pivot%) = arr%(i&)
-                arr%(i&) = arr%(pivot% + 1)
+                arr%(pivot%)     = arr%(i&)
+                arr%(i&)         = arr%(pivot% + 1)
                 arr%(pivot% + 1) = pivotvalue%
                 pivot% = pivot% + 1
             END IF
@@ -811,10 +811,10 @@ SUB ARR_INT.quicksort(arr%(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% >= 2 THEN 
+    IF pivot% - start% > = 2 THEN 
         CALL ARR_INT.quicksort(arr%(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% >= 2 THEN 
+    IF finish% - pivot% > = 2 THEN 
         CALL ARR_INT.quicksort(arr%(), pivot% + 1, finish%, order%)
     END IF
 END SUB
@@ -848,7 +848,7 @@ SUB ARR_INT.union(source_arr%(), dest_arr%())
     
     REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS INTEGER
     FOR i& = s_lb& TO s_ub&
-        n& = d_ub& + 1 + i& - s_lb&
+        n&            = d_ub& + 1 + i& - s_lb&
         dest_arr%(n&) = source_arr%(i&)
     NEXT i&
 END SUB

@@ -3,8 +3,8 @@ $CONSOLE:ONLY
 '$INCLUDE:'ASEPRITE.BI'
 
 DIM file_handle AS INTEGER
-DIM file_path AS STRING
-DIM magic AS _UNSIGNED INTEGER
+DIM file_path   AS STRING
+DIM magic       AS _UNSIGNED INTEGER
 
 file_path = "test-files\jup-jerk.aseprite"
 
@@ -15,7 +15,7 @@ file_handle = FREEFILE
 OPEN file_path FOR BINARY AS #file_handle
 
 ' Check the magic number at position 133 (where frame header should be)
-SEEK #file_handle, 133  ' 129 + 4 bytes for num_bytes field
+SEEK #file_handle, 133 ' 129 + 4 bytes for num_bytes field
 GET #file_handle, , magic
 
 PRINT "Magic number at position 133: 0x"; HEX$(magic)

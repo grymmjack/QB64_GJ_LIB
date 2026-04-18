@@ -15,24 +15,24 @@ PRINT "Interactive Pixel Scaler Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
-DIM scaledImage AS LONG
+DIM scaledImage   AS LONG
 DIM currentScaler AS INTEGER
-DIM oldScaler AS INTEGER
+DIM oldScaler     AS INTEGER
 
 ' Pixel scaler definitions
 DIM scalerNames(0 TO 7) AS STRING
 DIM scalerDescriptions(0 TO 7) AS STRING
-scalerNames(0) = "SXBR2": scalerDescriptions(0) = "xBRZ 2x - General purpose retro scaling"
-scalerNames(1) = "SXBR3": scalerDescriptions(1) = "xBRZ 3x - General purpose retro scaling"  
-scalerNames(2) = "SXBR4": scalerDescriptions(2) = "xBRZ 4x - General purpose retro scaling"
-scalerNames(3) = "MMPX2": scalerDescriptions(3) = "MMPX 2x - Style-preserving pixel art"
-scalerNames(4) = "HQ2XA": scalerDescriptions(4) = "HQ2X 2x - High quality cartoon/anime art"
-scalerNames(5) = "HQ2XB": scalerDescriptions(5) = "HQ2X 2x - High quality complex detailed art"
-scalerNames(6) = "HQ3XA": scalerDescriptions(6) = "HQ3X 3x - High quality cartoon/anime art"
-scalerNames(7) = "HQ3XB": scalerDescriptions(7) = "HQ3X 3x - High quality complex detailed art"
+scalerNames(0) = "SXBR2" : scalerDescriptions(0) = "xBRZ 2x - General purpose retro scaling"
+scalerNames(1) = "SXBR3" : scalerDescriptions(1) = "xBRZ 3x - General purpose retro scaling"  
+scalerNames(2) = "SXBR4" : scalerDescriptions(2) = "xBRZ 4x - General purpose retro scaling"
+scalerNames(3) = "MMPX2" : scalerDescriptions(3) = "MMPX 2x - Style-preserving pixel art"
+scalerNames(4) = "HQ2XA" : scalerDescriptions(4) = "HQ2X 2x - High quality cartoon/anime art"
+scalerNames(5) = "HQ2XB" : scalerDescriptions(5) = "HQ2X 2x - High quality complex detailed art"
+scalerNames(6) = "HQ3XA" : scalerDescriptions(6) = "HQ3X 3x - High quality cartoon/anime art"
+scalerNames(7) = "HQ3XB" : scalerDescriptions(7) = "HQ3X 3x - High quality complex detailed art"
 
-currentScaler = 0   ' Start with SXBR2
-oldScaler = -1      ' Force initial update
+currentScaler = 0  ' Start with SXBR2
+oldScaler     = -1 ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = _LOADIMAGE("16color-ega-games.gif", 32)
@@ -56,7 +56,7 @@ PRINT "  S          : Run static test (shows all scalers briefly)"
 PRINT "  ESC        : Exit"
 PRINT "Switch to graphics window for interaction!"
 
-DIM autoCycle AS INTEGER
+DIM autoCycle  AS INTEGER
 DIM cycleTimer AS DOUBLE
 autoCycle = 0
 
@@ -74,10 +74,10 @@ DO
         _DISPLAY
         
         scaledImage = GJ_IMGADJ_PixelScaler(originalImage, currentScaler)
-        oldScaler = currentScaler
+        oldScaler   = currentScaler
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -85,9 +85,9 @@ DO
         _PRINTSTRING (10, 10), "Interactive Pixel Scaler Test - Using GJ_IMGADJ Library"
         
         ' Show current scaler info
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current scaler
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current scaler
         _PRINTSTRING (10, 40), "Current: " + scalerNames(currentScaler) + " (" + STR$(currentScaler + 1) + "/8)"
-        COLOR _RGB32(200, 200, 200)  ' Light gray for description
+        COLOR _RGB32(200, 200, 200) ' Light gray for description
         _PRINTSTRING (10, 60), scalerDescriptions(currentScaler)
         
         COLOR _RGB32(255, 255, 255)
@@ -105,10 +105,10 @@ DO
             ' Show scaling factor
             DIM scaleFactor AS SINGLE
             scaleFactor = _WIDTH(scaledImage) / _WIDTH(originalImage)
-            COLOR _RGB32(0, 255, 0)  ' Green for success
+            COLOR _RGB32(0, 255, 0) ' Green for success
             _PRINTSTRING (320, 470), "Scale factor: " + STR$(scaleFactor) + "x"
         ELSE
-            COLOR _RGB32(255, 0, 0)  ' Red for error
+            COLOR _RGB32(255, 0, 0) ' Red for error
             _PRINTSTRING (320, 130), "ERROR: " + scalerNames(currentScaler) + " failed to apply"
             _PRINTSTRING (320, 150), "This scaler may not be supported in this QB64PE version"
         END IF
@@ -120,7 +120,7 @@ DO
     IF autoCycle THEN
         IF TIMER - cycleTimer > 5 THEN  ' 5 second delay
             currentScaler = (currentScaler + 1) MOD 8
-            cycleTimer = TIMER
+            cycleTimer    = TIMER
         END IF
         
         ' Show countdown
@@ -136,20 +136,20 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + CHR$(77)  ' RIGHT arrow
-            autoCycle = 0
+        CASE CHR$(0) + CHR$(77) ' RIGHT arrow
+            autoCycle     = 0
             currentScaler = (currentScaler + 1) MOD 8
-        CASE CHR$(0) + CHR$(75)  ' LEFT arrow  
-            autoCycle = 0
-            currentScaler = (currentScaler + 7) MOD 8  ' +7 is same as -1 for MOD 8
+        CASE CHR$(0) + CHR$(75) ' LEFT arrow  
+            autoCycle     = 0
+            currentScaler = (currentScaler + 7) MOD 8 ' +7 is same as -1 for MOD 8
         CASE "a", "A"
-            autoCycle = 1
+            autoCycle  = 1
             cycleTimer = TIMER
         CASE "s", "S"
             ' Static test - show all scalers briefly
             autoCycle = 0
             CALL RunStaticTest(originalImage, scalerNames(), scalerDescriptions())
-            oldScaler = -1  ' Force refresh
+            oldScaler = -1                            ' Force refresh
         CASE ELSE
             IF LEN(k) > 0 THEN autoCycle = 0  ' Any other key stops auto-cycle
     END SELECT
@@ -170,7 +170,7 @@ SYSTEM
 ' @param descriptions() STRING Array of scaler descriptions
 '
 SUB RunStaticTest (testImg AS LONG, names() AS STRING, descriptions() AS STRING)
-    DIM i AS INTEGER
+    DIM i          AS INTEGER
     DIM tempScaled AS LONG
     
     _DEST 0

@@ -200,16 +200,16 @@ PRINT ""
 ' Create a dramatic effect chain
 adjusted = GJ_IMGADJ_Brightness(myImage, "+", 30)
 DIM temp AS LONG
-temp = adjusted
+temp     = adjusted
 adjusted = GJ_IMGADJ_Contrast(temp, "+", 50)
 _FREEIMAGE temp
-temp = adjusted  
+temp     = adjusted  
 adjusted = GJ_IMGADJ_Gamma(temp, "+", 40)
 _FREEIMAGE temp
-temp = adjusted
+temp     = adjusted
 adjusted = GJ_IMGADJ_FilmGrain(temp, 45)
 _FREEIMAGE temp
-temp = adjusted
+temp     = adjusted
 adjusted = GJ_IMGADJ_Vignette(temp, 0.7)
 _FREEIMAGE temp
 CALL GJ_IMGADJ_ShowComparison(myImage, adjusted, "CHAIN: Bright+30, Contrast+50, Gamma+40, Grain+45, Vignette")

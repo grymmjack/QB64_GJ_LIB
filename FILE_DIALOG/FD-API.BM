@@ -28,9 +28,9 @@ END FUNCTION
 FUNCTION FD_save_file$ (title AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultFileName AS STRING, defaultExt AS STRING)
     FD_init FD_MODE_SAVE, title, "SAVE", startDir, filters, defaultFilter, defaultExt
     IF LEN(defaultFileName) > 0 THEN
-        FD_STATE.fileNameInput = defaultFileName
+        FD_STATE.fileNameInput  = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
-        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
+        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
     END IF
     FD_modal_loop
     DIM result AS STRING
@@ -49,9 +49,9 @@ END FUNCTION
 FUNCTION FD_save_as_file$ (title AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultFileName AS STRING, defaultExt AS STRING)
     FD_init FD_MODE_SAVE_AS, title, "SAVE AS", startDir, filters, defaultFilter, defaultExt
     IF LEN(defaultFileName) > 0 THEN
-        FD_STATE.fileNameInput = defaultFileName
+        FD_STATE.fileNameInput  = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
-        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
+        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
     END IF
     FD_modal_loop
     DIM result AS STRING
@@ -87,72 +87,72 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 SUB FD_THEME_init
     ' Backgrounds
-    FD_THEME.bg              = &HFF2D2D30
-    FD_THEME.titleBg         = &HFF3C3C3C
-    FD_THEME.titleBgActive   = &HFF007ACC
-    FD_THEME.toolbarBg       = &HFF333337
-    FD_THEME.placesBg        = &HFF252526
-    FD_THEME.contentBg       = &HFF1E1E1E
-    FD_THEME.previewBg       = &HFF1E1E1E
-    FD_THEME.statusBg        = &HFF007ACC
-    FD_THEME.buttonBarBg     = &HFF2D2D30
-    FD_THEME.colHeaderBg     = &HFF333337
-    FD_THEME.pathBg          = &HFF3C3C3C
+    FD_THEME.bg            = &HFF2D2D30
+    FD_THEME.titleBg       = &HFF3C3C3C
+    FD_THEME.titleBgActive = &HFF007ACC
+    FD_THEME.toolbarBg     = &HFF333337
+    FD_THEME.placesBg      = &HFF252526
+    FD_THEME.contentBg     = &HFF1E1E1E
+    FD_THEME.previewBg     = &HFF1E1E1E
+    FD_THEME.statusBg      = &HFF007ACC
+    FD_THEME.buttonBarBg   = &HFF2D2D30
+    FD_THEME.colHeaderBg   = &HFF333337
+    FD_THEME.pathBg        = &HFF3C3C3C
     ' Text
-    FD_THEME.text            = &HFFCCCCCC
-    FD_THEME.textDim         = &HFF808080
-    FD_THEME.textBright      = &HFFFFFFFF
-    FD_THEME.textDisabled    = &HFF5A5A5A
-    FD_THEME.textAccent      = &HFF3794FF
+    FD_THEME.text         = &HFFCCCCCC
+    FD_THEME.textDim      = &HFF808080
+    FD_THEME.textBright   = &HFFFFFFFF
+    FD_THEME.textDisabled = &HFF5A5A5A
+    FD_THEME.textAccent   = &HFF3794FF
     ' Interactive
-    FD_THEME.hover           = &HFF2A2D2E
-    FD_THEME.selected        = &HFF094771
+    FD_THEME.hover             = &HFF2A2D2E
+    FD_THEME.selected          = &HFF094771
     FD_THEME.selectedUnfocused = &HFF37373D
-    FD_THEME.buttonBg        = &HFF0E639C
-    FD_THEME.buttonHover     = &HFF1177BB
-    FD_THEME.buttonText      = &HFFFFFFFF
+    FD_THEME.buttonBg          = &HFF0E639C
+    FD_THEME.buttonHover       = &HFF1177BB
+    FD_THEME.buttonText        = &HFFFFFFFF
     ' Borders
-    FD_THEME.border          = &HFF3C3C3C
-    FD_THEME.borderFocus     = &HFF007ACC
-    FD_THEME.splitter        = &HFF3C3C3C
-    FD_THEME.divider         = &HFF404040
-    FD_THEME.colResize       = &HFF007ACC
+    FD_THEME.border      = &HFF3C3C3C
+    FD_THEME.borderFocus = &HFF007ACC
+    FD_THEME.splitter    = &HFF3C3C3C
+    FD_THEME.divider     = &HFF404040
+    FD_THEME.colResize   = &HFF007ACC
     ' Inputs
-    FD_THEME.inputBg         = &HFF3C3C3C
-    FD_THEME.inputBorder     = &HFF555555
-    FD_THEME.inputFocusBg    = &HFF1E1E1E
-    FD_THEME.inputCursor     = &HFFAEAFAD
+    FD_THEME.inputBg      = &HFF3C3C3C
+    FD_THEME.inputBorder  = &HFF555555
+    FD_THEME.inputFocusBg = &HFF1E1E1E
+    FD_THEME.inputCursor  = &HFFAEAFAD
     ' Scrollbars
-    FD_THEME.scrollbarBg     = &HFF1E1E1E
-    FD_THEME.scrollbarThumb  = &HFF424242
-    FD_THEME.scrollbarHover  = &HFF4F4F4F
+    FD_THEME.scrollbarBg    = &HFF1E1E1E
+    FD_THEME.scrollbarThumb = &HFF424242
+    FD_THEME.scrollbarHover = &HFF4F4F4F
     ' File type icons
-    FD_THEME.iconFolder      = &HFFDCB67A
-    FD_THEME.iconImage       = &HFF6A9955
-    FD_THEME.iconDoc         = &HFF569CD6
-    FD_THEME.iconDefault     = &HFF808080
-    FD_THEME.iconExec        = &HFF4EC9B0
-    FD_THEME.iconSound       = &HFFC586C0
-    FD_THEME.iconConfig      = &HFFCE9178
-    FD_THEME.iconFont        = &HFFDCDCAA
-    FD_THEME.iconTextmode    = &HFF4FC1FF
-    FD_THEME.iconArchive     = &HFF8B7355
-    FD_THEME.iconVideo       = &HFFE06C75
-    FD_THEME.iconMusic       = &HFFC586C0
-    FD_THEME.iconDset        = &HFFE2884B
-    FD_THEME.iconPalette     = &HFFFF6B6B
-    FD_THEME.iconGradient    = &HFF56B6C2
+    FD_THEME.iconFolder   = &HFFDCB67A
+    FD_THEME.iconImage    = &HFF6A9955
+    FD_THEME.iconDoc      = &HFF569CD6
+    FD_THEME.iconDefault  = &HFF808080
+    FD_THEME.iconExec     = &HFF4EC9B0
+    FD_THEME.iconSound    = &HFFC586C0
+    FD_THEME.iconConfig   = &HFFCE9178
+    FD_THEME.iconFont     = &HFFDCDCAA
+    FD_THEME.iconTextmode = &HFF4FC1FF
+    FD_THEME.iconArchive  = &HFF8B7355
+    FD_THEME.iconVideo    = &HFFE06C75
+    FD_THEME.iconMusic    = &HFFC586C0
+    FD_THEME.iconDset     = &HFFE2884B
+    FD_THEME.iconPalette  = &HFFFF6B6B
+    FD_THEME.iconGradient = &HFF56B6C2
     ' Checkerboard
-    FD_THEME.checkA          = &HFF404040
-    FD_THEME.checkB          = &HFF606060
+    FD_THEME.checkA = &HFF404040
+    FD_THEME.checkB = &HFF606060
     ' Sort
-    FD_THEME.sortArrow       = &HFFCCCCCC
+    FD_THEME.sortArrow = &HFFCCCCCC
     ' Tooltips
-    FD_THEME.tooltipBg       = &HFF252526
-    FD_THEME.tooltipText     = &HFFCCCCCC
-    FD_THEME.tooltipBorder   = &HFF007ACC
+    FD_THEME.tooltipBg     = &HFF252526
+    FD_THEME.tooltipText   = &HFFCCCCCC
+    FD_THEME.tooltipBorder = &HFF007ACC
     ' Font (0 = use built-in bitmap font)
-    FD_THEME.fontHandle      = 0
+    FD_THEME.fontHandle = 0
 
     FD_THEME_sync
 END SUB
@@ -162,58 +162,58 @@ END SUB
 '   Call this after modifying FD_THEME fields to apply changes to rendering.
 ' --------------------------------------------------------------------------
 SUB FD_THEME_sync
-    FD_CLR_BG               = FD_THEME.bg
-    FD_CLR_TITLE_BG         = FD_THEME.titleBg
-    FD_CLR_TITLE_BG_ACTIVE  = FD_THEME.titleBgActive
-    FD_CLR_TOOLBAR_BG       = FD_THEME.toolbarBg
-    FD_CLR_PLACES_BG        = FD_THEME.placesBg
-    FD_CLR_CONTENT_BG       = FD_THEME.contentBg
-    FD_CLR_PREVIEW_BG       = FD_THEME.previewBg
-    FD_CLR_STATUS_BG        = FD_THEME.statusBg
-    FD_CLR_BUTTON_BAR_BG    = FD_THEME.buttonBarBg
-    FD_CLR_COL_HEADER_BG    = FD_THEME.colHeaderBg
-    FD_CLR_PATH_BG          = FD_THEME.pathBg
-    FD_CLR_TEXT             = FD_THEME.text
-    FD_CLR_TEXT_DIM         = FD_THEME.textDim
-    FD_CLR_TEXT_BRIGHT      = FD_THEME.textBright
-    FD_CLR_TEXT_DISABLED    = FD_THEME.textDisabled
-    FD_CLR_TEXT_ACCENT      = FD_THEME.textAccent
-    FD_CLR_HOVER            = FD_THEME.hover
-    FD_CLR_SELECTED         = FD_THEME.selected
+    FD_CLR_BG                 = FD_THEME.bg
+    FD_CLR_TITLE_BG           = FD_THEME.titleBg
+    FD_CLR_TITLE_BG_ACTIVE    = FD_THEME.titleBgActive
+    FD_CLR_TOOLBAR_BG         = FD_THEME.toolbarBg
+    FD_CLR_PLACES_BG          = FD_THEME.placesBg
+    FD_CLR_CONTENT_BG         = FD_THEME.contentBg
+    FD_CLR_PREVIEW_BG         = FD_THEME.previewBg
+    FD_CLR_STATUS_BG          = FD_THEME.statusBg
+    FD_CLR_BUTTON_BAR_BG      = FD_THEME.buttonBarBg
+    FD_CLR_COL_HEADER_BG      = FD_THEME.colHeaderBg
+    FD_CLR_PATH_BG            = FD_THEME.pathBg
+    FD_CLR_TEXT               = FD_THEME.text
+    FD_CLR_TEXT_DIM           = FD_THEME.textDim
+    FD_CLR_TEXT_BRIGHT        = FD_THEME.textBright
+    FD_CLR_TEXT_DISABLED      = FD_THEME.textDisabled
+    FD_CLR_TEXT_ACCENT        = FD_THEME.textAccent
+    FD_CLR_HOVER              = FD_THEME.hover
+    FD_CLR_SELECTED           = FD_THEME.selected
     FD_CLR_SELECTED_UNFOCUSED = FD_THEME.selectedUnfocused
-    FD_CLR_BUTTON_BG        = FD_THEME.buttonBg
-    FD_CLR_BUTTON_HOVER     = FD_THEME.buttonHover
-    FD_CLR_BUTTON_TEXT      = FD_THEME.buttonText
-    FD_CLR_BORDER           = FD_THEME.border
-    FD_CLR_BORDER_FOCUS     = FD_THEME.borderFocus
-    FD_CLR_SPLITTER         = FD_THEME.splitter
-    FD_CLR_DIVIDER          = FD_THEME.divider
-    FD_CLR_COL_RESIZE       = FD_THEME.colResize
-    FD_CLR_INPUT_BG         = FD_THEME.inputBg
-    FD_CLR_INPUT_BORDER     = FD_THEME.inputBorder
-    FD_CLR_INPUT_FOCUS_BG   = FD_THEME.inputFocusBg
-    FD_CLR_INPUT_CURSOR     = FD_THEME.inputCursor
-    FD_CLR_SCROLLBAR_BG     = FD_THEME.scrollbarBg
-    FD_CLR_SCROLLBAR_THUMB  = FD_THEME.scrollbarThumb
-    FD_CLR_SCROLLBAR_HOVER  = FD_THEME.scrollbarHover
-    FD_CLR_ICON_FOLDER      = FD_THEME.iconFolder
-    FD_CLR_ICON_IMAGE       = FD_THEME.iconImage
-    FD_CLR_ICON_DOC         = FD_THEME.iconDoc
-    FD_CLR_ICON_DEFAULT     = FD_THEME.iconDefault
-    FD_CLR_ICON_EXEC        = FD_THEME.iconExec
-    FD_CLR_ICON_SOUND       = FD_THEME.iconSound
-    FD_CLR_ICON_CONFIG      = FD_THEME.iconConfig
-    FD_CLR_ICON_FONT        = FD_THEME.iconFont
-    FD_CLR_ICON_TEXTMODE    = FD_THEME.iconTextmode
-    FD_CLR_ICON_ARCHIVE     = FD_THEME.iconArchive
-    FD_CLR_ICON_VIDEO       = FD_THEME.iconVideo
-    FD_CLR_ICON_MUSIC       = FD_THEME.iconMusic
-    FD_CLR_ICON_DSET        = FD_THEME.iconDset
-    FD_CLR_ICON_PALETTE     = FD_THEME.iconPalette
-    FD_CLR_ICON_GRADIENT    = FD_THEME.iconGradient
-    FD_CLR_CHECK_A          = FD_THEME.checkA
-    FD_CLR_CHECK_B          = FD_THEME.checkB
-    FD_CLR_SORT_ARROW       = FD_THEME.sortArrow
+    FD_CLR_BUTTON_BG          = FD_THEME.buttonBg
+    FD_CLR_BUTTON_HOVER       = FD_THEME.buttonHover
+    FD_CLR_BUTTON_TEXT        = FD_THEME.buttonText
+    FD_CLR_BORDER             = FD_THEME.border
+    FD_CLR_BORDER_FOCUS       = FD_THEME.borderFocus
+    FD_CLR_SPLITTER           = FD_THEME.splitter
+    FD_CLR_DIVIDER            = FD_THEME.divider
+    FD_CLR_COL_RESIZE         = FD_THEME.colResize
+    FD_CLR_INPUT_BG           = FD_THEME.inputBg
+    FD_CLR_INPUT_BORDER       = FD_THEME.inputBorder
+    FD_CLR_INPUT_FOCUS_BG     = FD_THEME.inputFocusBg
+    FD_CLR_INPUT_CURSOR       = FD_THEME.inputCursor
+    FD_CLR_SCROLLBAR_BG       = FD_THEME.scrollbarBg
+    FD_CLR_SCROLLBAR_THUMB    = FD_THEME.scrollbarThumb
+    FD_CLR_SCROLLBAR_HOVER    = FD_THEME.scrollbarHover
+    FD_CLR_ICON_FOLDER        = FD_THEME.iconFolder
+    FD_CLR_ICON_IMAGE         = FD_THEME.iconImage
+    FD_CLR_ICON_DOC           = FD_THEME.iconDoc
+    FD_CLR_ICON_DEFAULT       = FD_THEME.iconDefault
+    FD_CLR_ICON_EXEC          = FD_THEME.iconExec
+    FD_CLR_ICON_SOUND         = FD_THEME.iconSound
+    FD_CLR_ICON_CONFIG        = FD_THEME.iconConfig
+    FD_CLR_ICON_FONT          = FD_THEME.iconFont
+    FD_CLR_ICON_TEXTMODE      = FD_THEME.iconTextmode
+    FD_CLR_ICON_ARCHIVE       = FD_THEME.iconArchive
+    FD_CLR_ICON_VIDEO         = FD_THEME.iconVideo
+    FD_CLR_ICON_MUSIC         = FD_THEME.iconMusic
+    FD_CLR_ICON_DSET          = FD_THEME.iconDset
+    FD_CLR_ICON_PALETTE       = FD_THEME.iconPalette
+    FD_CLR_ICON_GRADIENT      = FD_THEME.iconGradient
+    FD_CLR_CHECK_A            = FD_THEME.checkA
+    FD_CLR_CHECK_B            = FD_THEME.checkB
+    FD_CLR_SORT_ARROW         = FD_THEME.sortArrow
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -225,24 +225,24 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     FD_STATE = emptyState
 
     ' Set operating parameters
-    FD_STATE.mode = mode
-    FD_STATE.title = title
+    FD_STATE.mode         = mode
+    FD_STATE.title        = title
     FD_STATE.confirmLabel = UCASE$(confirmLabel)
-    FD_STATE.defaultExt = defaultExt
-    FD_STATE.scale = 1
+    FD_STATE.defaultExt   = defaultExt
+    FD_STATE.scale        = 1
 
     ' Handle image handles
-    FD_STATE.imgHandle = -1
-    FD_STATE.screenShot = -1
+    FD_STATE.imgHandle        = -1
+    FD_STATE.screenShot       = -1
     FD_STATE.previewImgHandle = -1
-    FD_STATE.selectedIndex = -1
-    FD_STATE.hoverIndex = -1
-    FD_STATE.lastClickIndex = -1
-    FD_STATE.colResizing = -1
-    FD_STATE.placesHover = -1
-    FD_STATE.focusPane = FD_FOCUS_CONTENT
-    FD_STATE.navBackTop = -1
-    FD_STATE.navFwdTop = -1
+    FD_STATE.selectedIndex    = -1
+    FD_STATE.hoverIndex       = -1
+    FD_STATE.lastClickIndex   = -1
+    FD_STATE.colResizing      = -1
+    FD_STATE.placesHover      = -1
+    FD_STATE.focusPane        = FD_FOCUS_CONTENT
+    FD_STATE.navBackTop       = -1
+    FD_STATE.navFwdTop        = -1
 
     ' Load config (or use defaults)
     FD_load_config
@@ -252,7 +252,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Parse filters
     FD_parse_filters filters
-    IF defaultFilter >= 0 AND defaultFilter < FD_STATE.filterCount THEN
+    IF defaultFilter > = 0 AND defaultFilter < FD_STATE.filterCount THEN
         FD_STATE.activeFilter = defaultFilter
     ELSE
         FD_STATE.activeFilter = 0
@@ -268,18 +268,18 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
         startPath = FD_PLAT_get_home_dir$
     END IF
     FD_STATE.currentPath = startPath
-    FD_STATE.pathInput = startPath
+    FD_STATE.pathInput   = startPath
 
     ' Copy config geometry to state
-    FD_STATE.dialogW = FD_CFG.dialogW
-    FD_STATE.dialogH = FD_CFG.dialogH
-    FD_STATE.placesW = FD_CFG.placesWidth
+    FD_STATE.dialogW  = FD_CFG.dialogW
+    FD_STATE.dialogH  = FD_CFG.dialogH
+    FD_STATE.placesW  = FD_CFG.placesWidth
     FD_STATE.previewW = FD_CFG.previewWidth
 
     ' Center dialog on screen
     DIM scrW AS INTEGER, scrH AS INTEGER
-    scrW = _WIDTH(0)
-    scrH = _HEIGHT(0)
+    scrW             = _WIDTH(0)
+    scrH             = _HEIGHT(0)
     FD_STATE.dialogX = (scrW - FD_STATE.dialogW) \ 2
     FD_STATE.dialogY = (scrH - FD_STATE.dialogH) \ 2
     IF FD_STATE.dialogX < 0 THEN FD_STATE.dialogX = 0
@@ -306,30 +306,30 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Create text input widgets
     DIM pathX AS INTEGER, pathW AS INTEGER
-    pathX = FD_PADDING + (FD_ICONS_calc_btn_w% + 2) * 2 + FD_PADDING  ' After up + new folder buttons
-    pathW = FD_STATE.dialogW - pathX - FD_PADDING
+    pathX             = FD_PADDING + (FD_ICONS_calc_btn_w% + 2) * 2 + FD_PADDING ' After up + new folder buttons
+    pathW             = FD_STATE.dialogW - pathX - FD_PADDING
     FD_STATE.tiPathId = TI_create%(pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6)
     TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
-    TI_inputs(FD_STATE.tiPathId).placeholder = "ENTER PATH..."
-    TI_inputs(FD_STATE.tiPathId).theme.bgColor = FD_CLR_INPUT_BG~&
-    TI_inputs(FD_STATE.tiPathId).theme.focusBgColor = FD_CLR_INPUT_FOCUS_BG~&
-    TI_inputs(FD_STATE.tiPathId).theme.borderColor = FD_CLR_INPUT_BORDER~&
+    TI_inputs(FD_STATE.tiPathId).placeholder            = "ENTER PATH..."
+    TI_inputs(FD_STATE.tiPathId).theme.bgColor          = FD_CLR_INPUT_BG~&
+    TI_inputs(FD_STATE.tiPathId).theme.focusBgColor     = FD_CLR_INPUT_FOCUS_BG~&
+    TI_inputs(FD_STATE.tiPathId).theme.borderColor      = FD_CLR_INPUT_BORDER~&
     TI_inputs(FD_STATE.tiPathId).theme.focusBorderColor = FD_CLR_BORDER_FOCUS~&
-    TI_inputs(FD_STATE.tiPathId).theme.textColor = FD_CLR_TEXT~&
-    TI_inputs(FD_STATE.tiPathId).theme.cursorColor = FD_CLR_INPUT_CURSOR~&
-    TI_inputs(FD_STATE.tiPathId).theme.selectionColor = FD_CLR_SELECTED~&
+    TI_inputs(FD_STATE.tiPathId).theme.textColor        = FD_CLR_TEXT~&
+    TI_inputs(FD_STATE.tiPathId).theme.cursorColor      = FD_CLR_INPUT_CURSOR~&
+    TI_inputs(FD_STATE.tiPathId).theme.selectionColor   = FD_CLR_SELECTED~&
     TI_inputs(FD_STATE.tiPathId).theme.placeholderColor = FD_CLR_TEXT_DIM~&
 
     ' Filename input (positioned later in LAYOUT_calculate, starts hidden)
-    FD_STATE.tiFileNameId = TI_create%(0, 0, 100, 22)
-    TI_inputs(FD_STATE.tiFileNameId).placeholder = "FILENAME..."
-    TI_inputs(FD_STATE.tiFileNameId).theme.bgColor = FD_CLR_INPUT_BG~&
-    TI_inputs(FD_STATE.tiFileNameId).theme.focusBgColor = FD_CLR_INPUT_FOCUS_BG~&
-    TI_inputs(FD_STATE.tiFileNameId).theme.borderColor = FD_CLR_INPUT_BORDER~&
+    FD_STATE.tiFileNameId                                   = TI_create%(0, 0, 100, 22)
+    TI_inputs(FD_STATE.tiFileNameId).placeholder            = "FILENAME..."
+    TI_inputs(FD_STATE.tiFileNameId).theme.bgColor          = FD_CLR_INPUT_BG~&
+    TI_inputs(FD_STATE.tiFileNameId).theme.focusBgColor     = FD_CLR_INPUT_FOCUS_BG~&
+    TI_inputs(FD_STATE.tiFileNameId).theme.borderColor      = FD_CLR_INPUT_BORDER~&
     TI_inputs(FD_STATE.tiFileNameId).theme.focusBorderColor = FD_CLR_BORDER_FOCUS~&
-    TI_inputs(FD_STATE.tiFileNameId).theme.textColor = FD_CLR_TEXT~&
-    TI_inputs(FD_STATE.tiFileNameId).theme.cursorColor = FD_CLR_INPUT_CURSOR~&
-    TI_inputs(FD_STATE.tiFileNameId).theme.selectionColor = FD_CLR_SELECTED~&
+    TI_inputs(FD_STATE.tiFileNameId).theme.textColor        = FD_CLR_TEXT~&
+    TI_inputs(FD_STATE.tiFileNameId).theme.cursorColor      = FD_CLR_INPUT_CURSOR~&
+    TI_inputs(FD_STATE.tiFileNameId).theme.selectionColor   = FD_CLR_SELECTED~&
     TI_inputs(FD_STATE.tiFileNameId).theme.placeholderColor = FD_CLR_TEXT_DIM~&
     FD__update_text_input_geometry
 
@@ -347,7 +347,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     ' Auto-focus the filename input in save modes so user can type immediately
     IF FD_STATE.mode = FD_MODE_SAVE OR FD_STATE.mode = FD_MODE_SAVE_AS THEN
         FD_STATE.focusPane = FD_FOCUS_FILENAME
-        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_focus FD_STATE.tiFileNameId
+        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_focus FD_STATE.tiFileNameId
     END IF
 END SUB
 ' --------------------------------------------------------------------------
@@ -365,9 +365,9 @@ SUB FD_cleanup
     END IF
 
     ' Destroy text input widgets
-    IF FD_STATE.tiPathId >= 1 THEN TI_destroy FD_STATE.tiPathId
-    IF FD_STATE.tiFileNameId >= 1 THEN TI_destroy FD_STATE.tiFileNameId
-    FD_STATE.tiPathId = 0
+    IF FD_STATE.tiPathId > = 1 THEN TI_destroy FD_STATE.tiPathId
+    IF FD_STATE.tiFileNameId > = 1 THEN TI_destroy FD_STATE.tiFileNameId
+    FD_STATE.tiPathId     = 0
     FD_STATE.tiFileNameId = 0
 
     ' Free images
@@ -404,7 +404,7 @@ END SUB
 ' FD_modal_loop — Run the blocking modal dialog loop
 ' --------------------------------------------------------------------------
 SUB FD_modal_loop
-    DIM k AS LONG
+    DIM k              AS LONG
     DIM wasAutodisplay AS INTEGER
     wasAutodisplay = _AUTODISPLAY
 
@@ -458,13 +458,13 @@ SUB FD_LAYOUT_calculate
 
     ' Compute dynamic bar heights based on font scales
     ' Each bar: font_height + padding. Minimum is the original constant value.
-    DIM tfs AS INTEGER, pfs AS INTEGER, sfs AS INTEGER
+    DIM tfs  AS INTEGER, pfs AS INTEGER, sfs AS INTEGER
     DIM stfs AS INTEGER, ifs AS INTEGER
-    tfs = FD_CFG.titleFontScale: IF tfs < 1 THEN tfs = 1
-    pfs = FD_CFG.pathFontScale: IF pfs < 1 THEN pfs = 1
-    sfs = FD_CFG.sortFontScale: IF sfs < 1 THEN sfs = 1
-    stfs = FD_CFG.statusFontScale: IF stfs < 1 THEN stfs = 1
-    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+    tfs  = FD_CFG.titleFontScale  : IF tfs < 1 THEN tfs = 1
+    pfs  = FD_CFG.pathFontScale   : IF pfs < 1 THEN pfs = 1
+    sfs  = FD_CFG.sortFontScale   : IF sfs < 1 THEN sfs = 1
+    stfs = FD_CFG.statusFontScale : IF stfs < 1 THEN stfs = 1
+    ifs  = FD_CFG.inputFontScale  : IF ifs < 1 THEN ifs = 1
 
     FD_STATE.titleBarH = FD_CFG.fontH * tfs + 8
     IF FD_STATE.titleBarH < FD_TITLE_BAR_H THEN FD_STATE.titleBarH = FD_TITLE_BAR_H
@@ -485,12 +485,12 @@ SUB FD_LAYOUT_calculate
     IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
 
     DIM cfs AS INTEGER
-    cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+    cfs                = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
     FD_STATE.rowHeight = FD_CFG.fontH * cfs + 4
     IF FD_STATE.rowHeight < FD_ROW_HEIGHT THEN FD_STATE.rowHeight = FD_ROW_HEIGHT
 
     ' Content Y start (below title, path, toolbar)
-    y = FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH
+    y                 = FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH
     FD_STATE.contentY = y
 
     ' Content area height
@@ -534,11 +534,11 @@ SUB FD__update_text_input_geometry
     TI_set_geometry FD_STATE.tiPathId, pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6
 
     ' Filename input — in button bar (save modes only)
-    IF FD_STATE.tiFileNameId >= 1 THEN
-        DIM fnX AS INTEGER, fnW AS INTEGER
+    IF FD_STATE.tiFileNameId > = 1 THEN
+        DIM fnX     AS INTEGER, fnW AS INTEGER
         DIM btnBarY AS INTEGER
-        DIM ifs2 AS INTEGER
-        ifs2 = FD_CFG.inputFontScale: IF ifs2 < 1 THEN ifs2 = 1
+        DIM ifs2    AS INTEGER
+        ifs2    = FD_CFG.inputFontScale: IF ifs2 < 1 THEN ifs2 = 1
         btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
         ' Dynamic label width so TI starts just after "FILENAME:" text + gap
         fnX = FD_PADDING + FD_text_width%("FILENAME:", ifs2) + FD_PADDING
@@ -553,7 +553,7 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_init_columns
     ' Name column
-    FD_columns(0).label = "Name"
+    FD_columns(0).label    = "Name"
     FD_columns(0).minWidth = 120
     IF FD_CFG.colWidth0 > 0 THEN
         FD_columns(0).width = FD_CFG.colWidth0
@@ -563,7 +563,7 @@ SUB FD_init_columns
     FD_columns(0).sortField = FD_SORT_NAME
 
     ' Type column
-    FD_columns(1).label = "Type"
+    FD_columns(1).label    = "Type"
     FD_columns(1).minWidth = 50
     IF FD_CFG.colWidth1 > 0 THEN
         FD_columns(1).width = FD_CFG.colWidth1
@@ -573,7 +573,7 @@ SUB FD_init_columns
     FD_columns(1).sortField = FD_SORT_TYPE
 
     ' Size column
-    FD_columns(2).label = "Size"
+    FD_columns(2).label    = "Size"
     FD_columns(2).minWidth = 60
     IF FD_CFG.colWidth2 > 0 THEN
         FD_columns(2).width = FD_CFG.colWidth2
@@ -583,7 +583,7 @@ SUB FD_init_columns
     FD_columns(2).sortField = FD_SORT_SIZE
 
     ' Date column
-    FD_columns(3).label = "Modified"
+    FD_columns(3).label    = "Modified"
     FD_columns(3).minWidth = 80
     IF FD_CFG.colWidth3 > 0 THEN
         FD_columns(3).width = FD_CFG.colWidth3
@@ -609,30 +609,30 @@ SUB FD_init_places
     IF driveCount > 0 THEN
         DIM d AS INTEGER
         FOR d = 0 TO driveCount - 1
-            DIM driveBuf AS STRING
+            DIM driveBuf    AS STRING
             driveBuf = SPACE$(4)
             DIM driveResult AS INTEGER
             driveResult = fd_get_drive%(d, driveBuf, 4)
-            DIM driveStr AS STRING
+            DIM driveStr    AS STRING
             driveStr = RTRIM$(FD_PLAT_trim_cstr$(driveBuf))
             IF LEN(driveStr) > 0 THEN
-                FD_places(idx).label = driveStr
-                FD_places(idx).path = driveStr
+                FD_places(idx).label     = driveStr
+                FD_places(idx).path      = driveStr
                 FD_places(idx).entryType = FD_PLACE_DRIVE
-                FD_places(idx).iconChar = 68  ' 'D' for drive
-                FD_places(idx).iconId = FD_ICON_PLACE_DRIVE
+                FD_places(idx).iconChar  = 68 ' 'D' for drive
+                FD_places(idx).iconId    = FD_ICON_PLACE_DRIVE
                 FD_places(idx).iconColor = 0
                 idx = idx + 1
-                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT d
     ELSE
         ' Unix: show root
-        FD_places(idx).label = "/"
-        FD_places(idx).path = "/"
+        FD_places(idx).label     = "/"
+        FD_places(idx).path      = "/"
         FD_places(idx).entryType = FD_PLACE_DRIVE
-        FD_places(idx).iconChar = 47  ' '/'
-        FD_places(idx).iconId = FD_ICON_PLACE_ROOT
+        FD_places(idx).iconChar  = 47 ' '/'
+        FD_places(idx).iconId    = FD_ICON_PLACE_ROOT
         FD_places(idx).iconColor = 0
         idx = idx + 1
     END IF
@@ -640,46 +640,46 @@ SUB FD_init_places
     ' Separator
     FD_places(idx).entryType = FD_PLACE_SEPARATOR
     idx = idx + 1
-    IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+    IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
 
     ' --- XDG / System directories ---
     DIM xdgHome AS STRING
     xdgHome = FD_PLAT_get_home_dir$
     IF LEN(xdgHome) > 0 THEN
-        FD_places(idx).label = "Home"
-        FD_places(idx).path = xdgHome
+        FD_places(idx).label     = "Home"
+        FD_places(idx).path      = xdgHome
         FD_places(idx).entryType = FD_PLACE_XDG
-        FD_places(idx).iconChar = 72  ' 'H'
-        FD_places(idx).iconId = FD_ICON_PLACE_HOME
+        FD_places(idx).iconChar  = 72 ' 'H'
+        FD_places(idx).iconId    = FD_ICON_PLACE_HOME
         FD_places(idx).iconColor = 0
         idx = idx + 1
-        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
     END IF
 
     ' Common XDG dirs (0=Desktop, 1=Documents, 2=Downloads, 3=Pictures, 4=Music, 5=Videos)
     DIM xdgLabels(5) AS STRING
     DIM xdgIcons(5) AS INTEGER
     DIM xdgPlaceIcons(5) AS INTEGER
-    xdgLabels(0) = "Desktop": xdgIcons(0) = 126: xdgPlaceIcons(0) = FD_ICON_PLACE_DESKTOP
-    xdgLabels(1) = "Documents": xdgIcons(1) = 100: xdgPlaceIcons(1) = FD_ICON_PLACE_DOCUMENTS
-    xdgLabels(2) = "Downloads": xdgIcons(2) = 118: xdgPlaceIcons(2) = FD_ICON_PLACE_DOWNLOADS
-    xdgLabels(3) = "Pictures": xdgIcons(3) = 112: xdgPlaceIcons(3) = FD_ICON_PLACE_PICTURES
-    xdgLabels(4) = "Music": xdgIcons(4) = 109: xdgPlaceIcons(4) = FD_ICON_PLACE_MUSIC
-    xdgLabels(5) = "Videos": xdgIcons(5) = 86: xdgPlaceIcons(5) = FD_ICON_PLACE_VIDEOS
+    xdgLabels(0) = "Desktop"   : xdgIcons(0) = 126 : xdgPlaceIcons(0) = FD_ICON_PLACE_DESKTOP
+    xdgLabels(1) = "Documents" : xdgIcons(1) = 100 : xdgPlaceIcons(1) = FD_ICON_PLACE_DOCUMENTS
+    xdgLabels(2) = "Downloads" : xdgIcons(2) = 118 : xdgPlaceIcons(2) = FD_ICON_PLACE_DOWNLOADS
+    xdgLabels(3) = "Pictures"  : xdgIcons(3) = 112 : xdgPlaceIcons(3) = FD_ICON_PLACE_PICTURES
+    xdgLabels(4) = "Music"     : xdgIcons(4) = 109 : xdgPlaceIcons(4) = FD_ICON_PLACE_MUSIC
+    xdgLabels(5) = "Videos"    : xdgIcons(5) = 86  : xdgPlaceIcons(5) = FD_ICON_PLACE_VIDEOS
 
     DIM xi AS INTEGER
     FOR xi = 0 TO 5
         DIM xdir AS STRING
         xdir = FD_PLAT_get_xdg$(xi)
         IF LEN(xdir) > 0 AND FD_PLAT_is_dir%(xdir) THEN
-            FD_places(idx).label = xdgLabels(xi)
-            FD_places(idx).path = xdir
+            FD_places(idx).label     = xdgLabels(xi)
+            FD_places(idx).path      = xdir
             FD_places(idx).entryType = FD_PLACE_XDG
-            FD_places(idx).iconChar = xdgIcons(xi)
-            FD_places(idx).iconId = xdgPlaceIcons(xi)
+            FD_places(idx).iconChar  = xdgIcons(xi)
+            FD_places(idx).iconId    = xdgPlaceIcons(xi)
             FD_places(idx).iconColor = 0
             idx = idx + 1
-            IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+            IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
         END IF
     NEXT xi
 
@@ -687,21 +687,21 @@ SUB FD_init_places
     IF FD_customPlaceCount > 0 THEN
         FD_places(idx).entryType = FD_PLACE_SEPARATOR
         idx = idx + 1
-        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
 
         DIM ci AS INTEGER
         FOR ci = 0 TO FD_customPlaceCount - 1
             DIM cPath AS STRING
             cPath = RTRIM$(FD_customPlaces(ci).path)
             IF LEN(cPath) > 0 AND FD_PLAT_is_dir%(cPath) THEN
-                FD_places(idx).label = RTRIM$(FD_customPlaces(ci).label)
-                FD_places(idx).path = cPath
+                FD_places(idx).label     = RTRIM$(FD_customPlaces(ci).label)
+                FD_places(idx).path      = cPath
                 FD_places(idx).entryType = FD_PLACE_CUSTOM
-                FD_places(idx).iconChar = 42  ' '*'
-                FD_places(idx).iconId = FD_customPlaces(ci).iconId
+                FD_places(idx).iconChar  = 42 ' '*'
+                FD_places(idx).iconId    = FD_customPlaces(ci).iconId
                 FD_places(idx).iconColor = FD_customPlaces(ci).iconColor
                 idx = idx + 1
-                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT ci
     END IF
@@ -710,19 +710,19 @@ SUB FD_init_places
     IF FD_CFG.favCount > 0 THEN
         FD_places(idx).entryType = FD_PLACE_SEPARATOR
         idx = idx + 1
-        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
 
         DIM fi AS INTEGER
         FOR fi = 0 TO FD_CFG.favCount - 1
             IF FD_favorites(fi).exists THEN
-                FD_places(idx).label = RTRIM$(FD_favorites(fi).label)
-                FD_places(idx).path = RTRIM$(FD_favorites(fi).path)
+                FD_places(idx).label     = RTRIM$(FD_favorites(fi).label)
+                FD_places(idx).path      = RTRIM$(FD_favorites(fi).path)
                 FD_places(idx).entryType = FD_PLACE_FAVORITE
-                FD_places(idx).iconChar = 42  ' '*'
-                FD_places(idx).iconId = FD_ICON_FOLDER
+                FD_places(idx).iconChar  = 42 ' '*'
+                FD_places(idx).iconId    = FD_ICON_FOLDER
                 FD_places(idx).iconColor = 0
                 idx = idx + 1
-                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT fi
     END IF
@@ -740,15 +740,15 @@ SUB FD_parse_filters (filters AS STRING)
     FD_STATE.filterCount = 0
     IF LEN(filters) = 0 THEN
         ' Default: all files
-        FD_filters(0).label = "All Files"
+        FD_filters(0).label   = "All Files"
         FD_filters(0).pattern = "*.*"
-        FD_STATE.filterCount = 1
+        FD_STATE.filterCount  = 1
         EXIT SUB
     END IF
 
     DIM remaining AS STRING
     remaining = filters
-    DIM idx AS INTEGER
+    DIM idx       AS INTEGER
     idx = 0
 
     DO WHILE LEN(remaining) > 0 AND idx < FD_MAX_FILTERS
@@ -758,17 +758,17 @@ SUB FD_parse_filters (filters AS STRING)
         IF pipePos = 0 THEN EXIT DO
 
         FD_filters(idx).label = LEFT$(remaining, pipePos - 1)
-        remaining = MID$(remaining, pipePos + 1)
+        remaining             = MID$(remaining, pipePos + 1)
 
         ' Get pattern (everything until next label or end)
         ' Look for next label|pattern pair
-        DIM nextPipe AS INTEGER
+        DIM nextPipe       AS INTEGER
         DIM foundNextLabel AS INTEGER
         foundNextLabel = 0
 
         ' Simple heuristic: if the text after next pipe contains *. it's still pattern data
         ' Otherwise it's a label
-        DIM tempRemain AS STRING
+        DIM tempRemain  AS STRING
         tempRemain = remaining
         DIM patternPart AS STRING
         patternPart = ""
@@ -794,7 +794,7 @@ SUB FD_parse_filters (filters AS STRING)
                 ' This is the next label — we're done with patterns
                 IF LEN(patternPart) = 0 THEN
                     patternPart = beforePipe
-                    tempRemain = MID$(tempRemain, pipePos + 1)
+                    tempRemain  = MID$(tempRemain, pipePos + 1)
                 END IF
                 EXIT DO
             END IF
@@ -802,15 +802,15 @@ SUB FD_parse_filters (filters AS STRING)
 
         IF LEN(patternPart) = 0 THEN patternPart = "*.*"
         FD_filters(idx).pattern = patternPart
-        remaining = tempRemain
+        remaining               = tempRemain
         idx = idx + 1
     LOOP
 
     FD_STATE.filterCount = idx
     IF idx = 0 THEN
-        FD_filters(0).label = "All Files"
+        FD_filters(0).label   = "All Files"
         FD_filters(0).pattern = "*.*"
-        FD_STATE.filterCount = 1
+        FD_STATE.filterCount  = 1
     END IF
 END SUB
 
@@ -822,39 +822,39 @@ SUB FD_load_config
     cfgPath = FD_PLAT_get_home_dir$ + FD_PLAT_get_separator$ + ".file-dialog.cfg"
 
     ' Set defaults first
-    FD_CFG.viewMode = FD_VIEW_DETAILS
-    FD_CFG.sortField = FD_SORT_NAME
+    FD_CFG.viewMode      = FD_VIEW_DETAILS
+    FD_CFG.sortField     = FD_SORT_NAME
     FD_CFG.sortAscending = -1
-    FD_CFG.showHidden = 0
-    FD_CFG.thumbSize = FD_THUMB_DEFAULT_SIZE
-    FD_CFG.dialogX = 0
-    FD_CFG.dialogY = 0
-    FD_CFG.dialogW = 800
-    FD_CFG.dialogH = 500
-    FD_CFG.colWidth0 = 250
-    FD_CFG.colWidth1 = 70
-    FD_CFG.colWidth2 = 80
-    FD_CFG.colWidth3 = 130
-    FD_CFG.placesWidth = FD_PLACES_DEFAULT_W
-    FD_CFG.previewWidth = FD_PREVIEW_DEFAULT_W
-    FD_CFG.showPreview = -1
-    FD_CFG.favCount = 0
+    FD_CFG.showHidden    = 0
+    FD_CFG.thumbSize     = FD_THUMB_DEFAULT_SIZE
+    FD_CFG.dialogX       = 0
+    FD_CFG.dialogY       = 0
+    FD_CFG.dialogW       = 800
+    FD_CFG.dialogH       = 500
+    FD_CFG.colWidth0     = 250
+    FD_CFG.colWidth1     = 70
+    FD_CFG.colWidth2     = 80
+    FD_CFG.colWidth3     = 130
+    FD_CFG.placesWidth   = FD_PLACES_DEFAULT_W
+    FD_CFG.previewWidth  = FD_PREVIEW_DEFAULT_W
+    FD_CFG.showPreview   = -1
+    FD_CFG.favCount      = 0
 
     ' Font defaults
     FD_CFG.fontID = FD_DEFAULT_FONT_ID
-    FD_CFG.fontW = FD_DEFAULT_FONT_W
-    FD_CFG.fontH = FD_DEFAULT_FONT_H
+    FD_CFG.fontW  = FD_DEFAULT_FONT_W
+    FD_CFG.fontH  = FD_DEFAULT_FONT_H
 
     ' Font scale defaults (1 = normal fontH px)
-    FD_CFG.titleFontScale = 1
-    FD_CFG.placesFontScale = 1
-    FD_CFG.pathFontScale = 1
+    FD_CFG.titleFontScale   = 1
+    FD_CFG.placesFontScale  = 1
+    FD_CFG.pathFontScale    = 1
     FD_CFG.contentFontScale = 1
     FD_CFG.previewFontScale = 2
-    FD_CFG.inputFontScale = 1
-    FD_CFG.filterFontScale = 1
-    FD_CFG.statusFontScale = 1
-    FD_CFG.sortFontScale = 1
+    FD_CFG.inputFontScale   = 1
+    FD_CFG.filterFontScale  = 1
+    FD_CFG.statusFontScale  = 1
+    FD_CFG.sortFontScale    = 1
 
     ' Icon scale default (2 = double native size)
     FD_CFG.iconScale = 2
@@ -865,8 +865,8 @@ SUB FD_load_config
     f = FREEFILE
     OPEN cfgPath FOR INPUT AS #f
 
-    DIM ln AS STRING
-    DIM eqPos AS INTEGER
+    DIM ln     AS STRING
+    DIM eqPos  AS INTEGER
     DIM cfgKey AS STRING, cfgVal AS STRING
     DO UNTIL EOF(f)
         LINE INPUT #f, ln
@@ -881,32 +881,32 @@ SUB FD_load_config
         cfgVal = LTRIM$(RTRIM$(MID$(ln, eqPos + 1)))
 
         SELECT CASE cfgKey
-            CASE "VIEWMODE": FD_CFG.viewMode = VAL(cfgVal)
-            CASE "SORTFIELD": FD_CFG.sortField = VAL(cfgVal)
-            CASE "SORTASCENDING": FD_CFG.sortAscending = VAL(cfgVal)
-            CASE "SHOWHIDDEN": FD_CFG.showHidden = VAL(cfgVal)
-            CASE "THUMBSIZE": FD_CFG.thumbSize = VAL(cfgVal)
-            CASE "DIALOGX": FD_CFG.dialogX = VAL(cfgVal)
-            CASE "DIALOGY": FD_CFG.dialogY = VAL(cfgVal)
-            CASE "DIALOGW": FD_CFG.dialogW = VAL(cfgVal)
-            CASE "DIALOGH": FD_CFG.dialogH = VAL(cfgVal)
-            CASE "COLWIDTH0": FD_CFG.colWidth0 = VAL(cfgVal)
-            CASE "COLWIDTH1": FD_CFG.colWidth1 = VAL(cfgVal)
-            CASE "COLWIDTH2": FD_CFG.colWidth2 = VAL(cfgVal)
-            CASE "COLWIDTH3": FD_CFG.colWidth3 = VAL(cfgVal)
-            CASE "PLACESWIDTH": FD_CFG.placesWidth = VAL(cfgVal)
-            CASE "PREVIEWWIDTH": FD_CFG.previewWidth = VAL(cfgVal)
-            CASE "SHOWPREVIEW": FD_CFG.showPreview = VAL(cfgVal)
-            CASE "TITLEFONTSCALE": FD_CFG.titleFontScale = VAL(cfgVal)
-            CASE "PLACESFONTSCALE": FD_CFG.placesFontScale = VAL(cfgVal)
-            CASE "PATHFONTSCALE": FD_CFG.pathFontScale = VAL(cfgVal)
-            CASE "CONTENTFONTSCALE": FD_CFG.contentFontScale = VAL(cfgVal)
-            CASE "PREVIEWFONTSCALE": FD_CFG.previewFontScale = VAL(cfgVal)
-            CASE "INPUTFONTSCALE": FD_CFG.inputFontScale = VAL(cfgVal)
-            CASE "FILTERFONTSCALE": FD_CFG.filterFontScale = VAL(cfgVal)
-            CASE "STATUSFONTSCALE": FD_CFG.statusFontScale = VAL(cfgVal)
-            CASE "SORTFONTSCALE": FD_CFG.sortFontScale = VAL(cfgVal)
-            CASE "ICONSCALE": FD_CFG.iconScale = VAL(cfgVal)
+            CASE "VIEWMODE"         : FD_CFG.viewMode         = VAL(cfgVal)
+            CASE "SORTFIELD"        : FD_CFG.sortField        = VAL(cfgVal)
+            CASE "SORTASCENDING"    : FD_CFG.sortAscending    = VAL(cfgVal)
+            CASE "SHOWHIDDEN"       : FD_CFG.showHidden       = VAL(cfgVal)
+            CASE "THUMBSIZE"        : FD_CFG.thumbSize        = VAL(cfgVal)
+            CASE "DIALOGX"          : FD_CFG.dialogX          = VAL(cfgVal)
+            CASE "DIALOGY"          : FD_CFG.dialogY          = VAL(cfgVal)
+            CASE "DIALOGW"          : FD_CFG.dialogW          = VAL(cfgVal)
+            CASE "DIALOGH"          : FD_CFG.dialogH          = VAL(cfgVal)
+            CASE "COLWIDTH0"        : FD_CFG.colWidth0        = VAL(cfgVal)
+            CASE "COLWIDTH1"        : FD_CFG.colWidth1        = VAL(cfgVal)
+            CASE "COLWIDTH2"        : FD_CFG.colWidth2        = VAL(cfgVal)
+            CASE "COLWIDTH3"        : FD_CFG.colWidth3        = VAL(cfgVal)
+            CASE "PLACESWIDTH"      : FD_CFG.placesWidth      = VAL(cfgVal)
+            CASE "PREVIEWWIDTH"     : FD_CFG.previewWidth     = VAL(cfgVal)
+            CASE "SHOWPREVIEW"      : FD_CFG.showPreview      = VAL(cfgVal)
+            CASE "TITLEFONTSCALE"   : FD_CFG.titleFontScale   = VAL(cfgVal)
+            CASE "PLACESFONTSCALE"  : FD_CFG.placesFontScale  = VAL(cfgVal)
+            CASE "PATHFONTSCALE"    : FD_CFG.pathFontScale    = VAL(cfgVal)
+            CASE "CONTENTFONTSCALE" : FD_CFG.contentFontScale = VAL(cfgVal)
+            CASE "PREVIEWFONTSCALE" : FD_CFG.previewFontScale = VAL(cfgVal)
+            CASE "INPUTFONTSCALE"   : FD_CFG.inputFontScale   = VAL(cfgVal)
+            CASE "FILTERFONTSCALE"  : FD_CFG.filterFontScale  = VAL(cfgVal)
+            CASE "STATUSFONTSCALE"  : FD_CFG.statusFontScale  = VAL(cfgVal)
+            CASE "SORTFONTSCALE"    : FD_CFG.sortFontScale    = VAL(cfgVal)
+            CASE "ICONSCALE"        : FD_CFG.iconScale        = VAL(cfgVal)
         END SELECT
     LOOP
 
@@ -944,11 +944,11 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_save_config
     ' Update config from state
-    FD_CFG.dialogX = FD_STATE.dialogX
-    FD_CFG.dialogY = FD_STATE.dialogY
-    FD_CFG.dialogW = FD_STATE.dialogW
-    FD_CFG.dialogH = FD_STATE.dialogH
-    FD_CFG.placesWidth = FD_STATE.placesW
+    FD_CFG.dialogX      = FD_STATE.dialogX
+    FD_CFG.dialogY      = FD_STATE.dialogY
+    FD_CFG.dialogW      = FD_STATE.dialogW
+    FD_CFG.dialogH      = FD_STATE.dialogH
+    FD_CFG.placesWidth  = FD_STATE.placesW
     FD_CFG.previewWidth = FD_STATE.previewW
 
     ' Save column widths
@@ -999,7 +999,7 @@ END SUB
 ' FD_add_favorite — Add a directory to the favorites list (no duplicates)
 ' --------------------------------------------------------------------------
 SUB FD_add_favorite (dirPath AS STRING)
-    IF FD_CFG.favCount >= FD_MAX_FAVORITES THEN EXIT SUB
+    IF FD_CFG.favCount > = FD_MAX_FAVORITES THEN EXIT SUB
 
     ' Check for duplicate
     DIM i AS INTEGER
@@ -1007,8 +1007,8 @@ SUB FD_add_favorite (dirPath AS STRING)
         IF RTRIM$(FD_favorites(i).path) = dirPath THEN EXIT SUB
     NEXT i
 
-    FD_favorites(FD_CFG.favCount).path = dirPath
-    FD_favorites(FD_CFG.favCount).label = FD_PLAT_path_filename$(dirPath)
+    FD_favorites(FD_CFG.favCount).path   = dirPath
+    FD_favorites(FD_CFG.favCount).label  = FD_PLAT_path_filename$(dirPath)
     FD_favorites(FD_CFG.favCount).exists = -1
     FD_CFG.favCount = FD_CFG.favCount + 1
 END SUB
@@ -1046,9 +1046,9 @@ SUB FD_load_favorites
 
     DIM idx AS INTEGER
     idx = 0
-    DIM ln AS STRING
+    DIM ln  AS STRING
 
-    DO UNTIL EOF(f) OR idx >= FD_MAX_FAVORITES
+    DO UNTIL EOF(f) OR idx > = FD_MAX_FAVORITES
         LINE INPUT #f, ln
         ln = LTRIM$(RTRIM$(ln))
         IF LEN(ln) = 0 THEN _CONTINUE
@@ -1058,10 +1058,10 @@ SUB FD_load_favorites
         DIM pipePos AS INTEGER
         pipePos = INSTR(ln, "|")
         IF pipePos > 0 THEN
-            FD_favorites(idx).path = LEFT$(ln, pipePos - 1)
+            FD_favorites(idx).path  = LEFT$(ln, pipePos - 1)
             FD_favorites(idx).label = MID$(ln, pipePos + 1)
         ELSE
-            FD_favorites(idx).path = ln
+            FD_favorites(idx).path  = ln
             FD_favorites(idx).label = FD_PLAT_path_filename$(ln)
         END IF
 
@@ -1097,13 +1097,13 @@ END SUB
 ' FD_add_custom_place — Register a custom place entry for the places bar
 ' --------------------------------------------------------------------------
 SUB FD_add_custom_place (label AS STRING, dirPath AS STRING, iconId AS INTEGER, iconColor AS _UNSIGNED LONG, hotkey AS STRING)
-    IF FD_customPlaceCount >= FD_MAX_CUSTOM_PLACES THEN EXIT SUB
+    IF FD_customPlaceCount > = FD_MAX_CUSTOM_PLACES THEN EXIT SUB
 
-    FD_customPlaces(FD_customPlaceCount).label = label
-    FD_customPlaces(FD_customPlaceCount).path = dirPath
-    FD_customPlaces(FD_customPlaceCount).iconId = iconId
+    FD_customPlaces(FD_customPlaceCount).label     = label
+    FD_customPlaces(FD_customPlaceCount).path      = dirPath
+    FD_customPlaces(FD_customPlaceCount).iconId    = iconId
     FD_customPlaces(FD_customPlaceCount).iconColor = iconColor
-    FD_customPlaces(FD_customPlaceCount).hotkey = hotkey
+    FD_customPlaces(FD_customPlaceCount).hotkey    = hotkey
     FD_customPlaceCount = FD_customPlaceCount + 1
 END SUB
 

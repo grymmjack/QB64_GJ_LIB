@@ -7,11 +7,11 @@ $CONSOLE:ONLY
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
+DIM filename     AS STRING
 DIM aseprite_img AS ASEPRITE_IMAGE
-DIM layer_image AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
+DIM layer_image  AS LONG
+DIM layer_count  AS INTEGER
+DIM i            AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 

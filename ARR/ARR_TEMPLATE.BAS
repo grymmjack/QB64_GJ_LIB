@@ -55,7 +55,7 @@ END SUB
 '
 SUB ARR_{UT}.pop(arr{SY}(), var{SY})
     DIM AS LONG ub, lb
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    lb&     = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
     var{SY} = arr{SY}(ub&)
     REDIM _PRESERVE arr(lb& TO (ub& - 1)) AS {Q}
 END SUB
@@ -69,7 +69,7 @@ END SUB
 '
 SUB ARR_{UT}.shift(arr{SY}(), var{SY})
     DIM AS LONG ub, lb, i
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    lb&     = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
     var{SY} = arr{SY}(lb&)
     FOR i& = lb& TO ub& - 1
         arr{SY}(i&) = arr{SY}(i& + 1) 
@@ -121,7 +121,7 @@ END SUB
 ' 
 SUB ARR_{UT}.join(arr{SY}(), s$)
     DIM AS LONG ub, lb, i
-    s$ = ""
+    s$  = ""
     lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
     FOR i& = lb& TO ub&
         s$ = s$ + _TRIM$(STR$(arr{SY}(i&))) + ", "
@@ -169,8 +169,8 @@ END SUB
 '
 FUNCTION ARR_{UT}.longest{SY}(arr{SY}())
     DIM AS LONG lb, ub, i, res, lw
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    res& = 0 : lw& = 0
+    lb&  = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    res& = 0               : lw& = 0
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(STR$(arr{SY}(i&)))) > lw& THEN
             lw&  = LEN(_TRIM$(STR$(arr{SY}(i&))))
@@ -231,7 +231,7 @@ END SUB
 FUNCTION ARR_{UT}.min{SY}(arr{SY}())
     DIM AS LONG lb, ub, i
     DIM AS {Q} s
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    lb&   = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
     s{SY} = 127
     FOR i& = lb& TO ub&
         IF arr{SY}(i&) < s{SY} THEN
@@ -251,7 +251,7 @@ END FUNCTION
 FUNCTION ARR_{UT}.max{SY}(arr{SY}())
     DIM AS LONG lb, ub, i
     DIM AS {Q} s
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    lb&   = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
     s{SY} = 0
     FOR i& = lb& TO ub&
         IF arr{SY}(i&) > s{SY} THEN
@@ -270,8 +270,8 @@ END FUNCTION
 '
 FUNCTION ARR_{UT}.shortest{SY}(arr{SY}())
     DIM AS LONG lb, ub, i, res, sw
-    lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    res& = 0 : sw& = 0
+    lb&  = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
+    res& = 0               : sw& = 0
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(STR$(arr{SY}(i&)))) < sw& THEN
             sw&  = LEN(_TRIM$(STR$(arr{SY}(i&))))
@@ -314,7 +314,7 @@ END FUNCTION
 SUB ARR_{UT}.nth(source_arr{SY}(), dest_arr{SY}(), nth%)
     DIM AS LONG lb, ub, i, n
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
-    n& = (ub& - lb&) \ nth%
+    n&  = (ub& - lb&) \ nth%
     REDIM dest_arr(n&) AS {Q}
     n& = 0
     FOR i& = lb& to ub&
@@ -462,7 +462,7 @@ END FUNCTION
 '
 SUB ARR_{UT}.shuffle(source_arr{SY}(), dest_arr{SY}())
     DIM AS LONG lb, ub, i, count
-    lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
+    lb&    = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS {Q}
     CALL ARR_{UT}.copy(source_arr{SY}(), dest_arr{SY}())
@@ -529,7 +529,7 @@ SUB ARR_{UT}.gte(source_arr{SY}(), dest_arr{SY}(), value{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) >= value{SY} THEN
+        IF source_arr{SY}(i&) > = value{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
     NEXT i&
@@ -573,7 +573,7 @@ SUB ARR_{UT}.lte(source_arr{SY}(), dest_arr{SY}(), value{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) <= value{SY} THEN
+        IF source_arr{SY}(i&) < = value{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
     NEXT i&
@@ -612,7 +612,7 @@ SUB ARR_{UT}.insert(arr{SY}(), value{SY}, index%)
     DIM tmp AS {Q}
     DIM work_arr(0) AS {Q}
     lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_{UT}.push(work_arr{SY}(), arr{SY}(i&))
@@ -640,7 +640,7 @@ SUB ARR_{UT}.remove(arr{SY}(), index%)
     DIM tmp AS {Q}
     DIM work_arr(0) AS {Q}
     lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_{UT}.push(work_arr{SY}(), arr{SY}(i&))
@@ -733,7 +733,7 @@ SUB ARR_{UT}.between(source_arr{SY}(), dest_arr{SY}(), min{SY}, max{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) >= min{SY} _
+        IF source_arr{SY}(i&) > = min{SY} _
         AND source_arr{SY}(i&) <= max{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
@@ -751,7 +751,7 @@ END SUB
 '
 SUB ARR_{UT}.sort(source_arr{SY}(), dest_arr{SY}())
     DIM AS LONG lb, ub, count
-    lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
+    lb&    = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS {Q}
     CALL ARR_{UT}.copy(source_arr{SY}(), dest_arr{SY}())
@@ -767,7 +767,7 @@ END SUB
 '
 SUB ARR_{UT}.rsort(source_arr{SY}(), dest_arr{SY}())
     DIM AS LONG lb, ub, count
-    lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
+    lb&    = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS {Q}
     CALL ARR_{UT}.copy(source_arr{SY}(), dest_arr{SY}())
@@ -785,25 +785,25 @@ END SUB
 ' @param INTEGER order% to sort by (0 = asc / 1 = desc)
 '
 SUB ARR_{UT}.quicksort(arr{SY}(), start%, finish%, order%)
-    DIM i AS LONG
-    DIM pivot AS INTEGER
+    DIM i          AS LONG
+    DIM pivot      AS INTEGER
     DIM pivotvalue AS {Q}
 
     'first, partition the array
-    pivot% = start%
+    pivot%         = start%
     pivotvalue{SY} = arr{SY}(pivot%)
     FOR i& = start% + 1 TO finish%
         IF order% = 0 THEN ' ascending order
             IF arr{SY}(i&) < pivotvalue{SY} THEN
-                arr{SY}(pivot%) = arr{SY}(i&)
-                arr{SY}(i&) = arr{SY}(pivot% + 1)
+                arr{SY}(pivot%)     = arr{SY}(i&)
+                arr{SY}(i&)         = arr{SY}(pivot% + 1)
                 arr{SY}(pivot% + 1) = pivotvalue{SY}
                 pivot% = pivot% + 1
             END IF
         ELSEIF order% = 1 THEN ' descending order
             IF arr{SY}(i&) > pivotvalue{SY} THEN
-                arr{SY}(pivot%) = arr{SY}(i&)
-                arr{SY}(i&) = arr{SY}(pivot% + 1)
+                arr{SY}(pivot%)     = arr{SY}(i&)
+                arr{SY}(i&)         = arr{SY}(pivot% + 1)
                 arr{SY}(pivot% + 1) = pivotvalue{SY}
                 pivot% = pivot% + 1
             END IF
@@ -811,10 +811,10 @@ SUB ARR_{UT}.quicksort(arr{SY}(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% >= 2 THEN 
+    IF pivot% - start% > = 2 THEN 
         CALL ARR_{UT}.quicksort(arr{SY}(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% >= 2 THEN 
+    IF finish% - pivot% > = 2 THEN 
         CALL ARR_{UT}.quicksort(arr{SY}(), pivot% + 1, finish%, order%)
     END IF
 END SUB
@@ -848,7 +848,7 @@ SUB ARR_{UT}.union(source_arr{SY}(), dest_arr{SY}())
     
     REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS {Q}
     FOR i& = s_lb& TO s_ub&
-        n& = d_ub& + 1 + i& - s_lb&
+        n&               = d_ub& + 1 + i& - s_lb&
         dest_arr{SY}(n&) = source_arr{SY}(i&)
     NEXT i&
 END SUB

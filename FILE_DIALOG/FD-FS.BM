@@ -11,15 +11,15 @@ $INCLUDEONCE
 ' --------------------------------------------------------------------------
 SUB FD_FS_refresh
     DIM count AS INTEGER
-    DIM p AS STRING
-    p = RTRIM$(FD_STATE.currentPath)
-    count = FD_PLAT_enumerate_dir%(p)
-    FD_STATE.entryCount = count
-    FD_STATE.scrollOffset = 0
-    FD_STATE.selectedIndex = -1
-    FD_STATE.hoverIndex = -1
+    DIM p     AS STRING
+    p                         = RTRIM$(FD_STATE.currentPath)
+    count                     = FD_PLAT_enumerate_dir%(p)
+    FD_STATE.entryCount       = count
+    FD_STATE.scrollOffset     = 0
+    FD_STATE.selectedIndex    = -1
+    FD_STATE.hoverIndex       = -1
     FD_STATE.multiSelectCount = 0
-    FD_STATE.anchorIndex = -1
+    FD_STATE.anchorIndex      = -1
 
     ' Apply sort
     IF count > 1 THEN
@@ -33,7 +33,7 @@ SUB FD_FS_refresh
     DIM i AS INTEGER
     FOR i = 0 TO count - 1
         FD_entries(i).thumbHandle = -1
-        FD_entries(i).thumbState = FD_THUMB_PENDING
+        FD_entries(i).thumbState  = FD_THUMB_PENDING
     NEXT i
     FD_THUMB_invalidate_all
 
@@ -71,9 +71,9 @@ SUB FD_FS_navigate (newPath AS STRING)
     END IF
 
     FD_STATE.currentPath = normalized
-    FD_STATE.pathInput = normalized
-    FD_STATE.searchText = ""
-    FD_STATE.searchLen = 0
+    FD_STATE.pathInput   = normalized
+    FD_STATE.searchText  = ""
+    FD_STATE.searchLen   = 0
     FD_FS_refresh
 END SUB
 
@@ -86,9 +86,9 @@ SUB FD_FS_navigate_raw (newPath AS STRING)
     normalized = FD_PLAT_normalize_path$(newPath)
     IF NOT FD_PLAT_is_dir%(normalized) THEN EXIT SUB
     FD_STATE.currentPath = normalized
-    FD_STATE.pathInput = normalized
-    FD_STATE.searchText = ""
-    FD_STATE.searchLen = 0
+    FD_STATE.pathInput   = normalized
+    FD_STATE.searchText  = ""
+    FD_STATE.searchLen   = 0
     FD_FS_refresh
 END SUB
 
@@ -165,7 +165,7 @@ SUB FD_FS_create_folder
     IF LEN(folderName) = 0 THEN EXIT SUB
 
     ' Build full path
-    DIM curPath AS STRING
+    DIM curPath  AS STRING
     curPath = RTRIM$(FD_STATE.currentPath)
     DIM fullPath AS STRING
     fullPath = FD_PLAT_path_join$(curPath, folderName)
@@ -200,13 +200,13 @@ SUB FD_FS_sort (sortField AS INTEGER, ascending AS INTEGER)
     IF n < 2 THEN EXIT SUB
 
     ' Simple insertion sort (sufficient for typical directory sizes)
-    DIM i AS INTEGER, j AS INTEGER
+    DIM i         AS INTEGER, j AS INTEGER
     DIM tempEntry AS FD_DIR_ENTRY
 
     FOR i = 1 TO n - 1
         tempEntry = FD_entries(i)
-        j = i - 1
-        DO WHILE j >= 0
+        j         = i - 1
+        DO WHILE j > = 0
             IF NOT FD_FS_should_swap%(FD_entries(j), tempEntry, sortField, ascending) THEN EXIT DO
             FD_entries(j + 1) = FD_entries(j)
             j = j - 1
@@ -277,15 +277,15 @@ END FUNCTION
 ' FD_FS_apply_filter — Build filtered index list from entries
 ' --------------------------------------------------------------------------
 SUB FD_FS_apply_filter
-    DIM i AS INTEGER
-    DIM count AS INTEGER
+    DIM i             AS INTEGER
+    DIM count         AS INTEGER
     DIM filterPattern AS STRING
-    DIM searchLower AS STRING
+    DIM searchLower   AS STRING
 
     count = 0
 
     ' Get active filter pattern
-    IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+    IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
         filterPattern = RTRIM$(FD_filters(FD_STATE.activeFilter).pattern)
     ELSE
         filterPattern = ""
@@ -333,19 +333,19 @@ SUB FD_FS_recalc_scroll
 
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
         ' Thumbnail grid: calculate rows
-        DIM cols AS INTEGER
+        DIM cols  AS INTEGER
         DIM cellW AS INTEGER
         cellW = FD_CFG.thumbSize + FD_PADDING * 2
-        cols = FD_STATE.contentW \ cellW
+        cols  = FD_STATE.contentW \ cellW
         IF cols < 1 THEN cols = 1
-        DIM rows AS INTEGER
-        rows = (FD_STATE.visibleCount + cols - 1) \ cols
+        DIM rows  AS INTEGER
+        rows   = (FD_STATE.visibleCount + cols - 1) \ cols
         totalH = rows * (cellW + FD_STATE.rowHeight)
         ' If scrollbar needed, recalculate with reduced width
         IF totalH > FD_STATE.contentH THEN
             cols = (FD_STATE.contentW - FD_SCROLLBAR_W) \ cellW
             IF cols < 1 THEN cols = 1
-            rows = (FD_STATE.visibleCount + cols - 1) \ cols
+            rows   = (FD_STATE.visibleCount + cols - 1) \ cols
             totalH = rows * (cellW + FD_STATE.rowHeight)
         END IF
     ELSE
@@ -375,24 +375,24 @@ FUNCTION FD_FS_match_filter% (fileName AS STRING, pattern AS STRING)
     lowerName = LCASE$(fileName)
 
     DIM remaining AS STRING
-    DIM oneExt AS STRING
-    DIM pipePos AS INTEGER
+    DIM oneExt    AS STRING
+    DIM pipePos   AS INTEGER
     remaining = LCASE$(pattern)
 
     DO WHILE LEN(remaining) > 0
         pipePos = INSTR(remaining, "|")
         IF pipePos > 0 THEN
-            oneExt = LEFT$(remaining, pipePos - 1)
+            oneExt    = LEFT$(remaining, pipePos - 1)
             remaining = MID$(remaining, pipePos + 1)
         ELSE
-            oneExt = remaining
+            oneExt    = remaining
             remaining = ""
         END IF
 
         ' Strip leading "*." to get just the extension
         oneExt = LTRIM$(RTRIM$(oneExt))
         IF LEFT$(oneExt, 2) = "*." THEN
-            oneExt = MID$(oneExt, 2)  ' Keep the dot: ".png"
+            oneExt = MID$(oneExt, 2) ' Keep the dot: ".png"
         END IF
 
         IF LEN(oneExt) > 0 THEN
@@ -429,14 +429,14 @@ FUNCTION FD_FS_format_size$ (bytes AS _INTEGER64)
     ELSEIF bytes < 1073741824 THEN
         DIM mb AS SINGLE
         mb = bytes / 1048576
-        IF mb >= 10 THEN
+        IF mb > = 10 THEN
             FD_FS_format_size$ = LTRIM$(STR$(INT(mb))) + " MB"
         ELSE
             FD_FS_format_size$ = LEFT$(LTRIM$(STR$(INT(mb * 10) / 10)), 4) + " MB"
         END IF
     ELSE
         DIM gb AS SINGLE
-        gb = bytes / 1073741824
+        gb                 = bytes / 1073741824
         FD_FS_format_size$ = LEFT$(LTRIM$(STR$(INT(gb * 10) / 10)), 5) + " GB"
     END IF
 END FUNCTION
@@ -445,7 +445,7 @@ END FUNCTION
 ' FD_FS_format_date$ — Human-readable file date from epoch seconds
 ' --------------------------------------------------------------------------
 FUNCTION FD_FS_format_date$ (epoch AS _INTEGER64)
-    IF epoch <= 0 THEN
+    IF epoch < = 0 THEN
         FD_FS_format_date$ = ""
         EXIT FUNCTION
     END IF

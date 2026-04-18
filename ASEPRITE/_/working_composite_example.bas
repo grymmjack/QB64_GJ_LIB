@@ -6,14 +6,14 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM aseprite_img AS ASEPRITE_IMAGE
+DIM filename        AS STRING
+DIM aseprite_img    AS ASEPRITE_IMAGE
 DIM composite_image AS LONG
-DIM layer_image AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
-DIM layer_width AS INTEGER
-DIM layer_height AS INTEGER
+DIM layer_image     AS LONG
+DIM layer_count     AS INTEGER
+DIM i               AS INTEGER
+DIM layer_width     AS INTEGER
+DIM layer_height    AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -38,8 +38,8 @@ PRINT "Number of frames: "; aseprite_img.header.num_frames
 PRINT
 
 ' Create a composite image with white background
-layer_width = aseprite_img.header.width
-layer_height = aseprite_img.header.height
+layer_width     = aseprite_img.header.width
+layer_height    = aseprite_img.header.height
 composite_image = _NEWIMAGE(layer_width, layer_height, 32)
 
 ' Fill with white background
@@ -82,21 +82,21 @@ _TITLE "ASEPRITE Composite Layers - DJ Trapezoid Pumpkin Head"
 CLS , _RGB32(64, 64, 64) ' Dark gray background
 
 ' Calculate scaling and positioning for display
-DIM scale_factor AS SINGLE
-DIM display_width AS INTEGER
+DIM scale_factor   AS SINGLE
+DIM display_width  AS INTEGER
 DIM display_height AS INTEGER
-DIM display_x AS INTEGER
-DIM display_y AS INTEGER
+DIM display_x      AS INTEGER
+DIM display_y      AS INTEGER
 
 ' Scale to fit screen with some padding - make it nice and big
-scale_factor = 12.0 ' Start with 12x scaling for better visibility
+scale_factor = 12.0      ' Start with 12x scaling for better visibility
 IF layer_width * scale_factor > 700 THEN scale_factor = 700 / layer_width
 IF layer_height * scale_factor > 500 THEN scale_factor = 500 / layer_height
 
-display_width = layer_width * scale_factor
+display_width  = layer_width * scale_factor
 display_height = layer_height * scale_factor
-display_x = (800 - display_width) / 2
-display_y = (600 - display_height) / 2
+display_x      = (800 - display_width) / 2
+display_y      = (600 - display_height) / 2
 
 ' Display the composite image
 _PUTIMAGE (display_x, display_y)-(display_x + display_width - 1, display_y + display_height - 1), composite_image

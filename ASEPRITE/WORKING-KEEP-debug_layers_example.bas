@@ -6,11 +6,11 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
+DIM filename     AS STRING
 DIM aseprite_img AS ASEPRITE_IMAGE
-DIM layer_image AS LONG
-DIM layer_count AS INTEGER
-DIM i AS INTEGER
+DIM layer_image  AS LONG
+DIM layer_count  AS INTEGER
+DIM i            AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -51,8 +51,8 @@ FOR i = 0 TO 9
         
         ' Calculate position for this layer in the debug grid
         DIM grid_x AS INTEGER, grid_y AS INTEGER
-        grid_x = 50 + (i MOD 5) * 220  ' 5 layers per row
-        grid_y = 100 + (i \ 5) * 250   ' Multiple rows if needed
+        grid_x = 50 + (i MOD 5) * 220 ' 5 layers per row
+        grid_y = 100 + (i \ 5) * 250  ' Multiple rows if needed
         
         ' Display this layer at 8x scale
         _PUTIMAGE (grid_x, grid_y)-(grid_x + 32*8 - 1, grid_y + 32*8 - 1), layer_image

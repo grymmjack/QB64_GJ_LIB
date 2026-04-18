@@ -10,11 +10,11 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM blurRadius AS INTEGER
-DIM oldRadius AS INTEGER
+DIM blurRadius    AS INTEGER
+DIM oldRadius     AS INTEGER
 
 blurRadius = 3  ' Default blur radius
-oldRadius = -1  ' Force initial update
+oldRadius  = -1 ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -45,10 +45,10 @@ DO
         ' Apply new blur effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_Blur(originalImage, blurRadius)
-        oldRadius = blurRadius
+        oldRadius     = blurRadius
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -79,7 +79,7 @@ DO
         CASE "-"
             IF blurRadius > 1 THEN blurRadius = blurRadius - 1
         CASE "R"
-            blurRadius = 3  ' Reset to default
+            blurRadius = 3 ' Reset to default
     END SELECT
     
     _LIMIT 60

@@ -7,8 +7,8 @@
 PRINT "Desaturate (Grayscale) Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM desaturatedAverage AS LONG
+DIM originalImage        AS LONG
+DIM desaturatedAverage   AS LONG
 DIM desaturatedLuminance AS LONG
 
 PRINT "Creating test image..."

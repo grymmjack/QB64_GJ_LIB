@@ -8,25 +8,25 @@
 PRINT "Color Balance Test Starting..."
 PRINT "Using GJ_IMGADJ library functions"
 
-DIM originalImage AS LONG
-DIM adjustedImage AS LONG
-DIM redShift AS INTEGER
-DIM greenShift AS INTEGER
-DIM blueShift AS INTEGER
+DIM originalImage  AS LONG
+DIM adjustedImage  AS LONG
+DIM redShift       AS INTEGER
+DIM greenShift     AS INTEGER
+DIM blueShift      AS INTEGER
 DIM parameterIndex AS INTEGER
-DIM oldRed AS INTEGER
-DIM oldGreen AS INTEGER
-DIM oldBlue AS INTEGER
-DIM oldParam AS INTEGER
+DIM oldRed         AS INTEGER
+DIM oldGreen       AS INTEGER
+DIM oldBlue        AS INTEGER
+DIM oldParam       AS INTEGER
 
-redShift = 0        ' Default red shift (-100 to +100)
-greenShift = 0      ' Default green shift (-100 to +100) 
-blueShift = 0       ' Default blue shift (-100 to +100)
-parameterIndex = 0  ' 0=red, 1=green, 2=blue
-oldRed = -999       ' Force initial update
-oldGreen = -999
-oldBlue = -999
-oldParam = -1
+redShift       = 0    ' Default red shift (-100 to +100)
+greenShift     = 0    ' Default green shift (-100 to +100) 
+blueShift      = 0    ' Default blue shift (-100 to +100)
+parameterIndex = 0    ' 0=red, 1=green, 2=blue
+oldRed         = -999 ' Force initial update
+oldGreen       = -999
+oldBlue        = -999
+oldParam       = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -58,13 +58,13 @@ DO
         ' Apply color balance effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_ColorBalance(originalImage, redShift, greenShift, blueShift)
-        oldRed = redShift
-        oldGreen = greenShift
-        oldBlue = blueShift
-        oldParam = parameterIndex
+        oldRed        = redShift
+        oldGreen      = greenShift
+        oldBlue       = blueShift
+        oldParam      = parameterIndex
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0      ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -73,9 +73,9 @@ DO
         
         ' Show current parameter values with highlighting
         DIM redStr AS STRING, greenStr AS STRING, blueStr AS STRING
-        redStr = "Red: " + STR$(redShift)
+        redStr   = "Red: " + STR$(redShift)
         greenStr = "Green: " + STR$(greenShift)  
-        blueStr = "Blue: " + STR$(blueShift)
+        blueStr  = "Blue: " + STR$(blueShift)
         
         IF parameterIndex = 0 THEN redStr = ">>> " + redStr + " <<<"
         IF parameterIndex = 1 THEN greenStr = ">>> " + greenStr + " <<<"
@@ -105,22 +105,22 @@ DO
     SELECT CASE k
         CASE "+", "="
             SELECT CASE parameterIndex
-                CASE 0: IF redShift < 100 THEN redShift = redShift + 5
-                CASE 1: IF greenShift < 100 THEN greenShift = greenShift + 5
-                CASE 2: IF blueShift < 100 THEN blueShift = blueShift + 5
+                CASE 0 : IF redShift < 100 THEN redShift     = redShift + 5
+                CASE 1 : IF greenShift < 100 THEN greenShift = greenShift + 5
+                CASE 2 : IF blueShift < 100 THEN blueShift   = blueShift + 5
             END SELECT
         CASE "-"
             SELECT CASE parameterIndex
-                CASE 0: IF redShift > -100 THEN redShift = redShift - 5
-                CASE 1: IF greenShift > -100 THEN greenShift = greenShift - 5
-                CASE 2: IF blueShift > -100 THEN blueShift = blueShift - 5
+                CASE 0 : IF redShift > -100 THEN redShift     = redShift - 5
+                CASE 1 : IF greenShift > -100 THEN greenShift = greenShift - 5
+                CASE 2 : IF blueShift > -100 THEN blueShift   = blueShift - 5
             END SELECT
-        CASE CHR$(9)  ' TAB key
+        CASE CHR$(9) ' TAB key
             parameterIndex = (parameterIndex + 1) MOD 3
         CASE "r", "R"
-            redShift = 0
+            redShift   = 0
             greenShift = 0
-            blueShift = 0
+            blueShift  = 0
     END SELECT
     
     _LIMIT 60

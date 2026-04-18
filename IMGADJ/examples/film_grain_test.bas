@@ -10,11 +10,11 @@ PRINT "Using GJ_IMGADJ library functions"
 
 DIM originalImage AS LONG
 DIM adjustedImage AS LONG
-DIM grainAmount AS INTEGER
-DIM oldGrain AS INTEGER
+DIM grainAmount   AS INTEGER
+DIM oldGrain      AS INTEGER
 
-grainAmount = 30    ' Default grain amount
-oldGrain = -1       ' Force initial update
+grainAmount = 30 ' Default grain amount
+oldGrain    = -1 ' Force initial update
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -45,10 +45,10 @@ DO
         ' Apply film grain effect
         IF adjustedImage <> 0 THEN _FREEIMAGE adjustedImage
         adjustedImage = GJ_IMGADJ_FilmGrain(originalImage, grainAmount)
-        oldGrain = grainAmount
+        oldGrain      = grainAmount
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0 ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -79,7 +79,7 @@ DO
         CASE "-"
             IF grainAmount > 0 THEN grainAmount = grainAmount - 5
         CASE "R"
-            grainAmount = 30  ' Reset to default
+            grainAmount = 30 ' Reset to default
     END SELECT
     
     _LIMIT 60

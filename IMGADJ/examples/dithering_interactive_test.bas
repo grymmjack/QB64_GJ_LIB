@@ -8,25 +8,25 @@
 PRINT "Comprehensive Dithering Test Starting..."
 PRINT "Using GJ_IMGADJ dithering functions"
 
-DIM originalImage AS LONG
-DIM ditheredImage AS LONG
+DIM originalImage    AS LONG
+DIM ditheredImage    AS LONG
 DIM currentAlgorithm AS INTEGER
-DIM ditherAmount AS SINGLE
-DIM oldAlgorithm AS INTEGER
-DIM oldAmount AS SINGLE
+DIM ditherAmount     AS SINGLE
+DIM oldAlgorithm     AS INTEGER
+DIM oldAmount        AS SINGLE
 
 ' Algorithm names for display
 DIM algorithmNames(0 TO 21) AS STRING
-algorithmNames(0) = "Ordered 2x2 (Bayer)"
-algorithmNames(1) = "Ordered 4x4 (Bayer)"
-algorithmNames(2) = "Ordered 8x8 (Bayer)"
-algorithmNames(3) = "Ordered 16x16 (Bayer)"
-algorithmNames(4) = "Floyd-Steinberg"
-algorithmNames(5) = "Jarvis-Judice-Ninke"
-algorithmNames(6) = "Stucki"
-algorithmNames(7) = "Burkes"
-algorithmNames(8) = "Sierra"
-algorithmNames(9) = "Sierra Lite"
+algorithmNames(0)  = "Ordered 2x2 (Bayer)"
+algorithmNames(1)  = "Ordered 4x4 (Bayer)"
+algorithmNames(2)  = "Ordered 8x8 (Bayer)"
+algorithmNames(3)  = "Ordered 16x16 (Bayer)"
+algorithmNames(4)  = "Floyd-Steinberg"
+algorithmNames(5)  = "Jarvis-Judice-Ninke"
+algorithmNames(6)  = "Stucki"
+algorithmNames(7)  = "Burkes"
+algorithmNames(8)  = "Sierra"
+algorithmNames(9)  = "Sierra Lite"
 algorithmNames(10) = "Atkinson (Classic Mac)"
 algorithmNames(11) = "False Floyd-Steinberg"
 algorithmNames(12) = "Fan Error Diffusion"
@@ -40,10 +40,10 @@ algorithmNames(19) = "Halftone"
 algorithmNames(20) = "Spiral"
 algorithmNames(21) = "Interleaved Gradient Noise"
 
-currentAlgorithm = 4      ' Start with Floyd-Steinberg
-ditherAmount = 0.8        ' Default dithering strength
-oldAlgorithm = -1         ' Force initial update
-oldAmount = -1
+currentAlgorithm = 4   ' Start with Floyd-Steinberg
+ditherAmount     = 0.8 ' Default dithering strength
+oldAlgorithm     = -1  ' Force initial update
+oldAmount        = -1
 
 PRINT "Creating test image..."
 originalImage = GJ_IMGADJ_CreateComplexTestImage
@@ -75,35 +75,35 @@ DO
         IF ditheredImage <> 0 THEN _FREEIMAGE ditheredImage
         
         SELECT CASE currentAlgorithm
-            CASE 0: ditheredImage = GJ_IMGADJ_DitherOrdered2x2(originalImage, ditherAmount)
-            CASE 1: ditheredImage = GJ_IMGADJ_DitherOrdered4x4(originalImage, ditherAmount)
-            CASE 2: ditheredImage = GJ_IMGADJ_DitherOrdered8x8(originalImage, ditherAmount)
-            CASE 3: ditheredImage = GJ_IMGADJ_DitherOrdered16x16(originalImage, ditherAmount)
-            CASE 4: ditheredImage = GJ_IMGADJ_DitherFloydSteinberg(originalImage, ditherAmount)
-            CASE 5: ditheredImage = GJ_IMGADJ_DitherJarvisJudiceNinke(originalImage, ditherAmount)
-            CASE 6: ditheredImage = GJ_IMGADJ_DitherStucki(originalImage, ditherAmount)
-            CASE 7: ditheredImage = GJ_IMGADJ_DitherBurkes(originalImage, ditherAmount)
-            CASE 8: ditheredImage = GJ_IMGADJ_DitherSierra(originalImage, ditherAmount)
-            CASE 9: ditheredImage = GJ_IMGADJ_DitherSierraLite(originalImage, ditherAmount)
-            CASE 10: ditheredImage = GJ_IMGADJ_DitherAtkinson(originalImage, ditherAmount)
-            CASE 11: ditheredImage = GJ_IMGADJ_DitherFalseFloydSteinberg(originalImage, ditherAmount)
-            CASE 12: ditheredImage = GJ_IMGADJ_DitherFan(originalImage, ditherAmount)
-            CASE 13: ditheredImage = GJ_IMGADJ_DitherStevensonArce(originalImage, ditherAmount)
-            CASE 14: ditheredImage = GJ_IMGADJ_DitherTwoRowSierra(originalImage, ditherAmount)
-            CASE 15: ditheredImage = GJ_IMGADJ_DitherShiauFan(originalImage, ditherAmount)
-            CASE 16: ditheredImage = GJ_IMGADJ_DitherRandom(originalImage, ditherAmount)
-            CASE 17: ditheredImage = GJ_IMGADJ_DitherBlueNoise(originalImage, ditherAmount)
-            CASE 18: ditheredImage = GJ_IMGADJ_DitherClusteredDot(originalImage, ditherAmount)
-            CASE 19: ditheredImage = GJ_IMGADJ_DitherHalftone(originalImage, ditherAmount)
-            CASE 20: ditheredImage = GJ_IMGADJ_DitherSpiral(originalImage, ditherAmount)
-            CASE 21: ditheredImage = GJ_IMGADJ_DitherInterleavedGradientNoise(originalImage, ditherAmount)
+            CASE 0  : ditheredImage  = GJ_IMGADJ_DitherOrdered2x2(originalImage, ditherAmount)
+            CASE 1  : ditheredImage  = GJ_IMGADJ_DitherOrdered4x4(originalImage, ditherAmount)
+            CASE 2  : ditheredImage  = GJ_IMGADJ_DitherOrdered8x8(originalImage, ditherAmount)
+            CASE 3  : ditheredImage  = GJ_IMGADJ_DitherOrdered16x16(originalImage, ditherAmount)
+            CASE 4  : ditheredImage  = GJ_IMGADJ_DitherFloydSteinberg(originalImage, ditherAmount)
+            CASE 5  : ditheredImage  = GJ_IMGADJ_DitherJarvisJudiceNinke(originalImage, ditherAmount)
+            CASE 6  : ditheredImage  = GJ_IMGADJ_DitherStucki(originalImage, ditherAmount)
+            CASE 7  : ditheredImage  = GJ_IMGADJ_DitherBurkes(originalImage, ditherAmount)
+            CASE 8  : ditheredImage  = GJ_IMGADJ_DitherSierra(originalImage, ditherAmount)
+            CASE 9  : ditheredImage  = GJ_IMGADJ_DitherSierraLite(originalImage, ditherAmount)
+            CASE 10 : ditheredImage = GJ_IMGADJ_DitherAtkinson(originalImage, ditherAmount)
+            CASE 11 : ditheredImage = GJ_IMGADJ_DitherFalseFloydSteinberg(originalImage, ditherAmount)
+            CASE 12 : ditheredImage = GJ_IMGADJ_DitherFan(originalImage, ditherAmount)
+            CASE 13 : ditheredImage = GJ_IMGADJ_DitherStevensonArce(originalImage, ditherAmount)
+            CASE 14 : ditheredImage = GJ_IMGADJ_DitherTwoRowSierra(originalImage, ditherAmount)
+            CASE 15 : ditheredImage = GJ_IMGADJ_DitherShiauFan(originalImage, ditherAmount)
+            CASE 16 : ditheredImage = GJ_IMGADJ_DitherRandom(originalImage, ditherAmount)
+            CASE 17 : ditheredImage = GJ_IMGADJ_DitherBlueNoise(originalImage, ditherAmount)
+            CASE 18 : ditheredImage = GJ_IMGADJ_DitherClusteredDot(originalImage, ditherAmount)
+            CASE 19 : ditheredImage = GJ_IMGADJ_DitherHalftone(originalImage, ditherAmount)
+            CASE 20 : ditheredImage = GJ_IMGADJ_DitherSpiral(originalImage, ditherAmount)
+            CASE 21 : ditheredImage = GJ_IMGADJ_DitherInterleavedGradientNoise(originalImage, ditherAmount)
         END SELECT
         
         oldAlgorithm = currentAlgorithm
-        oldAmount = ditherAmount
+        oldAmount    = ditherAmount
         
         ' Update display
-        _DEST 0  ' Graphics screen
+        _DEST 0                     ' Graphics screen
         CLS
         
         ' Draw title and info
@@ -111,9 +111,9 @@ DO
         _PRINTSTRING (10, 10), "Comprehensive Dithering Test - Using GJ_IMGADJ Library"
         
         ' Show current algorithm and settings
-        COLOR _RGB32(255, 255, 0)  ' Yellow for current algorithm
+        COLOR _RGB32(255, 255, 0)   ' Yellow for current algorithm
         _PRINTSTRING (10, 30), "Algorithm " + STR$(currentAlgorithm) + ": " + algorithmNames(currentAlgorithm)
-        COLOR _RGB32(255, 255, 255)  ' White for amount
+        COLOR _RGB32(255, 255, 255) ' White for amount
         _PRINTSTRING (10, 50), "Amount: " + _TRIM$(STR$(ditherAmount)) + " (0.0 = none, 1.0 = full)"
         
         COLOR _RGB32(255, 255, 255)
@@ -121,17 +121,17 @@ DO
         
         ' Algorithm type classification
         DIM algorithmType AS STRING
-        IF currentAlgorithm <= 3 THEN
+        IF currentAlgorithm < = 3 THEN
             algorithmType = "Ordered/Bayer Dithering"
-        ELSEIF currentAlgorithm <= 15 THEN
+        ELSEIF currentAlgorithm < = 15 THEN
             algorithmType = "Error Diffusion Dithering"
-        ELSEIF currentAlgorithm <= 17 THEN
+        ELSEIF currentAlgorithm < = 17 THEN
             algorithmType = "Random/Noise Dithering"
         ELSE
             algorithmType = "Special Pattern Dithering"
         END IF
         
-        COLOR _RGB32(200, 200, 255)  ' Light blue for type
+        COLOR _RGB32(200, 200, 255) ' Light blue for type
         _PRINTSTRING (10, 90), "Type: " + algorithmType
         
         ' Show before/after comparison
@@ -147,7 +147,7 @@ DO
             DIM detailY AS INTEGER
             detailY = 140 + _HEIGHT(originalImage) + 20
             
-            COLOR _RGB32(200, 255, 200)  ' Light green for details
+            COLOR _RGB32(200, 255, 200) ' Light green for details
             SELECT CASE currentAlgorithm
                 CASE 0 TO 3
                     _PRINTSTRING (10, detailY), "Ordered dithering uses a fixed pattern matrix to determine threshold values."
@@ -172,21 +172,21 @@ DO
     k = INKEY$
     
     SELECT CASE k
-        CASE CHR$(0) + "K"  ' LEFT arrow
+        CASE CHR$(0) + "K" ' LEFT arrow
             currentAlgorithm = currentAlgorithm - 1
             IF currentAlgorithm < 0 THEN currentAlgorithm = 21
-        CASE CHR$(0) + "M"  ' RIGHT arrow
+        CASE CHR$(0) + "M" ' RIGHT arrow
             currentAlgorithm = currentAlgorithm + 1
             IF currentAlgorithm > 21 THEN currentAlgorithm = 0
-        CASE CHR$(0) + "H"  ' UP arrow
+        CASE CHR$(0) + "H" ' UP arrow
             ditherAmount = ditherAmount + 0.1
             IF ditherAmount > 1.0 THEN ditherAmount = 1.0
-        CASE CHR$(0) + "P"  ' DOWN arrow
+        CASE CHR$(0) + "P" ' DOWN arrow
             ditherAmount = ditherAmount - 0.1
             IF ditherAmount < 0.0 THEN ditherAmount = 0.0
         CASE "r", "R"
             currentAlgorithm = 4
-            ditherAmount = 0.8
+            ditherAmount     = 0.8
     END SELECT
     
     _LIMIT 30

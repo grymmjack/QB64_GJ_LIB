@@ -26,9 +26,9 @@ $INCLUDEONCE
 FUNCTION PIPEPRINT$(s$)
     DIM AS INTEGER w, nums, p, ub, i, r, l, ansi_x,  ansi_y
     DIM AS STRING sout, code, args, find, spaces, txt, t, nopi, repl, char
-    w% = _WIDTH
+    w%      = _WIDTH
     ansi_x% = POS(0) : ansi_y% = CSRLIN
-    sout$ = s$
+    sout$   = s$
     
     ' Reset the working variables (redim without _PRESERVE = erase $DYNAMIC)
     NUM_PIPES_FOUND = 0
@@ -47,9 +47,9 @@ FUNCTION PIPEPRINT$(s$)
     ' Replace the pipe codes with ANSI codes
     IF NUM_PIPES_FOUND THEN
         FOR i% = 0 TO ub%
-            p% = PIPES_POSITIONS(i%)
+            p%    = PIPES_POSITIONS(i%)
             code$ = MID$(s$, p%, 3)
-            args$ = "" : char$ = "" : txt$ = "" : t$ = "" : nums% = 0
+            args$ = "" : char$ = "" : txt$ = ""    : t$ = "" : nums% = 0
             find$ = "" : repl$ = "" : spaces$ = "" : nopi$ = ""
             SELECT CASE code$
                 CASE "|[X", "|[Y", "|[A", "|[B", "|[C", "|[D", "|@D":
@@ -58,12 +58,12 @@ FUNCTION PIPEPRINT$(s$)
                     find$ = code$ + args$
             END SELECT
             SELECT CASE code$
-                CASE "|[X": repl$ = ANSI.move_column(nums%)
-                CASE "|[Y": repl$ = ANSI.locate(nums%, ansi_x%)
-                CASE "|[A": repl$ = ANSI.move_up(nums%)
-                CASE "|[B": repl$ = ANSI.move_down(nums%)
-                CASE "|[C": repl$ = ANSI.move_right(nums%)
-                CASE "|[D": repl$ = ANSI.move_left(nums%)
+                CASE "|[X" : repl$ = ANSI.move_column(nums%)
+                CASE "|[Y" : repl$ = ANSI.locate(nums%, ansi_x%)
+                CASE "|[A" : repl$ = ANSI.move_up(nums%)
+                CASE "|[B" : repl$ = ANSI.move_down(nums%)
+                CASE "|[C" : repl$ = ANSI.move_right(nums%)
+                CASE "|[D" : repl$ = ANSI.move_left(nums%)
                 CASE "|@D":
                     IF args$ = "00" THEN
                         nums% = w%
@@ -104,46 +104,46 @@ FUNCTION PIPEPRINT$(s$)
                         find$ = code$
             END SELECT 
             SELECT CASE code$
-                CASE "|[0": repl$ = ANSI.hide_cursor
-                CASE "|[1": repl$ = ANSI.show_cursor
-                CASE "|[K": repl$ = ANSI.erase_to_eol
-                CASE "|CL": repl$ = ANSI.erase_screen
-                CASE "|CN": repl$ = ANSI.mode_blinking
-                CASE "|CY": repl$ = ANSI.mode_blinking_reset
-                CASE "|CR": repl$ = ANSI.move_down(1) + ANSI.move_column(1)
-                CASE "|PI": repl$ = "|"
-                CASE "|00": repl$ = ANSI.fg_black
-                CASE "|01": repl$ = ANSI.fg_blue
-                CASE "|02": repl$ = ANSI.fg_green
-                CASE "|03": repl$ = ANSI.fg_cyan
-                CASE "|04": repl$ = ANSI.fg_red
-                CASE "|05": repl$ = ANSI.fg_magenta
-                CASE "|06": repl$ = ANSI.fg_yellow
-                CASE "|07": repl$ = ANSI.fg_white
-                CASE "|08": repl$ = ANSI.fg_bright_black
-                CASE "|09": repl$ = ANSI.fg_bright_blue
-                CASE "|10": repl$ = ANSI.fg_bright_green
-                CASE "|11": repl$ = ANSI.fg_bright_cyan
-                CASE "|12": repl$ = ANSI.fg_bright_red
-                CASE "|13": repl$ = ANSI.fg_bright_magenta
-                CASE "|14": repl$ = ANSI.fg_bright_yellow
-                CASE "|15": repl$ = ANSI.fg_bright_white
-                CASE "|16": repl$ = ANSI.bg_black
-                CASE "|17": repl$ = ANSI.bg_blue
-                CASE "|18": repl$ = ANSI.bg_green
-                CASE "|19": repl$ = ANSI.bg_cyan
-                CASE "|20": repl$ = ANSI.bg_red
-                CASE "|21": repl$ = ANSI.bg_magenta
-                CASE "|22": repl$ = ANSI.bg_yellow
-                CASE "|23": repl$ = ANSI.bg_white
-                CASE "|24": repl$ = ANSI.bg_bright_black
-                CASE "|25": repl$ = ANSI.bg_bright_blue
-                CASE "|26": repl$ = ANSI.bg_bright_green
-                CASE "|27": repl$ = ANSI.bg_bright_cyan
-                CASE "|28": repl$ = ANSI.bg_bright_red
-                CASE "|29": repl$ = ANSI.bg_bright_magenta
-                CASE "|30": repl$ = ANSI.bg_bright_yellow
-                CASE "|31": repl$ = ANSI.bg_bright_white
+                CASE "|[0" : repl$ = ANSI.hide_cursor
+                CASE "|[1" : repl$ = ANSI.show_cursor
+                CASE "|[K" : repl$ = ANSI.erase_to_eol
+                CASE "|CL" : repl$ = ANSI.erase_screen
+                CASE "|CN" : repl$ = ANSI.mode_blinking
+                CASE "|CY" : repl$ = ANSI.mode_blinking_reset
+                CASE "|CR" : repl$ = ANSI.move_down(1) + ANSI.move_column(1)
+                CASE "|PI" : repl$ = "|"
+                CASE "|00" : repl$ = ANSI.fg_black
+                CASE "|01" : repl$ = ANSI.fg_blue
+                CASE "|02" : repl$ = ANSI.fg_green
+                CASE "|03" : repl$ = ANSI.fg_cyan
+                CASE "|04" : repl$ = ANSI.fg_red
+                CASE "|05" : repl$ = ANSI.fg_magenta
+                CASE "|06" : repl$ = ANSI.fg_yellow
+                CASE "|07" : repl$ = ANSI.fg_white
+                CASE "|08" : repl$ = ANSI.fg_bright_black
+                CASE "|09" : repl$ = ANSI.fg_bright_blue
+                CASE "|10" : repl$ = ANSI.fg_bright_green
+                CASE "|11" : repl$ = ANSI.fg_bright_cyan
+                CASE "|12" : repl$ = ANSI.fg_bright_red
+                CASE "|13" : repl$ = ANSI.fg_bright_magenta
+                CASE "|14" : repl$ = ANSI.fg_bright_yellow
+                CASE "|15" : repl$ = ANSI.fg_bright_white
+                CASE "|16" : repl$ = ANSI.bg_black
+                CASE "|17" : repl$ = ANSI.bg_blue
+                CASE "|18" : repl$ = ANSI.bg_green
+                CASE "|19" : repl$ = ANSI.bg_cyan
+                CASE "|20" : repl$ = ANSI.bg_red
+                CASE "|21" : repl$ = ANSI.bg_magenta
+                CASE "|22" : repl$ = ANSI.bg_yellow
+                CASE "|23" : repl$ = ANSI.bg_white
+                CASE "|24" : repl$ = ANSI.bg_bright_black
+                CASE "|25" : repl$ = ANSI.bg_bright_blue
+                CASE "|26" : repl$ = ANSI.bg_bright_green
+                CASE "|27" : repl$ = ANSI.bg_bright_cyan
+                CASE "|28" : repl$ = ANSI.bg_bright_red
+                CASE "|29" : repl$ = ANSI.bg_bright_magenta
+                CASE "|30" : repl$ = ANSI.bg_bright_yellow
+                CASE "|31" : repl$ = ANSI.bg_bright_white
             END SELECT            
             sout$ = STR.replace$(sout$, find$, repl$, 1)
         NEXT i%
@@ -180,7 +180,7 @@ FUNCTION PIPESTRIP$(s$)
     ' Replace the pipe codes with ANSI codes
     IF NUM_PIPES_STRIP_FOUND THEN
         FOR i% = 0 TO ub%
-            p% = PIPES_STRIP_POSITIONS(i%)
+            p%    = PIPES_STRIP_POSITIONS(i%)
             code$ = MID$(s$, p%, 3)
             args$ = "" : char$ = "" : txt$ = "" : t$ = "" : nums% = 0
             find$ = "" : repl$ = "" : spaces$ = ""

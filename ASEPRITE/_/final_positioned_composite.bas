@@ -6,10 +6,10 @@ $CONSOLE:ONLY
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
-DIM aseprite_img AS ASEPRITE_IMAGE
+DIM filename        AS STRING
+DIM aseprite_img    AS ASEPRITE_IMAGE
 DIM composite_image AS LONG
-DIM save_filename AS STRING
+DIM save_filename   AS STRING
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 

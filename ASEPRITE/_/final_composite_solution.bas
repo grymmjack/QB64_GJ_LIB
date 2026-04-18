@@ -6,10 +6,10 @@ $CONSOLE
 
 '$INCLUDE:'ASEPRITE.BI'
 
-DIM filename AS STRING
+DIM filename        AS STRING
 DIM composite_image AS LONG
-DIM layer_width AS INTEGER
-DIM layer_height AS INTEGER
+DIM layer_width     AS INTEGER
+DIM layer_height    AS INTEGER
 
 filename = "test-files/DJ Trapezoid - Pumpkin Head.aseprite"
 
@@ -26,7 +26,7 @@ IF composite_image = -1 OR composite_image = 0 THEN
     SYSTEM
 END IF
 
-layer_width = _WIDTH(composite_image)
+layer_width  = _WIDTH(composite_image)
 layer_height = _HEIGHT(composite_image)
 
 PRINT "Z-index composite created successfully!"

@@ -55,7 +55,7 @@ END SUB
 '
 SUB ARR_STR.pop(arr$(), var$)
     DIM AS LONG ub, lb
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
+    lb&  = LBOUND(arr$) : ub& = UBOUND(arr$)
     var$ = arr$(ub&)
     REDIM _PRESERVE arr(lb& TO (ub& - 1)) AS STRING
 END SUB
@@ -69,7 +69,7 @@ END SUB
 '
 SUB ARR_STR.shift(arr$(), var$)
     DIM AS LONG ub, lb, i
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
+    lb&  = LBOUND(arr$) : ub& = UBOUND(arr$)
     var$ = arr$(lb&)
     FOR i& = lb& TO ub& - 1
         arr$(i&) = arr$(i& + 1) 
@@ -121,7 +121,7 @@ END SUB
 ' 
 SUB ARR_STR.join(arr$(), s$)
     DIM AS LONG ub, lb, i
-    s$ = ""
+    s$  = ""
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
     FOR i& = lb& TO ub&
         s$ = s$ + _TRIM$(arr$(i&)) + ", "
@@ -172,8 +172,8 @@ END SUB
 '
 FUNCTION ARR_STR.longest$(arr$())
     DIM AS LONG lb, ub, i, res, lw
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    res& = 0 : lw& = 0
+    lb&  = LBOUND(arr$) : ub& = UBOUND(arr$)
+    res& = 0            : lw& = 0
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(arr$(i&))) > lw& THEN
             lw&  = LEN(_TRIM$(arr$(i&)))
@@ -192,8 +192,8 @@ END FUNCTION
 '
 FUNCTION ARR_STR.shortest$(arr$())
     DIM AS LONG lb, ub, i, res, sw
-    lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    res& = 0 : sw& = 255
+    lb&  = LBOUND(arr$) : ub& = UBOUND(arr$)
+    res& = 0            : sw& = 255
     FOR i& = lb& TO ub&
         IF LEN(_TRIM$(arr$(i&))) < sw& THEN
             sw&  = LEN(_TRIM$(arr$(i&)))
@@ -236,7 +236,7 @@ END FUNCTION
 SUB ARR_STR.nth(source_arr$(), dest_arr$(), nth%)
     DIM AS LONG lb, ub, i, n
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
-    n& = (ub& - lb&) \ nth%
+    n&  = (ub& - lb&) \ nth%
     REDIM dest_arr(n&) AS STRING
     n& = 0
     FOR i& = lb& to ub&
@@ -308,7 +308,7 @@ END FUNCTION
 FUNCTION ARR_STR.size&(arr$())
     DIM AS LONG lb, ub, i, n
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    n& = 0
+    n&  = 0
     FOR i& = lb& TO ub&
         n& = n& + LEN(arr$(i&))
     NEXT i&
@@ -356,7 +356,7 @@ END FUNCTION
 '
 SUB ARR_STR.shuffle(source_arr$(), dest_arr$())
     DIM AS LONG lb, ub, i, count
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
+    lb&    = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     count& = ub& - lb&
     REDIM dest_arr(0 TO count&) AS STRING
     CALL ARR_STR.copy(source_arr$(), dest_arr$())
@@ -418,7 +418,7 @@ SUB ARR_STR.insert(arr$(), value$, index%)
     DIM tmp AS STRING
     DIM work_arr(0) AS STRING
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_STR.push(work_arr$(), arr$(i&))
@@ -446,7 +446,7 @@ SUB ARR_STR.remove(arr$(), index%)
     DIM tmp AS STRING
     DIM work_arr(0) AS STRING
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    IF index% >= lb& AND index% <= ub& THEN
+    IF index% > = lb& AND index% < = ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_STR.push(work_arr$(), arr$(i&))
@@ -539,7 +539,7 @@ SUB ARR_STR.between(source_arr$(), dest_arr$(), min%, max%)
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF VAL(source_arr$(i&)) >= min% _
+        IF VAL(source_arr$(i&)) > = min% _
         AND VAL(source_arr$(i&)) <= max% THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
@@ -572,7 +572,7 @@ END SUB
 '
 SUB ARR_STR.rsort(source_arr$(), dest_arr$())
     DIM AS LONG lb, ub, count
-    lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
+    lb&    = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     count& = ub& - lb&
     REDIM dest_arr(lb& TO ub&) AS STRING
     CALL ARR_STR.copy(source_arr$(), dest_arr$())
@@ -590,25 +590,25 @@ END SUB
 ' @param INTEGER order% to sort by (0 = asc / 1 = desc)
 '
 SUB ARR_STR.quicksort(arr$(), start%, finish%, order%)
-    DIM i AS LONG
-    DIM pivot AS INTEGER
+    DIM i          AS LONG
+    DIM pivot      AS INTEGER
     DIM pivotvalue AS STRING
 
     'first, partition the array
-    pivot% = start%
+    pivot%      = start%
     pivotvalue$ = arr$(pivot%)
     FOR i& = start% TO finish%
         IF order% = 0 THEN ' ascending order
             IF arr$(i&) < pivotvalue$ THEN
-                arr$(pivot%) = arr$(i&)
-                arr$(i&) = arr$(pivot% + 1)
+                arr$(pivot%)     = arr$(i&)
+                arr$(i&)         = arr$(pivot% + 1)
                 arr$(pivot% + 1) = pivotvalue$
                 pivot% = pivot% + 1
             END IF
         ELSEIF order% = 1 THEN ' descending order
             IF arr$(i&) > pivotvalue$ THEN
-                arr$(pivot%) = arr$(i&)
-                arr$(i&) = arr$(pivot% + 1)
+                arr$(pivot%)     = arr$(i&)
+                arr$(i&)         = arr$(pivot% + 1)
                 arr$(pivot% + 1) = pivotvalue$
                 pivot% = pivot% + 1
             END IF
@@ -616,10 +616,10 @@ SUB ARR_STR.quicksort(arr$(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% >= 2 THEN 
+    IF pivot% - start% > = 2 THEN 
         CALL ARR_STR.quicksort(arr$(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% >= 2 THEN 
+    IF finish% - pivot% > = 2 THEN 
         CALL ARR_STR.quicksort(arr$(), pivot% + 1, finish%, order%)
     END IF
 END SUB
@@ -652,7 +652,7 @@ SUB ARR_STR.union(source_arr$(), dest_arr$())
     
     REDIM _PRESERVE dest_arr(n_lb& TO n_ub&) AS STRING
     FOR i& = s_lb& TO s_ub&
-        n& = d_ub& + 1 + i& - s_lb&
+        n&            = d_ub& + 1 + i& - s_lb&
         dest_arr$(n&) = source_arr$(i&)
     NEXT i&
 END SUB

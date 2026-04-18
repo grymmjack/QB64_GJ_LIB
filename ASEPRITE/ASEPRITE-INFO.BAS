@@ -30,70 +30,70 @@ $LET ASEPRITE_DEBUG_MODE = 1
 '$INCLUDE:'ASEPRITE.BI'
 
 CONST MAX_CHUNK_TYPES = 50
-CONST MAX_LAYERS = 256
-CONST MAX_FRAMES = 1000
-CONST MAX_CELS = 5000
-CONST MAX_TAGS = 100
+CONST MAX_LAYERS      = 256
+CONST MAX_FRAMES      = 1000
+CONST MAX_CELS        = 5000
+CONST MAX_TAGS        = 100
 
 TYPE ANALYSIS_STATS
-    total_chunks        AS LONG
-    layer_chunks        AS INTEGER
-    cel_chunks          AS INTEGER
-    palette_chunks      AS INTEGER
-    tag_chunks          AS INTEGER
-    user_data_chunks    AS INTEGER
-    tileset_chunks      AS INTEGER
-    external_chunks     AS INTEGER
-    unknown_chunks      AS INTEGER
-    total_file_size     AS LONG
-    actual_file_size    AS LONG
-    compression_ratio   AS SINGLE
+    total_chunks      AS LONG
+    layer_chunks      AS INTEGER
+    cel_chunks        AS INTEGER
+    palette_chunks    AS INTEGER
+    tag_chunks        AS INTEGER
+    user_data_chunks  AS INTEGER
+    tileset_chunks    AS INTEGER
+    external_chunks   AS INTEGER
+    unknown_chunks    AS INTEGER
+    total_file_size   AS LONG
+    actual_file_size  AS LONG
+    compression_ratio AS SINGLE
 END TYPE
 
 TYPE LAYER_ANALYSIS
-    layer_index         AS INTEGER
-    layer_name          AS STRING
-    layer_type          AS INTEGER
-    flags               AS INTEGER
-    blend_mode          AS INTEGER
-    opacity             AS INTEGER
-    child_level         AS INTEGER
-    is_visible          AS INTEGER
-    is_background       AS INTEGER
-    cel_count           AS INTEGER
+    layer_index   AS INTEGER
+    layer_name    AS STRING
+    layer_type    AS INTEGER
+    flags         AS INTEGER
+    blend_mode    AS INTEGER
+    opacity       AS INTEGER
+    child_level   AS INTEGER
+    is_visible    AS INTEGER
+    is_background AS INTEGER
+    cel_count     AS INTEGER
 END TYPE
 
 TYPE FRAME_ANALYSIS
-    frame_index         AS INTEGER
-    duration_ms         AS INTEGER
-    chunk_count         AS INTEGER
-    cel_count_in_frame  AS INTEGER
-    total_frame_size    AS LONG
+    frame_index        AS INTEGER
+    duration_ms        AS INTEGER
+    chunk_count        AS INTEGER
+    cel_count_in_frame AS INTEGER
+    total_frame_size   AS LONG
 END TYPE
 
 TYPE CEL_ANALYSIS
-    frame_index         AS INTEGER
-    layer_index         AS INTEGER
-    cel_type            AS INTEGER
-    x_position          AS INTEGER
-    y_position          AS INTEGER
-    width               AS INTEGER
-    height              AS INTEGER
-    opacity             AS INTEGER
-    z_index             AS INTEGER
-    compressed_size     AS LONG
-    uncompressed_size   AS LONG
+    frame_index       AS INTEGER
+    layer_index       AS INTEGER
+    cel_type          AS INTEGER
+    x_position        AS INTEGER
+    y_position        AS INTEGER
+    width             AS INTEGER
+    height            AS INTEGER
+    opacity           AS INTEGER
+    z_index           AS INTEGER
+    compressed_size   AS LONG
+    uncompressed_size AS LONG
 END TYPE
 
 TYPE TAG_ANALYSIS
-    tag_name            AS STRING
-    from_frame          AS INTEGER
-    to_frame            AS INTEGER
-    direction           AS INTEGER
-    repeat_count        AS INTEGER
-    tag_color_r         AS INTEGER
-    tag_color_g         AS INTEGER
-    tag_color_b         AS INTEGER
+    tag_name     AS STRING
+    from_frame   AS INTEGER
+    to_frame     AS INTEGER
+    direction    AS INTEGER
+    repeat_count AS INTEGER
+    tag_color_r  AS INTEGER
+    tag_color_g  AS INTEGER
+    tag_color_b  AS INTEGER
 END TYPE
 
 ' Global analysis arrays
@@ -102,29 +102,29 @@ DIM SHARED layers(1 TO MAX_LAYERS) AS LAYER_ANALYSIS
 DIM SHARED frames(1 TO MAX_FRAMES) AS FRAME_ANALYSIS
 DIM SHARED cels(1 TO MAX_CELS) AS CEL_ANALYSIS
 DIM SHARED tags(1 TO MAX_TAGS) AS TAG_ANALYSIS
-DIM SHARED layer_count AS INTEGER
-DIM SHARED frame_count AS INTEGER
-DIM SHARED cel_count AS INTEGER
-DIM SHARED tag_count AS INTEGER
+DIM SHARED layer_count    AS INTEGER
+DIM SHARED frame_count    AS INTEGER
+DIM SHARED cel_count      AS INTEGER
+DIM SHARED tag_count      AS INTEGER
 
 ' Color depth descriptions
 DIM SHARED color_depth_names(8 TO 32) AS STRING
-color_depth_names(8) = "8 bpp (Indexed)"
+color_depth_names(8)  = "8 bpp (Indexed)"
 color_depth_names(16) = "16 bpp (Grayscale)"
 color_depth_names(32) = "32 bpp (RGBA)"
 
 ' Blend mode names
 DIM SHARED blend_mode_names(0 TO 18) AS STRING
-blend_mode_names(0) = "Normal"
-blend_mode_names(1) = "Multiply"
-blend_mode_names(2) = "Screen"
-blend_mode_names(3) = "Overlay"
-blend_mode_names(4) = "Darken"
-blend_mode_names(5) = "Lighten"
-blend_mode_names(6) = "Color Dodge"
-blend_mode_names(7) = "Color Burn"
-blend_mode_names(8) = "Hard Light"
-blend_mode_names(9) = "Soft Light"
+blend_mode_names(0)  = "Normal"
+blend_mode_names(1)  = "Multiply"
+blend_mode_names(2)  = "Screen"
+blend_mode_names(3)  = "Overlay"
+blend_mode_names(4)  = "Darken"
+blend_mode_names(5)  = "Lighten"
+blend_mode_names(6)  = "Color Dodge"
+blend_mode_names(7)  = "Color Burn"
+blend_mode_names(8)  = "Hard Light"
+blend_mode_names(9)  = "Soft Light"
 blend_mode_names(10) = "Difference"
 blend_mode_names(11) = "Exclusion"
 blend_mode_names(12) = "Hue"
@@ -195,14 +195,14 @@ SYSTEM 0
 ''
 SUB analyze_aseprite_file (filename$)
     DIM file_handle AS INTEGER
-    DIM header AS ASEPRITE_HEADER
-    DIM file_size AS LONG
+    DIM header      AS ASEPRITE_HEADER
+    DIM file_size   AS LONG
     
     ' Initialize counters
     layer_count = 0
     frame_count = 0
-    cel_count = 0
-    tag_count = 0
+    cel_count   = 0
+    tag_count   = 0
     
     ' Get actual file size
     file_handle = FREEFILE
@@ -339,14 +339,14 @@ END SUB
 ' @param header The ASEPRITE header structure
 ''
 SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER)
-    DIM i AS INTEGER
-    DIM frame_header AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM i               AS INTEGER
+    DIM frame_header    AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header    AS ASEPRITE_CHUNK_HEADER
     DIM chunk_start_pos AS LONG
-    DIM chunk_end_pos AS LONG
+    DIM chunk_end_pos   AS LONG
     DIM frame_start_pos AS LONG
-    DIM j AS INTEGER
-    DIM actual_chunks AS LONG
+    DIM j               AS INTEGER
+    DIM actual_chunks   AS LONG
     
     _ECHO "ANALYZING FRAMES AND CHUNKS..."
     _ECHO "=============================="
@@ -365,15 +365,15 @@ SUB analyze_frames_and_chunks (file_handle AS INTEGER, header AS ASEPRITE_HEADER
         END IF
         
         ' Store frame info
-        frames(i).frame_index = i - 1
-        frames(i).duration_ms = frame_header.duration
+        frames(i).frame_index      = i - 1
+        frames(i).duration_ms      = frame_header.duration
         frames(i).total_frame_size = frame_header.num_bytes
         
         ' Determine chunk count (use new field if available, otherwise old field)
         actual_chunks = frame_header.new_chunks
         IF actual_chunks = 0 THEN actual_chunks = frame_header.old_chunks
         
-        frames(i).chunk_count = actual_chunks
+        frames(i).chunk_count        = actual_chunks
         frames(i).cel_count_in_frame = 0
         
         _ECHO "Frame " + format_number$(i, 3) + ": " + format_number$(actual_chunks, 3) + " chunks, " + format_number$(frame_header.duration, 4) + " ms, " + format_bytes$(frame_header.num_bytes)
@@ -437,9 +437,9 @@ END SUB
 ' @param chunk_size Size of the chunk in bytes
 ''
 SUB analyze_layer_chunk (file_handle AS INTEGER, chunk_size AS LONG)
-    DIM layer_chunk AS ASEPRITE_LAYER_CHUNK
+    DIM layer_chunk    AS ASEPRITE_LAYER_CHUNK
     DIM layer_name_len AS INTEGER
-    DIM layer_name AS STRING
+    DIM layer_name     AS STRING
     
     GET file_handle, , layer_chunk
     
@@ -449,17 +449,17 @@ SUB analyze_layer_chunk (file_handle AS INTEGER, chunk_size AS LONG)
     GET file_handle, , layer_name
     
     layer_count = layer_count + 1
-    IF layer_count <= MAX_LAYERS THEN
-        layers(layer_count).layer_index = layer_count - 1
-        layers(layer_count).layer_name = layer_name
-        layers(layer_count).layer_type = layer_chunk.layer_type
-        layers(layer_count).flags = layer_chunk.flags
-        layers(layer_count).blend_mode = layer_chunk.blend_mode
-        layers(layer_count).opacity = layer_chunk.opacity
-        layers(layer_count).child_level = layer_chunk.child_level
-        layers(layer_count).is_visible = _IIF(layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE, 1, 0)
+    IF layer_count < = MAX_LAYERS THEN
+        layers(layer_count).layer_index   = layer_count - 1
+        layers(layer_count).layer_name    = layer_name
+        layers(layer_count).layer_type    = layer_chunk.layer_type
+        layers(layer_count).flags         = layer_chunk.flags
+        layers(layer_count).blend_mode    = layer_chunk.blend_mode
+        layers(layer_count).opacity       = layer_chunk.opacity
+        layers(layer_count).child_level   = layer_chunk.child_level
+        layers(layer_count).is_visible    = _IIF(layer_chunk.flags AND ASEPRITE_LAYER_VISIBLE, 1, 0)
         layers(layer_count).is_background = _IIF(layer_chunk.flags AND ASEPRITE_LAYER_BACKGROUND, 1, 0)
-        layers(layer_count).cel_count = 0
+        layers(layer_count).cel_count     = 0
     END IF
 END SUB
 
@@ -470,37 +470,37 @@ END SUB
 ' @param frame_index Current frame index
 ''
 SUB analyze_cel_chunk (file_handle AS INTEGER, chunk_size AS LONG, frame_index AS INTEGER)
-    DIM cel_chunk AS ASEPRITE_CEL_CHUNK
-    DIM cel_width AS INTEGER
-    DIM cel_height AS INTEGER
+    DIM cel_chunk            AS ASEPRITE_CEL_CHUNK
+    DIM cel_width            AS INTEGER
+    DIM cel_height           AS INTEGER
     DIM compressed_data_size AS LONG
     
     GET file_handle, , cel_chunk
     
     cel_count = cel_count + 1
-    IF cel_count <= MAX_CELS THEN
+    IF cel_count < = MAX_CELS THEN
         cels(cel_count).frame_index = frame_index
         cels(cel_count).layer_index = cel_chunk.layer_index
-        cels(cel_count).cel_type = cel_chunk.cel_type
-        cels(cel_count).x_position = cel_chunk.x_position
-        cels(cel_count).y_position = cel_chunk.y_position
-        cels(cel_count).opacity = cel_chunk.opacity
-        cels(cel_count).z_index = cel_chunk.z_index
+        cels(cel_count).cel_type    = cel_chunk.cel_type
+        cels(cel_count).x_position  = cel_chunk.x_position
+        cels(cel_count).y_position  = cel_chunk.y_position
+        cels(cel_count).opacity     = cel_chunk.opacity
+        cels(cel_count).z_index     = cel_chunk.z_index
         
         ' Read cel-specific data based on type
         SELECT CASE cel_chunk.cel_type
             CASE ASEPRITE_CEL_RAW_IMAGE, ASEPRITE_CEL_COMPRESSED
                 GET file_handle, , cel_width
                 GET file_handle, , cel_height
-                cels(cel_count).width = cel_width
+                cels(cel_count).width  = cel_width
                 cels(cel_count).height = cel_height
                 
                 IF cel_chunk.cel_type = ASEPRITE_CEL_COMPRESSED THEN
                     ' Calculate compressed data size
-                    compressed_data_size = chunk_size - 16 - 4 ' chunk header + cel header + width/height
+                    compressed_data_size            = chunk_size - 16 - 4 ' chunk header + cel header + width/height
                     cels(cel_count).compressed_size = compressed_data_size
                     ' Estimate uncompressed size based on pixel format
-                    SELECT CASE TRUE ' Using pixel depth from header (would need to pass this in)
+                    SELECT CASE TRUE                                      ' Using pixel depth from header (would need to pass this in)
                         CASE ELSE ' Default to RGBA
                             cels(cel_count).uncompressed_size = cel_width * cel_height * 4
                     END SELECT
@@ -510,21 +510,21 @@ SUB analyze_cel_chunk (file_handle AS INTEGER, chunk_size AS LONG, frame_index A
                 ' Linked cel just has frame position
                 DIM linked_frame AS INTEGER
                 GET file_handle, , linked_frame
-                cels(cel_count).width = 0
+                cels(cel_count).width  = 0
                 cels(cel_count).height = 0
                 
             CASE ASEPRITE_CEL_TILEMAP
                 ' Tilemap has width/height in tiles plus additional data
                 GET file_handle, , cel_width
                 GET file_handle, , cel_height
-                cels(cel_count).width = cel_width
+                cels(cel_count).width  = cel_width
                 cels(cel_count).height = cel_height
         END SELECT
         
         ' Update layer cel count
         DIM layer_idx AS INTEGER
         layer_idx = cel_chunk.layer_index + 1
-        IF layer_idx >= 1 AND layer_idx <= layer_count THEN
+        IF layer_idx > = 1 AND layer_idx < = layer_count THEN
             layers(layer_idx).cel_count = layers(layer_idx).cel_count + 1
         END IF
     END IF
@@ -547,24 +547,24 @@ END SUB
 ' @param chunk_size Size of the chunk in bytes
 ''
 SUB analyze_tags_chunk (file_handle AS INTEGER, chunk_size AS LONG)
-    DIM tags_chunk AS ASEPRITE_TAGS_CHUNK
-    DIM i AS INTEGER
-    DIM tag_from AS INTEGER
-    DIM tag_to AS INTEGER
+    DIM tags_chunk    AS ASEPRITE_TAGS_CHUNK
+    DIM i             AS INTEGER
+    DIM tag_from      AS INTEGER
+    DIM tag_to        AS INTEGER
     DIM tag_direction AS INTEGER
-    DIM tag_repeat AS INTEGER
-    DIM tag_reserved AS STRING * 6
-    DIM tag_color AS STRING * 3
-    DIM tag_extra AS INTEGER
-    DIM tag_name_len AS INTEGER
-    DIM tag_name AS STRING
+    DIM tag_repeat    AS INTEGER
+    DIM tag_reserved  AS STRING * 6
+    DIM tag_color     AS STRING * 3
+    DIM tag_extra     AS INTEGER
+    DIM tag_name_len  AS INTEGER
+    DIM tag_name      AS STRING
     
     GET file_handle, , tags_chunk
     
     tag_count = tags_chunk.num_tags
     
     FOR i = 1 TO tags_chunk.num_tags
-        IF i <= MAX_TAGS THEN
+        IF i < = MAX_TAGS THEN
             GET file_handle, , tag_from
             GET file_handle, , tag_to
             GET file_handle, , tag_direction
@@ -577,14 +577,14 @@ SUB analyze_tags_chunk (file_handle AS INTEGER, chunk_size AS LONG)
             tag_name = SPACE$(tag_name_len)
             GET file_handle, , tag_name
             
-            tags(i).tag_name = tag_name
-            tags(i).from_frame = tag_from
-            tags(i).to_frame = tag_to
-            tags(i).direction = tag_direction
+            tags(i).tag_name     = tag_name
+            tags(i).from_frame   = tag_from
+            tags(i).to_frame     = tag_to
+            tags(i).direction    = tag_direction
             tags(i).repeat_count = tag_repeat
-            tags(i).tag_color_r = ASC(MID$(tag_color, 1, 1))
-            tags(i).tag_color_g = ASC(MID$(tag_color, 2, 1))
-            tags(i).tag_color_b = ASC(MID$(tag_color, 3, 1))
+            tags(i).tag_color_r  = ASC(MID$(tag_color, 1, 1))
+            tags(i).tag_color_g  = ASC(MID$(tag_color, 2, 1))
+            tags(i).tag_color_b  = ASC(MID$(tag_color, 3, 1))
         END IF
     NEXT i
 END SUB
@@ -593,11 +593,11 @@ END SUB
 ' Display comprehensive analysis summary
 ''
 SUB display_analysis_summary
-    DIM i AS INTEGER
+    DIM i              AS INTEGER
     DIM total_duration AS LONG
-    DIM min_duration AS INTEGER
-    DIM max_duration AS INTEGER
-    DIM avg_duration AS SINGLE
+    DIM min_duration   AS INTEGER
+    DIM max_duration   AS INTEGER
+    DIM avg_duration   AS SINGLE
     
     _ECHO "DETAILED ANALYSIS SUMMARY"
     _ECHO "========================="
@@ -624,7 +624,7 @@ SUB display_analysis_summary
         
         ' Count layer types
         DIM layer_type_counts(0 TO 2) AS INTEGER
-        DIM visible_count AS INTEGER
+        DIM visible_count    AS INTEGER
         DIM background_count AS INTEGER
         
         FOR i = 1 TO layer_count
@@ -644,11 +644,11 @@ SUB display_analysis_summary
         _ECHO ""
         
         FOR i = 1 TO layer_count
-            DIM indent_str AS STRING
+            DIM indent_str       AS STRING
             DIM hierarchy_prefix AS STRING
             
             ' Create indentation based on child level for hierarchy visualization
-            indent_str = ""
+            indent_str       = ""
             hierarchy_prefix = ""
             IF layers(i).child_level > 0 THEN
                 DIM j AS INTEGER
@@ -680,8 +680,8 @@ SUB display_analysis_summary
     ' Frame timing analysis
     IF frame_count > 0 THEN
         total_duration = 0
-        min_duration = 32767
-        max_duration = 0
+        min_duration   = 32767
+        max_duration   = 0
         
         FOR i = 1 TO frame_count
             total_duration = total_duration + frames(i).duration_ms
@@ -729,7 +729,7 @@ SUB display_analysis_summary
         _ECHO "=============="
         
         DIM cel_type_counts(0 TO 3) AS INTEGER
-        DIM total_compressed AS LONG
+        DIM total_compressed   AS LONG
         DIM total_uncompressed AS LONG
         
         FOR i = 1 TO cel_count
@@ -798,7 +798,7 @@ END FUNCTION
 ''
 FUNCTION format_opacity$ (opacity AS INTEGER)
     DIM percent AS SINGLE
-    percent = (opacity / 255.0) * 100.0
+    percent         = (opacity / 255.0) * 100.0
     format_opacity$ = STR$(opacity) + "/255 (" + format_decimal$(percent, 1) + "%)"
 END FUNCTION
 
@@ -847,7 +847,7 @@ END FUNCTION
 ''
 FUNCTION format_decimal$ (value AS SINGLE, precision AS INTEGER)
     DIM multiplier AS LONG
-    DIM i AS INTEGER
+    DIM i          AS INTEGER
     
     multiplier = 1
     FOR i = 1 TO precision
@@ -857,9 +857,9 @@ FUNCTION format_decimal$ (value AS SINGLE, precision AS INTEGER)
     DIM rounded AS LONG
     rounded = INT(value * multiplier + 0.5)
     
-    DIM int_part AS LONG
+    DIM int_part  AS LONG
     DIM frac_part AS LONG
-    int_part = rounded \ multiplier
+    int_part  = rounded \ multiplier
     frac_part = rounded MOD multiplier
     
     DIM frac_str AS STRING

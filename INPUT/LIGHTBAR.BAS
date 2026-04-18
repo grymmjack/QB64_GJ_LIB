@@ -13,12 +13,12 @@ $END IF
 
 _TITLE "QB64_GJ_LIB - INPUT LIB - LIGHTBAR DEMO"
 
-SCREEN 0        ' LIGHTBAR (non-32) uses SCREEN 0 (text mode)
-_BLINK OFF      ' Allow high intensity background colors > 7
-_CONTROLCHR OFF ' Allow printing of any characters including control chars
+SCREEN 0                                          ' LIGHTBAR (non-32) uses SCREEN 0 (text mode)
+_BLINK OFF                                        ' Allow high intensity background colors > 7
+_CONTROLCHR OFF                                   ' Allow printing of any characters including control chars
 
-DIM menu AS LIGHTBAR                ' Create a LIGHTBAR menu
-DIM options(13) AS LIGHTBAR_OPTION  ' Menu options storage
+DIM menu AS LIGHTBAR                              ' Create a LIGHTBAR menu
+DIM options(13) AS LIGHTBAR_OPTION                ' Menu options storage
 
 ' choice variable will contain the choice the user made using either the 
 ' hot key directly, or by using the home, end, or arrow keys to select 
@@ -40,7 +40,7 @@ menu.delimeter$ = "|"
 ' Set max width to screen width
 menu.max_width% = _WIDTH(0)
 ' Setup sounds
-menu.use_sounds% = 1
+menu.use_sounds%   = 1
 menu.snd_move_frq! = 150
 menu.snd_move_dur! = 1
 menu.snd_move_vol! = 0.5
@@ -67,7 +67,7 @@ IF menu.opt_vertical% = 1 THEN ' Vertical LIGHTBAR menu
     options(10).txt$ = " |F|ettucinni Alfredo Bowl " ' ...
     options(11).txt$ = " |J|uice for the Bambinos  " ' ...
     options(12).txt$ = " |W|ine for Padre + Madre  " ' All of the same length
-    options(13).txt$ = " |Q|uit " ' However, each can have diff bar length like this.
+    options(13).txt$ = " |Q|uit "                    ' However, each can have diff bar length like this.
 END IF
 
 ' Populate the LIGHTBAR options - NOTE: Horizontal options aren't padded.
@@ -89,16 +89,16 @@ IF menu.opt_vertical% = 0 THEN ' Horizontal LIGHTBAR menu
 END IF
 
 ' Draw some basic goofy screen under which we will have a LIGHTBAR menu
-COLOR 12, 0: PRINT "----------------------------------------"
-COLOR 7, 0 : PRINT " Welcome to"; 
-COLOR 12, 0: PRINT " ANTONIOS"; : COLOR 10, 0: PRINT " PIZZERIA!"
-COLOR 7, 0 : PRINT " Pick your favorite food from our menu!"
-COLOR 14, 0: PRINT "----------------------------------------"
-COLOR 2, 0 : PRINT " ..if you're not hungry press ESCAPE.. "
-COLOR 12, 0: PRINT "----------------------------------------"
-COLOR 9, 0 : PRINT " PRESS ARROWS & HOME/END to choose..."
-COLOR 9, 0 : PRINT " PRESS ENTER or HOT KEY to PICK..."
-COLOR 9, 0 : PRINT " PRESS ESC to abort!"
+COLOR 12, 0 : PRINT "----------------------------------------"
+COLOR 7, 0  : PRINT " Welcome to"; 
+COLOR 12, 0 : PRINT " ANTONIOS"; : COLOR 10, 0 : PRINT " PIZZERIA!"
+COLOR 7, 0  : PRINT " Pick your favorite food from our menu!"
+COLOR 14, 0 : PRINT "----------------------------------------"
+COLOR 2, 0  : PRINT " ..if you're not hungry press ESCAPE.. "
+COLOR 12, 0 : PRINT "----------------------------------------"
+COLOR 9, 0  : PRINT " PRESS ARROWS & HOME/END to choose..."
+COLOR 9, 0  : PRINT " PRESS ENTER or HOT KEY to PICK..."
+COLOR 9, 0  : PRINT " PRESS ESC to abort!"
 PRINT
 
 ' Draw the LIGHTBAR menu, and store the result chosen in choice%

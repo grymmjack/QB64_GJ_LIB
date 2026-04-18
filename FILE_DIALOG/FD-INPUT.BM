@@ -21,7 +21,7 @@ END SUB
 ' FD_toggle_selected — Toggle selected state of filtered entry
 ' --------------------------------------------------------------------------
 SUB FD_toggle_selected (filteredIndex AS INTEGER)
-    IF filteredIndex < 0 OR filteredIndex >= FD_STATE.visibleCount THEN EXIT SUB
+    IF filteredIndex < 0 OR filteredIndex > = FD_STATE.visibleCount THEN EXIT SUB
     DIM eidx AS INTEGER
     eidx = FD_filtered(filteredIndex)
     IF FD_entries(eidx).isDirectory THEN EXIT SUB ' Don't multi-select directories
@@ -39,9 +39,9 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
     DIM lo AS INTEGER, hi AS INTEGER, ri AS INTEGER
-    IF fromIdx <= toIdx THEN lo = fromIdx: hi = toIdx ELSE lo = toIdx: hi = fromIdx
+    IF fromIdx < = toIdx THEN lo = fromIdx: hi = toIdx ELSE lo = toIdx: hi = fromIdx
     IF lo < 0 THEN lo = 0
-    IF hi >= FD_STATE.visibleCount THEN hi = FD_STATE.visibleCount - 1
+    IF hi > = FD_STATE.visibleCount THEN hi = FD_STATE.visibleCount - 1
     FOR ri = lo TO hi
         DIM eidx AS INTEGER
         eidx = FD_filtered(ri)
@@ -97,15 +97,15 @@ SUB FD_INPUT_poll
     FD_STATE.mouseB5 = _MOUSEBUTTON(5)
 
     ' Capture modifier key state (Shift for range-select)
-    FD_STATE.modCtrl = (_KEYDOWN(100305) OR _KEYDOWN(100306))
-    FD_STATE.modAlt = (_KEYDOWN(100307) OR _KEYDOWN(100308))
+    FD_STATE.modCtrl  = (_KEYDOWN(100305) OR _KEYDOWN(100306))
+    FD_STATE.modAlt   = (_KEYDOWN(100307) OR _KEYDOWN(100308))
     FD_STATE.modShift = (_KEYDOWN(100303) OR _KEYDOWN(100304))
 
     ' Update cursor blink
     IF TIMER(.001) - FD_STATE.cursorTimer > FD_CURSOR_BLINK_MS THEN
         FD_STATE.cursorBlink = NOT FD_STATE.cursorBlink
         FD_STATE.cursorTimer = TIMER(.001)
-        FD_STATE.dirty = -1
+        FD_STATE.dirty       = -1
     END IF
 END SUB
 
@@ -113,13 +113,13 @@ END SUB
 ' FD_INPUT_mouse — Process mouse input
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_mouse
-    DIM mx AS INTEGER, my AS INTEGER
-    DIM justPressed AS INTEGER
+    DIM mx           AS INTEGER, my AS INTEGER
+    DIM justPressed  AS INTEGER
     DIM justReleased AS INTEGER
 
-    mx = FD_STATE.mouseX
-    my = FD_STATE.mouseY
-    justPressed = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
+    mx           = FD_STATE.mouseX
+    my           = FD_STATE.mouseY
+    justPressed  = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
     justReleased = (NOT FD_STATE.mouseB1 AND FD_STATE.oldMouseB1)
 
     ' --- Back/Forward thumb buttons — navigate history ---
@@ -138,19 +138,19 @@ SUB FD_INPUT_mouse
             ' Check if click is inside the popup
             DIM popHit AS INTEGER
             popHit = FD_INPUT_filter_popup_click%(mx, my)
-            IF popHit >= 0 THEN
+            IF popHit > = 0 THEN
                 ' Selected a filter
-                FD_STATE.activeFilter = popHit
+                FD_STATE.activeFilter       = popHit
                 FD_STATE.filterDropdownOpen = 0
                 FD_FS_apply_filter
-                FD_STATE.scrollOffset = 0
+                FD_STATE.scrollOffset  = 0
                 FD_STATE.selectedIndex = -1
-                FD_STATE.hoverIndex = -1
-                FD_STATE.dirty = -1
+                FD_STATE.hoverIndex    = -1
+                FD_STATE.dirty         = -1
             ELSE
                 ' Click outside popup — close it
                 FD_STATE.filterDropdownOpen = 0
-                FD_STATE.dirty = -1
+                FD_STATE.dirty              = -1
             END IF
         END IF
         EXIT SUB
@@ -160,9 +160,9 @@ SUB FD_INPUT_mouse
     IF FD_STATE.dragging THEN
         ' Safety: if button not held at all, force-end drag (prevents stuck state)
         IF NOT FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1 THEN
-            FD_STATE.dragging = 0
-            FD_STATE.dragType = 0
-            FD_STATE.colResizing = -1
+            FD_STATE.dragging         = 0
+            FD_STATE.dragType         = 0
+            FD_STATE.colResizing      = -1
             FD_STATE.splitterDragging = 0
             _MOUSESHOW "DEFAULT"
         ELSE
@@ -172,7 +172,7 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Update cursor shape based on hover position ---
-    DIM hoverEdge AS INTEGER
+    DIM hoverEdge  AS INTEGER
     hoverEdge = FD_INPUT_hit_resize_edge%(mx, my)
     DIM needCursor AS STRING
     needCursor = "DEFAULT"
@@ -187,17 +187,17 @@ SUB FD_INPUT_mouse
             CASE FD_RESIZE_NE, FD_RESIZE_SW
                 needCursor = "TOPRIGHT_BOTTOMLEFT"
         END SELECT
-    ELSEIF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+    ELSEIF my > = FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
         ' Check splitter hover
         IF FD_STATE.placesW > 0 THEN
-            DIM splX AS INTEGER
+            DIM splX  AS INTEGER
             splX = FD_STATE.placesX + FD_STATE.placesW
-            IF mx >= splX AND mx < splX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
+            IF mx > = splX AND mx < splX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
         END IF
         IF FD_STATE.previewW > 0 AND FD_CFG.showPreview THEN
             DIM splPX AS INTEGER
             splPX = FD_STATE.previewX - FD_SPLITTER_W
-            IF mx >= splPX AND mx < splPX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
+            IF mx > = splPX AND mx < splPX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
         END IF
     END IF
     IF needCursor <> RTRIM$(FD_STATE.lastCursor) THEN
@@ -210,54 +210,54 @@ SUB FD_INPUT_mouse
     FD_TT_tipY = my
     DIM ttTarget AS INTEGER
     ttTarget = FD_TT_NONE
-    DIM ttDyn AS STRING
+    DIM ttDyn    AS STRING
     ttDyn = ""
-    IF my >= 0 AND my < FD_STATE.titleBarH THEN
+    IF my > = 0 AND my < FD_STATE.titleBarH THEN
         ' Title bar — close button
-        IF mx >= FD_STATE.dialogW - FD_STATE.titleBarH THEN ttTarget = FD_TT_TITLE_CLOSE
-    ELSEIF my >= FD_STATE.titleBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH THEN
+        IF mx > = FD_STATE.dialogW - FD_STATE.titleBarH THEN ttTarget = FD_TT_TITLE_CLOSE
+    ELSEIF my > = FD_STATE.titleBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH THEN
         ' Path bar — up / mkdir / path field
-        DIM ttUpW AS INTEGER
+        DIM ttUpW    AS INTEGER
         ttUpW = FD_ICONS_calc_btn_w%
-        IF mx >= FD_PADDING AND mx < FD_PADDING + ttUpW THEN
+        IF mx > = FD_PADDING AND mx < FD_PADDING + ttUpW THEN
             ttTarget = FD_TT_BTN_UP
-        ELSEIF mx >= FD_PADDING + ttUpW + 2 AND mx < FD_PADDING + ttUpW * 2 + 2 THEN
+        ELSEIF mx > = FD_PADDING + ttUpW + 2 AND mx < FD_PADDING + ttUpW * 2 + 2 THEN
             ttTarget = FD_TT_BTN_MKDIR
         ELSE
             ttTarget = FD_TT_PATH_BAR
         END IF
-    ELSEIF my >= FD_STATE.titleBarH + FD_STATE.pathBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH THEN
+    ELSEIF my > = FD_STATE.titleBarH + FD_STATE.pathBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH THEN
         ' Toolbar — view buttons, hidden, preview
-        DIM ttBtnPad AS INTEGER: ttBtnPad = 3
-        DIM ttIsc AS INTEGER: ttIsc = FD_CFG.iconScale
+        DIM ttBtnPad AS INTEGER : ttBtnPad = 3
+        DIM ttIsc    AS INTEGER : ttIsc       = FD_CFG.iconScale
         IF ttIsc < 1 THEN ttIsc = 2
         DIM ttIconSz AS INTEGER: ttIconSz = 11 * ttIsc
         IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN ttIconSz = FD_iconW(FD_ICON_TB_LIST) * ttIsc
-        DIM ttBtnW AS INTEGER: ttBtnW = ttIconSz + ttBtnPad * 2
-        DIM ttBx AS INTEGER: ttBx = FD_PADDING
-        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_LIST
+        DIM ttBtnW   AS INTEGER : ttBtnW = ttIconSz + ttBtnPad * 2
+        DIM ttBx     AS INTEGER : ttBx     = FD_PADDING
+        IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_LIST
         ttBx = ttBx + ttBtnW + 2
-        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_DETAILS
+        IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_DETAILS
         ttBx = ttBx + ttBtnW + 2
-        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_THUMBS
+        IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_THUMBS
         ttBx = ttBx + ttBtnW + 8
-        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_HIDDEN
+        IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_HIDDEN
         ttBx = ttBx + ttBtnW + 4
-        IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_PREVIEW
-    ELSEIF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
+        IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_PREVIEW
+    ELSEIF mx > = FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
         ' Places pane — iterate to find entry under cursor
-        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+        IF my > = FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
             DIM ttPlPy AS INTEGER
             ttPlPy = FD_STATE.contentY + FD_PADDING
-            DIM ttPlI AS INTEGER
+            DIM ttPlI  AS INTEGER
             FOR ttPlI = 0 TO FD_STATE.placesCount - 1
                 IF FD_places(ttPlI).entryType = FD_PLACE_SEPARATOR THEN
                     ttPlPy = ttPlPy + FD_STATE.rowHeight \ 2
                     _CONTINUE
                 END IF
-                IF my >= ttPlPy AND my < ttPlPy + FD_STATE.rowHeight THEN
+                IF my > = ttPlPy AND my < ttPlPy + FD_STATE.rowHeight THEN
                     ttTarget = FD_TT_PLACE_ENTRY
-                    ttDyn = RTRIM$(FD_places(ttPlI).path)
+                    ttDyn    = RTRIM$(FD_places(ttPlI).path)
                     EXIT FOR
                 END IF
                 ttPlPy = ttPlPy + FD_STATE.rowHeight
@@ -272,31 +272,31 @@ SUB FD_INPUT_mouse
         DIM edge AS INTEGER
         edge = FD_INPUT_hit_resize_edge%(mx, my)
         IF edge <> FD_RESIZE_NONE THEN
-            FD_STATE.dragging = -1
-            FD_STATE.dragType = 2  ' Resize
-            FD_STATE.resizeEdge = edge
-            FD_STATE.dragStartX = mx
-            FD_STATE.dragStartY = my
+            FD_STATE.dragging    = -1
+            FD_STATE.dragType    = 2 ' Resize
+            FD_STATE.resizeEdge  = edge
+            FD_STATE.dragStartX  = mx
+            FD_STATE.dragStartY  = my
             FD_STATE.dragOrigVal = 0
             EXIT SUB
         END IF
     END IF
 
     ' --- Title bar ---
-    IF my >= 0 AND my < FD_STATE.titleBarH THEN
+    IF my > = 0 AND my < FD_STATE.titleBarH THEN
         IF justPressed THEN
             ' Close button
             DIM closeX AS INTEGER
             closeX = FD_STATE.dialogW - FD_STATE.titleBarH
-            IF mx >= closeX AND mx < FD_STATE.dialogW THEN
-                FD_STATE.done = -1
+            IF mx > = closeX AND mx < FD_STATE.dialogW THEN
+                FD_STATE.done      = -1
                 FD_STATE.confirmed = 0
                 EXIT SUB
             END IF
 
             ' Start dialog drag
-            FD_STATE.dragging = -1
-            FD_STATE.dragType = 1  ' Move
+            FD_STATE.dragging   = -1
+            FD_STATE.dragType   = 1  ' Move
             FD_STATE.dragStartX = mx
             FD_STATE.dragStartY = my
             EXIT SUB
@@ -306,12 +306,12 @@ SUB FD_INPUT_mouse
     ' --- Path bar ---
     DIM pathBarY AS INTEGER
     pathBarY = FD_STATE.titleBarH
-    IF my >= pathBarY AND my < pathBarY + FD_STATE.pathBarH THEN
+    IF my > = pathBarY AND my < pathBarY + FD_STATE.pathBarH THEN
         IF justPressed THEN
             ' Up button
             DIM upBtnW AS INTEGER
             upBtnW = FD_ICONS_calc_btn_w%
-            IF mx >= FD_PADDING AND mx < FD_PADDING + upBtnW THEN
+            IF mx > = FD_PADDING AND mx < FD_PADDING + upBtnW THEN
                 FD_FS_navigate_up
                 EXIT SUB
             END IF
@@ -319,7 +319,7 @@ SUB FD_INPUT_mouse
             ' New folder button
             DIM nfBtnX AS INTEGER
             nfBtnX = FD_PADDING + upBtnW + 2
-            IF mx >= nfBtnX AND mx < nfBtnX + upBtnW THEN
+            IF mx > = nfBtnX AND mx < nfBtnX + upBtnW THEN
                 FD_FS_create_folder
                 EXIT SUB
             END IF
@@ -327,10 +327,10 @@ SUB FD_INPUT_mouse
             ' Path input click — activate path editing
             DIM pathFieldX AS INTEGER
             pathFieldX = nfBtnX + upBtnW + FD_PADDING
-            IF mx >= pathFieldX THEN
+            IF mx > = pathFieldX THEN
                 IF NOT FD_STATE.pathInputActive THEN
                     FD_STATE.pathInputActive = -1
-                    FD_STATE.focusPane = FD_FOCUS_PATH
+                    FD_STATE.focusPane       = FD_FOCUS_PATH
                     TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
                 END IF
                 TI_process_mouse mx, my, -1
@@ -343,7 +343,7 @@ SUB FD_INPUT_mouse
     ' --- Toolbar ---
     DIM toolbarY AS INTEGER
     toolbarY = FD_STATE.titleBarH + FD_STATE.pathBarH
-    IF my >= toolbarY AND my < toolbarY + FD_STATE.toolBarH THEN
+    IF my > = toolbarY AND my < toolbarY + FD_STATE.toolBarH THEN
         IF justPressed THEN
             FD_INPUT_toolbar_click mx, my - toolbarY
         END IF
@@ -351,8 +351,8 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Places pane ---
-    IF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
-        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+    IF mx > = FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
+        IF my > = FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
             DIM justPressedB2 AS INTEGER
             justPressedB2 = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
             FD_INPUT_places mx, my, justPressed, justPressedB2
@@ -368,10 +368,10 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Content pane ---
-    IF mx >= FD_STATE.contentX AND mx < FD_STATE.contentX + FD_STATE.contentW THEN
+    IF mx > = FD_STATE.contentX AND mx < FD_STATE.contentX + FD_STATE.contentW THEN
         ' Column header click (details mode)
         IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN
-            IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.columnHeaderH THEN
+            IF my > = FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.columnHeaderH THEN
                 IF justPressed THEN
                     FD_INPUT_column_header_click mx, my
                 END IF
@@ -380,7 +380,7 @@ SUB FD_INPUT_mouse
         END IF
 
         ' Content area
-        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+        IF my > = FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
             FD_INPUT_content mx, my, justPressed
             EXIT SUB
         END IF
@@ -389,7 +389,7 @@ SUB FD_INPUT_mouse
     ' --- Button bar ---
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
-    IF my >= btnBarY AND my < FD_STATE.dialogH THEN
+    IF my > = btnBarY AND my < FD_STATE.dialogH THEN
         IF justPressed THEN
             FD_INPUT_button_bar_click mx, my - btnBarY
         END IF
@@ -413,11 +413,11 @@ SUB FD_INPUT_mouse
             IF FD_CFG.thumbSize > 256 THEN FD_CFG.thumbSize = 256
             ' Invalidate cache so thumbs reload at new size
             FD_THUMB_invalidate_all
-            DIM ti1 AS INTEGER
+            DIM ti1   AS INTEGER
             FOR ti1 = 0 TO FD_STATE.entryCount - 1
                 IF FD_entries(ti1).thumbState = FD_THUMB_LOADED OR FD_entries(ti1).thumbState = FD_THUMB_LOADING THEN
                     FD_entries(ti1).thumbHandle = -1
-                    FD_entries(ti1).thumbState = FD_THUMB_PENDING
+                    FD_entries(ti1).thumbState  = FD_THUMB_PENDING
                 END IF
             NEXT ti1
             FD_FS_recalc_scroll
@@ -438,7 +438,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
     IF k = 0 THEN EXIT SUB
 
     ' --- Route to TI widget if a text input is focused ---
-    IF FD_STATE.pathInputActive AND FD_STATE.tiPathId >= 1 THEN
+    IF FD_STATE.pathInputActive AND FD_STATE.tiPathId > = 1 THEN
         DIM pathResult AS INTEGER
         pathResult = TI_process_key%(k)
 
@@ -448,7 +448,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
             FD_STATE.pathInputActive = 0
             TI_clear_focus
             FD_STATE.focusPane = FD_FOCUS_CONTENT
-            FD_STATE.dirty = -1
+            FD_STATE.dirty     = -1
             EXIT SUB
         END IF
         IF TI_inputs(FD_STATE.tiPathId).submitted THEN
@@ -462,7 +462,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
             FD_STATE.pathInputActive = 0
             TI_clear_focus
             FD_STATE.focusPane = FD_FOCUS_CONTENT
-            FD_STATE.dirty = -1
+            FD_STATE.dirty     = -1
             EXIT SUB
         END IF
         IF TI_inputs(FD_STATE.tiPathId).tabbed <> 0 THEN
@@ -479,14 +479,14 @@ SUB FD_INPUT_keyboard (k AS LONG)
         EXIT SUB
     END IF
 
-    IF FD_STATE.focusPane = FD_FOCUS_FILENAME AND FD_STATE.tiFileNameId >= 1 THEN
+    IF FD_STATE.focusPane = FD_FOCUS_FILENAME AND FD_STATE.tiFileNameId > = 1 THEN
         DIM fnResult AS INTEGER
         fnResult = TI_process_key%(k)
 
         IF TI_inputs(FD_STATE.tiFileNameId).escaped THEN
             TI_clear_focus
             FD_STATE.focusPane = FD_FOCUS_CONTENT
-            FD_STATE.dirty = -1
+            FD_STATE.dirty     = -1
             EXIT SUB
         END IF
         IF TI_inputs(FD_STATE.tiFileNameId).submitted THEN
@@ -506,18 +506,18 @@ SUB FD_INPUT_keyboard (k AS LONG)
         END IF
         ' Sync text back to FD_STATE for compatibility
         FD_STATE.fileNameInput = TI_get_text$(FD_STATE.tiFileNameId)
-        FD_STATE.dirty = -1
+        FD_STATE.dirty         = -1
         EXIT SUB
     END IF
 
     ' --- Non-text-input global keys ---
     SELECT CASE k
-        CASE 27  ' Escape
-            FD_STATE.done = -1
+        CASE 27 ' Escape
+            FD_STATE.done      = -1
             FD_STATE.confirmed = 0
             EXIT SUB
 
-        CASE 13  ' Enter
+        CASE 13 ' Enter
             IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                 FD_INPUT_activate_selected
             ELSE
@@ -529,7 +529,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
             FD_INPUT_cycle_focus 1
             EXIT SUB
 
-        CASE 15  ' Shift+Tab
+        CASE 15 ' Shift+Tab
             FD_INPUT_cycle_focus -1
             EXIT SUB
     END SELECT
@@ -537,7 +537,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
     ' Content navigation
     IF FD_STATE.focusPane = FD_FOCUS_CONTENT OR FD_STATE.focusPane = FD_FOCUS_PLACES THEN
         SELECT CASE k
-            CASE 18432  ' Up arrow
+            CASE 18432   ' Up arrow
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     IF FD_STATE.selectedIndex > 0 THEN
                         FD_STATE.selectedIndex = FD_STATE.selectedIndex - 1
@@ -552,7 +552,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
                     END IF
                 END IF
 
-            CASE 20480  ' Down arrow
+            CASE 20480   ' Down arrow
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     IF FD_STATE.selectedIndex < FD_STATE.visibleCount - 1 THEN
                         FD_STATE.selectedIndex = FD_STATE.selectedIndex + 1
@@ -567,7 +567,7 @@ SUB FD_INPUT_keyboard (k AS LONG)
                     END IF
                 END IF
 
-            CASE 18688  ' Page Up
+            CASE 18688   ' Page Up
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     DIM pageSize AS INTEGER
                     pageSize = FD_STATE.contentH \ FD_STATE.rowHeight
@@ -578,11 +578,11 @@ SUB FD_INPUT_keyboard (k AS LONG)
                     FD_STATE.dirty = -1
                 END IF
 
-            CASE 20736  ' Page Down
+            CASE 20736   ' Page Down
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     pageSize = FD_STATE.contentH \ FD_STATE.rowHeight
                     FD_STATE.selectedIndex = FD_STATE.selectedIndex + pageSize
-                    IF FD_STATE.selectedIndex >= FD_STATE.visibleCount THEN
+                    IF FD_STATE.selectedIndex > = FD_STATE.visibleCount THEN
                         FD_STATE.selectedIndex = FD_STATE.visibleCount - 1
                     END IF
                     FD_INPUT_ensure_visible FD_STATE.selectedIndex
@@ -590,28 +590,28 @@ SUB FD_INPUT_keyboard (k AS LONG)
                     FD_STATE.dirty = -1
                 END IF
 
-            CASE 18176  ' Home
+            CASE 18176   ' Home
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     FD_STATE.selectedIndex = 0
-                    FD_STATE.scrollOffset = 0
+                    FD_STATE.scrollOffset  = 0
                     FD_INPUT_update_preview
                     FD_STATE.dirty = -1
                 END IF
 
-            CASE 20224  ' End
+            CASE 20224   ' End
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     FD_STATE.selectedIndex = FD_STATE.visibleCount - 1
-                    FD_STATE.scrollOffset = FD_STATE.maxScroll
+                    FD_STATE.scrollOffset  = FD_STATE.maxScroll
                     FD_INPUT_update_preview
                     FD_STATE.dirty = -1
                 END IF
 
-            CASE 8  ' Backspace (go up)
+            CASE 8       ' Backspace (go up)
                 IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
                     FD_FS_navigate_up
                 END IF
 
-            CASE 112, 80  ' p/P — Toggle preview panel
+            CASE 112, 80 ' p/P — Toggle preview panel
                 FD_CFG.showPreview = NOT FD_CFG.showPreview
                 IF FD_CFG.showPreview THEN
                     IF FD_STATE.previewW < 100 THEN FD_STATE.previewW = FD_CFG.previewWidth
@@ -626,15 +626,15 @@ SUB FD_INPUT_keyboard (k AS LONG)
     ' Ctrl+L: Focus path bar
     IF k = 12 THEN  ' Ctrl+L
         FD_STATE.pathInputActive = -1
-        FD_STATE.pathInput = FD_STATE.currentPath
-        FD_STATE.focusPane = FD_FOCUS_PATH
+        FD_STATE.pathInput       = FD_STATE.currentPath
+        FD_STATE.focusPane       = FD_FOCUS_PATH
         TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
         TI_set_focus FD_STATE.tiPathId
         ' Select all text for easy replacement
-        TI_inputs(FD_STATE.tiPathId).selStart = 0
-        TI_inputs(FD_STATE.tiPathId).selEnd = TI_inputs(FD_STATE.tiPathId).textLen
+        TI_inputs(FD_STATE.tiPathId).selStart  = 0
+        TI_inputs(FD_STATE.tiPathId).selEnd    = TI_inputs(FD_STATE.tiPathId).textLen
         TI_inputs(FD_STATE.tiPathId).cursorPos = TI_inputs(FD_STATE.tiPathId).textLen
-        FD_STATE.dirty = -1
+        FD_STATE.dirty                         = -1
         EXIT SUB
     END IF
 
@@ -648,14 +648,14 @@ SUB FD_INPUT_keyboard (k AS LONG)
 
     ' Type-ahead search in content (printable chars when content focused)
     IF FD_STATE.focusPane = FD_FOCUS_CONTENT THEN
-        IF k >= 32 AND k <= 126 THEN
+        IF k > = 32 AND k < = 126 THEN
             IF FD_STATE.searchLen < 63 THEN
                 FD_STATE.searchLen = FD_STATE.searchLen + 1
                 MID$(FD_STATE.searchText, FD_STATE.searchLen, 1) = CHR$(k)
                 FD_FS_apply_filter
                 FD_STATE.selectedIndex = 0
-                FD_STATE.scrollOffset = 0
-                FD_STATE.dirty = -1
+                FD_STATE.scrollOffset  = 0
+                FD_STATE.dirty         = -1
             END IF
         END IF
     END IF
@@ -665,20 +665,20 @@ END SUB
 ' FD_INPUT_toolbar_click — Handle click in toolbar area
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
-    DIM bx AS INTEGER
-    DIM btnPad AS INTEGER
+    DIM bx       AS INTEGER
+    DIM btnPad   AS INTEGER
     btnPad = 3
-    DIM isc AS INTEGER
+    DIM isc      AS INTEGER
     isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
     DIM tbIconSz AS INTEGER
     tbIconSz = 11 * isc
     IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN tbIconSz = FD_iconW(FD_ICON_TB_LIST) * isc
-    DIM btnW AS INTEGER
+    DIM btnW     AS INTEGER
     btnW = tbIconSz + btnPad * 2
-    bx = FD_PADDING
+    bx   = FD_PADDING
 
     ' List button
-    IF mx >= bx AND mx < bx + btnW THEN
+    IF mx > = bx AND mx < bx + btnW THEN
         FD_CFG.viewMode = FD_VIEW_LIST
         FD_FS_recalc_scroll
         FD_STATE.dirty = -1
@@ -687,7 +687,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     bx = bx + btnW + 2
 
     ' Details button
-    IF mx >= bx AND mx < bx + btnW THEN
+    IF mx > = bx AND mx < bx + btnW THEN
         FD_CFG.viewMode = FD_VIEW_DETAILS
         FD_FS_recalc_scroll
         FD_STATE.dirty = -1
@@ -696,7 +696,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     bx = bx + btnW + 2
 
     ' Thumbnails button
-    IF mx >= bx AND mx < bx + btnW THEN
+    IF mx > = bx AND mx < bx + btnW THEN
         FD_CFG.viewMode = FD_VIEW_THUMBNAILS
         FD_FS_recalc_scroll
         FD_STATE.dirty = -1
@@ -705,7 +705,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     bx = bx + btnW + 8
 
     ' Hidden files toggle
-    IF mx >= bx AND mx < bx + btnW THEN
+    IF mx > = bx AND mx < bx + btnW THEN
         FD_CFG.showHidden = NOT FD_CFG.showHidden
         FD_FS_apply_filter
         FD_STATE.dirty = -1
@@ -714,7 +714,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     bx = bx + btnW + 4
 
     ' Preview toggle
-    IF mx >= bx AND mx < bx + btnW THEN
+    IF mx > = bx AND mx < bx + btnW THEN
         FD_CFG.showPreview = NOT FD_CFG.showPreview
         IF FD_CFG.showPreview THEN
             IF FD_STATE.previewW < 100 THEN FD_STATE.previewW = FD_CFG.previewWidth
@@ -730,10 +730,10 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
     ' Sort area click — cycle sort field
     DIM sortAreaW AS INTEGER
     sortAreaW = 100
-    IF mx >= bx AND mx < bx + sortAreaW THEN
+    IF mx > = bx AND mx < bx + sortAreaW THEN
         FD_CFG.sortField = FD_CFG.sortField + 1
         IF FD_CFG.sortField > FD_SORT_DATE THEN
-            FD_CFG.sortField = FD_SORT_NAME
+            FD_CFG.sortField     = FD_SORT_NAME
             FD_CFG.sortAscending = NOT FD_CFG.sortAscending
         END IF
         FD_FS_sort FD_CFG.sortField, FD_CFG.sortAscending
@@ -747,12 +747,12 @@ END SUB
 ' FD_INPUT_places — Handle places pane input
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justPressedB2 AS INTEGER)
-    DIM i AS INTEGER
-    DIM py AS INTEGER
+    DIM i      AS INTEGER
+    DIM py     AS INTEGER
     DIM entryH AS INTEGER
     entryH = FD_STATE.rowHeight
 
-    py = FD_STATE.contentY + FD_PADDING
+    py                   = FD_STATE.contentY + FD_PADDING
     FD_STATE.placesHover = -1
 
     FOR i = 0 TO FD_STATE.placesCount - 1
@@ -761,7 +761,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
             _CONTINUE
         END IF
 
-        IF my >= py AND my < py + entryH THEN
+        IF my > = py AND my < py + entryH THEN
             FD_STATE.placesHover = i
 
             IF justPressedB2 THEN
@@ -817,11 +817,11 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
             IF FD_CFG.thumbSize > 256 THEN FD_CFG.thumbSize = 256
             ' Invalidate cache so thumbs reload at new size
             FD_THUMB_invalidate_all
-            DIM ti2 AS INTEGER
+            DIM ti2   AS INTEGER
             FOR ti2 = 0 TO FD_STATE.entryCount - 1
                 IF FD_entries(ti2).thumbState = FD_THUMB_LOADED OR FD_entries(ti2).thumbState = FD_THUMB_LOADING THEN
                     FD_entries(ti2).thumbHandle = -1
-                    FD_entries(ti2).thumbState = FD_THUMB_PENDING
+                    FD_entries(ti2).thumbState  = FD_THUMB_PENDING
                 END IF
             NEXT ti2
             FD_FS_recalc_scroll
@@ -843,7 +843,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         DIM cellW AS INTEGER, cellH AS INTEGER, cols AS INTEGER
         cellW = FD_CFG.thumbSize + FD_PADDING * 2
         cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
-        DIM hitW AS INTEGER
+        DIM hitW  AS INTEGER
         hitW = FD_STATE.contentW
         IF FD_STATE.maxScroll > 0 THEN hitW = hitW - FD_SCROLLBAR_W
         cols = hitW \ cellW
@@ -852,7 +852,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         DIM relX AS INTEGER, relY AS INTEGER
         relX = mx - FD_STATE.contentX
         relY = my - contentTop + FD_STATE.scrollOffset
-        IF relX >= 0 AND relY >= 0 THEN
+        IF relX > = 0 AND relY > = 0 THEN
             DIM hitCol AS INTEGER, hitRow AS INTEGER
             hitCol = relX \ cellW
             hitRow = relY \ cellH
@@ -864,17 +864,17 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         ' List/details hit test
         DIM relRow AS INTEGER
         relRow = (my - contentTop + FD_STATE.scrollOffset) \ FD_STATE.rowHeight
-        IF relRow >= 0 THEN hitIndex = relRow
+        IF relRow > = 0 THEN hitIndex = relRow
     END IF
 
     ' Update hover
-    IF hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
+    IF hitIndex > = 0 AND hitIndex < FD_STATE.visibleCount THEN
         FD_STATE.hoverIndex = hitIndex
     ELSE
         FD_STATE.hoverIndex = -1
     END IF
 
-    IF justPressed AND hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
+    IF justPressed AND hitIndex > = 0 AND hitIndex < FD_STATE.visibleCount THEN
         FD_STATE.focusPane = FD_FOCUS_CONTENT
 
         ' Double-click detection
@@ -888,19 +888,19 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         ELSE
             ' Single click — select (with multi-select modifier support)
             IF FD_STATE.multiSelect THEN
-                DIM ctrlHeldMS AS INTEGER
+                DIM ctrlHeldMS  AS INTEGER
                 DIM shiftHeldMS AS INTEGER
                 ' Use modifier state captured during FD_INPUT_poll (same instant as mouse)
                 ' Ctrl (Win/Linux) or Option/Alt (macOS) for toggle
-                ctrlHeldMS = (FD_STATE.modCtrl OR FD_STATE.modAlt)
+                ctrlHeldMS  = (FD_STATE.modCtrl OR FD_STATE.modAlt)
                 shiftHeldMS = FD_STATE.modShift
 
                 IF ctrlHeldMS THEN
                     ' Ctrl+click: toggle individual entry
                     FD_toggle_selected hitIndex
                     FD_STATE.selectedIndex = hitIndex
-                    FD_STATE.anchorIndex = hitIndex
-                ELSEIF shiftHeldMS AND FD_STATE.anchorIndex >= 0 THEN
+                    FD_STATE.anchorIndex   = hitIndex
+                ELSEIF shiftHeldMS AND FD_STATE.anchorIndex > = 0 THEN
                     ' Shift+click: range select from anchor
                     FD_clear_all_selected
                     FD_select_range FD_STATE.anchorIndex, hitIndex
@@ -910,12 +910,12 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
                     FD_clear_all_selected
                     FD_toggle_selected hitIndex
                     FD_STATE.selectedIndex = hitIndex
-                    FD_STATE.anchorIndex = hitIndex
+                    FD_STATE.anchorIndex   = hitIndex
                 END IF
             ELSE
                 FD_STATE.selectedIndex = hitIndex
             END IF
-            FD_STATE.lastClickTime = now
+            FD_STATE.lastClickTime  = now
             FD_STATE.lastClickIndex = hitIndex
             FD_INPUT_update_preview
             FD_INPUT_update_filename
@@ -925,7 +925,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
     ' Right-click handling: toggle-select in multi-select mode, or add dir to favorites
     DIM justPressedR AS INTEGER
     justPressedR = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
-    IF justPressedR AND hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
+    IF justPressedR AND hitIndex > = 0 AND hitIndex < FD_STATE.visibleCount THEN
         DIM entIdx AS INTEGER
         entIdx = FD_filtered(hitIndex)
         IF FD_entries(entIdx).isDirectory THEN
@@ -941,8 +941,8 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
             ' (On macOS, Ctrl+Click = right-click, so this gives Ctrl+Click toggle)
             FD_toggle_selected hitIndex
             FD_STATE.selectedIndex = hitIndex
-            FD_STATE.anchorIndex = hitIndex
-            FD_STATE.dirty = -1
+            FD_STATE.anchorIndex   = hitIndex
+            FD_STATE.dirty         = -1
         END IF
     END IF
 
@@ -959,25 +959,25 @@ SUB FD_INPUT_column_header_click (mx AS INTEGER, my AS INTEGER)
     FOR i = 0 TO FD_MAX_COLUMNS - 1
         DIM colW AS INTEGER
         colW = FD_columns(i).width
-        IF colW <= 0 THEN _CONTINUE
+        IF colW < = 0 THEN _CONTINUE
 
         ' Check for resize handle (last 4 pixels of column)
-        IF mx >= cx + colW - FD_SPLITTER_W AND mx < cx + colW THEN
+        IF mx > = cx + colW - FD_SPLITTER_W AND mx < cx + colW THEN
             ' Start column resize
-            FD_STATE.dragging = -1
-            FD_STATE.dragType = 3  ' Column resize
+            FD_STATE.dragging    = -1
+            FD_STATE.dragType    = 3 ' Column resize
             FD_STATE.colResizing = i
-            FD_STATE.dragStartX = mx
+            FD_STATE.dragStartX  = mx
             FD_STATE.dragOrigVal = colW
             EXIT SUB
         END IF
 
         ' Click on column — toggle sort
-        IF mx >= cx AND mx < cx + colW THEN
+        IF mx > = cx AND mx < cx + colW THEN
             IF FD_columns(i).sortField = FD_CFG.sortField THEN
                 FD_CFG.sortAscending = NOT FD_CFG.sortAscending
             ELSE
-                FD_CFG.sortField = FD_columns(i).sortField
+                FD_CFG.sortField     = FD_columns(i).sortField
                 FD_CFG.sortAscending = -1
             END IF
             FD_FS_sort FD_CFG.sortField, FD_CFG.sortAscending
@@ -997,8 +997,8 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     ' Cancel button
     DIM cancelX AS INTEGER
     cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
-    IF mx >= cancelX AND mx < cancelX + FD_BUTTON_W THEN
-        FD_STATE.done = -1
+    IF mx > = cancelX AND mx < cancelX + FD_BUTTON_W THEN
+        FD_STATE.done      = -1
         FD_STATE.confirmed = 0
         EXIT SUB
     END IF
@@ -1006,7 +1006,7 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     ' OK button
     DIM okX AS INTEGER
     okX = cancelX - FD_BUTTON_W - FD_PADDING
-    IF mx >= okX AND mx < okX + FD_BUTTON_W THEN
+    IF mx > = okX AND mx < okX + FD_BUTTON_W THEN
         FD_INPUT_confirm
         EXIT SUB
     END IF
@@ -1017,8 +1017,8 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
         fnX = FD_PADDING + 72
         DIM fnW AS INTEGER
         fnW = FD_STATE.dialogW - fnX - FD_BUTTON_W * 2 - FD_PADDING * 4
-        IF mx >= fnX AND mx < fnX + fnW THEN
-            FD_STATE.focusPane = FD_FOCUS_FILENAME
+        IF mx > = fnX AND mx < fnX + fnW THEN
+            FD_STATE.focusPane       = FD_FOCUS_FILENAME
             FD_STATE.pathInputActive = 0
             ' Use absolute button-bar Y for TI_process_mouse
             DIM absBtnBarY AS INTEGER
@@ -1033,11 +1033,11 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     IF FD_STATE.filterCount > 1 AND FD_STATE.mode <> FD_MODE_CHOOSE_FOLDER THEN
         DIM fCancelX AS INTEGER
         fCancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
-        DIM fOkX AS INTEGER
+        DIM fOkX     AS INTEGER
         fOkX = fCancelX - FD_BUTTON_W - FD_PADDING
 
-        DIM fLabel AS STRING
-        IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+        DIM fLabel   AS STRING
+        IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
             fLabel = RTRIM$(FD_filters(FD_STATE.activeFilter).label)
         ELSE
             fLabel = "All Files"
@@ -1047,9 +1047,9 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
         DIM fFilterX AS INTEGER
         fFilterX = fOkX - fFilterW - FD_PADDING
 
-        IF mx >= fFilterX AND mx < fFilterX + fFilterW THEN
+        IF mx > = fFilterX AND mx < fFilterX + fFilterW THEN
             FD_STATE.filterDropdownOpen = NOT FD_STATE.filterDropdownOpen
-            FD_STATE.dirty = -1
+            FD_STATE.dirty              = -1
             EXIT SUB
         END IF
     END IF
@@ -1068,25 +1068,25 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
 
     DIM cancelX AS INTEGER
     cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
-    DIM okX AS INTEGER
+    DIM okX     AS INTEGER
     okX = cancelX - FD_BUTTON_W - FD_PADDING
 
     DIM curLabel AS STRING
-    IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+    IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
         curLabel = RTRIM$(FD_filters(FD_STATE.activeFilter).label)
     ELSE
         curLabel = "All Files"
     END IF
-    DIM filterW AS INTEGER
+    DIM filterW  AS INTEGER
     filterW = LEN(curLabel) * 8 + FD_PADDING * 2 + 16
-    DIM filterX AS INTEGER
+    DIM filterX  AS INTEGER
     filterX = okX - filterW - FD_PADDING
 
     ' Popup width = widest label
     DIM popW AS INTEGER, i AS INTEGER
     popW = filterW
     FOR i = 0 TO FD_STATE.filterCount - 1
-        DIM lbl AS STRING
+        DIM lbl  AS STRING
         lbl = RTRIM$(FD_filters(i).label)
         DIM lblW AS INTEGER
         lblW = LEN(lbl) * 8 + FD_PADDING * 2
@@ -1095,7 +1095,7 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
 
     DIM itemH AS INTEGER
     itemH = 22
-    DIM popH AS INTEGER
+    DIM popH  AS INTEGER
     popH = FD_STATE.filterCount * itemH + 4
 
     DIM popX AS INTEGER, popY AS INTEGER
@@ -1106,10 +1106,10 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
     IF popX < 2 THEN popX = 2
 
     ' Check if click is inside popup
-    IF mx >= popX AND mx < popX + popW AND my >= popY AND my < popY + popH THEN
+    IF mx > = popX AND mx < popX + popW AND my > = popY AND my < popY + popH THEN
         DIM clickItem AS INTEGER
         clickItem = (my - popY - 2) \ itemH
-        IF clickItem >= 0 AND clickItem < FD_STATE.filterCount THEN
+        IF clickItem > = 0 AND clickItem < FD_STATE.filterCount THEN
             FD_INPUT_filter_popup_click% = clickItem
         END IF
     END IF
@@ -1120,7 +1120,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
     SELECT CASE FD_STATE.dragType
-        CASE 1  ' Dialog move
+        CASE 1 ' Dialog move
             DIM newX AS INTEGER, newY AS INTEGER
             newX = FD_STATE.dialogX + (mx - FD_STATE.dragStartX)
             newY = FD_STATE.dialogY + (my - FD_STATE.dragStartY)
@@ -1134,32 +1134,32 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
             IF newY + FD_STATE.dialogH > scrH THEN newY = scrH - FD_STATE.dialogH
             FD_STATE.dialogX = newX
             FD_STATE.dialogY = newY
-            FD_STATE.dirty = -1
+            FD_STATE.dirty   = -1
 
-        CASE 2  ' Dialog resize
+        CASE 2 ' Dialog resize
             FD_INPUT_do_resize mx, my
 
-        CASE 3  ' Column resize
-            IF FD_STATE.colResizing >= 0 AND FD_STATE.colResizing < FD_MAX_COLUMNS THEN
+        CASE 3 ' Column resize
+            IF FD_STATE.colResizing > = 0 AND FD_STATE.colResizing < FD_MAX_COLUMNS THEN
                 DIM delta AS INTEGER
                 delta = mx - FD_STATE.dragStartX
-                DIM newW AS INTEGER
+                DIM newW  AS INTEGER
                 newW = FD_STATE.dragOrigVal + delta
                 IF newW < FD_columns(FD_STATE.colResizing).minWidth THEN
                     newW = FD_columns(FD_STATE.colResizing).minWidth
                 END IF
                 FD_columns(FD_STATE.colResizing).width = newW
-                FD_STATE.dirty = -1
+                FD_STATE.dirty                         = -1
             END IF
 
-        CASE 4  ' Splitter drag
+        CASE 4 ' Splitter drag
             IF FD_STATE.splitterDragging = 1 THEN
                 ' Places / content splitter
-                DIM newPlacesW AS INTEGER
+                DIM newPlacesW  AS INTEGER
                 newPlacesW = mx - FD_STATE.placesX
                 IF newPlacesW < 80 THEN newPlacesW = 80
                 IF newPlacesW > FD_STATE.dialogW \ 3 THEN newPlacesW = FD_STATE.dialogW \ 3
-                FD_STATE.placesW = newPlacesW
+                FD_STATE.placesW   = newPlacesW
                 FD_CFG.placesWidth = newPlacesW
                 FD_LAYOUT_calculate
                 FD_STATE.dirty = -1
@@ -1169,7 +1169,7 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 newPreviewW = FD_STATE.dialogW - mx
                 IF newPreviewW < 100 THEN newPreviewW = 100
                 IF newPreviewW > FD_STATE.dialogW \ 2 THEN newPreviewW = FD_STATE.dialogW \ 2
-                FD_STATE.previewW = newPreviewW
+                FD_STATE.previewW   = newPreviewW
                 FD_CFG.previewWidth = newPreviewW
                 FD_LAYOUT_calculate
                 FD_STATE.dirty = -1
@@ -1177,9 +1177,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
     END SELECT
 
     IF justReleased THEN
-        FD_STATE.dragging = 0
-        FD_STATE.dragType = 0
-        FD_STATE.colResizing = -1
+        FD_STATE.dragging         = 0
+        FD_STATE.dragType         = 0
+        FD_STATE.colResizing      = -1
         FD_STATE.splitterDragging = 0
     END IF
 END SUB
@@ -1208,7 +1208,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     IF FD_STATE.resizeEdge = FD_RESIZE_W OR FD_STATE.resizeEdge = FD_RESIZE_NW OR FD_STATE.resizeEdge = FD_RESIZE_SW THEN
         DIM deltaW AS INTEGER
         deltaW = FD_STATE.dragStartX - mx
-        newW = FD_STATE.dialogW + deltaW
+        newW   = FD_STATE.dialogW + deltaW
         IF newW < FD_MIN_DIALOG_W THEN newW = FD_MIN_DIALOG_W
         newX = FD_STATE.dialogX + FD_STATE.dialogW - newW
     END IF
@@ -1223,7 +1223,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     IF FD_STATE.resizeEdge = FD_RESIZE_N OR FD_STATE.resizeEdge = FD_RESIZE_NE OR FD_STATE.resizeEdge = FD_RESIZE_NW THEN
         DIM deltaH AS INTEGER
         deltaH = FD_STATE.dragStartY - my
-        newH = FD_STATE.dialogH + deltaH
+        newH   = FD_STATE.dialogH + deltaH
         IF newH < FD_MIN_DIALOG_H THEN newH = FD_MIN_DIALOG_H
         newY = FD_STATE.dialogY + FD_STATE.dialogH - newH
     END IF
@@ -1253,19 +1253,19 @@ FUNCTION FD_INPUT_hit_resize_edge% (mx AS INTEGER, my AS INTEGER)
     g = FD_RESIZE_GRIP
 
     DIM onLeft AS INTEGER, onRight AS INTEGER, onTop AS INTEGER, onBottom AS INTEGER
-    onLeft = (mx >= 0 AND mx < g)
-    onRight = (mx >= FD_STATE.dialogW - g AND mx < FD_STATE.dialogW)
-    onTop = (my >= 0 AND my < g)
+    onLeft   = (mx >= 0 AND mx < g)
+    onRight  = (mx >= FD_STATE.dialogW - g AND mx < FD_STATE.dialogW)
+    onTop    = (my >= 0 AND my < g)
     onBottom = (my >= FD_STATE.dialogH - g AND my < FD_STATE.dialogH)
 
-    IF onTop AND onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_NW: EXIT FUNCTION
-    IF onTop AND onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_NE: EXIT FUNCTION
-    IF onBottom AND onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_SW: EXIT FUNCTION
-    IF onBottom AND onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_SE: EXIT FUNCTION
-    IF onTop THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_N: EXIT FUNCTION
-    IF onBottom THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_S: EXIT FUNCTION
-    IF onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_W: EXIT FUNCTION
-    IF onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_E: EXIT FUNCTION
+    IF onTop AND onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_NW     : EXIT FUNCTION
+    IF onTop AND onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_NE    : EXIT FUNCTION
+    IF onBottom AND onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_SW  : EXIT FUNCTION
+    IF onBottom AND onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_SE : EXIT FUNCTION
+    IF onTop THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_N                 : EXIT FUNCTION
+    IF onBottom THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_S              : EXIT FUNCTION
+    IF onLeft THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_W                : EXIT FUNCTION
+    IF onRight THEN FD_INPUT_hit_resize_edge% = FD_RESIZE_E               : EXIT FUNCTION
 
     FD_INPUT_hit_resize_edge% = FD_RESIZE_NONE
 END FUNCTION
@@ -1276,18 +1276,18 @@ END FUNCTION
 FUNCTION FD_INPUT_hit_splitter% (mx AS INTEGER, my AS INTEGER)
     FD_INPUT_hit_splitter% = 0
 
-    IF my < FD_STATE.contentY OR my >= FD_STATE.contentY + FD_STATE.contentH THEN EXIT FUNCTION
+    IF my < FD_STATE.contentY OR my > = FD_STATE.contentY + FD_STATE.contentH THEN EXIT FUNCTION
 
     ' Places / content splitter
     IF FD_STATE.placesW > 0 THEN
         DIM sx AS INTEGER
         sx = FD_STATE.placesX + FD_STATE.placesW
-        IF mx >= sx AND mx < sx + FD_SPLITTER_W THEN
-            FD_STATE.dragging = -1
-            FD_STATE.dragType = 4  ' Splitter
+        IF mx > = sx AND mx < sx + FD_SPLITTER_W THEN
+            FD_STATE.dragging         = -1
+            FD_STATE.dragType         = 4 ' Splitter
             FD_STATE.splitterDragging = 1
-            FD_STATE.dragStartX = mx
-            FD_INPUT_hit_splitter% = -1
+            FD_STATE.dragStartX       = mx
+            FD_INPUT_hit_splitter%    = -1
             EXIT FUNCTION
         END IF
     END IF
@@ -1296,12 +1296,12 @@ FUNCTION FD_INPUT_hit_splitter% (mx AS INTEGER, my AS INTEGER)
     IF FD_STATE.previewW > 0 AND FD_CFG.showPreview THEN
         DIM px AS INTEGER
         px = FD_STATE.previewX - FD_SPLITTER_W
-        IF mx >= px AND mx < px + FD_SPLITTER_W THEN
-            FD_STATE.dragging = -1
-            FD_STATE.dragType = 4
+        IF mx > = px AND mx < px + FD_SPLITTER_W THEN
+            FD_STATE.dragging         = -1
+            FD_STATE.dragType         = 4
             FD_STATE.splitterDragging = 2
-            FD_STATE.dragStartX = mx
-            FD_INPUT_hit_splitter% = -1
+            FD_STATE.dragStartX       = mx
+            FD_INPUT_hit_splitter%    = -1
             EXIT FUNCTION
         END IF
     END IF
@@ -1311,7 +1311,7 @@ END FUNCTION
 ' FD_INPUT_activate_selected — Open directory or confirm file selection
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_activate_selected
-    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex >= FD_STATE.visibleCount THEN
+    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex > = FD_STATE.visibleCount THEN
         FD_INPUT_confirm
         EXIT SUB
     END IF
@@ -1371,7 +1371,7 @@ SUB FD_INPUT_confirm
             FD_STATE.resultCount = mrc
             ' Also set resultPath to the first selected file for compatibility
             resultPath = RTRIM$(FD_multiResults(0))
-        ELSEIF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
+        ELSEIF FD_STATE.selectedIndex > = 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
             DIM entryIdx AS INTEGER
             entryIdx = FD_filtered(FD_STATE.selectedIndex)
             IF FD_entries(entryIdx).isDirectory THEN
@@ -1381,17 +1381,17 @@ SUB FD_INPUT_confirm
                 FD_FS_navigate newPath
                 EXIT SUB
             END IF
-            resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIdx).fileName))
+            resultPath           = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIdx).fileName))
             FD_STATE.resultCount = 1
-            FD_multiResults(0) = resultPath
+            FD_multiResults(0)   = resultPath
         ELSE
-            EXIT SUB  ' Nothing selected
+            EXIT SUB ' Nothing selected
         END IF
     END IF
 
     FD_STATE.resultPath = resultPath
-    FD_STATE.done = -1
-    FD_STATE.confirmed = -1
+    FD_STATE.done       = -1
+    FD_STATE.confirmed  = -1
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -1404,7 +1404,7 @@ SUB FD_INPUT_update_preview
         FD_STATE.previewImgHandle = -1
     END IF
 
-    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex >= FD_STATE.visibleCount THEN EXIT SUB
+    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex > = FD_STATE.visibleCount THEN EXIT SUB
     IF NOT FD_CFG.showPreview THEN EXIT SUB
 
     DIM entryIdx AS INTEGER
@@ -1419,7 +1419,7 @@ SUB FD_INPUT_update_preview
 
     DIM img AS LONG
     img = _LOADIMAGE(fullPath, 32)
-    IF img = -1 OR img >= 0 THEN
+    IF img = -1 OR img > = 0 THEN
         ' _LOADIMAGE failed — try custom format loaders
         DIM pvExt AS STRING
         pvExt = LCASE$(RTRIM$(FD_entries(entryIdx).extension))
@@ -1449,16 +1449,16 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_update_filename
     IF FD_STATE.mode <> FD_MODE_SAVE AND FD_STATE.mode <> FD_MODE_SAVE_AS THEN EXIT SUB
-    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex >= FD_STATE.visibleCount THEN EXIT SUB
+    IF FD_STATE.selectedIndex < 0 OR FD_STATE.selectedIndex > = FD_STATE.visibleCount THEN EXIT SUB
 
     DIM entryIdx AS INTEGER
     entryIdx = FD_filtered(FD_STATE.selectedIndex)
     IF FD_entries(entryIdx).isDirectory THEN EXIT SUB
 
-    FD_STATE.fileNameInput = RTRIM$(FD_entries(entryIdx).fileName)
+    FD_STATE.fileNameInput  = RTRIM$(FD_entries(entryIdx).fileName)
     FD_STATE.fileNameCursor = LEN(RTRIM$(FD_STATE.fileNameInput))
     ' Sync to TI widget
-    IF FD_STATE.tiFileNameId >= 1 THEN
+    IF FD_STATE.tiFileNameId > = 1 THEN
         TI_set_text FD_STATE.tiFileNameId, RTRIM$(FD_STATE.fileNameInput)
     END IF
 END SUB
@@ -1467,14 +1467,14 @@ END SUB
 ' FD_INPUT_ensure_visible — Scroll to make an item visible
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_ensure_visible (index AS INTEGER)
-    IF index < 0 OR index >= FD_STATE.visibleCount THEN EXIT SUB
+    IF index < 0 OR index > = FD_STATE.visibleCount THEN EXIT SUB
 
     DIM itemY AS INTEGER
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
-        DIM cols AS INTEGER
+        DIM cols  AS INTEGER
         cols = FD_STATE.contentW \ (FD_CFG.thumbSize + FD_PADDING * 2)
         IF cols < 1 THEN cols = 1
-        DIM row AS INTEGER
+        DIM row   AS INTEGER
         row = index \ cols
         DIM cellH AS INTEGER
         cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
@@ -1517,7 +1517,7 @@ SUB FD_INPUT_cycle_focus (direction AS INTEGER)
         FD_STATE.pathInputActive = 0
     ELSE
         FD_STATE.pathInputActive = -1
-        FD_STATE.pathInput = FD_STATE.currentPath
+        FD_STATE.pathInput       = FD_STATE.currentPath
         TI_set_text FD_STATE.tiPathId, RTRIM$(FD_STATE.currentPath)
         TI_set_focus FD_STATE.tiPathId
     END IF

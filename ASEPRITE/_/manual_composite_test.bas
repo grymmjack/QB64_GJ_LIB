@@ -38,7 +38,7 @@ DIM layer_index AS INTEGER
 DIM layer_count AS INTEGER
 layer_count = 0
 
-FOR layer_index = 0 TO 20  ' Try up to 20 layers
+FOR layer_index = 0 TO 20   ' Try up to 20 layers
     
     ' Get the actual layer image data (unscaled)
     DIM layer_img AS LONG
