@@ -103,7 +103,7 @@ TYPE CP_STATE_OBJ
     dragStartY  AS INTEGER
     dragOrigX   AS INTEGER
     dragOrigY   AS INTEGER
-    hoverButton AS INTEGER      ' -1 = none, -2=close, 0=OK, 1=Cancel, 2=copy, 3=paste
+    hoverButton AS INTEGER      ' -1 = none, -2 = close, 0 = OK, 1 = Cancel, 2 = copy, 3 = paste
 
     ' Mouse state (dialog-relative)
     mouseX     AS INTEGER

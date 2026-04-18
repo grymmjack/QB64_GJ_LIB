@@ -112,15 +112,15 @@ DO
     SELECT CASE k
         CASE "+", "="
             SELECT CASE parameterIndex
-                CASE 0 : IF inputMin < 254 THEN inputMin   = inputMin + 5
-                CASE 1 : IF inputMax < 255 THEN inputMax   = inputMax + 5
+                CASE 0 : IF inputMin < 254 THEN inputMin = inputMin + 5
+                CASE 1 : IF inputMax < 255 THEN inputMax = inputMax + 5
                 CASE 2 : IF outputMin < 254 THEN outputMin = outputMin + 5
                 CASE 3 : IF outputMax < 255 THEN outputMax = outputMax + 5
             END SELECT
         CASE "-"
             SELECT CASE parameterIndex
-                CASE 0 : IF inputMin > 0 THEN inputMin   = inputMin - 5
-                CASE 1 : IF inputMax > 1 THEN inputMax   = inputMax - 5
+                CASE 0 : IF inputMin > 0 THEN inputMin = inputMin - 5
+                CASE 1 : IF inputMax > 1 THEN inputMax = inputMax - 5
                 CASE 2 : IF outputMin > 0 THEN outputMin = outputMin - 5
                 CASE 3 : IF outputMax > 1 THEN outputMax = outputMax - 5
             END SELECT

@@ -98,7 +98,7 @@ TYPE FD_PLACES_ENTRY
     path      AS STRING * 260   ' Full path (empty for separators)
     entryType AS INTEGER        ' FD_PLACE_* constant
     iconChar  AS INTEGER        ' ASCII char for fallback icon rendering
-    iconId    AS INTEGER        ' FD_ICON_* constant (0  = use iconChar fallback)
+    iconId    AS INTEGER        ' FD_ICON_* constant (0 = use iconChar fallback)
     iconColor AS _UNSIGNED LONG ' Tint color override (0 = use default for type)
 END TYPE
 
@@ -200,10 +200,10 @@ TYPE FD_STATE_OBJ
     scrollOffset  AS INTEGER        ' Pixel scroll offset
     maxScroll     AS INTEGER        ' Maximum scroll offset
     selectedIndex AS INTEGER        ' Selected/focused entry index (-1 = none)
-    hoverIndex    AS INTEGER        ' Hovered entry index (-1          = none)
+    hoverIndex    AS INTEGER        ' Hovered entry index (-1 = none)
 
     ' Multi-select state
-    multiSelect      AS INTEGER     ' TRUE                             = multi-select mode enabled
+    multiSelect      AS INTEGER     ' TRUE = multi-select mode enabled
     multiSelectCount AS INTEGER     ' Number of entries with .selected = TRUE
     anchorIndex      AS INTEGER     ' Anchor index for Shift+click range selection
 
@@ -232,13 +232,13 @@ TYPE FD_STATE_OBJ
 
     ' Interaction state
     dragging         AS INTEGER     ' TRUE = currently dragging something
-    dragType         AS INTEGER     ' 0    = none, 1=dialog move, 2=resize, 3=col resize, 4=splitter
+    dragType         AS INTEGER     ' 0 = none, 1 = dialog move, 2 = resize, 3 = col resize, 4 = splitter
     dragStartX       AS INTEGER     ' Mouse X when drag started
     dragStartY       AS INTEGER     ' Mouse Y when drag started
     dragOrigVal      AS INTEGER     ' Original value being dragged (column width, etc.)
     resizeEdge       AS INTEGER     ' FD_RESIZE_* constant
     colResizing      AS INTEGER     ' Column index being resized (-1 = none)
-    splitterDragging AS INTEGER     ' 0                              = none, 1=places/content, 2=content/preview
+    splitterDragging AS INTEGER     ' 0 = none, 1 = places/content, 2 = content/preview
     lastCursor       AS STRING * 24 ' Last cursor shape set (to avoid redundant _MOUSESHOW calls)
 
     ' Mouse state (raw screen coords)
@@ -260,7 +260,7 @@ TYPE FD_STATE_OBJ
     modShift AS INTEGER             ' Shift held (left or right)
 
     ' Navigation history (for mouse back/forward buttons)
-    navBackTop AS INTEGER           ' Top of back stack (-1    = empty)
+    navBackTop AS INTEGER           ' Top of back stack (-1 = empty)
     navFwdTop  AS INTEGER           ' Top of forward stack (-1 = empty)
 
     ' Focus

@@ -104,7 +104,7 @@ TYPE PSD_LAYER_RECORD
     is_group      AS INTEGER    ' TRUE if group start marker
     is_group_end  AS INTEGER    ' TRUE if group end marker
     section_type  AS INTEGER    ' PSD_SECTION_* constant
-    group_depth   AS INTEGER    ' nesting depth (0 = top-level, 1=inside group, etc.)
+    group_depth   AS INTEGER    ' nesting depth (0 = top-level, 1 = inside group, etc.)
     parent_group  AS INTEGER    ' index of containing group header (0 if none)
 END TYPE
 

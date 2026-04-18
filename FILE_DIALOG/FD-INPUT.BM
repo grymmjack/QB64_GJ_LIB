@@ -229,12 +229,12 @@ SUB FD_INPUT_mouse
     ELSEIF my > = FD_STATE.titleBarH + FD_STATE.pathBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH THEN
         ' Toolbar — view buttons, hidden, preview
         DIM ttBtnPad AS INTEGER : ttBtnPad = 3
-        DIM ttIsc    AS INTEGER : ttIsc    = FD_CFG.iconScale
+        DIM ttIsc    AS INTEGER : ttIsc = FD_CFG.iconScale
         IF ttIsc < 1 THEN ttIsc = 2
         DIM ttIconSz AS INTEGER: ttIconSz = 11 * ttIsc
         IF FD_ICONS_has_png%(FD_ICON_TB_LIST) THEN ttIconSz = FD_iconW(FD_ICON_TB_LIST) * ttIsc
         DIM ttBtnW   AS INTEGER : ttBtnW = ttIconSz + ttBtnPad * 2
-        DIM ttBx     AS INTEGER : ttBx   = FD_PADDING
+        DIM ttBx     AS INTEGER : ttBx = FD_PADDING
         IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_LIST
         ttBx = ttBx + ttBtnW + 2
         IF mx > = ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_DETAILS

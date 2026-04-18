@@ -152,14 +152,14 @@ PRINT "cat butt ends with 'bum' -> "; STR.ends_with%("cat butt", "bum")
 PRINT "cat butt starts with 'dog' -> "; STR.starts_with%("cat butt", "dog")
 
 DIM ub AS _UNSIGNED _BYTE   : ub~%% = 255
-DIM ui AS _UNSIGNED INTEGER : ui~%  = 65535
-DIM ul AS _UNSIGNED LONG    : ul~&  = 3133731337
-DIM b  AS _BYTE             : b%%   = 127
-DIM i  AS INTEGER           : i%    = 10
-DIM l  AS LONG              : l&    = 31337
-DIM s  AS SINGLE            : s!    = 101010.10
-DIM d  AS DOUBLE            : d#    = 101010.101010
-DIM f  AS _FLOAT            : f##   = 3.14259102835901
+DIM ui AS _UNSIGNED INTEGER : ui~% = 65535
+DIM ul AS _UNSIGNED LONG    : ul~& = 3133731337
+DIM b  AS _BYTE             : b%% = 127
+DIM i  AS INTEGER           : i% = 10
+DIM l  AS LONG              : l& = 31337
+DIM s  AS SINGLE            : s! = 101010.10
+DIM d  AS DOUBLE            : d# = 101010.101010
+DIM f  AS _FLOAT            : f## = 3.14259102835901
 
 PRINT
 PRINT ": [" + STR.ub$(ub~%%) + "]"

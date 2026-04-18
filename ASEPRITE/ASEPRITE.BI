@@ -726,7 +726,7 @@ TYPE ASEPRITE_ANIMATION_INFO
     total_frames   AS INTEGER ' Total number of frames
     current_frame  AS INTEGER ' Currently displayed frame
     is_playing     AS _BYTE   ' 1 if animation is playing
-    loop_mode      AS _BYTE   ' Loop mode (0 = once, 1=loop, 2=ping-pong)
+    loop_mode      AS _BYTE   ' Loop mode (0 = once, 1 = loop, 2 = ping-pong)
     total_duration AS LONG    ' Total animation duration in ms
     elapsed_time   AS LONG    ' Time elapsed in current cycle
     last_update    AS DOUBLE  ' Last update time (TIMER)

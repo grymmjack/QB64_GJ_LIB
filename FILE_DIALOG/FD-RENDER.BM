@@ -1052,7 +1052,7 @@ SUB FD_RENDER_filter_dropdown
     filterX = okX - filterW - FD_PADDING
 
     ' Calculate popup dimensions — use widest label for popup width
-    DIM popW                                                                                AS INTEGER, i AS INTEGER
+    DIM popW AS INTEGER, i AS INTEGER
     popW = filterW                                                               ' At least AS wide as the button
     FOR i = 0 TO FD_STATE.filterCount - 1
         DIM lbl  AS STRING

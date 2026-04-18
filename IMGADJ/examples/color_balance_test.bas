@@ -105,15 +105,15 @@ DO
     SELECT CASE k
         CASE "+", "="
             SELECT CASE parameterIndex
-                CASE 0 : IF redShift < 100 THEN redShift     = redShift + 5
+                CASE 0 : IF redShift < 100 THEN redShift = redShift + 5
                 CASE 1 : IF greenShift < 100 THEN greenShift = greenShift + 5
-                CASE 2 : IF blueShift < 100 THEN blueShift   = blueShift + 5
+                CASE 2 : IF blueShift < 100 THEN blueShift = blueShift + 5
             END SELECT
         CASE "-"
             SELECT CASE parameterIndex
-                CASE 0 : IF redShift > -100 THEN redShift     = redShift - 5
+                CASE 0 : IF redShift > -100 THEN redShift = redShift - 5
                 CASE 1 : IF greenShift > -100 THEN greenShift = greenShift - 5
-                CASE 2 : IF blueShift > -100 THEN blueShift   = blueShift - 5
+                CASE 2 : IF blueShift > -100 THEN blueShift = blueShift - 5
             END SELECT
         CASE CHR$(9) ' TAB key
             parameterIndex = (parameterIndex + 1) MOD 3

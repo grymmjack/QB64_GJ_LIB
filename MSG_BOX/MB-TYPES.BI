@@ -48,8 +48,8 @@ CONST MB_MAX_LINE_LEN      = 256 ' Max characters per wrapped line
 TYPE MB_BUTTON_OBJ
     label     AS STRING * 32 ' Button label text
     hotkey    AS INTEGER     ' ASCII code for keyboard shortcut (0 = none)
-    isDefault AS INTEGER     ' TRUE                                = Enter activates
-    isCancel  AS INTEGER     ' TRUE                                = Escape activates
+    isDefault AS INTEGER     ' TRUE = Enter activates
+    isCancel  AS INTEGER     ' TRUE = Escape activates
 END TYPE
 
 TYPE MB_STATE_OBJ

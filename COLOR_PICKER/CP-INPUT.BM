@@ -674,8 +674,8 @@ SUB CP_INPUT_wheel
                 IF CP_STATE.hslS > 100 THEN CP_STATE.hslS = 100
                 IF CP_STATE.posterize > 0 THEN
                     DIM sI AS INTEGER: sI = INT(CP_STATE.hslS)
-                    sI                    = CP_posterize_value%(sI, 100)
-                    CP_STATE.hslS         = sI
+                    sI            = CP_posterize_value%(sI, 100)
+                    CP_STATE.hslS = sI
                 END IF
                 CP_update_from_hsl
 
@@ -687,8 +687,8 @@ SUB CP_INPUT_wheel
                 IF CP_STATE.hslL > 100 THEN CP_STATE.hslL = 100
                 IF CP_STATE.posterize > 0 THEN
                     DIM lI AS INTEGER: lI = INT(CP_STATE.hslL)
-                    lI                    = CP_posterize_value%(lI, 100)
-                    CP_STATE.hslL         = lI
+                    lI            = CP_posterize_value%(lI, 100)
+                    CP_STATE.hslL = lI
                 END IF
                 CP_update_from_hsl
         END SELECT
