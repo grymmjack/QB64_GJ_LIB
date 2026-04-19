@@ -360,12 +360,12 @@ SUB GJ_BBX_Draw (showHUD AS INTEGER)
     DIM boxColor AS _UNSIGNED LONG
 
     SELECT CASE GJ_BBX_box.state
-        CASE GJ_BBX_STATE_DRAG               : boxColor = GJ_BBX_CFG.colorDragging
+        CASE GJ_BBX_STATE_DRAG              : boxColor = GJ_BBX_CFG.colorDragging
         CASE IS >= GJ_BBX_STATE_RESIZE_BASE : boxColor = GJ_BBX_CFG.colorResizing
-        CASE GJ_BBX_STATE_SELECTED_HOVER     : boxColor = GJ_BBX_CFG.colorSelectedHover
-        CASE GJ_BBX_STATE_SELECTED           : boxColor = GJ_BBX_CFG.colorSelectedOnly
-        CASE GJ_BBX_STATE_HOVER              : boxColor = GJ_BBX_CFG.colorHoverOnly
-        CASE ELSE                            : boxColor = GJ_BBX_CFG.colorIdle
+        CASE GJ_BBX_STATE_SELECTED_HOVER    : boxColor = GJ_BBX_CFG.colorSelectedHover
+        CASE GJ_BBX_STATE_SELECTED          : boxColor = GJ_BBX_CFG.colorSelectedOnly
+        CASE GJ_BBX_STATE_HOVER             : boxColor = GJ_BBX_CFG.colorHoverOnly
+        CASE ELSE                           : boxColor = GJ_BBX_CFG.colorIdle
     END SELECT
 
     LINE (GJ_BBX_box.x, GJ_BBX_box.y)-(GJ_BBX_box.x + GJ_BBX_box.w, GJ_BBX_box.y + GJ_BBX_box.h), boxColor, B, &B0101010101010101
