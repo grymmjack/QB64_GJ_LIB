@@ -131,7 +131,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     ' Try to load the image
     DIM rawImg AS LONG
     rawImg = _LOADIMAGE(fullPath, 32)
-    IF rawImg = -1 OR rawImg > = 0 THEN
+    IF rawImg = -1 OR rawImg >= 0 THEN
         ' _LOADIMAGE failed — try custom format loaders
         DIM fdExt  AS STRING
         DIM dotPos AS INTEGER
@@ -152,7 +152,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
         END IF
         $END IF
 
-        IF rawImg = -1 OR rawImg > = 0 THEN
+        IF rawImg = -1 OR rawImg >= 0 THEN
             FD_THUMB_load_one& = -1
             EXIT FUNCTION
         END IF
@@ -164,13 +164,13 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     DIM scale AS SINGLE
     srcW = _WIDTH(rawImg)
     srcH = _HEIGHT(rawImg)
-    IF srcW < = 0 OR srcH < = 0 THEN
+    IF srcW <= 0 OR srcH <= 0 THEN
         _FREEIMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
     END IF
 
-    IF srcW > = srcH THEN
+    IF srcW >= srcH THEN
         scale = thumbSize / srcW
     ELSE
         scale = thumbSize / srcH
@@ -184,7 +184,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
 
     DIM thumbImg AS LONG
     thumbImg = _NEWIMAGE(dstW, dstH, 32)
-    IF thumbImg = -1 OR thumbImg > = 0 THEN
+    IF thumbImg = -1 OR thumbImg >= 0 THEN
         _FREEIMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
@@ -199,10 +199,10 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     DIM pixel  AS _UNSIGNED LONG
     FOR dy = 0 TO dstH - 1
         sy = INT(dy / scale)
-        IF sy > = srcH THEN sy = srcH - 1
+        IF sy >= srcH THEN sy = srcH - 1
         FOR dx = 0 TO dstW - 1
             sx = INT(dx / scale)
-            IF sx > = srcW THEN sx = srcW - 1
+            IF sx >= srcW THEN sx = srcW - 1
             _MEMGET srcMem, srcMem.OFFSET + (sy * srcW + sx) * 4, pixel
             _MEMPUT dstMem, dstMem.OFFSET + (dy * dstW + dx) * 4, pixel
         NEXT dx

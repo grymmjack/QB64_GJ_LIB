@@ -121,11 +121,11 @@ DO
         
         ' Algorithm type classification
         DIM algorithmType AS STRING
-        IF currentAlgorithm < = 3 THEN
+        IF currentAlgorithm <= 3 THEN
             algorithmType = "Ordered/Bayer Dithering"
-        ELSEIF currentAlgorithm < = 15 THEN
+        ELSEIF currentAlgorithm <= 15 THEN
             algorithmType = "Error Diffusion Dithering"
-        ELSEIF currentAlgorithm < = 17 THEN
+        ELSEIF currentAlgorithm <= 17 THEN
             algorithmType = "Random/Noise Dithering"
         ELSE
             algorithmType = "Special Pattern Dithering"

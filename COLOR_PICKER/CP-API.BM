@@ -126,7 +126,7 @@ END SUB
 ' Scales from the original CP-THEME.BI CONST defaults. Idempotent.
 ' --------------------------------------------------------------------------
 SUB CP_THEME_scale_geometry
-    IF CP_THEME.fontH% < = 0 THEN EXIT SUB
+    IF CP_THEME.fontH% <= 0 THEN EXIT SUB
     IF CP_THEME.fontH% = CP_DEFAULT_FONT_H THEN EXIT SUB
 
     DIM s AS SINGLE
@@ -377,7 +377,7 @@ SUB CP_modal_loop
         DIM cpTIDirty AS INTEGER
         cpTIDirty = 0
         IF CP_STATE.tiHexId > 0 THEN
-            IF CP_STATE.tiHexId < = TI_MAX_INPUTS THEN
+            IF CP_STATE.tiHexId <= TI_MAX_INPUTS THEN
                 IF TI_inputs(CP_STATE.tiHexId).dirty THEN cpTIDirty = -1
             END IF
         END IF
@@ -589,7 +589,7 @@ END SUB
 ' h: 0-360, s: 0-1, v: 0-1 => r,g,b: 0-255
 ' --------------------------------------------------------------------------
 SUB CP_hsv_to_rgb (h AS SINGLE, s AS SINGLE, v AS SINGLE, r AS INTEGER, g AS INTEGER, b AS INTEGER)
-    IF s < = 0.0 THEN
+    IF s <= 0.0 THEN
         r = INT(v * 255): g = r: b = r
         EXIT SUB
     END IF
@@ -599,7 +599,7 @@ SUB CP_hsv_to_rgb (h AS SINGLE, s AS SINGLE, v AS SINGLE, r AS INTEGER, g AS INT
     DIM ii AS INTEGER
 
     hh = h
-    IF hh > = 360.0 THEN hh = 0.0
+    IF hh >= 360.0 THEN hh = 0.0
     hh = hh / 60.0
     ii = INT(hh)
     ff = hh - CSNG(ii)
@@ -650,7 +650,7 @@ SUB CP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
 
     v = cMax
 
-    IF cMax < = 0.0 THEN
+    IF cMax <= 0.0 THEN
         s = 0.0
         h = 0.0
         EXIT SUB
@@ -663,9 +663,9 @@ SUB CP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
         EXIT SUB
     END IF
 
-    IF rf > = cMax THEN
+    IF rf >= cMax THEN
         h = (gf - bf) / delta
-    ELSEIF gf > = cMax THEN
+    ELSEIF gf >= cMax THEN
         h = 2.0 + (bf - rf) / delta
     ELSE
         h = 4.0 + (rf - gf) / delta
@@ -707,9 +707,9 @@ SUB CP_rgb_to_hsl (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS S
         s = delta / (cMax + cMin)
     END IF
 
-    IF rf > = cMax THEN
+    IF rf >= cMax THEN
         h = (gf - bf) / delta
-    ELSEIF gf > = cMax THEN
+    ELSEIF gf >= cMax THEN
         h = 2.0 + (bf - rf) / delta
     ELSE
         h = 4.0 + (rf - gf) / delta

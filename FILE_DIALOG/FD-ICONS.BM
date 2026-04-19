@@ -376,7 +376,7 @@ END SUB
 ' FD_ICONS_has_png% — Check if a PNG icon handle is loaded for given icon ID
 ' --------------------------------------------------------------------------
 FUNCTION FD_ICONS_has_png% (iconId AS INTEGER)
-    IF iconId < 0 OR iconId > = FD_ICON_COUNT THEN
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
         FD_ICONS_has_png% = 0
         EXIT FUNCTION
     END IF
@@ -388,7 +388,7 @@ END FUNCTION
 ' in sz x sz area. Falls back to procedural rendering if no PNG loaded.
 ' --------------------------------------------------------------------------
 SUB FD_ICONS_render_png (iconId AS INTEGER, x AS INTEGER, y AS INTEGER, sz AS INTEGER)
-    IF iconId < 0 OR iconId > = FD_ICON_COUNT THEN
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
         FD_ICONS_render iconId, x, y, sz
         EXIT SUB
     END IF
@@ -421,7 +421,7 @@ END SUB
 ' FD_ICONS_load_one — Load a single icon PNG from the icon directory
 ' --------------------------------------------------------------------------
 SUB FD_ICONS_load_one (iconId AS INTEGER, filename AS STRING)
-    IF iconId < 0 OR iconId > = FD_ICON_COUNT THEN EXIT SUB
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN EXIT SUB
     IF LEN(filename) = 0 THEN EXIT SUB
     IF LEN(FD_iconDir) = 0 THEN EXIT SUB
 
@@ -513,7 +513,7 @@ END SUB
 ' FD_ICONS_w% — Get width of loaded PNG icon (0 if not loaded)
 ' --------------------------------------------------------------------------
 FUNCTION FD_ICONS_w% (iconId AS INTEGER)
-    IF iconId < 0 OR iconId > = FD_ICON_COUNT THEN
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
         FD_ICONS_w% = 0
         EXIT FUNCTION
     END IF
@@ -524,7 +524,7 @@ END FUNCTION
 ' FD_ICONS_h% — Get height of loaded PNG icon (0 if not loaded)
 ' --------------------------------------------------------------------------
 FUNCTION FD_ICONS_h% (iconId AS INTEGER)
-    IF iconId < 0 OR iconId > = FD_ICON_COUNT THEN
+    IF iconId < 0 OR iconId >= FD_ICON_COUNT THEN
         FD_ICONS_h% = 0
         EXIT FUNCTION
     END IF

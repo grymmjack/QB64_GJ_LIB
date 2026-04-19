@@ -30,7 +30,7 @@ FUNCTION FD_save_file$ (title AS STRING, startDir AS STRING, filters AS STRING, 
     IF LEN(defaultFileName) > 0 THEN
         FD_STATE.fileNameInput  = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
-        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
+        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
     END IF
     FD_modal_loop
     DIM result AS STRING
@@ -51,7 +51,7 @@ FUNCTION FD_save_as_file$ (title AS STRING, startDir AS STRING, filters AS STRIN
     IF LEN(defaultFileName) > 0 THEN
         FD_STATE.fileNameInput  = defaultFileName
         FD_STATE.fileNameCursor = LEN(defaultFileName)
-        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
+        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_text FD_STATE.tiFileNameId, defaultFileName
     END IF
     FD_modal_loop
     DIM result AS STRING
@@ -252,7 +252,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
 
     ' Parse filters
     FD_parse_filters filters
-    IF defaultFilter > = 0 AND defaultFilter < FD_STATE.filterCount THEN
+    IF defaultFilter >= 0 AND defaultFilter < FD_STATE.filterCount THEN
         FD_STATE.activeFilter = defaultFilter
     ELSE
         FD_STATE.activeFilter = 0
@@ -347,7 +347,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     ' Auto-focus the filename input in save modes so user can type immediately
     IF FD_STATE.mode = FD_MODE_SAVE OR FD_STATE.mode = FD_MODE_SAVE_AS THEN
         FD_STATE.focusPane = FD_FOCUS_FILENAME
-        IF FD_STATE.tiFileNameId > = 1 THEN TI_set_focus FD_STATE.tiFileNameId
+        IF FD_STATE.tiFileNameId >= 1 THEN TI_set_focus FD_STATE.tiFileNameId
     END IF
 END SUB
 ' --------------------------------------------------------------------------
@@ -365,8 +365,8 @@ SUB FD_cleanup
     END IF
 
     ' Destroy text input widgets
-    IF FD_STATE.tiPathId > = 1 THEN TI_destroy FD_STATE.tiPathId
-    IF FD_STATE.tiFileNameId > = 1 THEN TI_destroy FD_STATE.tiFileNameId
+    IF FD_STATE.tiPathId >= 1 THEN TI_destroy FD_STATE.tiPathId
+    IF FD_STATE.tiFileNameId >= 1 THEN TI_destroy FD_STATE.tiFileNameId
     FD_STATE.tiPathId     = 0
     FD_STATE.tiFileNameId = 0
 
@@ -534,7 +534,7 @@ SUB FD__update_text_input_geometry
     TI_set_geometry FD_STATE.tiPathId, pathX, FD_STATE.titleBarH + 3, pathW, FD_STATE.pathBarH - 6
 
     ' Filename input — in button bar (save modes only)
-    IF FD_STATE.tiFileNameId > = 1 THEN
+    IF FD_STATE.tiFileNameId >= 1 THEN
         DIM fnX     AS INTEGER, fnW AS INTEGER
         DIM btnBarY AS INTEGER
         DIM ifs2    AS INTEGER
@@ -623,7 +623,7 @@ SUB FD_init_places
                 FD_places(idx).iconId    = FD_ICON_PLACE_DRIVE
                 FD_places(idx).iconColor = 0
                 idx = idx + 1
-                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT d
     ELSE
@@ -640,7 +640,7 @@ SUB FD_init_places
     ' Separator
     FD_places(idx).entryType = FD_PLACE_SEPARATOR
     idx = idx + 1
-    IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+    IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
 
     ' --- XDG / System directories ---
     DIM xdgHome AS STRING
@@ -653,7 +653,7 @@ SUB FD_init_places
         FD_places(idx).iconId    = FD_ICON_PLACE_HOME
         FD_places(idx).iconColor = 0
         idx = idx + 1
-        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
     END IF
 
     ' Common XDG dirs (0=Desktop, 1=Documents, 2=Downloads, 3=Pictures, 4=Music, 5=Videos)
@@ -679,7 +679,7 @@ SUB FD_init_places
             FD_places(idx).iconId    = xdgPlaceIcons(xi)
             FD_places(idx).iconColor = 0
             idx = idx + 1
-            IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+            IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
         END IF
     NEXT xi
 
@@ -687,7 +687,7 @@ SUB FD_init_places
     IF FD_customPlaceCount > 0 THEN
         FD_places(idx).entryType = FD_PLACE_SEPARATOR
         idx = idx + 1
-        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
 
         DIM ci AS INTEGER
         FOR ci = 0 TO FD_customPlaceCount - 1
@@ -701,7 +701,7 @@ SUB FD_init_places
                 FD_places(idx).iconId    = FD_customPlaces(ci).iconId
                 FD_places(idx).iconColor = FD_customPlaces(ci).iconColor
                 idx = idx + 1
-                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT ci
     END IF
@@ -710,7 +710,7 @@ SUB FD_init_places
     IF FD_CFG.favCount > 0 THEN
         FD_places(idx).entryType = FD_PLACE_SEPARATOR
         idx = idx + 1
-        IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+        IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
 
         DIM fi AS INTEGER
         FOR fi = 0 TO FD_CFG.favCount - 1
@@ -722,7 +722,7 @@ SUB FD_init_places
                 FD_places(idx).iconId    = FD_ICON_FOLDER
                 FD_places(idx).iconColor = 0
                 idx = idx + 1
-                IF idx > = FD_MAX_PLACES THEN GOTO fd_places_done
+                IF idx >= FD_MAX_PLACES THEN GOTO fd_places_done
             END IF
         NEXT fi
     END IF
@@ -999,7 +999,7 @@ END SUB
 ' FD_add_favorite — Add a directory to the favorites list (no duplicates)
 ' --------------------------------------------------------------------------
 SUB FD_add_favorite (dirPath AS STRING)
-    IF FD_CFG.favCount > = FD_MAX_FAVORITES THEN EXIT SUB
+    IF FD_CFG.favCount >= FD_MAX_FAVORITES THEN EXIT SUB
 
     ' Check for duplicate
     DIM i AS INTEGER
@@ -1048,7 +1048,7 @@ SUB FD_load_favorites
     idx = 0
     DIM ln  AS STRING
 
-    DO UNTIL EOF(f) OR idx > = FD_MAX_FAVORITES
+    DO UNTIL EOF(f) OR idx >= FD_MAX_FAVORITES
         LINE INPUT #f, ln
         ln = LTRIM$(RTRIM$(ln))
         IF LEN(ln) = 0 THEN _CONTINUE
@@ -1097,7 +1097,7 @@ END SUB
 ' FD_add_custom_place — Register a custom place entry for the places bar
 ' --------------------------------------------------------------------------
 SUB FD_add_custom_place (label AS STRING, dirPath AS STRING, iconId AS INTEGER, iconColor AS _UNSIGNED LONG, hotkey AS STRING)
-    IF FD_customPlaceCount > = FD_MAX_CUSTOM_PLACES THEN EXIT SUB
+    IF FD_customPlaceCount >= FD_MAX_CUSTOM_PLACES THEN EXIT SUB
 
     FD_customPlaces(FD_customPlaceCount).label     = label
     FD_customPlaces(FD_customPlaceCount).path      = dirPath

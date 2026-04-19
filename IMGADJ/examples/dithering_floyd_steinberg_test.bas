@@ -83,11 +83,11 @@ DO
             detailY = 160 + _HEIGHT(originalImage) + 20
             
             COLOR _RGB32(200, 200, 255) ' Light blue for effect details
-            IF ditherAmount < = 0.2 THEN
+            IF ditherAmount <= 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Minimal dithering, mostly solid areas"
-            ELSEIF ditherAmount < = 0.5 THEN
+            ELSEIF ditherAmount <= 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Balanced dithering, good detail preservation"
-            ELSEIF ditherAmount < = 0.8 THEN
+            ELSEIF ditherAmount <= 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong dithering, good for artistic effects"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full error diffusion, maximum texture"

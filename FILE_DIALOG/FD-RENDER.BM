@@ -30,7 +30,7 @@ SUB FD_print_scaled (x AS INTEGER, y AS INTEGER, text AS STRING, scale AS INTEGE
     th = FD_CFG.fontH
     DIM tmp  AS LONG
     tmp = _NEWIMAGE(tw, th, 32)
-    IF tmp > = -1 THEN
+    IF tmp >= -1 THEN
         ' Fallback: draw at 1x directly
         _PRINTSTRING (x, y), text
         EXIT SUB
@@ -73,7 +73,7 @@ END FUNCTION
 ' FD_RENDER_all — Master render routine, draws everything
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_all
-    IF FD_STATE.imgHandle > = -1 THEN EXIT SUB  ' No valid buffer
+    IF FD_STATE.imgHandle >= -1 THEN EXIT SUB  ' No valid buffer
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -119,8 +119,8 @@ END SUB
 ' FD_RENDER_blit — Scale and blit offscreen buffer to display
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_blit
-    IF FD_STATE.imgHandle > = -1 THEN EXIT SUB
-    IF FD_STATE.screenShot > = -1 THEN EXIT SUB
+    IF FD_STATE.imgHandle >= -1 THEN EXIT SUB
+    IF FD_STATE.screenShot >= -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -328,7 +328,7 @@ SUB FD_RENDER_places
     w  = FD_STATE.placesW
     h  = FD_STATE.contentH
 
-    IF w < = 0 THEN EXIT SUB
+    IF w <= 0 THEN EXIT SUB
 
     ' Background
     LINE (x1, y1)-(x1 + w - 1, y1 + h - 1), FD_CLR_PLACES_BG~&, BF
@@ -425,7 +425,7 @@ SUB FD_RENDER_content
     w  = FD_STATE.contentW
     h  = FD_STATE.contentH
 
-    IF w < = 0 OR h < = 0 THEN EXIT SUB
+    IF w <= 0 OR h <= 0 THEN EXIT SUB
 
     ' Background
     LINE (x1, y1)-(x1 + w - 1, y1 + h - 1), FD_CLR_CONTENT_BG~&, BF
@@ -498,11 +498,11 @@ SUB FD_RENDER_column_headers
     FOR i = 0 TO FD_MAX_COLUMNS - 1
         DIM colW AS INTEGER
         IF i = 0 THEN colW = col0AutoW ELSE colW = FD_columns(i).width
-        IF colW < = 0 THEN _CONTINUE
+        IF colW <= 0 THEN _CONTINUE
 
         ' Don't draw past content area
         IF cx + colW > x1 + w THEN colW = x1 + w - cx
-        IF colW < = 0 THEN EXIT FOR
+        IF colW <= 0 THEN EXIT FOR
 
         ' Header text
         DIM headerText AS STRING
@@ -551,7 +551,7 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
     FOR i = 0 TO FD_STATE.visibleCount - 1
         drawY = y1 + (i * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
-        IF drawY > = y1 + h THEN EXIT FOR
+        IF drawY >= y1 + h THEN EXIT FOR
 
         entryIdx = FD_filtered(i)
 
@@ -606,7 +606,7 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
     FOR i = 0 TO FD_STATE.visibleCount - 1
         drawY = y1 + (i * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
-        IF drawY > = y1 + h THEN EXIT FOR
+        IF drawY >= y1 + h THEN EXIT FOR
 
         entryIdx = FD_filtered(i)
 
@@ -729,7 +729,7 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
 
         ' Allow 1 row overdraw above and below for smooth scroll clipping
         IF cellY + cellH < y1 - cellH THEN _CONTINUE
-        IF cellY > = y1 + h + cellH THEN EXIT FOR
+        IF cellY >= y1 + h + cellH THEN EXIT FOR
 
         entryIdx = FD_filtered(i)
 
@@ -755,7 +755,7 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
             DIM tw AS INTEGER, th AS INTEGER
             tw = _WIDTH(FD_entries(entryIdx).thumbHandle)
             th = _HEIGHT(FD_entries(entryIdx).thumbHandle)
-            IF tw < = 0 OR th < = 0 THEN
+            IF tw <= 0 OR th <= 0 THEN
                 ' Handle was freed — reset to pending for reload
                 FD_entries(entryIdx).thumbHandle = -1
                 FD_entries(entryIdx).thumbState  = FD_THUMB_PENDING
@@ -806,7 +806,7 @@ SUB FD_RENDER_preview
     w  = FD_STATE.previewW
     h  = FD_STATE.contentH + FD_STATE.buttonBarH
 
-    IF w < = 0 OR NOT FD_CFG.showPreview THEN EXIT SUB
+    IF w <= 0 OR NOT FD_CFG.showPreview THEN EXIT SUB
 
     DIM pvfs AS INTEGER
     pvfs = FD_CFG.previewFontScale: IF pvfs < 1 THEN pvfs = 1
@@ -859,7 +859,7 @@ SUB FD_RENDER_preview
         FD_print_scaled x1 + FD_PADDING, infoY, LTRIM$(STR$(pw)) + " X " + LTRIM$(STR$(ph)), pvfs
 
         ' File size if selected
-        IF FD_STATE.selectedIndex > = 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
+        IF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
             DIM selIdx   AS INTEGER
             selIdx = FD_filtered(FD_STATE.selectedIndex)
             DIM sizeInfo AS STRING
@@ -912,7 +912,7 @@ SUB FD_RENDER_status_bar
     ' Show selection info
     IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 0 THEN
         statusText = statusText + "  |  " + LTRIM$(STR$(FD_STATE.multiSelectCount)) + " SELECTED"
-    ELSEIF FD_STATE.selectedIndex > = 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
+    ELSEIF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
         DIM selIdx AS INTEGER
         selIdx = FD_filtered(FD_STATE.selectedIndex)
         statusText = statusText + "  |  " + RTRIM$(FD_entries(selIdx).fileName)
@@ -975,7 +975,7 @@ SUB FD_RENDER_button_bar
     ' Filter dropdown button (if filters exist)
     IF FD_STATE.filterCount > 1 AND FD_STATE.mode <> FD_MODE_CHOOSE_FOLDER THEN
         DIM filterLabel AS STRING
-        IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+        IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
             filterLabel = UCASE$(RTRIM$(FD_filters(FD_STATE.activeFilter).label))
         ELSE
             filterLabel = "ALL FILES"
@@ -1041,7 +1041,7 @@ SUB FD_RENDER_filter_dropdown
     okX = cancelX - FD_BUTTON_W - FD_PADDING
 
     DIM curLabel AS STRING
-    IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+    IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
         curLabel = RTRIM$(FD_filters(FD_STATE.activeFilter).label)
     ELSE
         curLabel = "All Files"
@@ -1090,8 +1090,8 @@ SUB FD_RENDER_filter_dropdown
         ' Hover highlight — check if mouse is over this item
         DIM itemHover AS INTEGER
         itemHover = 0
-        IF FD_STATE.mouseX > = popX AND FD_STATE.mouseX < popX + popW THEN
-            IF FD_STATE.mouseY > = iy AND FD_STATE.mouseY < iy + itemH THEN
+        IF FD_STATE.mouseX >= popX AND FD_STATE.mouseX < popX + popW THEN
+            IF FD_STATE.mouseY >= iy AND FD_STATE.mouseY < iy + itemH THEN
                 itemHover = -1
             END IF
         END IF
@@ -1139,7 +1139,7 @@ END SUB
 ' FD_RENDER_scrollbar — Vertical scrollbar
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_scrollbar (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INTEGER)
-    IF FD_STATE.maxScroll < = 0 THEN EXIT SUB
+    IF FD_STATE.maxScroll <= 0 THEN EXIT SUB
 
     ' Track
     LINE (x1, y1)-(x1 + w - 1, y1 + h - 1), FD_CLR_SCROLLBAR_BG~&, BF
@@ -1279,8 +1279,8 @@ SUB FD_RENDER_checkerboard (x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEG
             DIM x2  AS INTEGER, y2 AS INTEGER
             x2 = x + cx + checkSize - 1
             y2 = y + cy + checkSize - 1
-            IF x2 > = x + w THEN x2 = x + w - 1
-            IF y2 > = y + h THEN y2 = y + h - 1
+            IF x2 >= x + w THEN x2 = x + w - 1
+            IF y2 >= y + h THEN y2 = y + h - 1
             LINE (x + cx, y + cy)-(x2, y2), clr, BF
         NEXT cx
     NEXT cy

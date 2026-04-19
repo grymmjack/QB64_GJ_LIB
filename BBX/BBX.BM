@@ -150,7 +150,7 @@ SUB GJ_BBX_Update
     END IF
 
     IF NOT justStartedAction THEN
-        IF GJ_BBX_box.state > = GJ_BBX_STATE_RESIZE_BASE THEN
+        IF GJ_BBX_box.state >= GJ_BBX_STATE_RESIZE_BASE THEN
             IF GJ_BBX_mouse.held THEN
                 GJ_BBX_ResizeFromHandle GJ_BBX_box, GJ_BBX_mouse
                 IF GJ_BBX_box.w < GJ_BBX_CFG.MinBoxWidth THEN GJ_BBX_box.w = GJ_BBX_CFG.MinBoxWidth
@@ -361,7 +361,7 @@ SUB GJ_BBX_Draw (showHUD AS INTEGER)
 
     SELECT CASE GJ_BBX_box.state
         CASE GJ_BBX_STATE_DRAG               : boxColor = GJ_BBX_CFG.colorDragging
-        CASE IS > = GJ_BBX_STATE_RESIZE_BASE : boxColor = GJ_BBX_CFG.colorResizing
+        CASE IS >= GJ_BBX_STATE_RESIZE_BASE : boxColor = GJ_BBX_CFG.colorResizing
         CASE GJ_BBX_STATE_SELECTED_HOVER     : boxColor = GJ_BBX_CFG.colorSelectedHover
         CASE GJ_BBX_STATE_SELECTED           : boxColor = GJ_BBX_CFG.colorSelectedOnly
         CASE GJ_BBX_STATE_HOVER              : boxColor = GJ_BBX_CFG.colorHoverOnly

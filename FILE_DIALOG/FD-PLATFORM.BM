@@ -118,7 +118,7 @@ FUNCTION FD_PLAT_enumerate_dir% (path AS STRING)
     buf   = SPACE$(260)
 
     DO WHILE fd_read_entry%(slot, buf, 260) <> 0
-        IF count > = FD_MAX_ENTRIES THEN EXIT DO
+        IF count >= FD_MAX_ENTRIES THEN EXIT DO
 
         DIM entryName AS STRING
         entryName = FD_PLAT_trim_cstr$(buf)

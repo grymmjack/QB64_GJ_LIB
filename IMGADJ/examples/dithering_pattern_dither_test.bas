@@ -113,11 +113,11 @@ DO
             detailY = 180 + _HEIGHT(originalImage) + 20
             
             COLOR _RGB32(200, 200, 255) ' Light blue for effect details
-            IF ditherAmount < = 0.2 THEN
+            IF ditherAmount <= 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Subtle pattern visibility, preserves smooth areas"
-            ELSEIF ditherAmount < = 0.5 THEN
+            ELSEIF ditherAmount <= 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Clear pattern structure, balanced effect"
-            ELSEIF ditherAmount < = 0.8 THEN
+            ELSEIF ditherAmount <= 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong pattern dominance, artistic effect"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full pattern application, maximum stylization"

@@ -89,7 +89,7 @@ SUB LIGHTBAR32.get_options(menu AS LIGHTBAR32, o() AS LIGHTBAR32_OPTION, row%, c
             o(i%).row% = row% + i% ' In vert LIGHTBAR menu, 1 opt per row
             o(i%).col% = col%      ' In vert LIGHTBAR menu, column is same
         ELSE ' Horizontal
-            IF ((cur_col% + o(i%).len%) * _FONTWIDTH) > = w% THEN ' Will wrap
+            IF ((cur_col% + o(i%).len%) * _FONTWIDTH) >= w% THEN ' Will wrap
                 o(i%).col% = col%              ' Reset col to init col
                 cur_col%   = col% + o(i%).len% ' Reset cur_col counter
                 cur_row% = cur_row% + 1        ' Increment cur_row

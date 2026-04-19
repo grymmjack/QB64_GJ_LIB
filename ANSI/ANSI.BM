@@ -42,8 +42,8 @@ END FUNCTION
 ' @param INTEGER col% for locate
 '
 SUB ANSI.safe_locate(row%, col%)
-    IF row% < = 0 THEN row% = 1
-    IF col% < = 0 THEN col% = 1
+    IF row% <= 0 THEN row% = 1
+    IF col% <= 0 THEN col% = 1
     LOCATE row%, col%
 END SUB
 
@@ -54,7 +54,7 @@ END SUB
 ' @param INTEGER col% for locate
 '
 SUB ANSI.safe_locate_x(col%)
-    IF col% < = 0 THEN col% = 1
+    IF col% <= 0 THEN col% = 1
     LOCATE , col%
 END SUB
 
@@ -65,7 +65,7 @@ END SUB
 ' @param INTEGER row% for locate
 '
 SUB ANSI.safe_locate_y(row%)
-    IF row% < = 0 THEN row% = 1
+    IF row% <= 0 THEN row% = 1
     LOCATE row%
 END SUB
 
@@ -431,7 +431,7 @@ FUNCTION ANSI.mode_bold$()
     DIM AS STRING sout
     sout$ = CHR$(ANSI.ESC) + "[1m"
     IF GJ_LIB_ANSI_EMU THEN
-        IF ANSI.fg_color& < = 7 THEN ANSI.fg_color& = ANSI.fg_color& + 8
+        IF ANSI.fg_color& <= 7 THEN ANSI.fg_color& = ANSI.fg_color& + 8
         COLOR ANSI.fg_color&
     END IF    
     IF GJ_LIB_ANSI_OUTPUT THEN ANSI.mode_bold$ = sout$
@@ -447,7 +447,7 @@ FUNCTION ANSI.mode_bold_reset$()
     DIM AS STRING sout
     sout$ = CHR$(ANSI.ESC) + "[22m"
     IF GJ_LIB_ANSI_EMU THEN
-        IF ANSI.fg_color& > = 8 THEN ANSI.fg_color& = ANSI.fg_color& - 8
+        IF ANSI.fg_color& >= 8 THEN ANSI.fg_color& = ANSI.fg_color& - 8
         COLOR ANSI.fg_color&
     END IF    
     IF GJ_LIB_ANSI_OUTPUT THEN ANSI.mode_bold_reset$ = sout$

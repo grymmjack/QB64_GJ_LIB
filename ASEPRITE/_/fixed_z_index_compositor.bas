@@ -87,7 +87,7 @@ FOR i = 1 TO num_items
         
         ' **CRITICAL FIX**: Use source rectangle to prevent stretching
         ' This ensures each pixel maps 1:1 without interpolation
-        IF cel_x > = 0 AND cel_y > = 0 AND cel_x + layer_w < = 32 AND cel_y + layer_h < = 32 THEN
+        IF cel_x >= 0 AND cel_y >= 0 AND cel_x + layer_w <= 32 AND cel_y + layer_h <= 32 THEN
             ' Layer fits completely within bounds
             _PUTIMAGE (cel_x, cel_y)-(cel_x + layer_w - 1, cel_y + layer_h - 1), layer_img, composite, (0, 0)-(layer_w - 1, layer_h - 1)
         ELSE

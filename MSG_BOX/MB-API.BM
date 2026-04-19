@@ -336,7 +336,7 @@ SUB MB_wrap_text (message AS STRING)
     DIM paraStart AS INTEGER, nlPos AS INTEGER
     paraStart = 1
 
-    DO WHILE paraStart < = LEN(msg)
+    DO WHILE paraStart <= LEN(msg)
         nlPos = INSTR(paraStart, msg, CHR$(10))
         IF nlPos = 0 THEN nlPos = LEN(msg) + 1
         para      = MID$(msg, paraStart, nlPos - paraStart)
@@ -367,7 +367,7 @@ SUB MB_wrap_paragraph (para AS STRING, charsPerLine AS INTEGER)
     remaining = para
 
     DO WHILE LEN(remaining) > 0 AND MB_STATE.messageLineCount < MB_MAX_MESSAGE_LINES
-        IF LEN(remaining) < = charsPerLine THEN
+        IF LEN(remaining) <= charsPerLine THEN
             ' Fits on one line
             lineOut   = remaining
             remaining = ""

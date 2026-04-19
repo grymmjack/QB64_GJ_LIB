@@ -362,7 +362,7 @@ FUNCTION STR.implode$(arr$(), delim$)
     res$ = ""
     lb%  = LBOUND(arr$) : ub% = UBOUND(arr$)
     FOR i% = lb% TO ub%
-        IF i% + 1 < = ub% THEN
+        IF i% + 1 <= ub% THEN
             res$ = res$ + arr$(i) + delim$
         ELSE
             res$ = res$ + arr$(i)
@@ -390,7 +390,7 @@ SUB STR.explode(target$, delim$, dest$(), numParts%)
 
     CALL STR.find_pos(target$, delim$, delimsPos%(), numFound%)
 
-    IF numFound% < = 0 THEN
+    IF numFound% <= 0 THEN
         numParts% = 0
         dest$(0)  = target$
     ELSE
@@ -402,7 +402,7 @@ SUB STR.explode(target$, delim$, dest$(), numParts%)
         ELSEIF numFound% > 1 THEN
             dest$(0) = LEFT$(target$, delimsPos%(0) - delimLen%)
             FOR i% = 1 TO numFound%
-                IF i% + 1 < = numFound% THEN
+                IF i% + 1 <= numFound% THEN
                     dest$(i%) = MID$( _
                         target$, _
                         delimsPos%(i% - 1) + delimLen%, _
@@ -432,9 +432,9 @@ SUB STR.find_pos(target$, search$, arrFound%(), numFound%)
     length%    = LEN(target$) : found% = -1 : x% = 0: i% = 0
     ub%        = UBOUND(arrFound%)
     searchLen% = LEN(search$)
-    DO WHILE i% < = length%
+    DO WHILE i% <= length%
         found% = INSTR(i%, target$, search$)
-        IF found% > 0 AND x% < = ub% THEN
+        IF found% > 0 AND x% <= ub% THEN
             arrFound%(x%) = found%
             i%            = found% + searchLen%
             x% = x% + 1
@@ -686,7 +686,7 @@ END FUNCTION
 ' @return STRING of sliced portion of original stright
 '
 FUNCTION STR.slice_pos$(s$, startPos%, endPos%)
-    IF startPos% < = 0 THEN
+    IF startPos% <= 0 THEN
         startPos% = 1
     END IF
     IF endPos% > 0 THEN

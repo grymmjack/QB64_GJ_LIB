@@ -331,7 +331,7 @@ FUNCTION create_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     END IF
     
     ' Create a new 32-bit image with the Aseprite dimensions
-    IF aseprite_img.header.width < = 0 OR aseprite_img.header.height < = 0 THEN
+    IF aseprite_img.header.width <= 0 OR aseprite_img.header.height <= 0 THEN
         create_image_from_aseprite& = 0
         EXIT FUNCTION
     END IF
@@ -785,7 +785,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     ' Total overhead = 6 + 20 = 26 bytes.
     data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
-    IF data_size < = 0 THEN
+    IF data_size <= 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
         EXIT FUNCTION
     END IF
@@ -842,7 +842,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         CASE 32 ' RGBA format (4 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 3 < = LEN(decompressed_data$) THEN
+                    IF byte_pos + 3 <= LEN(decompressed_data$) THEN
                         r = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         g = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         b = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
@@ -857,7 +857,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         CASE 16 ' Grayscale format (2 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 1 < = LEN(decompressed_data$) THEN
+                    IF byte_pos + 1 <= LEN(decompressed_data$) THEN
                         gray_val   = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         gray_alpha = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
@@ -870,7 +870,7 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
         CASE 8  ' Indexed format (1 byte per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos < = LEN(decompressed_data$) THEN
+                    IF byte_pos <= LEN(decompressed_data$) THEN
                         index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         ' Map index to a color - for testing, use a simple palette
@@ -925,7 +925,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
     ' Calculate compressed data size (chunk_size includes the 6-byte chunk header)
     data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
     
-    IF data_size < = 0 THEN
+    IF data_size <= 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Error: Invalid compressed data size: " + STR$(data_size)
         EXIT FUNCTION
     END IF
@@ -978,7 +978,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
         CASE 32 ' RGBA format (4 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 3 < = LEN(decompressed_data$) THEN
+                    IF byte_pos + 3 <= LEN(decompressed_data$) THEN
                         r = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         g = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         b = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
@@ -994,7 +994,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
         CASE 16 ' Grayscale format (2 bytes per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos + 1 < = LEN(decompressed_data$) THEN
+                    IF byte_pos + 1 <= LEN(decompressed_data$) THEN
                         gray_val   = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         gray_alpha = ASC(decompressed_data$, byte_pos) : byte_pos = byte_pos + 1
                         
@@ -1008,7 +1008,7 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
         CASE 8  ' Indexed format (1 byte per pixel)
             FOR y = 0 TO height - 1
                 FOR x = 0 TO width - 1
-                    IF byte_pos < = LEN(decompressed_data$) THEN
+                    IF byte_pos <= LEN(decompressed_data$) THEN
                         index_val = ASC(decompressed_data$, byte_pos): byte_pos = byte_pos + 1
                         
                         ' Map index to a color - for testing, use a simple palette
@@ -1266,7 +1266,7 @@ SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM frame_duration AS LONG
     
     IF enhanced_img.animation.is_playing = _FALSE THEN EXIT SUB
-    IF enhanced_img.animation.total_frames < = 1 THEN EXIT SUB
+    IF enhanced_img.animation.total_frames <= 1 THEN EXIT SUB
     
     current_time                       = TIMER
     delta_time                         = (current_time - enhanced_img.animation.last_update) * 1000 ' Convert to ms
@@ -1276,17 +1276,17 @@ SUB update_aseprite_animation (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     
     ' Get current frame duration (simplified - using default speed)
     frame_duration = enhanced_img.base_image.header.frame_speed
-    IF frame_duration < = 0 THEN frame_duration = 100 ' Default 100ms
+    IF frame_duration <= 0 THEN frame_duration = 100 ' Default 100ms
     
     ' Check if it's time to advance frame
-    IF enhanced_img.animation.elapsed_time > = frame_duration THEN
+    IF enhanced_img.animation.elapsed_time >= frame_duration THEN
         enhanced_img.animation.elapsed_time = enhanced_img.animation.elapsed_time - frame_duration
         
         ' Advance to next frame
         enhanced_img.animation.current_frame = enhanced_img.animation.current_frame + 1
         
         ' Handle looping
-        IF enhanced_img.animation.current_frame > = enhanced_img.animation.total_frames THEN
+        IF enhanced_img.animation.current_frame >= enhanced_img.animation.total_frames THEN
             SELECT CASE enhanced_img.animation.loop_mode
                 CASE 0 ' Play once
                     enhanced_img.animation.current_frame = enhanced_img.animation.total_frames - 1
@@ -1326,7 +1326,7 @@ END SUB
 ' @param frame_index Frame index to display (0-based)
 '
 SUB set_aseprite_frame (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, frame_index AS INTEGER)
-    IF frame_index > = 0 AND frame_index < enhanced_img.animation.total_frames THEN
+    IF frame_index >= 0 AND frame_index < enhanced_img.animation.total_frames THEN
         enhanced_img.animation.current_frame = frame_index
         enhanced_img.animation.elapsed_time  = 0
     END IF
@@ -1413,7 +1413,7 @@ END FUNCTION
 ' @author grymmjack
 ''
 FUNCTION is_valid_layer_index% (aseprite_img AS ASEPRITE_IMAGE, layer_index AS INTEGER)
-    IF layer_index > = 0 AND layer_index < aseprite_img.layer_count THEN
+    IF layer_index >= 0 AND layer_index < aseprite_img.layer_count THEN
         is_valid_layer_index% = _TRUE
     ELSE
         is_valid_layer_index% = _FALSE
@@ -1435,7 +1435,7 @@ END FUNCTION
 ' @author grymmjack
 ''
 FUNCTION is_valid_frame_index% (aseprite_img AS ASEPRITE_IMAGE, frame_index AS INTEGER)
-    IF frame_index > = 0 AND frame_index < aseprite_img.frame_count THEN
+    IF frame_index >= 0 AND frame_index < aseprite_img.frame_count THEN
         is_valid_frame_index% = _TRUE
     ELSE
         is_valid_frame_index% = _FALSE
@@ -1469,12 +1469,12 @@ FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index A
     DIM i            AS INTEGER
     
     ' Parse layer names from serialized string 
-    IF LEN(enhanced_img.layer_info) > 0 AND layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
+    IF LEN(enhanced_img.layer_info) > 0 AND layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
         ' Split by CHR$(0) to extract individual layer names
         start_pos = 1
         i         = 0
         
-        DO WHILE start_pos < = LEN(enhanced_img.layer_info) AND i < = layer_index
+        DO WHILE start_pos <= LEN(enhanced_img.layer_info) AND i <= layer_index
             ' Find next separator
             search_pos = INSTR(start_pos, enhanced_img.layer_info, CHR$(0))
             IF search_pos = 0 THEN search_pos = LEN(enhanced_img.layer_info) + 1
@@ -1509,7 +1509,7 @@ END FUNCTION
 '
 FUNCTION is_layer_visible% (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
     ' Check if layer index is valid
-    IF layer_index < 0 OR layer_index > = enhanced_img.num_layers THEN
+    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN
         is_layer_visible% = _FALSE
         EXIT FUNCTION
     END IF
@@ -1537,7 +1537,7 @@ END FUNCTION
 '
 SUB set_layer_visibility (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER, visible AS INTEGER)
     ' Validate layer index
-    IF layer_index < 0 OR layer_index > = enhanced_img.num_layers THEN EXIT SUB
+    IF layer_index < 0 OR layer_index >= enhanced_img.num_layers THEN EXIT SUB
     IF LEN(enhanced_img.layer_visibility) < enhanced_img.num_layers THEN EXIT SUB
     
     ' Check if visibility is already set to the desired state
@@ -1595,7 +1595,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
         END IF
     NEXT i
     
-    IF visible_count = 1 AND target_layer_index > = 0 THEN
+    IF visible_count = 1 AND target_layer_index >= 0 THEN
         ' Only one layer is visible - try to load that specific layer's pixel data
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Attempting to load specific layer data for layer " + STR$(target_layer_index)
         temp_image = load_specific_layer_image&(enhanced_img.base_image, target_layer_index)
@@ -1811,7 +1811,7 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
     DIM aseprite_img AS ASEPRITE_IMAGE
     load_aseprite_image filename, aseprite_img
     
-    IF aseprite_img.header.width < = 0 THEN
+    IF aseprite_img.header.width <= 0 THEN
         load_specific_layer_image_enhanced& = 0
         EXIT FUNCTION
     END IF
@@ -1949,7 +1949,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers < = 0 THEN
+    IF enhanced_img.num_layers <= 0 THEN
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -1971,7 +1971,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
         NEXT i
     ELSE
         ' Use layer index directly
-        IF layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
+        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
             target_index = layer_index
         END IF
     END IF
@@ -2171,7 +2171,7 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     width  = aseprite_img.header.width
     height = aseprite_img.header.height
 
-    IF width < = 0 OR height < = 0 THEN
+    IF width <= 0 OR height <= 0 THEN
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: invalid dimensions"
         EXIT FUNCTION
     END IF

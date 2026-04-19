@@ -54,7 +54,7 @@ FUNCTION create_image_from_aseprite_clean& (aseprite_img AS ASEPRITE_IMAGE)
     END IF
     
     ' Create a new 32-bit image with the Aseprite dimensions
-    IF aseprite_img.header.width < = 0 OR aseprite_img.header.height < = 0 THEN
+    IF aseprite_img.header.width <= 0 OR aseprite_img.header.height <= 0 THEN
         create_image_from_aseprite_clean& = 0
         EXIT FUNCTION
     END IF

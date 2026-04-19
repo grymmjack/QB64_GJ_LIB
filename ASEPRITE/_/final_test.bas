@@ -26,7 +26,7 @@ _ECHO "Loading ASEPRITE image..."
 DIM aseprite_img AS ASEPRITE_IMAGE
 load_aseprite TEST_FILE$, aseprite_img
 
-IF aseprite_img.width < = 0 THEN
+IF aseprite_img.width <= 0 THEN
     _ECHO "ERROR: Failed to load ASEPRITE file"
     SYSTEM
 END IF

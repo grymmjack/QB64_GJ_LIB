@@ -396,7 +396,7 @@ FUNCTION GJ_IMGADJ_Gamma (sourceImg AS LONG, direction AS STRING, amount AS INTE
         gamma = 1.0 - (amount / 100.0)
     END IF
     
-    IF gamma < = 0 THEN gamma = 0.1
+    IF gamma <= 0 THEN gamma = 0.1
     
     ' Create lookup table for gamma correction (much faster than repeated power calculations)
     DIM gammaTable(0 TO 255)
@@ -567,7 +567,7 @@ FUNCTION GJ_IMGADJ_Hue (sourceImg AS LONG, direction AS STRING, amount AS INTEGE
             WHILE hueVal < 0
                 hueVal = hueVal + 360
             WEND
-            WHILE hueVal > = 360
+            WHILE hueVal >= 360
                 hueVal = hueVal - 360
             WEND
             
@@ -600,7 +600,7 @@ FUNCTION GJ_IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
     DIM resultImg AS LONG
     resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    IF radius < = 0 THEN
+    IF radius <= 0 THEN
         GJ_IMGADJ_Blur = resultImg
         EXIT FUNCTION
     END IF
@@ -630,7 +630,7 @@ FUNCTION GJ_IMGADJ_Blur (sourceImg AS LONG, radius AS INTEGER)
                     sx = x + dx
                     sy = y + dy
                     
-                    IF sx > = 0 AND sx < w AND sy > = 0 AND sy < h THEN
+                    IF sx >= 0 AND sx < w AND sy >= 0 AND sy < h THEN
                         DIM pixel AS _UNSIGNED LONG
                         pixel = _MEMGET(tempMem, tempMem.OFFSET + (sy * w + sx) * 4, _UNSIGNED LONG)
                         r = r + _RED32(pixel)
@@ -680,7 +680,7 @@ FUNCTION GJ_IMGADJ_Glow (sourceImg AS LONG, radius AS INTEGER, intensity AS INTE
     DIM resultImg AS LONG
     resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    IF radius < = 0 OR intensity < = 0 THEN
+    IF radius <= 0 OR intensity <= 0 THEN
         GJ_IMGADJ_Glow = resultImg
         EXIT FUNCTION
     END IF
@@ -758,7 +758,7 @@ FUNCTION GJ_IMGADJ_FilmGrain (sourceImg AS LONG, amount AS INTEGER)
     DIM resultImg AS LONG
     resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    IF amount < = 0 THEN
+    IF amount <= 0 THEN
         GJ_IMGADJ_FilmGrain = resultImg
         EXIT FUNCTION
     END IF
@@ -831,7 +831,7 @@ FUNCTION GJ_IMGADJ_Vignette (sourceImg AS LONG, strength AS SINGLE)
     DIM resultImg AS LONG
     resultImg = GJ_IMGADJ_CloneImage&(sourceImg)
     
-    IF strength < = 0 THEN
+    IF strength <= 0 THEN
         GJ_IMGADJ_Vignette = resultImg
         EXIT FUNCTION
     END IF
@@ -1097,9 +1097,9 @@ FUNCTION GJ_IMGADJ_Threshold (sourceImg AS LONG, threshold AS INTEGER, mode AS I
             gray = INT(0.299 * r + 0.587 * g + 0.114 * b)
             
             IF mode = GJ_IMGADJ_THRESHOLD_BINARY THEN
-                IF gray > = threshold THEN newColor = 255 ELSE newColor = 0
+                IF gray >= threshold THEN newColor = 255 ELSE newColor = 0
             ELSE ' GJ_IMGADJ_THRESHOLD_INVERTED
-                IF gray > = threshold THEN newColor = 0 ELSE newColor = 255
+                IF gray >= threshold THEN newColor = 0 ELSE newColor = 255
             END IF
             
             pixel = _RGB32(newColor, newColor, newColor)
@@ -1196,9 +1196,9 @@ FUNCTION GJ_IMGADJ_Levels (sourceImg AS LONG, inputMin AS INTEGER, inputMax AS I
     outputRange = outputMax - outputMin
     
     FOR i = 0 TO 255
-        IF i < = inputMin THEN
+        IF i <= inputMin THEN
             levelsTable(i) = outputMin
-        ELSEIF i > = inputMax THEN
+        ELSEIF i >= inputMax THEN
             levelsTable(i) = outputMax
         ELSE
             levelsTable(i) = outputMin + INT(((i - inputMin) * outputRange) / inputRange)
@@ -1901,7 +1901,7 @@ FUNCTION GJ_IMGADJ_ApplyOrderedMatrix& (sourceImg AS LONG, matrix() AS INTEGER, 
             newGray   = _CLAMP(newGray, 0, 255)
             
             ' Quantize to binary (0 or 255) for dithering effect
-            IF newGray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF newGray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
@@ -1970,7 +1970,7 @@ FUNCTION GJ_IMGADJ_ApplyErrorDiffusion& (sourceImg AS LONG, algorithm AS INTEGER
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Calculate error
             errorVal = (gray - newGray) * amount
@@ -2306,7 +2306,7 @@ FUNCTION GJ_IMGADJ_DitherFalseFloydSteinberg& (sourceImg AS LONG, amount AS SING
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Calculate error for next pixel (simplified propagation)
             errorVal = (gray - newGray) * amount * 0.5
@@ -2427,7 +2427,7 @@ FUNCTION GJ_IMGADJ_DitherRandom& (sourceImg AS LONG, amount AS SINGLE)
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
@@ -2491,7 +2491,7 @@ FUNCTION GJ_IMGADJ_DitherBlueNoise& (sourceImg AS LONG, amount AS SINGLE)
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
@@ -2587,7 +2587,7 @@ FUNCTION GJ_IMGADJ_DitherHalftone& (sourceImg AS LONG, amount AS SINGLE)
             distance = SQR((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY))
             
             ' Create dot pattern
-            IF distance < = dotRadius THEN newGray = 0 ELSE newGray = 255
+            IF distance <= dotRadius THEN newGray = 0 ELSE newGray = 255
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
@@ -2655,7 +2655,7 @@ FUNCTION GJ_IMGADJ_DitherSpiral& (sourceImg AS LONG, amount AS SINGLE)
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216
@@ -2722,7 +2722,7 @@ FUNCTION GJ_IMGADJ_DitherInterleavedGradientNoise& (sourceImg AS LONG, amount AS
             gray = _CLAMP(gray, 0, 255)
             
             ' Quantize to binary
-            IF gray > = 128 THEN newGray = 255 ELSE newGray = 0
+            IF gray >= 128 THEN newGray = 255 ELSE newGray = 0
             
             ' Store result
             pixelData = newGray + newGray * 256 + newGray * 65536 + a * 16777216

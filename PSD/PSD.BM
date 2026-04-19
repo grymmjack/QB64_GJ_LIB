@@ -83,20 +83,20 @@ FUNCTION PSD_decode_packbits$ (rleData AS STRING, expectedSize AS LONG)
     DIM dataLen AS LONG
     dataLen& = LEN(rleData$)
 
-    DO WHILE inPos& < = dataLen& AND outPos& < = expectedSize&
+    DO WHILE inPos& <= dataLen& AND outPos& <= expectedSize&
         DIM hdr AS INTEGER
         hdr% = ASC(rleData$, inPos&)
         IF hdr% > 127 THEN hdr% = hdr% - 256 ' convert to signed
         inPos& = inPos& + 1
 
-        IF hdr% > = 0 THEN
+        IF hdr% >= 0 THEN
             ' Literal run: copy next (hdr + 1) bytes verbatim
             DIM litCount AS INTEGER
             litCount% = hdr% + 1
             DIM avail    AS LONG
             avail& = expectedSize& - outPos& + 1
             IF litCount% > avail& THEN litCount% = avail&
-            IF inPos& + litCount% - 1 < = dataLen& THEN
+            IF inPos& + litCount% - 1 <= dataLen& THEN
                 MID$(result$, outPos&, litCount%) = MID$(rleData$, inPos&, litCount%)
             END IF
             outPos& = outPos& + litCount%
@@ -106,7 +106,7 @@ FUNCTION PSD_decode_packbits$ (rleData AS STRING, expectedSize AS LONG)
             ' Repeat run: repeat next byte (1 - hdr) times
             DIM runLen AS INTEGER
             runLen% = 1 - hdr%
-            IF inPos& < = dataLen& THEN
+            IF inPos& <= dataLen& THEN
                 DIM runByte   AS _UNSIGNED _BYTE
                 runByte = ASC(rleData$, inPos&)
                 DIM fillAvail AS LONG
@@ -388,7 +388,7 @@ FUNCTION PSD_load% (filename AS STRING)
 
         ' --- Additional layer information (tagged blocks) ---
         ' Each block: signature (4) + key (4) + length (4) + data
-        DO WHILE SEEK(fh%) < = extraEnd&& - 11 ' need > = 12 bytes for a tag header
+        DO WHILE SEEK(fh%) <= extraEnd&& - 11 ' need >= 12 bytes for a tag header
             DIM tagSig AS STRING * 4
             GET #fh%, , tagSig
             IF tagSig <> "8BIM" AND tagSig <> "8B64" THEN
@@ -409,7 +409,7 @@ FUNCTION PSD_load% (filename AS STRING)
             SELECT CASE tagKey
                 CASE "lsct", "lsdk"
                     ' Section divider — group info
-                    IF tagLen&& > = 4 THEN
+                    IF tagLen&& >= 4 THEN
                         DIM sectType AS LONG
                         sectType&                   = PSD_read_i32&(fh%)
                         PSD_LAYERS(i%).section_type = sectType&
@@ -422,10 +422,10 @@ FUNCTION PSD_load% (filename AS STRING)
 
                 CASE "luni"
                     ' Unicode layer name (UTF-16BE)
-                    IF tagLen&& > = 4 THEN
+                    IF tagLen&& >= 4 THEN
                         DIM uniLen AS LONG
                         uniLen& = PSD_read_i32&(fh%)
-                        IF uniLen& > 0 AND uniLen& < = 256 THEN
+                        IF uniLen& > 0 AND uniLen& <= 256 THEN
                             DIM uniName AS STRING
                             uniName$ = ""
                             DIM u       AS LONG
@@ -435,7 +435,7 @@ FUNCTION PSD_load% (filename AS STRING)
                                 GET #fh%, , highByte
                                 GET #fh%, , lowByte
                                 ' Extract ASCII portion (non-ASCII becomes "?")
-                                IF highByte = 0 AND lowByte > = 32 AND lowByte < = 126 THEN
+                                IF highByte = 0 AND lowByte >= 32 AND lowByte <= 126 THEN
                                     uniName$ = uniName$ + CHR$(lowByte)
                                 ELSEIF highByte > 0 OR lowByte > 126 THEN
                                     uniName$ = uniName$ + "?"
@@ -598,7 +598,7 @@ FUNCTION PSD_get_layer_image& (filename AS STRING, layer_index AS INTEGER)
     layW& = PSD_LAYERS(layer_index%).right - PSD_LAYERS(layer_index%).left
     layH& = PSD_LAYERS(layer_index%).bottom - PSD_LAYERS(layer_index%).top
 
-    IF layW& < = 0 OR layH& < = 0 THEN
+    IF layW& <= 0 OR layH& <= 0 THEN
         _LOGINFO "PSD: Layer" + STR$(layer_index%) + " has zero dimensions, skipping"
         PSD_get_layer_image& = 0
         EXIT FUNCTION
@@ -637,7 +637,7 @@ FUNCTION PSD_get_layer_image& (filename AS STRING, layer_index AS INTEGER)
         DIM chanDataLen AS LONG
         chanDataLen& = PSD_CHAN_INFO(layer_index%, ch%).data_length
 
-        IF chanDataLen& < = 2 THEN
+        IF chanDataLen& <= 2 THEN
             ' No meaningful data — skip
             IF chanDataLen& > 0 THEN SEEK #fh%, SEEK(fh%) + chanDataLen&
             _CONTINUE
@@ -729,7 +729,7 @@ FUNCTION PSD_get_layer_image& (filename AS STRING, layer_index AS INTEGER)
     ' Create QB64-PE 32-bit image from channel data
     DIM img AS LONG
     img& = _NEWIMAGE(layW&, layH&, 32)
-    IF img& > = -1 THEN
+    IF img& >= -1 THEN
         _LOGWARN "PSD: Failed to create image for layer" + STR$(layer_index%)
         PSD_get_layer_image& = 0
         EXIT FUNCTION

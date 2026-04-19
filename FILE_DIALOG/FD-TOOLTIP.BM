@@ -80,7 +80,7 @@ SUB FD_TOOLTIP_update
 
     IF FD_TT_visible THEN EXIT SUB  ' Already showing — nothing more to do
 
-    IF (TIMER - FD_TT_hoverTimer) > = FD_TT_DELAY! THEN
+    IF (TIMER - FD_TT_hoverTimer) >= FD_TT_DELAY! THEN
         FD_TT_visible  = -1
         FD_STATE.dirty = -1 ' Force a render frame so the tip appears
     END IF

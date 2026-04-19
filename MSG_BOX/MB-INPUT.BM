@@ -86,7 +86,7 @@ SUB MB_INPUT_mouse
         ' Close button [X] hover
         DIM closeX AS INTEGER
         closeX = MB_STATE.dialogW - MB_TITLE_BAR_H
-        IF ly > = 0 AND ly < MB_TITLE_BAR_H AND lx > = closeX THEN
+        IF ly >= 0 AND ly < MB_TITLE_BAR_H AND lx >= closeX THEN
             MB_STATE.hoverButton = -2 ' Special: close button
         END IF
 
@@ -94,7 +94,7 @@ SUB MB_INPUT_mouse
         IF MB_STATE.hoverButton = -1 THEN
             DIM bi AS INTEGER
             bi = MB_INPUT_hit_button%(lx, ly)
-            IF bi > = 0 THEN MB_STATE.hoverButton = bi
+            IF bi >= 0 THEN MB_STATE.hoverButton = bi
         END IF
     END IF
 
@@ -113,7 +113,7 @@ SUB MB_INPUT_mouse
         END IF
 
         ' Title bar drag
-        IF ly > = 0 AND ly < MB_TITLE_BAR_H AND lx < closeX THEN
+        IF ly >= 0 AND ly < MB_TITLE_BAR_H AND lx < closeX THEN
             MB_STATE.dragging = -1
             ' Store screen-absolute start position for drag delta
             MB_STATE.dragStartX = MB_STATE.mouseX + MB_STATE.dialogX
@@ -124,7 +124,7 @@ SUB MB_INPUT_mouse
         END IF
 
         ' Button click
-        IF MB_STATE.hoverButton > = 0 THEN
+        IF MB_STATE.hoverButton >= 0 THEN
             MB_STATE.focusedButton = MB_STATE.hoverButton
             MB_STATE.result        = MB_STATE.hoverButton
             MB_STATE.done          = -1
@@ -133,8 +133,8 @@ SUB MB_INPUT_mouse
 
         ' Input field click (route to TI widget with dialog-local coords)
         IF MB_STATE.mode = MB_MODE_INPUT AND MB_STATE.tiInputId > 0 THEN
-            IF lx > = MB_STATE.inputX AND lx < MB_STATE.inputX + MB_STATE.inputW THEN
-                IF ly > = MB_STATE.inputY AND ly < MB_STATE.inputY + MB_STATE.inputH THEN
+            IF lx >= MB_STATE.inputX AND lx < MB_STATE.inputX + MB_STATE.inputW THEN
+                IF ly >= MB_STATE.inputY AND ly < MB_STATE.inputY + MB_STATE.inputH THEN
                     TI_process_mouse lx, ly, -1
                     MB_STATE.dirty = -1
                 END IF
@@ -210,7 +210,7 @@ SUB MB_INPUT_keyboard (k AS LONG)
 
         CASE 13    ' Enter
             ' Activate focused button
-            IF MB_STATE.focusedButton > = 0 AND MB_STATE.focusedButton < MB_STATE.buttonCount THEN
+            IF MB_STATE.focusedButton >= 0 AND MB_STATE.focusedButton < MB_STATE.buttonCount THEN
                 MB_STATE.result = MB_STATE.focusedButton
                 MB_STATE.done   = -1
             END IF
@@ -226,7 +226,7 @@ SUB MB_INPUT_keyboard (k AS LONG)
             END IF
             ' Cycle button focus
             MB_STATE.focusedButton = MB_STATE.focusedButton + 1
-            IF MB_STATE.focusedButton > = MB_STATE.buttonCount THEN
+            IF MB_STATE.focusedButton >= MB_STATE.buttonCount THEN
                 IF MB_STATE.mode = MB_MODE_INPUT AND MB_STATE.tiInputId > 0 THEN
                     ' Wrap back to input field
                     MB_STATE.focusedButton = 0
@@ -240,7 +240,7 @@ SUB MB_INPUT_keyboard (k AS LONG)
         CASE 32    ' Space
             ' Activate focused button (like Enter)
             IF TI_focusedId = 0 THEN
-                IF MB_STATE.focusedButton > = 0 AND MB_STATE.focusedButton < MB_STATE.buttonCount THEN
+                IF MB_STATE.focusedButton >= 0 AND MB_STATE.focusedButton < MB_STATE.buttonCount THEN
                     MB_STATE.result = MB_STATE.focusedButton
                     MB_STATE.done   = -1
                 END IF
@@ -274,7 +274,7 @@ FUNCTION MB_INPUT_hit_button% (lx AS INTEGER, ly AS INTEGER)
     y1 = MB_STATE.buttonBarY
     by = y1 + (MB_BUTTON_BAR_H - MB_BUTTON_H) \ 2
 
-    IF ly < by OR ly > = by + MB_BUTTON_H THEN EXIT FUNCTION
+    IF ly < by OR ly >= by + MB_BUTTON_H THEN EXIT FUNCTION
 
     DIM totalW AS INTEGER, startX AS INTEGER
     DIM i      AS INTEGER, bx AS INTEGER
@@ -284,7 +284,7 @@ FUNCTION MB_INPUT_hit_button% (lx AS INTEGER, ly AS INTEGER)
 
     FOR i = 0 TO MB_STATE.buttonCount - 1
         bx = startX + i * (MB_BUTTON_W + MB_BUTTON_GAP)
-        IF lx > = bx AND lx < bx + MB_BUTTON_W THEN
+        IF lx >= bx AND lx < bx + MB_BUTTON_W THEN
             MB_INPUT_hit_button% = i
             EXIT FUNCTION
         END IF

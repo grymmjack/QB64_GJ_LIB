@@ -46,7 +46,7 @@ DIM layerImg AS LONG
 DIM ZOOM     AS INTEGER
 
 ' --- Parse command line or use default ---
-IF _COMMANDCOUNT > = 1 THEN
+IF _COMMANDCOUNT >= 1 THEN
     filename$ = COMMAND$(1)
 ELSE
     filename$ = "./test-files/DJ Trapezoid - Pumpkin Head.psd"
@@ -119,9 +119,9 @@ IF compositeW& > 0 AND compositeH& > 0 THEN
     DIM maxW AS LONG, maxH AS LONG
     maxW& = _DESKTOPWIDTH - 100
     maxH& = _DESKTOPHEIGHT - 100
-    IF compositeW& * 4 < = maxW& AND compositeH& * 4 < = maxH& THEN
+    IF compositeW& * 4 <= maxW& AND compositeH& * 4 <= maxH& THEN
         ZOOM% = 4
-    ELSEIF compositeW& * 2 < = maxW& AND compositeH& * 2 < = maxH& THEN
+    ELSEIF compositeW& * 2 <= maxW& AND compositeH& * 2 <= maxH& THEN
         ZOOM% = 2
     END IF
 

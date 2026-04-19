@@ -134,8 +134,8 @@ DO
     END SELECT
     
     ' Ensure input min < input max and output min < output max
-    IF inputMin > = inputMax THEN inputMin = inputMax - 1
-    IF outputMin > = outputMax THEN outputMin = outputMax - 1
+    IF inputMin >= inputMax THEN inputMin = inputMax - 1
+    IF outputMin >= outputMax THEN outputMin = outputMax - 1
     
     _LIMIT 60
 LOOP UNTIL _KEYDOWN(27) ' ESC key

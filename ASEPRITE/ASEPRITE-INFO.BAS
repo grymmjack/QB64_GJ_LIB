@@ -449,7 +449,7 @@ SUB analyze_layer_chunk (file_handle AS INTEGER, chunk_size AS LONG)
     GET file_handle, , layer_name
     
     layer_count = layer_count + 1
-    IF layer_count < = MAX_LAYERS THEN
+    IF layer_count <= MAX_LAYERS THEN
         layers(layer_count).layer_index   = layer_count - 1
         layers(layer_count).layer_name    = layer_name
         layers(layer_count).layer_type    = layer_chunk.layer_type
@@ -478,7 +478,7 @@ SUB analyze_cel_chunk (file_handle AS INTEGER, chunk_size AS LONG, frame_index A
     GET file_handle, , cel_chunk
     
     cel_count = cel_count + 1
-    IF cel_count < = MAX_CELS THEN
+    IF cel_count <= MAX_CELS THEN
         cels(cel_count).frame_index = frame_index
         cels(cel_count).layer_index = cel_chunk.layer_index
         cels(cel_count).cel_type    = cel_chunk.cel_type
@@ -524,7 +524,7 @@ SUB analyze_cel_chunk (file_handle AS INTEGER, chunk_size AS LONG, frame_index A
         ' Update layer cel count
         DIM layer_idx AS INTEGER
         layer_idx = cel_chunk.layer_index + 1
-        IF layer_idx > = 1 AND layer_idx < = layer_count THEN
+        IF layer_idx >= 1 AND layer_idx <= layer_count THEN
             layers(layer_idx).cel_count = layers(layer_idx).cel_count + 1
         END IF
     END IF
@@ -564,7 +564,7 @@ SUB analyze_tags_chunk (file_handle AS INTEGER, chunk_size AS LONG)
     tag_count = tags_chunk.num_tags
     
     FOR i = 1 TO tags_chunk.num_tags
-        IF i < = MAX_TAGS THEN
+        IF i <= MAX_TAGS THEN
             GET file_handle, , tag_from
             GET file_handle, , tag_to
             GET file_handle, , tag_direction

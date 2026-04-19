@@ -181,7 +181,7 @@ SUB display_image_in_graphics (img_handle AS LONG, title AS STRING, sleep_second
     DO
         _LIMIT 30
         IF _KEYHIT <> 0 THEN EXIT DO
-        IF TIMER - start_time > = sleep_seconds THEN EXIT DO
+        IF TIMER - start_time >= sleep_seconds THEN EXIT DO
     LOOP
     
     ' No need to clean up - we're using the main graphics screen
@@ -202,7 +202,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers < = 0 THEN
+    IF enhanced_img.num_layers <= 0 THEN
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -229,7 +229,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
         NEXT i
     ELSE
         ' Use layer index directly
-        IF layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
+        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
             target_index = layer_index
             _ECHO "  Debug: Using layer index " + STR$(layer_index)
         END IF
@@ -255,7 +255,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     NEXT j
     
     ' Set the desired frame
-    IF frame > = 0 AND frame < enhanced_img.num_frames THEN
+    IF frame >= 0 AND frame < enhanced_img.num_frames THEN
         set_aseprite_frame enhanced_img, frame
     END IF
     
@@ -288,7 +288,7 @@ FUNCTION create_aseprite_image_from_merged_layers& (filename AS STRING, frame AS
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers < = 0 THEN
+    IF enhanced_img.num_layers <= 0 THEN
         create_aseprite_image_from_merged_layers& = 0
         EXIT FUNCTION
     END IF
@@ -307,7 +307,7 @@ FUNCTION create_aseprite_image_from_merged_layers& (filename AS STRING, frame AS
     NEXT i
     
     ' Set the desired frame
-    IF frame > = 0 AND frame < enhanced_img.num_frames THEN
+    IF frame >= 0 AND frame < enhanced_img.num_frames THEN
         set_aseprite_frame enhanced_img, frame
         _ECHO "  Debug: Set frame to " + STR$(frame)
     END IF

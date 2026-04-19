@@ -89,8 +89,8 @@ DO
         
         ' Apply non-black adjustments (preserves black pixels)
         DIM brightDir AS STRING, contrastDir AS STRING
-        IF brightness > = 0 THEN brightDir = "+" ELSE brightDir = "-"
-        IF contrast > = 0 THEN contrastDir = "+" ELSE contrastDir = "-"
+        IF brightness >= 0 THEN brightDir = "+" ELSE brightDir = "-"
+        IF contrast >= 0 THEN contrastDir = "+" ELSE contrastDir = "-"
         
         nonBlackAdjusted = GJ_IMGADJ_BrightnessContrastNonBlack(originalImage, brightDir, ABS(brightness), contrastDir, ABS(contrast))
         

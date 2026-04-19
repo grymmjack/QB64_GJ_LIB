@@ -529,7 +529,7 @@ SUB ARR_UBYTE.gte(source_arr~%%(), dest_arr~%%(), value~%%)
     lb& = LBOUND(source_arr~%%) : ub& = UBOUND(source_arr~%%)
     DIM work_arr(0) AS _UNSIGNED _BYTE
     FOR i& = lb& TO ub&
-        IF source_arr~%%(i&) > = value~%% THEN
+        IF source_arr~%%(i&) >= value~%% THEN
             CALL ARR_UBYTE.push(work_arr~%%(), source_arr~%%(i&))
         END IF
     NEXT i&
@@ -573,7 +573,7 @@ SUB ARR_UBYTE.lte(source_arr~%%(), dest_arr~%%(), value~%%)
     lb& = LBOUND(source_arr~%%) : ub& = UBOUND(source_arr~%%)
     DIM work_arr(0) AS _UNSIGNED _BYTE
     FOR i& = lb& TO ub&
-        IF source_arr~%%(i&) < = value~%% THEN
+        IF source_arr~%%(i&) <= value~%% THEN
             CALL ARR_UBYTE.push(work_arr~%%(), source_arr~%%(i&))
         END IF
     NEXT i&
@@ -612,7 +612,7 @@ SUB ARR_UBYTE.insert(arr~%%(), value~%%, index%)
     DIM tmp AS _UNSIGNED _BYTE
     DIM work_arr(0) AS _UNSIGNED _BYTE
     lb& = LBOUND(arr~%%) : ub& = UBOUND(arr~%%)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_UBYTE.push(work_arr~%%(), arr~%%(i&))
@@ -640,7 +640,7 @@ SUB ARR_UBYTE.remove(arr~%%(), index%)
     DIM tmp AS _UNSIGNED _BYTE
     DIM work_arr(0) AS _UNSIGNED _BYTE
     lb& = LBOUND(arr~%%) : ub& = UBOUND(arr~%%)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_UBYTE.push(work_arr~%%(), arr~%%(i&))
@@ -733,7 +733,7 @@ SUB ARR_UBYTE.between(source_arr~%%(), dest_arr~%%(), min~%%, max~%%)
     lb& = LBOUND(source_arr~%%) : ub& = UBOUND(source_arr~%%)
     DIM work_arr(0) AS _UNSIGNED _BYTE
     FOR i& = lb& TO ub&
-        IF source_arr~%%(i&) > = min~%% _
+        IF source_arr~%%(i&) >= min~%% _
         AND source_arr~%%(i&) <= max~%% THEN
             CALL ARR_UBYTE.push(work_arr~%%(), source_arr~%%(i&))
         END IF
@@ -811,10 +811,10 @@ SUB ARR_UBYTE.quicksort(arr~%%(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% > = 2 THEN 
+    IF pivot% - start% >= 2 THEN 
         CALL ARR_UBYTE.quicksort(arr~%%(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% > = 2 THEN 
+    IF finish% - pivot% >= 2 THEN 
         CALL ARR_UBYTE.quicksort(arr~%%(), pivot% + 1, finish%, order%)
     END IF
 END SUB

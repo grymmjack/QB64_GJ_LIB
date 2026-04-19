@@ -113,11 +113,11 @@ DO
             detailY = 200 + _HEIGHT(originalImage) + 20
             
             COLOR _RGB32(200, 200, 255) ' Light blue for effect details
-            IF ditherAmount < = 0.2 THEN
+            IF ditherAmount <= 0.2 THEN
                 _PRINTSTRING (10, detailY), "Low amount: Subtle noise texture, minimal impact on original"
-            ELSEIF ditherAmount < = 0.5 THEN
+            ELSEIF ditherAmount <= 0.5 THEN
                 _PRINTSTRING (10, detailY), "Medium amount: Visible noise pattern, good for film grain effect"
-            ELSEIF ditherAmount < = 0.8 THEN
+            ELSEIF ditherAmount <= 0.8 THEN
                 _PRINTSTRING (10, detailY), "High amount: Strong noise texture, artistic grain effect"
             ELSE
                 _PRINTSTRING (10, detailY), "Maximum amount: Full noise impact, maximum randomization"

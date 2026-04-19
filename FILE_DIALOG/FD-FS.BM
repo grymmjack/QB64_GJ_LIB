@@ -206,7 +206,7 @@ SUB FD_FS_sort (sortField AS INTEGER, ascending AS INTEGER)
     FOR i = 1 TO n - 1
         tempEntry = FD_entries(i)
         j         = i - 1
-        DO WHILE j > = 0
+        DO WHILE j >= 0
             IF NOT FD_FS_should_swap%(FD_entries(j), tempEntry, sortField, ascending) THEN EXIT DO
             FD_entries(j + 1) = FD_entries(j)
             j = j - 1
@@ -285,7 +285,7 @@ SUB FD_FS_apply_filter
     count = 0
 
     ' Get active filter pattern
-    IF FD_STATE.activeFilter > = 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
+    IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
         filterPattern = RTRIM$(FD_filters(FD_STATE.activeFilter).pattern)
     ELSE
         filterPattern = ""
@@ -429,7 +429,7 @@ FUNCTION FD_FS_format_size$ (bytes AS _INTEGER64)
     ELSEIF bytes < 1073741824 THEN
         DIM mb AS SINGLE
         mb = bytes / 1048576
-        IF mb > = 10 THEN
+        IF mb >= 10 THEN
             FD_FS_format_size$ = LTRIM$(STR$(INT(mb))) + " MB"
         ELSE
             FD_FS_format_size$ = LEFT$(LTRIM$(STR$(INT(mb * 10) / 10)), 4) + " MB"
@@ -445,7 +445,7 @@ END FUNCTION
 ' FD_FS_format_date$ — Human-readable file date from epoch seconds
 ' --------------------------------------------------------------------------
 FUNCTION FD_FS_format_date$ (epoch AS _INTEGER64)
-    IF epoch < = 0 THEN
+    IF epoch <= 0 THEN
         FD_FS_format_date$ = ""
         EXIT FUNCTION
     END IF

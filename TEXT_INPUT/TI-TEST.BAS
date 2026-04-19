@@ -149,7 +149,7 @@ DO
         statusLine = "Focused: #" + LTRIM$(STR$(TI_focusedId))
         statusLine = statusLine + "  Cursor: " + LTRIM$(STR$(TI_inputs(TI_focusedId).cursorPos))
         statusLine = statusLine + "  Len: " + LTRIM$(STR$(TI_inputs(TI_focusedId).textLen))
-        IF TI_inputs(TI_focusedId).selStart > = 0 THEN
+        IF TI_inputs(TI_focusedId).selStart >= 0 THEN
             statusLine = statusLine + "  Sel: " + LTRIM$(STR$(TI_inputs(TI_focusedId).selStart))
             statusLine = statusLine + "-" + LTRIM$(STR$(TI_inputs(TI_focusedId).selEnd))
         END IF

@@ -13,7 +13,7 @@ $INCLUDEONCE
 ' MB_RENDER_all — Master render function: draws the entire dialog
 ' --------------------------------------------------------------------------
 SUB MB_RENDER_all
-    IF MB_STATE.imgHandle > = -1 THEN EXIT SUB
+    IF MB_STATE.imgHandle >= -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST
@@ -37,8 +37,8 @@ END SUB
 ' MB_RENDER_blit — Composite dialog over screen background
 ' --------------------------------------------------------------------------
 SUB MB_RENDER_blit
-    IF MB_STATE.imgHandle > = -1 THEN EXIT SUB
-    IF MB_STATE.screenShot > = -1 THEN EXIT SUB
+    IF MB_STATE.imgHandle >= -1 THEN EXIT SUB
+    IF MB_STATE.screenShot >= -1 THEN EXIT SUB
 
     DIM oldDest AS LONG
     oldDest = _DEST

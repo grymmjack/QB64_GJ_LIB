@@ -529,7 +529,7 @@ SUB ARR_UINT.gte(source_arr~%(), dest_arr~%(), value~%)
     lb& = LBOUND(source_arr~%) : ub& = UBOUND(source_arr~%)
     DIM work_arr(0) AS _UNSIGNED INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr~%(i&) > = value~% THEN
+        IF source_arr~%(i&) >= value~% THEN
             CALL ARR_UINT.push(work_arr~%(), source_arr~%(i&))
         END IF
     NEXT i&
@@ -573,7 +573,7 @@ SUB ARR_UINT.lte(source_arr~%(), dest_arr~%(), value~%)
     lb& = LBOUND(source_arr~%) : ub& = UBOUND(source_arr~%)
     DIM work_arr(0) AS _UNSIGNED INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr~%(i&) < = value~% THEN
+        IF source_arr~%(i&) <= value~% THEN
             CALL ARR_UINT.push(work_arr~%(), source_arr~%(i&))
         END IF
     NEXT i&
@@ -612,7 +612,7 @@ SUB ARR_UINT.insert(arr~%(), value~%, index%)
     DIM tmp AS _UNSIGNED INTEGER
     DIM work_arr(0) AS _UNSIGNED INTEGER
     lb& = LBOUND(arr~%) : ub& = UBOUND(arr~%)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_UINT.push(work_arr~%(), arr~%(i&))
@@ -640,7 +640,7 @@ SUB ARR_UINT.remove(arr~%(), index%)
     DIM tmp AS _UNSIGNED INTEGER
     DIM work_arr(0) AS _UNSIGNED INTEGER
     lb& = LBOUND(arr~%) : ub& = UBOUND(arr~%)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_UINT.push(work_arr~%(), arr~%(i&))
@@ -733,7 +733,7 @@ SUB ARR_UINT.between(source_arr~%(), dest_arr~%(), min~%, max~%)
     lb& = LBOUND(source_arr~%) : ub& = UBOUND(source_arr~%)
     DIM work_arr(0) AS _UNSIGNED INTEGER
     FOR i& = lb& TO ub&
-        IF source_arr~%(i&) > = min~% _
+        IF source_arr~%(i&) >= min~% _
         AND source_arr~%(i&) <= max~% THEN
             CALL ARR_UINT.push(work_arr~%(), source_arr~%(i&))
         END IF
@@ -811,10 +811,10 @@ SUB ARR_UINT.quicksort(arr~%(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% > = 2 THEN 
+    IF pivot% - start% >= 2 THEN 
         CALL ARR_UINT.quicksort(arr~%(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% > = 2 THEN 
+    IF finish% - pivot% >= 2 THEN 
         CALL ARR_UINT.quicksort(arr~%(), pivot% + 1, finish%, order%)
     END IF
 END SUB

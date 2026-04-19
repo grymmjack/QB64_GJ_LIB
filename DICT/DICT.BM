@@ -80,7 +80,7 @@ END FUNCTION
 FUNCTION DICT.get_key_by_index$(d() AS DICTIONARY, index%)
     DIM AS INTEGER ub, lb
     ub% = UBOUND(d) : lb% = LBOUND(d)
-    IF index% > = lb% AND index% < = ub% THEN
+    IF index% >= lb% AND index% <= ub% THEN
         DICT.get_key_by_index$ = d(index%).key$
     END IF
 END FUNCTION
@@ -96,7 +96,7 @@ END FUNCTION
 FUNCTION DICT.get_val_by_index$(d() AS DICTIONARY, index%)
     DIM AS INTEGER ub, lb
     ub% = UBOUND(d) : lb% = LBOUND(d)
-    IF index% > = lb% AND index% < = ub% THEN
+    IF index% >= lb% AND index% <= ub% THEN
         DICT.get_val_by_index$ = d(index%).val$
     END IF
 END FUNCTION

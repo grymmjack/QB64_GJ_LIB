@@ -74,7 +74,7 @@ PRINT
 layer_width  = aseprite_img.header.width
 layer_height = aseprite_img.header.height
 
-IF layer_width < = 0 OR layer_height < = 0 THEN
+IF layer_width <= 0 OR layer_height <= 0 THEN
     PRINT "ERROR: Invalid image dimensions"
     SYSTEM
 END IF

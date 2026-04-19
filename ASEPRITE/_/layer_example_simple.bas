@@ -170,7 +170,7 @@ FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_
             GET file_handle, , cel_width
             GET file_handle, , cel_height
             
-            IF cel_width < = 0 OR cel_height < = 0 THEN EXIT FUNCTION
+            IF cel_width <= 0 OR cel_height <= 0 THEN EXIT FUNCTION
             
             ' Read compressed data
             data_size       = chunk_size - 16 - 4 ' chunk header + cel header + width/height
@@ -191,7 +191,7 @@ FUNCTION extract_cel_simple& (file_handle AS INTEGER, cel_chunk AS ASEPRITE_CEL_
                 FOR x = 0 TO cel_width - 1
                     pixel_offset = (y * cel_width + x) * (color_depth \ 8) + 1
                     
-                    IF pixel_offset + (color_depth \ 8) < = LEN(uncompressed_data) THEN
+                    IF pixel_offset + (color_depth \ 8) <= LEN(uncompressed_data) THEN
                         SELECT CASE color_depth
                             CASE 32 ' RGBA
                                 DIM r AS _UNSIGNED _BYTE

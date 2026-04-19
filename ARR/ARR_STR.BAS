@@ -418,7 +418,7 @@ SUB ARR_STR.insert(arr$(), value$, index%)
     DIM tmp AS STRING
     DIM work_arr(0) AS STRING
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_STR.push(work_arr$(), arr$(i&))
@@ -446,7 +446,7 @@ SUB ARR_STR.remove(arr$(), index%)
     DIM tmp AS STRING
     DIM work_arr(0) AS STRING
     lb& = LBOUND(arr$) : ub& = UBOUND(arr$)
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_STR.push(work_arr$(), arr$(i&))
@@ -539,7 +539,7 @@ SUB ARR_STR.between(source_arr$(), dest_arr$(), min%, max%)
     lb& = LBOUND(source_arr$) : ub& = UBOUND(source_arr$)
     DIM work_arr(0) AS STRING
     FOR i& = lb& TO ub&
-        IF VAL(source_arr$(i&)) > = min% _
+        IF VAL(source_arr$(i&)) >= min% _
         AND VAL(source_arr$(i&)) <= max% THEN
             CALL ARR_STR.push(work_arr$(), source_arr$(i&))
         END IF
@@ -616,10 +616,10 @@ SUB ARR_STR.quicksort(arr$(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% > = 2 THEN 
+    IF pivot% - start% >= 2 THEN 
         CALL ARR_STR.quicksort(arr$(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% > = 2 THEN 
+    IF finish% - pivot% >= 2 THEN 
         CALL ARR_STR.quicksort(arr$(), pivot% + 1, finish%, order%)
     END IF
 END SUB

@@ -140,11 +140,11 @@ DO
         ' Effect level description
         yOffset = yOffset + 120
         COLOR _RGB32(200, 200, 255) ' Light blue for effect details
-        IF ditherAmount < = 0.2 THEN
+        IF ditherAmount <= 0.2 THEN
             _PRINTSTRING (xOffset, yOffset), "Low amount: Subtle texture, preserves smooth gradients"
-        ELSEIF ditherAmount < = 0.5 THEN
+        ELSEIF ditherAmount <= 0.5 THEN
             _PRINTSTRING (xOffset, yOffset), "Medium amount: Visible texture, good detail balance"
-        ELSEIF ditherAmount < = 0.8 THEN
+        ELSEIF ditherAmount <= 0.8 THEN
             _PRINTSTRING (xOffset, yOffset), "High amount: Strong texture, artistic effect"
         ELSE
             _PRINTSTRING (xOffset, yOffset), "Maximum amount: Full error diffusion, maximum detail"

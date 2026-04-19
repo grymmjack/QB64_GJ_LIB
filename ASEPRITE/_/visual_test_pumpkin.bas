@@ -116,7 +116,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     load_aseprite_enhanced filename, enhanced_img
     
     ' Check if the enhanced image loaded successfully
-    IF enhanced_img.num_layers < = 0 THEN
+    IF enhanced_img.num_layers <= 0 THEN
         create_aseprite_image_from_layer& = 0
         EXIT FUNCTION
     END IF
@@ -138,7 +138,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
         NEXT i
     ELSE
         ' Use layer index directly
-        IF layer_index > = 0 AND layer_index < enhanced_img.num_layers THEN
+        IF layer_index >= 0 AND layer_index < enhanced_img.num_layers THEN
             target_index = layer_index
         END IF
     END IF
@@ -159,7 +159,7 @@ FUNCTION create_aseprite_image_from_layer& (filename AS STRING, layer_name AS ST
     NEXT j
     
     ' Set the desired frame
-    IF frame > = 0 AND frame < enhanced_img.num_frames THEN
+    IF frame >= 0 AND frame < enhanced_img.num_frames THEN
         set_aseprite_frame enhanced_img, frame
     END IF
     

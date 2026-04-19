@@ -529,7 +529,7 @@ SUB ARR_{UT}.gte(source_arr{SY}(), dest_arr{SY}(), value{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) > = value{SY} THEN
+        IF source_arr{SY}(i&) >= value{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
     NEXT i&
@@ -573,7 +573,7 @@ SUB ARR_{UT}.lte(source_arr{SY}(), dest_arr{SY}(), value{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) < = value{SY} THEN
+        IF source_arr{SY}(i&) <= value{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
     NEXT i&
@@ -612,7 +612,7 @@ SUB ARR_{UT}.insert(arr{SY}(), value{SY}, index%)
     DIM tmp AS {Q}
     DIM work_arr(0) AS {Q}
     lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index%
             CALL ARR_{UT}.push(work_arr{SY}(), arr{SY}(i&))
@@ -640,7 +640,7 @@ SUB ARR_{UT}.remove(arr{SY}(), index%)
     DIM tmp AS {Q}
     DIM work_arr(0) AS {Q}
     lb& = LBOUND(arr{SY}) : ub& = UBOUND(arr{SY})
-    IF index% > = lb& AND index% < = ub& THEN
+    IF index% >= lb& AND index% <= ub& THEN
         ' build new array up to index
         FOR i& = lb& TO index% - 1
             CALL ARR_{UT}.push(work_arr{SY}(), arr{SY}(i&))
@@ -733,7 +733,7 @@ SUB ARR_{UT}.between(source_arr{SY}(), dest_arr{SY}(), min{SY}, max{SY})
     lb& = LBOUND(source_arr{SY}) : ub& = UBOUND(source_arr{SY})
     DIM work_arr(0) AS {Q}
     FOR i& = lb& TO ub&
-        IF source_arr{SY}(i&) > = min{SY} _
+        IF source_arr{SY}(i&) >= min{SY} _
         AND source_arr{SY}(i&) <= max{SY} THEN
             CALL ARR_{UT}.push(work_arr{SY}(), source_arr{SY}(i&))
         END IF
@@ -811,10 +811,10 @@ SUB ARR_{UT}.quicksort(arr{SY}(), start%, finish%, order%)
     NEXT i&
 
     'then, sort the subarrays to each side of the pivot
-    IF pivot% - start% > = 2 THEN 
+    IF pivot% - start% >= 2 THEN 
         CALL ARR_{UT}.quicksort(arr{SY}(), start%, pivot% - 1, order%)
     END IF
-    IF finish% - pivot% > = 2 THEN 
+    IF finish% - pivot% >= 2 THEN 
         CALL ARR_{UT}.quicksort(arr{SY}(), pivot% + 1, finish%, order%)
     END IF
 END SUB
