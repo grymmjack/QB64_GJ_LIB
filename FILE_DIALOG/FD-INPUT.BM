@@ -1011,10 +1011,28 @@ END SUB
 ' FD_INPUT_button_bar_click — Handle click in button bar
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
+    DIM ifs AS INTEGER
+    DIM okLabel AS STRING
+    DIM btnW AS INTEGER
+    DIM btnTextW AS INTEGER
+    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+    okLabel = RTRIM$(FD_STATE.confirmLabel)
+    IF LEN(okLabel) = 0 THEN
+        SELECT CASE FD_STATE.mode
+            CASE FD_MODE_OPEN                  : okLabel = "OPEN"
+            CASE FD_MODE_SAVE, FD_MODE_SAVE_AS : okLabel = "SAVE"
+            CASE FD_MODE_CHOOSE_FOLDER         : okLabel = "SELECT"
+        END SELECT
+    END IF
+    btnTextW = FD_text_width%("CANCEL", ifs)
+    IF FD_text_width%(okLabel, ifs) > btnTextW THEN btnTextW = FD_text_width%(okLabel, ifs)
+    btnW = FD_BUTTON_W
+    IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
+
     ' Cancel button
     DIM cancelX AS INTEGER
-    cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
-    IF mx >= cancelX AND mx < cancelX + FD_BUTTON_W THEN
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
+    IF mx >= cancelX AND mx < cancelX + btnW THEN
         FD_STATE.done      = -1
         FD_STATE.confirmed = 0
         EXIT SUB
@@ -1022,8 +1040,8 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
 
     ' OK button
     DIM okX AS INTEGER
-    okX = cancelX - FD_BUTTON_W - FD_PADDING
-    IF mx >= okX AND mx < okX + FD_BUTTON_W THEN
+    okX = cancelX - btnW - FD_PADDING
+    IF mx >= okX AND mx < okX + btnW THEN
         FD_INPUT_confirm
         EXIT SUB
     END IF
@@ -1031,9 +1049,10 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     ' Filename field click (save mode)
     IF FD_STATE.mode = FD_MODE_SAVE OR FD_STATE.mode = FD_MODE_SAVE_AS THEN
         DIM fnX AS INTEGER
-        fnX = FD_PADDING + 72
+        fnX = FD_PADDING + FD_text_width%("FILENAME:", ifs) + FD_PADDING
         DIM fnW AS INTEGER
-        fnW = FD_STATE.dialogW - fnX - FD_BUTTON_W * 2 - FD_PADDING * 4
+        fnW = FD_STATE.dialogW - fnX - btnW * 2 - FD_PADDING * 4
+        IF fnW < 50 THEN fnW = 50
         IF mx >= fnX AND mx < fnX + fnW THEN
             FD_STATE.focusPane       = FD_FOCUS_FILENAME
             FD_STATE.pathInputActive = 0
@@ -1049,9 +1068,9 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     ' Filter dropdown button click
     IF FD_STATE.filterCount > 1 AND FD_STATE.mode <> FD_MODE_CHOOSE_FOLDER THEN
         DIM fCancelX AS INTEGER
-        fCancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
+        fCancelX = FD_STATE.dialogW - btnW - FD_PADDING
         DIM fOkX     AS INTEGER
-        fOkX = fCancelX - FD_BUTTON_W - FD_PADDING
+        fOkX = fCancelX - btnW - FD_PADDING
 
         DIM fLabel   AS STRING
         IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
@@ -1060,7 +1079,7 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
             fLabel = "All Files"
         END IF
         DIM fFilterW AS INTEGER
-        fFilterW = LEN(fLabel) * 8 + FD_PADDING * 2 + 16
+        fFilterW = FD_text_width%(fLabel, ifs) + FD_PADDING * 2 + 16
         DIM fFilterX AS INTEGER
         fFilterX = fOkX - fFilterW - FD_PADDING
 
@@ -1083,10 +1102,28 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
 
+    DIM ifs AS INTEGER
+    DIM okLabel AS STRING
+    DIM btnW AS INTEGER
+    DIM btnTextW AS INTEGER
+    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+    okLabel = RTRIM$(FD_STATE.confirmLabel)
+    IF LEN(okLabel) = 0 THEN
+        SELECT CASE FD_STATE.mode
+            CASE FD_MODE_OPEN                  : okLabel = "OPEN"
+            CASE FD_MODE_SAVE, FD_MODE_SAVE_AS : okLabel = "SAVE"
+            CASE FD_MODE_CHOOSE_FOLDER         : okLabel = "SELECT"
+        END SELECT
+    END IF
+    btnTextW = FD_text_width%("CANCEL", ifs)
+    IF FD_text_width%(okLabel, ifs) > btnTextW THEN btnTextW = FD_text_width%(okLabel, ifs)
+    btnW = FD_BUTTON_W
+    IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
+
     DIM cancelX AS INTEGER
-    cancelX = FD_STATE.dialogW - FD_BUTTON_W - FD_PADDING
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
     DIM okX     AS INTEGER
-    okX = cancelX - FD_BUTTON_W - FD_PADDING
+    okX = cancelX - btnW - FD_PADDING
 
     DIM curLabel AS STRING
     IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
@@ -1095,7 +1132,7 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
         curLabel = "All Files"
     END IF
     DIM filterW  AS INTEGER
-    filterW = LEN(curLabel) * 8 + FD_PADDING * 2 + 16
+    filterW = FD_text_width%(curLabel, ifs) + FD_PADDING * 2 + 16
     DIM filterX  AS INTEGER
     filterX = okX - filterW - FD_PADDING
 
@@ -1106,12 +1143,12 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
         DIM lbl  AS STRING
         lbl = RTRIM$(FD_filters(i).label)
         DIM lblW AS INTEGER
-        lblW = LEN(lbl) * 8 + FD_PADDING * 2
+        lblW = FD_text_width%(lbl, ifs) + FD_PADDING * 2
         IF lblW > popW THEN popW = lblW
     NEXT i
 
     DIM itemH AS INTEGER
-    itemH = 22
+    itemH = FD_text_height%(ifs) + 6
     DIM popH  AS INTEGER
     popH = FD_STATE.filterCount * itemH + 4
 

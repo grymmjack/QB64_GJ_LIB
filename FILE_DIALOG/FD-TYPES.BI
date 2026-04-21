@@ -185,6 +185,7 @@ TYPE FD_STATE_OBJ
     pathInputCursor AS INTEGER      ' Cursor position in path input
     tiPathId        AS INTEGER      ' TI widget ID for path input
     tiFileNameId    AS INTEGER      ' TI widget ID for filename input
+    tiFontHandle    AS LONG         ' Optional scaled TTF handle for TI widgets
 
     ' Filename input (for save mode)
     fileNameInput  AS STRING * 260  ' Filename text input (legacy, synced from TI)

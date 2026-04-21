@@ -230,6 +230,7 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     FD_STATE.confirmLabel = UCASE$(confirmLabel)
     FD_STATE.defaultExt   = defaultExt
     FD_STATE.scale        = 1
+    FD_STATE.tiFontHandle = 0
 
     ' Handle image handles
     FD_STATE.imgHandle        = -1
@@ -364,6 +365,11 @@ SUB FD_cleanup
         FD_THEME.fontHandle = 0
     END IF
 
+    IF FD_STATE.tiFontHandle > 0 THEN
+        _FREEFONT FD_STATE.tiFontHandle
+        FD_STATE.tiFontHandle = 0
+    END IF
+
     ' Destroy text input widgets
     IF FD_STATE.tiPathId >= 1 THEN TI_destroy FD_STATE.tiPathId
     IF FD_STATE.tiFileNameId >= 1 THEN TI_destroy FD_STATE.tiFileNameId
@@ -489,6 +495,25 @@ SUB FD_LAYOUT_calculate
     FD_STATE.rowHeight = FD_CFG.fontH * cfs + 4
     IF FD_STATE.rowHeight < FD_ROW_HEIGHT THEN FD_STATE.rowHeight = FD_ROW_HEIGHT
 
+    ' Keep fixed columns readable at larger font sizes.
+    DIM minTypeW AS INTEGER, minSizeW AS INTEGER, minDateW AS INTEGER
+    minTypeW = FD_text_width%("TYPE " + CHR$(24), sfs) + FD_PADDING * 2 + 2
+    minSizeW = FD_text_width%("SIZE " + CHR$(24), sfs) + FD_PADDING * 2 + 2
+    minDateW = FD_text_width%("MODIFIED " + CHR$(24), sfs) + FD_PADDING * 2 + 2
+
+    DIM minSizeDataW AS INTEGER, minDateDataW AS INTEGER
+    minSizeDataW = FD_text_width%("999.9 MB", cfs) + FD_PADDING * 2
+    minDateDataW = FD_text_width%("2026-12-31", cfs) + FD_PADDING * 2
+    IF minSizeW < minSizeDataW THEN minSizeW = minSizeDataW
+    IF minDateW < minDateDataW THEN minDateW = minDateDataW
+
+    IF FD_columns(1).minWidth < minTypeW THEN FD_columns(1).minWidth = minTypeW
+    IF FD_columns(2).minWidth < minSizeW THEN FD_columns(2).minWidth = minSizeW
+    IF FD_columns(3).minWidth < minDateW THEN FD_columns(3).minWidth = minDateW
+    IF FD_columns(1).width < FD_columns(1).minWidth THEN FD_columns(1).width = FD_columns(1).minWidth
+    IF FD_columns(2).width < FD_columns(2).minWidth THEN FD_columns(2).width = FD_columns(2).minWidth
+    IF FD_columns(3).width < FD_columns(3).minWidth THEN FD_columns(3).width = FD_columns(3).minWidth
+
     ' Content Y start (below title, path, toolbar)
     y                 = FD_STATE.titleBarH + FD_STATE.pathBarH + FD_STATE.toolBarH
     FD_STATE.contentY = y
@@ -539,11 +564,26 @@ SUB FD__update_text_input_geometry
         DIM fnX     AS INTEGER, fnW AS INTEGER
         DIM btnBarY AS INTEGER
         DIM ifs2    AS INTEGER
+        DIM okLabel AS STRING
+        DIM btnW    AS INTEGER
+        DIM btnTextW AS INTEGER
         ifs2    = FD_CFG.inputFontScale: IF ifs2 < 1 THEN ifs2 = 1
         btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
+        okLabel = RTRIM$(FD_STATE.confirmLabel)
+        IF LEN(okLabel) = 0 THEN
+            SELECT CASE FD_STATE.mode
+                CASE FD_MODE_OPEN                  : okLabel = "OPEN"
+                CASE FD_MODE_SAVE, FD_MODE_SAVE_AS : okLabel = "SAVE"
+                CASE FD_MODE_CHOOSE_FOLDER         : okLabel = "SELECT"
+            END SELECT
+        END IF
+        btnTextW = FD_text_width%("CANCEL", ifs2)
+        IF FD_text_width%(okLabel, ifs2) > btnTextW THEN btnTextW = FD_text_width%(okLabel, ifs2)
+        btnW = FD_BUTTON_W
+        IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
         ' Dynamic label width so TI starts just after "FILENAME:" text + gap
         fnX = FD_PADDING + FD_text_width%("FILENAME:", ifs2) + FD_PADDING
-        fnW = FD_STATE.dialogW - fnX - FD_BUTTON_W * 2 - FD_PADDING * 4
+        fnW = FD_STATE.dialogW - fnX - btnW * 2 - FD_PADDING * 4
         IF fnW < 50 THEN fnW = 50
         TI_set_geometry FD_STATE.tiFileNameId, fnX, btnBarY + 5, fnW, FD_STATE.buttonBarH - 10
     END IF
