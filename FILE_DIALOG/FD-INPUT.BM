@@ -248,13 +248,18 @@ SUB FD_INPUT_mouse
         ' Places pane — iterate to find entry under cursor
         IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
             DIM ttPlPy AS INTEGER
-            ttPlPy = FD_STATE.contentY + FD_PADDING
+            ttPlPy = FD_STATE.contentY + FD_PADDING - FD_STATE.placesScroll
             DIM ttPlI  AS INTEGER
             FOR ttPlI = 0 TO FD_STATE.placesCount - 1
                 IF FD_places(ttPlI).entryType = FD_PLACE_SEPARATOR THEN
                     ttPlPy = ttPlPy + FD_STATE.rowHeight \ 2
                     _CONTINUE
                 END IF
+                IF ttPlPy < FD_STATE.contentY THEN
+                    ttPlPy = ttPlPy + FD_STATE.rowHeight
+                    _CONTINUE
+                END IF
+                IF ttPlPy + FD_STATE.rowHeight > FD_STATE.contentY + FD_STATE.contentH THEN EXIT FOR
                 IF my >= ttPlPy AND my < ttPlPy + FD_STATE.rowHeight THEN
                     ttTarget = FD_TT_PLACE_ENTRY
                     ttDyn    = RTRIM$(FD_places(ttPlI).path)
@@ -752,7 +757,12 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
     DIM entryH AS INTEGER
     entryH = FD_STATE.rowHeight
 
-    py                   = FD_STATE.contentY + FD_PADDING
+    IF FD_STATE.mouseWheel <> 0 THEN
+        FD_STATE.placesScroll = FD_STATE.placesScroll + FD_STATE.mouseWheel * entryH * 3
+        FD_places_clamp_scroll
+    END IF
+
+    py                   = FD_STATE.contentY + FD_PADDING - FD_STATE.placesScroll
     FD_STATE.placesHover = -1
 
     FOR i = 0 TO FD_STATE.placesCount - 1
@@ -760,6 +770,12 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
             py = py + entryH \ 2
             _CONTINUE
         END IF
+
+        IF py < FD_STATE.contentY THEN
+            py = py + entryH
+            _CONTINUE
+        END IF
+        IF py + entryH > FD_STATE.contentY + FD_STATE.contentH THEN EXIT FOR
 
         IF my >= py AND my < py + entryH THEN
             FD_STATE.placesHover = i
@@ -770,6 +786,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
                     FD_remove_favorite RTRIM$(FD_places(i).path)
                     FD_save_favorites
                     FD_init_places
+                    FD_places_clamp_scroll
                     FD_STATE.dirty = -1
                 END IF
             ELSEIF justPressed THEN

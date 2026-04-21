@@ -326,6 +326,52 @@ SUB FD_FS_apply_filter
 END SUB
 
 ' --------------------------------------------------------------------------
+' FD_places_content_height% — Total pixel height of the places list
+' --------------------------------------------------------------------------
+FUNCTION FD_places_content_height% ()
+    DIM totalH AS INTEGER
+    DIM i      AS INTEGER
+    DIM entryH AS INTEGER
+
+    entryH = FD_STATE.rowHeight
+    IF entryH < 1 THEN entryH = FD_ROW_HEIGHT
+
+    totalH = FD_PADDING * 2
+    FOR i = 0 TO FD_STATE.placesCount - 1
+        IF FD_places(i).entryType = FD_PLACE_SEPARATOR THEN
+            totalH = totalH + entryH \ 2
+        ELSE
+            totalH = totalH + entryH
+        END IF
+    NEXT i
+
+    FD_places_content_height% = totalH
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_places_max_scroll% — Maximum scroll offset for the places pane
+' --------------------------------------------------------------------------
+FUNCTION FD_places_max_scroll% ()
+    DIM maxScroll AS INTEGER
+
+    maxScroll = FD_places_content_height% - FD_STATE.contentH
+    IF maxScroll < 0 THEN maxScroll = 0
+
+    FD_places_max_scroll% = maxScroll
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' FD_places_clamp_scroll — Clamp the places pane scroll offset
+' --------------------------------------------------------------------------
+SUB FD_places_clamp_scroll ()
+    DIM maxScroll AS INTEGER
+
+    maxScroll = FD_places_max_scroll%
+    IF FD_STATE.placesScroll < 0 THEN FD_STATE.placesScroll = 0
+    IF FD_STATE.placesScroll > maxScroll THEN FD_STATE.placesScroll = maxScroll
+END SUB
+
+' --------------------------------------------------------------------------
 ' FD_FS_recalc_scroll — Recalculate max scroll offset based on content
 ' --------------------------------------------------------------------------
 SUB FD_FS_recalc_scroll

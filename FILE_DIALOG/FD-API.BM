@@ -516,6 +516,7 @@ SUB FD_LAYOUT_calculate
 
     ' Recalculate scroll limits
     FD_FS_recalc_scroll
+    FD_places_clamp_scroll
 
     ' Update text input widget positions
     FD__update_text_input_geometry

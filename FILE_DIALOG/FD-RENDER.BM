@@ -341,16 +341,27 @@ SUB FD_RENDER_places
     pfs    = FD_CFG.placesFontScale: IF pfs < 1 THEN pfs = 1
     entryH = FD_STATE.rowHeight
 
-    py = y1 + FD_PADDING
+    py = y1 + FD_PADDING - FD_STATE.placesScroll
     FOR i = 0 TO FD_STATE.placesCount - 1
-        IF py + entryH > y1 + h THEN EXIT FOR
-
         IF FD_places(i).entryType = FD_PLACE_SEPARATOR THEN
             ' Draw separator line
-            LINE (x1 + FD_PADDING, py + entryH \ 2)-(x1 + w - FD_PADDING - 1, py + entryH \ 2), FD_CLR_DIVIDER~&
+            IF py + entryH \ 2 >= y1 AND py + entryH \ 2 <= y1 + h - 1 THEN
+                LINE (x1 + FD_PADDING, py + entryH \ 2)-(x1 + w - FD_PADDING - 1, py + entryH \ 2), FD_CLR_DIVIDER~&
+            END IF
             py = py + entryH \ 2
             _CONTINUE
         END IF
+
+        ' Do not render partial rows outside the places pane bounds.
+        IF py < y1 THEN
+            py = py + entryH
+            _CONTINUE
+        END IF
+        IF py + entryH <= y1 THEN
+            py = py + entryH
+            _CONTINUE
+        END IF
+        IF py + entryH > y1 + h THEN EXIT FOR
 
         ' Hover highlight
         IF i = FD_STATE.placesHover THEN
