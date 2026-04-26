@@ -479,7 +479,7 @@ SUB FD_LAYOUT_calculate
     ' iconScale, independent of fontScale). Otherwise large icons squeeze
     ' the bars and the rows visually touch.
     DIM iscBar AS INTEGER, iconBarH AS INTEGER
-    iscBar = FD_CFG.iconScale: IF iscBar < 1 THEN iscBar = 2
+    iscBar   = FD_CFG.iconScale: IF iscBar < 1 THEN iscBar = 2
     iconBarH = 11 * iscBar + 8
     IF FD_ICONS_has_png%(FD_ICON_TB_UP) THEN iconBarH = FD_iconW(FD_ICON_TB_UP) * iscBar + 8
 

@@ -399,7 +399,7 @@ SUB FD_RENDER_places
         iconDrawn = 0
         ' Inset places icons by btnPad (3) so they line up with the toolbar /
         ' path bar icons (which sit at FD_PADDING + 3 inside their buttons).
-        DIM plIconX AS INTEGER
+        DIM plIconX   AS INTEGER
         plIconX = x1 + FD_PADDING + 3
         IF FD_places(i).iconId > 0 THEN
             COLOR iconClr, _RGBA32(0, 0, 0, 0)
