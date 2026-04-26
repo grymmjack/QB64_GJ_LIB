@@ -30,10 +30,7 @@ SUB load_aseprite_image (img_path$, result AS ASEPRITE_IMAGE)
     DIM chunk_end_pos   AS LONG
     DIM actual_chunks   AS LONG
     DIM layer_name_len  AS INTEGER
-    DIM layer_name      AS STRING
-    DIM cel_width       AS INTEGER
-    DIM cel_height      AS INTEGER
-    
+
     ' Initialize result with enhanced metadata
     result.file_path      = img_path$
     result.is_valid       = _FALSE
@@ -382,8 +379,7 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     DIM screen_width  AS INTEGER, screen_height AS INTEGER
     DIM display_width AS INTEGER, display_height AS INTEGER
     DIM x_pos         AS INTEGER, y_pos AS INTEGER
-    DIM old_dest      AS LONG
-    
+
     IF aseprite_img.is_valid = _FALSE THEN
         _ECHO "Cannot display: Invalid Aseprite image"
         EXIT SUB
@@ -469,21 +465,15 @@ END SUB
 ' @return boolean _TRUE if successful, _FALSE if failed
 '
 FUNCTION load_aseprite_pixels% (aseprite_img AS ASEPRITE_IMAGE, target_image AS LONG)
-    DIM file_handle            AS INTEGER
-    DIM file_pos               AS LONG
-    DIM frame_num              AS INTEGER
-    DIM chunk_num              AS LONG
-    DIM frame_header           AS ASEPRITE_FRAME_HEADER
-    DIM chunk_header           AS ASEPRITE_CHUNK_HEADER
-    DIM cel_chunk              AS ASEPRITE_CEL_CHUNK
-    DIM cel_width              AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
-    DIM x                      AS INTEGER, y AS INTEGER
-    DIM pixel_data$, temp_byte AS _UNSIGNED _BYTE
-    DIM r                      AS _UNSIGNED _BYTE, g AS _UNSIGNED _BYTE, b AS _UNSIGNED _BYTE, a AS _UNSIGNED _BYTE
-    DIM pixel_color            AS _UNSIGNED LONG
-    DIM old_dest               AS LONG
-    DIM chunks_found           AS INTEGER
-    
+    DIM file_handle  AS INTEGER
+    DIM file_pos     AS LONG
+    DIM chunk_num    AS LONG
+    DIM frame_header AS ASEPRITE_FRAME_HEADER
+    DIM chunk_header AS ASEPRITE_CHUNK_HEADER
+    DIM cel_chunk    AS ASEPRITE_CEL_CHUNK
+    DIM cel_width    AS _UNSIGNED INTEGER, cel_height AS _UNSIGNED INTEGER
+    DIM chunks_found AS INTEGER
+
     load_aseprite_pixels% = 0 ' Default to failure
     
     IF aseprite_img.is_valid = _FALSE THEN EXIT FUNCTION
@@ -705,7 +695,8 @@ FUNCTION create_compressed_placeholder% (target_image AS LONG, cel_chunk AS ASEP
     DIM pixel_color AS _UNSIGNED LONG
     DIM old_dest    AS LONG
     DIM r           AS INTEGER, g AS INTEGER, b AS INTEGER
-    
+
+    IF color_depth_bpp = 0 THEN color_depth_bpp = 32 ' reserved for future depth-aware placeholder
     create_compressed_placeholder% = _TRUE ' Success by default
     
     ' Set destination to our target image
@@ -892,6 +883,8 @@ END FUNCTION
 ' Load compressed pixel data specifically for layer extraction (positions at 0,0)
 '
 FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_image AS LONG, cel_chunk AS ASEPRITE_CEL_CHUNK, width AS _UNSIGNED INTEGER, height AS _UNSIGNED INTEGER, color_depth_bpp AS _UNSIGNED INTEGER, chunk_size AS LONG)
+    IF cel_chunk.layer_index < 0 THEN ' reserved for future per-layer cel positioning
+    END IF
     DIM compressed_data$
     DIM decompressed_data$
     DIM data_size       AS LONG
@@ -1129,7 +1122,6 @@ END SUB
 '
 FUNCTION parse_layer_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM file_pos       AS LONG
-    DIM frame_num      AS INTEGER
     DIM chunk_num      AS LONG
     DIM frame_header   AS ASEPRITE_FRAME_HEADER
     DIM chunk_header   AS ASEPRITE_CHUNK_HEADER
@@ -1215,7 +1207,9 @@ END FUNCTION
 FUNCTION parse_frame_chunks% (file_handle AS INTEGER, enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
     DIM frame_info     AS ASEPRITE_FRAME_INFO
     DIM total_duration AS LONG
-    
+
+    IF file_handle = 0 THEN ' reserved for future per-frame chunk parsing
+    END IF
     parse_frame_chunks% = 0 ' Default to failure
     
     ' Use header information for frame count
@@ -1461,8 +1455,6 @@ END FUNCTION
 ' @return Layer name
 '
 FUNCTION get_layer_name$ (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, layer_index AS INTEGER)
-    DIM layer_names() AS STRING
-    DIM name_count   AS INTEGER
     DIM current_name AS STRING
     DIM search_pos   AS INTEGER
     DIM start_pos    AS INTEGER

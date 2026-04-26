@@ -813,7 +813,6 @@ SUB FD_parse_filters (filters AS STRING)
 
         ' Get pattern (everything until next label or end)
         ' Look for next label|pattern pair
-        DIM nextPipe       AS INTEGER
         DIM foundNextLabel AS INTEGER
         foundNextLabel = 0
 

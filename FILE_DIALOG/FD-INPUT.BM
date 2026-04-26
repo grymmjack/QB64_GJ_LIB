@@ -670,6 +670,7 @@ END SUB
 ' FD_INPUT_toolbar_click — Handle click in toolbar area
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
+    IF my < 0 THEN EXIT SUB ' guard against invalid Y from caller
     DIM bx       AS INTEGER
     DIM btnPad   AS INTEGER
     btnPad = 3
@@ -752,6 +753,7 @@ END SUB
 ' FD_INPUT_places — Handle places pane input
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justPressedB2 AS INTEGER)
+    IF mx < 0 THEN EXIT SUB ' guard against invalid X from caller
     DIM i      AS INTEGER
     DIM py     AS INTEGER
     DIM entryH AS INTEGER
@@ -970,6 +972,7 @@ END SUB
 ' FD_INPUT_column_header_click — Handle click on column header
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_column_header_click (mx AS INTEGER, my AS INTEGER)
+    IF my < 0 THEN EXIT SUB ' guard against invalid Y from caller
     DIM cx AS INTEGER, i AS INTEGER
     cx = FD_STATE.contentX
 
