@@ -236,13 +236,13 @@ SUB FD_INPUT_mouse
         DIM ttBtnW   AS INTEGER : ttBtnW = ttIconSz + ttBtnPad * 2
         DIM ttBx     AS INTEGER : ttBx = FD_PADDING
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_LIST
-        ttBx = ttBx + ttBtnW + 2
+        ttBx = ttBx + ttBtnW
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_DETAILS
-        ttBx = ttBx + ttBtnW + 2
+        ttBx = ttBx + ttBtnW
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_THUMBS
-        ttBx = ttBx + ttBtnW + 8
+        ttBx = ttBx + ttBtnW
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_HIDDEN
-        ttBx = ttBx + ttBtnW + 4
+        ttBx = ttBx + ttBtnW
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_PREVIEW
     ELSEIF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
         ' Places pane — iterate to find entry under cursor
@@ -689,7 +689,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + btnW + 2
+    bx = bx + btnW
 
     ' Details button
     IF mx >= bx AND mx < bx + btnW THEN
@@ -698,7 +698,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + btnW + 2
+    bx = bx + btnW
 
     ' Thumbnails button
     IF mx >= bx AND mx < bx + btnW THEN
@@ -707,7 +707,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + btnW + 8
+    bx = bx + btnW
 
     ' Hidden files toggle
     IF mx >= bx AND mx < bx + btnW THEN
@@ -716,7 +716,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + btnW + 4
+    bx = bx + btnW
 
     ' Preview toggle
     IF mx >= bx AND mx < bx + btnW THEN
@@ -730,7 +730,7 @@ SUB FD_INPUT_toolbar_click (mx AS INTEGER, my AS INTEGER)
         FD_STATE.dirty = -1
         EXIT SUB
     END IF
-    bx = bx + btnW + 4
+    bx = bx + btnW + 8 * isc
 
     ' Sort area click — cycle sort field
     DIM sortAreaW AS INTEGER
@@ -1031,7 +1031,7 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
 
     ' Cancel button
     DIM cancelX AS INTEGER
-    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING * 3
     IF mx >= cancelX AND mx < cancelX + btnW THEN
         FD_STATE.done      = -1
         FD_STATE.confirmed = 0
@@ -1040,7 +1040,7 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
 
     ' OK button
     DIM okX AS INTEGER
-    okX = cancelX - btnW - FD_PADDING
+    okX = cancelX - btnW - FD_PADDING * 2
     IF mx >= okX AND mx < okX + btnW THEN
         FD_INPUT_confirm
         EXIT SUB
@@ -1068,9 +1068,9 @@ SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
     ' Filter dropdown button click
     IF FD_STATE.filterCount > 1 AND FD_STATE.mode <> FD_MODE_CHOOSE_FOLDER THEN
         DIM fCancelX AS INTEGER
-        fCancelX = FD_STATE.dialogW - btnW - FD_PADDING
+        fCancelX = FD_STATE.dialogW - btnW - FD_PADDING * 3
         DIM fOkX     AS INTEGER
-        fOkX = fCancelX - btnW - FD_PADDING
+        fOkX = fCancelX - btnW - FD_PADDING * 2
 
         DIM fLabel   AS STRING
         IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN
@@ -1121,9 +1121,9 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
     IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
 
     DIM cancelX AS INTEGER
-    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING * 3
     DIM okX     AS INTEGER
-    okX = cancelX - btnW - FD_PADDING
+    okX = cancelX - btnW - FD_PADDING * 2
 
     DIM curLabel AS STRING
     IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN

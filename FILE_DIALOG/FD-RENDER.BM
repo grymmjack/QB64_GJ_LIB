@@ -251,7 +251,7 @@ SUB FD_RENDER_toolbar
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), listClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_LIST, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
-    bx = bx + btnW + 2
+    bx = bx + btnW
 
     ' Details button
     DIM detClr AS _UNSIGNED LONG
@@ -259,7 +259,7 @@ SUB FD_RENDER_toolbar
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), detClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_DETAILS, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
-    bx = bx + btnW + 2
+    bx = bx + btnW
 
     ' Thumbnails button
     DIM thumbClr AS _UNSIGNED LONG
@@ -267,7 +267,7 @@ SUB FD_RENDER_toolbar
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), thumbClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_THUMBS, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
-    bx = bx + btnW + 8
+    bx = bx + btnW
 
     ' Hidden files toggle
     DIM hidClr AS _UNSIGNED LONG
@@ -275,7 +275,7 @@ SUB FD_RENDER_toolbar
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), hidClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_HIDDEN, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
-    bx = bx + btnW + 4
+    bx = bx + btnW
 
     ' Preview toggle
     DIM prevClr AS _UNSIGNED LONG
@@ -283,7 +283,7 @@ SUB FD_RENDER_toolbar
     LINE (bx, y1 + 3)-(bx + btnW - 1, y1 + FD_STATE.toolBarH - 4), prevClr, BF
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     FD_ICONS_render_png FD_ICON_TB_PREVIEW, bx + btnPad, y1 + (FD_STATE.toolBarH - tbIconSz) \ 2, tbIconSz
-    bx = bx + btnW + 4
+    bx = bx + btnW + 8 * isc
 
     ' Sort indicator
     DIM sortLabel AS STRING
@@ -397,6 +397,10 @@ SUB FD_RENDER_places
 
         DIM iconDrawn AS INTEGER
         iconDrawn = 0
+        ' Inset places icons by btnPad (3) so they line up with the toolbar /
+        ' path bar icons (which sit at FD_PADDING + 3 inside their buttons).
+        DIM plIconX AS INTEGER
+        plIconX = x1 + FD_PADDING + 3
         IF FD_places(i).iconId > 0 THEN
             COLOR iconClr, _RGBA32(0, 0, 0, 0)
             DIM plIconSz AS INTEGER
@@ -405,12 +409,12 @@ SUB FD_RENDER_places
                 plIconSz = FD_iconH(FD_places(i).iconId) * plIsc
                 IF FD_iconW(FD_places(i).iconId) * plIsc > plIconSz THEN plIconSz = FD_iconW(FD_places(i).iconId) * plIsc
             END IF
-            FD_ICONS_render_png FD_places(i).iconId, x1 + FD_PADDING, py + (entryH - plIconSz) \ 2, plIconSz
+            FD_ICONS_render_png FD_places(i).iconId, plIconX, py + (entryH - plIconSz) \ 2, plIconSz
             iconDrawn = -1
         END IF
         IF NOT iconDrawn THEN
             COLOR iconClr, _RGBA32(0, 0, 0, 0)
-            _PRINTSTRING (x1 + FD_PADDING, py + (entryH - 16) \ 2 + 1), CHR$(FD_places(i).iconChar)
+            _PRINTSTRING (plIconX, py + (entryH - 16) \ 2 + 1), CHR$(FD_places(i).iconChar)
         END IF
 
         ' Label
@@ -427,7 +431,7 @@ SUB FD_RENDER_places
         DIM labelIconW AS INTEGER
         labelIconW = FD_ICON_SIZE * plIsc
         IF FD_places(i).iconId > 0 THEN labelIconW = plIconSz
-        FD_print_scaled x1 + FD_PADDING + labelIconW + FD_ICON_TEXT_GAP, py + (entryH - FD_text_height%(pfs)) \ 2 + 1, label, pfs
+        FD_print_scaled plIconX + labelIconW + FD_ICON_TEXT_GAP, py + (entryH - FD_text_height%(pfs)) \ 2 + 1, label, pfs
 
         py = py + entryH
     NEXT i
@@ -997,7 +1001,7 @@ SUB FD_RENDER_button_bar
 
     ' Cancel button
     DIM cancelX      AS INTEGER
-    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING * 3
     LINE (cancelX, y1 + 5)-(cancelX + btnW - 1, y1 + bbH - 6), FD_CLR_BG~&, BF
     LINE (cancelX, y1 + 5)-(cancelX + btnW - 1, y1 + bbH - 6), FD_CLR_BORDER~&, B
     COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
@@ -1007,7 +1011,7 @@ SUB FD_RENDER_button_bar
 
     ' OK / Open / Save button
     DIM okX      AS INTEGER
-    okX = cancelX - btnW - FD_PADDING
+    okX = cancelX - btnW - FD_PADDING * 2
     LINE (okX, y1 + 5)-(okX + btnW - 1, y1 + bbH - 6), FD_CLR_BUTTON_BG~&, BF
     COLOR FD_CLR_BUTTON_TEXT~&, _RGBA32(0, 0, 0, 0)
     DIM okLabelX AS INTEGER
@@ -1097,9 +1101,9 @@ SUB FD_RENDER_filter_dropdown
     btnW = FD_BUTTON_W
     IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
 
-    cancelX = FD_STATE.dialogW - btnW - FD_PADDING
+    cancelX = FD_STATE.dialogW - btnW - FD_PADDING * 3
     DIM okX AS INTEGER
-    okX = cancelX - btnW - FD_PADDING
+    okX = cancelX - btnW - FD_PADDING * 2
 
     DIM curLabel AS STRING
     IF FD_STATE.activeFilter >= 0 AND FD_STATE.activeFilter < FD_STATE.filterCount THEN

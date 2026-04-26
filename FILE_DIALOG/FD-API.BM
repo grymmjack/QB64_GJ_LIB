@@ -475,11 +475,21 @@ SUB FD_LAYOUT_calculate
     FD_STATE.titleBarH = FD_CFG.fontH * tfs + 8
     IF FD_STATE.titleBarH < FD_TITLE_BAR_H THEN FD_STATE.titleBarH = FD_TITLE_BAR_H
 
+    ' Path bar / toolbar must accommodate icons (which are scaled by
+    ' iconScale, independent of fontScale). Otherwise large icons squeeze
+    ' the bars and the rows visually touch.
+    DIM iscBar AS INTEGER, iconBarH AS INTEGER
+    iscBar = FD_CFG.iconScale: IF iscBar < 1 THEN iscBar = 2
+    iconBarH = 11 * iscBar + 8
+    IF FD_ICONS_has_png%(FD_ICON_TB_UP) THEN iconBarH = FD_iconW(FD_ICON_TB_UP) * iscBar + 8
+
     FD_STATE.pathBarH = FD_CFG.fontH * pfs + 8
     IF FD_STATE.pathBarH < FD_PATH_BAR_H THEN FD_STATE.pathBarH = FD_PATH_BAR_H
+    IF FD_STATE.pathBarH < iconBarH THEN FD_STATE.pathBarH = iconBarH
 
     FD_STATE.toolBarH = FD_CFG.fontH * sfs + 8
     IF FD_STATE.toolBarH < FD_TOOLBAR_H THEN FD_STATE.toolBarH = FD_TOOLBAR_H
+    IF FD_STATE.toolBarH < iconBarH THEN FD_STATE.toolBarH = iconBarH
 
     FD_STATE.columnHeaderH = FD_CFG.fontH * sfs + 6
     IF FD_STATE.columnHeaderH < FD_COL_HEADER_H THEN FD_STATE.columnHeaderH = FD_COL_HEADER_H
