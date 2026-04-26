@@ -343,8 +343,8 @@ SUB FD_RENDER_places
     DIM entryH AS INTEGER
     DIM pfs    AS INTEGER
     DIM plIsc  AS INTEGER
-    pfs    = FD_CFG.placesFontScale: IF pfs < 1 THEN pfs = 1
-    plIsc  = FD_CFG.iconScale: IF plIsc < 1 THEN plIsc = 2
+    pfs    = FD_CFG.placesFontScale : IF pfs < 1 THEN pfs = 1
+    plIsc  = FD_CFG.iconScale       : IF plIsc < 1 THEN plIsc = 2
     entryH = FD_STATE.rowHeight
 
     py = y1 + FD_PADDING - FD_STATE.placesScroll
@@ -561,11 +561,11 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
     contentW = w
     IF FD_STATE.maxScroll > 0 THEN contentW = contentW - FD_SCROLLBAR_W
 
-    DIM rh  AS INTEGER
+    DIM rh       AS INTEGER
     rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
-    DIM cfs AS INTEGER
+    DIM cfs      AS INTEGER
     cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
-    DIM isc AS INTEGER
+    DIM isc      AS INTEGER
     isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
     DIM iconSpan AS INTEGER
     iconSpan = FD_ICON_SIZE * isc
@@ -594,9 +594,9 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
         FD_RENDER_file_icon x1 + FD_PADDING, drawY + (rh - iconSpan) \ 2, FD_entries(entryIdx)
 
         ' Filename
-        DIM fn       AS STRING
+        DIM fn        AS STRING
         fn = RTRIM$(FD_entries(entryIdx).fileName)
-        DIM maxChars AS INTEGER
+        DIM maxChars  AS INTEGER
         DIM listCharW AS INTEGER
         listCharW = FD_CFG.fontW * cfs
         IF listCharW < 1 THEN listCharW = 8 * cfs
@@ -623,11 +623,11 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
     contentW = w
     IF FD_STATE.maxScroll > 0 THEN contentW = contentW - FD_SCROLLBAR_W
 
-    DIM rh  AS INTEGER
+    DIM rh       AS INTEGER
     rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
-    DIM cfs AS INTEGER
+    DIM cfs      AS INTEGER
     cfs = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
-    DIM isc AS INTEGER
+    DIM isc      AS INTEGER
     isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 2
     DIM iconSpan AS INTEGER
     iconSpan = FD_ICON_SIZE * isc
@@ -790,11 +790,11 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
                 FD_entries(entryIdx).thumbState  = FD_THUMB_PENDING
                 DIM phIsc AS INTEGER, phSz AS INTEGER
                 phIsc = FD_CFG.iconScale: IF phIsc < 1 THEN phIsc = 2
-                phSz = 32 * phIsc
+                phSz  = 32 * phIsc
                 FD_RENDER_file_icon_large thumbX + (FD_CFG.thumbSize - phSz) \ 2, thumbY + (FD_CFG.thumbSize - phSz) \ 2, FD_entries(entryIdx)
             ELSE
                 ' Draw thumbnail centered in cell
-                DIM ox AS INTEGER, oy AS INTEGER
+                DIM ox    AS INTEGER, oy AS INTEGER
                 ox = thumbX + (FD_CFG.thumbSize - tw) \ 2
                 oy = thumbY + (FD_CFG.thumbSize - th) \ 2
 
@@ -806,7 +806,7 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
         ELSE
             ' File icon placeholder
             phIsc = FD_CFG.iconScale: IF phIsc < 1 THEN phIsc = 2
-            phSz = 32 * phIsc
+            phSz  = 32 * phIsc
             FD_RENDER_file_icon_large thumbX + (FD_CFG.thumbSize - phSz) \ 2, thumbY + (FD_CFG.thumbSize - phSz) \ 2, FD_entries(entryIdx)
         END IF
 
@@ -978,7 +978,7 @@ SUB FD_RENDER_button_bar
         END SELECT
     END IF
 
-    DIM btnW AS INTEGER
+    DIM btnW     AS INTEGER
     DIM btnTextW AS INTEGER
     btnTextW = FD_text_width%("CANCEL", ifs)
     IF FD_text_width%(okLabel, ifs) > btnTextW THEN btnTextW = FD_text_width%(okLabel, ifs)
@@ -1080,10 +1080,10 @@ SUB FD_RENDER_filter_dropdown
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - bbH
 
-    DIM cancelX AS INTEGER
-    DIM btnW AS INTEGER
+    DIM cancelX  AS INTEGER
+    DIM btnW     AS INTEGER
     DIM btnTextW AS INTEGER
-    DIM okLbl AS STRING
+    DIM okLbl    AS STRING
     okLbl = RTRIM$(FD_STATE.confirmLabel)
     IF LEN(okLbl) = 0 THEN
         SELECT CASE FD_STATE.mode
@@ -1098,7 +1098,7 @@ SUB FD_RENDER_filter_dropdown
     IF btnW < btnTextW + FD_PADDING * 2 THEN btnW = btnTextW + FD_PADDING * 2
 
     cancelX = FD_STATE.dialogW - btnW - FD_PADDING
-    DIM okX     AS INTEGER
+    DIM okX AS INTEGER
     okX = cancelX - btnW - FD_PADDING
 
     DIM curLabel AS STRING

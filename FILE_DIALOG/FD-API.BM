@@ -561,11 +561,11 @@ SUB FD__update_text_input_geometry
 
     ' Filename input — in button bar (save modes only)
     IF FD_STATE.tiFileNameId >= 1 THEN
-        DIM fnX     AS INTEGER, fnW AS INTEGER
-        DIM btnBarY AS INTEGER
-        DIM ifs2    AS INTEGER
-        DIM okLabel AS STRING
-        DIM btnW    AS INTEGER
+        DIM fnX      AS INTEGER, fnW AS INTEGER
+        DIM btnBarY  AS INTEGER
+        DIM ifs2     AS INTEGER
+        DIM okLabel  AS STRING
+        DIM btnW     AS INTEGER
         DIM btnTextW AS INTEGER
         ifs2    = FD_CFG.inputFontScale: IF ifs2 < 1 THEN ifs2 = 1
         btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH

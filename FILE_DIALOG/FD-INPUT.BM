@@ -1011,11 +1011,11 @@ END SUB
 ' FD_INPUT_button_bar_click — Handle click in button bar
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
-    DIM ifs AS INTEGER
-    DIM okLabel AS STRING
-    DIM btnW AS INTEGER
+    DIM ifs      AS INTEGER
+    DIM okLabel  AS STRING
+    DIM btnW     AS INTEGER
     DIM btnTextW AS INTEGER
-    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+    ifs     = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
     okLabel = RTRIM$(FD_STATE.confirmLabel)
     IF LEN(okLabel) = 0 THEN
         SELECT CASE FD_STATE.mode
@@ -1102,11 +1102,11 @@ FUNCTION FD_INPUT_filter_popup_click% (mx AS INTEGER, my AS INTEGER)
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
 
-    DIM ifs AS INTEGER
-    DIM okLabel AS STRING
-    DIM btnW AS INTEGER
+    DIM ifs      AS INTEGER
+    DIM okLabel  AS STRING
+    DIM btnW     AS INTEGER
     DIM btnTextW AS INTEGER
-    ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
+    ifs     = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
     okLabel = RTRIM$(FD_STATE.confirmLabel)
     IF LEN(okLabel) = 0 THEN
         SELECT CASE FD_STATE.mode
