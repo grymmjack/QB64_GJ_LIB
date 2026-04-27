@@ -18,7 +18,7 @@ FUNCTION FD_ICONS_for_extension% (ext AS STRING)
             FD_ICONS_for_extension% = FD_ICON_IMAGE
 
         ' DRAW-specific
-        CASE "drw"
+        CASE "drw", "draw"
             FD_ICONS_for_extension% = FD_ICON_DRW
         CASE "dset"
             FD_ICONS_for_extension% = FD_ICON_DSET
