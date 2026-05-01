@@ -933,7 +933,8 @@ SUB FD_RENDER_status_bar
     DIM sbH AS INTEGER
     sbH = FD_STATE.statusBarH: IF sbH < 1 THEN sbH = FD_STATUS_BAR_H
     DIM bbH AS INTEGER
-    bbH = FD_STATE.buttonBarH: IF bbH < 1 THEN bbH = FD_BUTTON_BAR_H
+    bbH = FD_STATE.buttonBarH
+    IF bbH < 1 AND NOT FD_STATE.hideButtonBar THEN bbH = FD_BUTTON_BAR_H
     y1  = FD_STATE.dialogH - sbH - bbH
 
     DIM stfs AS INTEGER
@@ -964,6 +965,8 @@ END SUB
 ' FD_RENDER_button_bar — OK/Cancel buttons, filename input (save mode)
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_button_bar
+    IF FD_STATE.hideButtonBar THEN EXIT SUB
+
     DIM y1  AS INTEGER
     DIM bbH AS INTEGER
     bbH = FD_STATE.buttonBarH: IF bbH < 1 THEN bbH = FD_BUTTON_BAR_H
@@ -1070,6 +1073,10 @@ END SUB
 ' FD_RENDER_filter_dropdown — Popup list overlay when filter dropdown is open
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_filter_dropdown
+    IF FD_STATE.hideButtonBar THEN
+        FD_STATE.filterDropdownOpen = FALSE
+        EXIT SUB
+    END IF
     IF NOT FD_STATE.filterDropdownOpen THEN EXIT SUB
     IF FD_STATE.filterCount < 2 THEN EXIT SUB
 

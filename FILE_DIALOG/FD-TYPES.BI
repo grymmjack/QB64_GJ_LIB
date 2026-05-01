@@ -169,6 +169,8 @@ END TYPE
 TYPE FD_STATE_OBJ
     ' Operating mode
     mode         AS INTEGER         ' FD_MODE_* constant
+    embeddedMode AS INTEGER         ' TRUE when dialog is hosted non-modally inside another UI panel
+    hideButtonBar AS INTEGER        ' TRUE to hide action bar (Open/Cancel/Filename/Filter)
     title        AS STRING * 128    ' Dialog title bar text
     confirmLabel AS STRING * 32     ' OK button label ("Open", "Save", etc.)
     defaultExt   AS STRING * 16     ' Default extension for save mode

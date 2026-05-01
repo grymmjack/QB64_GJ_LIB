@@ -133,6 +133,8 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Handle filter dropdown popup first (modal overlay) ---
+    IF FD_STATE.hideButtonBar THEN FD_STATE.filterDropdownOpen = FALSE
+
     IF FD_STATE.filterDropdownOpen THEN
         IF justPressed THEN
             ' Check if click is inside the popup
@@ -394,11 +396,13 @@ SUB FD_INPUT_mouse
     ' --- Button bar ---
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
-    IF my >= btnBarY AND my < FD_STATE.dialogH THEN
-        IF justPressed THEN
-            FD_INPUT_button_bar_click mx, my - btnBarY
+    IF NOT FD_STATE.hideButtonBar THEN
+        IF my >= btnBarY AND my < FD_STATE.dialogH THEN
+            IF justPressed THEN
+                FD_INPUT_button_bar_click mx, my - btnBarY
+            END IF
+            EXIT SUB
         END IF
-        EXIT SUB
     END IF
 
     ' --- Scroll wheel on content ---
@@ -1014,6 +1018,8 @@ END SUB
 ' FD_INPUT_button_bar_click — Handle click in button bar
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
+    IF FD_STATE.hideButtonBar THEN EXIT SUB
+
     DIM ifs      AS INTEGER
     DIM okLabel  AS STRING
     DIM btnW     AS INTEGER
@@ -1249,6 +1255,15 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     scrW = _WIDTH(0) \ FD_STATE.scale
     scrH = _HEIGHT(0) \ FD_STATE.scale
 
+    DIM minDialogW AS INTEGER, minDialogH AS INTEGER
+    IF FD_STATE.embeddedMode THEN
+        minDialogW = 320
+        minDialogH = 220
+    ELSE
+        minDialogW = FD_MIN_DIALOG_W
+        minDialogH = FD_MIN_DIALOG_H
+    END IF
+
     DIM newX AS INTEGER, newY AS INTEGER, newW AS INTEGER, newH AS INTEGER
     newX = FD_STATE.dialogX
     newY = FD_STATE.dialogY
@@ -1258,7 +1273,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     ' East edges
     IF FD_STATE.resizeEdge = FD_RESIZE_E OR FD_STATE.resizeEdge = FD_RESIZE_NE OR FD_STATE.resizeEdge = FD_RESIZE_SE THEN
         newW = mx
-        IF newW < FD_MIN_DIALOG_W THEN newW = FD_MIN_DIALOG_W
+        IF newW < minDialogW THEN newW = minDialogW
     END IF
 
     ' West edges
@@ -1266,14 +1281,14 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
         DIM deltaW AS INTEGER
         deltaW = FD_STATE.dragStartX - mx
         newW   = FD_STATE.dialogW + deltaW
-        IF newW < FD_MIN_DIALOG_W THEN newW = FD_MIN_DIALOG_W
+        IF newW < minDialogW THEN newW = minDialogW
         newX = FD_STATE.dialogX + FD_STATE.dialogW - newW
     END IF
 
     ' South edges
     IF FD_STATE.resizeEdge = FD_RESIZE_S OR FD_STATE.resizeEdge = FD_RESIZE_SE OR FD_STATE.resizeEdge = FD_RESIZE_SW THEN
         newH = my
-        IF newH < FD_MIN_DIALOG_H THEN newH = FD_MIN_DIALOG_H
+        IF newH < minDialogH THEN newH = minDialogH
     END IF
 
     ' North edges
@@ -1281,7 +1296,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
         DIM deltaH AS INTEGER
         deltaH = FD_STATE.dragStartY - my
         newH   = FD_STATE.dialogH + deltaH
-        IF newH < FD_MIN_DIALOG_H THEN newH = FD_MIN_DIALOG_H
+        IF newH < minDialogH THEN newH = minDialogH
         newY = FD_STATE.dialogY + FD_STATE.dialogH - newH
     END IF
 

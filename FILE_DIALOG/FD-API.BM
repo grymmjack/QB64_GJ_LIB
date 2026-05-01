@@ -497,8 +497,13 @@ SUB FD_LAYOUT_calculate
     FD_STATE.statusBarH = FD_CFG.fontH * stfs + 6
     IF FD_STATE.statusBarH < FD_STATUS_BAR_H THEN FD_STATE.statusBarH = FD_STATUS_BAR_H
 
-    FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
-    IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
+    IF FD_STATE.hideButtonBar THEN
+        FD_STATE.buttonBarH = 0
+        FD_STATE.filterDropdownOpen = FALSE
+    ELSE
+        FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
+        IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
+    END IF
 
     DIM cfs AS INTEGER
     cfs                = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
