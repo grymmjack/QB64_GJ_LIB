@@ -80,7 +80,7 @@ SUB FD_INPUT_open_with_default_os (targetPath AS STRING)
     $ELSEIF MAC THEN
         SHELL _DONTWAIT "open " + CHR$(34) + p + CHR$(34)
     $ELSE
-        SHELL _DONTWAIT "xdg-open " + CHR$(34) + p + CHR$(34)
+        SHELL _DONTWAIT "setsid --fork xdg-open " + CHR$(34) + p + CHR$(34)
     $END IF
 END SUB
 
@@ -199,14 +199,32 @@ SUB FD_INPUT_delete_entry_or_selection (entryIndex AS INTEGER)
 END SUB
 
 FUNCTION FD_INPUT_ctx_menu_count% (entryIndex AS INTEGER)
+    DIM hasPaste AS INTEGER
+    hasPaste = (FD_CLIP_COUNT > 0)
+
     IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
         IF FD_entries(entryIndex).isDirectory THEN
-            FD_INPUT_ctx_menu_count% = 5
+            ' Dir: RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, DELETE
+            IF hasPaste THEN
+                FD_INPUT_ctx_menu_count% = 8
+            ELSE
+                FD_INPUT_ctx_menu_count% = 7
+            END IF
         ELSE
-            FD_INPUT_ctx_menu_count% = 4
+            ' File: RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, ADD RECENT, DELETE
+            IF hasPaste THEN
+                FD_INPUT_ctx_menu_count% = 9
+            ELSE
+                FD_INPUT_ctx_menu_count% = 8
+            END IF
         END IF
     ELSE
-        FD_INPUT_ctx_menu_count% = 3
+        ' Empty area: CREATE DIR, REVEAL, ADD PLACE [+PASTE if clipboard]
+        IF hasPaste THEN
+            FD_INPUT_ctx_menu_count% = 4
+        ELSE
+            FD_INPUT_ctx_menu_count% = 3
+        END IF
     END IF
 END FUNCTION
 
@@ -214,6 +232,13 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
     action = FD_CTX_NONE
     label = ""
 
+    DIM hasPaste AS INTEGER
+    DIM pasteMode AS STRING
+    hasPaste = (FD_CLIP_COUNT > 0)
+    IF hasPaste THEN
+        IF FD_CLIP_MODE = FD_CLIP_CUT THEN pasteMode = " (MOVE)" ELSE pasteMode = " (COPY)"
+    END IF
+
     IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
         IF FD_entries(entryIndex).isDirectory THEN
             SELECT CASE itemPos
@@ -221,15 +246,44 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                     action = FD_CTX_RENAME
                     label = "RENAME"
                 CASE 2
-                    action = FD_CTX_OPEN_DEFAULT
-                    label = "OPEN WITH DEFAULT OS PROGRAM"
+                    action = FD_CTX_CUT
+                    label = "CUT"
                 CASE 3
-                    action = FD_CTX_REVEAL
-                    label = "REVEAL FOLDER"
+                    action = FD_CTX_COPY
+                    label = "COPY"
                 CASE 4
-                    action = FD_CTX_ADD_PLACE
-                    label = "ADD TO BROWSER PLACES"
+                    IF hasPaste THEN
+                        action = FD_CTX_PASTE
+                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                    ELSE
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    END IF
                 CASE 5
+                    IF hasPaste THEN
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    ELSE
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    END IF
+                CASE 6
+                    IF hasPaste THEN
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    ELSE
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    END IF
+                CASE 7
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    ELSE
+                        action = FD_CTX_DELETE
+                        label = "DELETE"
+                    END IF
+                CASE 8
                     action = FD_CTX_DELETE
                     label = "DELETE"
             END SELECT
@@ -239,28 +293,86 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                     action = FD_CTX_RENAME
                     label = "RENAME"
                 CASE 2
-                    action = FD_CTX_OPEN_DEFAULT
-                    label = "OPEN WITH DEFAULT OS PROGRAM"
+                    action = FD_CTX_CUT
+                    label = "CUT"
                 CASE 3
-                    action = FD_CTX_REVEAL
-                    label = "REVEAL FOLDER"
+                    action = FD_CTX_COPY
+                    label = "COPY"
                 CASE 4
+                    IF hasPaste THEN
+                        action = FD_CTX_PASTE
+                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                    ELSE
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    END IF
+                CASE 5
+                    IF hasPaste THEN
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    ELSE
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    END IF
+                CASE 6
+                    IF hasPaste THEN
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    ELSE
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    END IF
+                CASE 7
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    ELSE
+                        action = FD_CTX_ADD_RECENT
+                        label = "ADD TO RECENT FILES"
+                    END IF
+                CASE 8
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_RECENT
+                        label = "ADD TO RECENT FILES"
+                    ELSE
+                        action = FD_CTX_DELETE
+                        label = "DELETE"
+                    END IF
+                CASE 9
                     action = FD_CTX_DELETE
                     label = "DELETE"
             END SELECT
         END IF
     ELSE
-        SELECT CASE itemPos
-            CASE 1
-                action = FD_CTX_CREATE_DIR
-                label = "CREATE FOLDER"
-            CASE 2
-                action = FD_CTX_REVEAL
-                label = "REVEAL FOLDER"
-            CASE 3
-                action = FD_CTX_ADD_PLACE
-                label = "ADD TO BROWSER PLACES"
-        END SELECT
+        ' Empty area
+        IF hasPaste THEN
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_CREATE_DIR
+                    label = "CREATE FOLDER"
+                CASE 2
+                    action = FD_CTX_PASTE
+                    label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                CASE 3
+                    action = FD_CTX_REVEAL
+                    label = "REVEAL FOLDER"
+                CASE 4
+                    action = FD_CTX_ADD_PLACE
+                    label = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSE
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_CREATE_DIR
+                    label = "CREATE FOLDER"
+                CASE 2
+                    action = FD_CTX_REVEAL
+                    label = "REVEAL FOLDER"
+                CASE 3
+                    action = FD_CTX_ADD_PLACE
+                    label = "ADD TO BROWSER PLACES"
+            END SELECT
+        END IF
     END IF
 END SUB
 
@@ -349,9 +461,131 @@ SUB FD_INPUT_ctx_menu_execute (itemPos AS INTEGER)
             FD_INPUT_delete_entry_or_selection FD_STATE.ctxMenuIndex
         CASE FD_CTX_CREATE_DIR
             FD_FS_create_folder
+        CASE FD_CTX_CUT
+            FD_INPUT_clipboard_capture FD_STATE.ctxMenuIndex, FD_CLIP_CUT
+        CASE FD_CTX_COPY
+            FD_INPUT_clipboard_capture FD_STATE.ctxMenuIndex, FD_CLIP_COPY
+        CASE FD_CTX_PASTE
+            FD_INPUT_clipboard_paste RTRIM$(FD_STATE.currentPath)
+        CASE FD_CTX_ADD_RECENT
+            FD_STATE.pendingRecentPath = fullPath
     END SELECT
 
     FD_STATE.dirty = -1
+END SUB
+
+''
+' Capture the file(s) at ctxMenuIndex (or all selected files) into FD clipboard.
+' mode: FD_CLIP_COPY or FD_CLIP_CUT
+'
+SUB FD_INPUT_clipboard_capture (entryIndex AS INTEGER, mode AS INTEGER)
+    DIM i  AS INTEGER
+    DIM fp AS STRING
+
+    FD_CLIP_COUNT = 0
+    FD_CLIP_MODE  = mode
+
+    ' If the right-clicked entry is selected and there are multiple selected files,
+    ' capture all selected files; otherwise capture only the right-clicked entry.
+    DIM useMulti AS INTEGER
+    useMulti = (FD_STATE.multiSelectCount > 1) AND (entryIndex >= 0) AND FD_entries(entryIndex).selected
+
+    IF useMulti THEN
+        FOR i = 0 TO FD_STATE.entryCount - 1
+            IF FD_entries(i).selected AND NOT FD_entries(i).isDirectory THEN
+                IF FD_CLIP_COUNT < FD_MAX_MULTI_RESULTS THEN
+                    fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(i).fileName))
+                    FD_CLIP_FILES(FD_CLIP_COUNT) = fp
+                    FD_CLIP_COUNT = FD_CLIP_COUNT + 1
+                END IF
+            END IF
+        NEXT i
+    ELSEIF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
+        fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIndex).fileName))
+        FD_CLIP_FILES(0) = fp
+        FD_CLIP_COUNT    = 1
+    END IF
+END SUB
+
+''
+' Paste files from FD clipboard into destDir.
+' CUT mode moves files (mv); COPY mode copies (cp -r).
+' After paste the clipboard is cleared if mode was CUT.
+'
+' FD_INPUT_unique_dest$ — Given a destination path that already exists, generate a
+' unique path by appending " 2", " 3", … before the extension (up to 9999).
+FUNCTION FD_INPUT_unique_dest$ (destDir AS STRING, filename AS STRING)
+    DIM fn       AS STRING
+    DIM ext      AS STRING
+    DIM baseName AS STRING
+    DIM dotPos   AS INTEGER
+    DIM counter  AS INTEGER
+    DIM candidate AS STRING
+
+    fn = filename
+    dotPos = _INSTRREV(fn, ".")
+    IF dotPos > 1 THEN
+        ext      = MID$(fn, dotPos)         ' includes the dot, e.g. ".png"
+        baseName = LEFT$(fn, dotPos - 1)
+    ELSE
+        ext      = ""
+        baseName = fn
+    END IF
+
+    counter = 2
+    DO
+        candidate = FD_PLAT_path_join$(destDir, baseName + " " + _TRIM$(STR$(counter)) + ext)
+        IF NOT _FILEEXISTS(candidate) AND NOT FD_PLAT_is_dir%(candidate) THEN
+            FD_INPUT_unique_dest$ = candidate
+            EXIT FUNCTION
+        END IF
+        counter = counter + 1
+        IF counter > 9999 THEN EXIT DO
+    LOOP
+    ' Fallback: timestamp suffix
+    FD_INPUT_unique_dest$ = FD_PLAT_path_join$(destDir, baseName + " " + _TRIM$(STR$(INT(TIMER))) + ext)
+END FUNCTION
+
+SUB FD_INPUT_clipboard_paste (destDir AS STRING)
+    DIM i    AS INTEGER
+    DIM src  AS STRING
+    DIM dest AS STRING
+    DIM cmd  AS STRING
+    DIM cleanDir AS STRING
+
+    IF FD_CLIP_COUNT < 1 THEN EXIT SUB
+
+    cleanDir = RTRIM$(destDir)
+
+    FOR i = 0 TO FD_CLIP_COUNT - 1
+        src = RTRIM$(FD_CLIP_FILES(i))
+        IF LEN(src) > 0 THEN
+            dest = FD_PLAT_path_join$(cleanDir, FD_PLAT_path_filename$(src))
+
+            ' For copy (not cut), auto-generate a unique name when pasting to same location.
+            IF FD_CLIP_MODE = FD_CLIP_COPY THEN
+                IF _FILEEXISTS(dest) OR FD_PLAT_is_dir%(dest) THEN
+                    dest = FD_INPUT_unique_dest$(cleanDir, FD_PLAT_path_filename$(src))
+                END IF
+                cmd = "cp -rf " + CHR$(34) + src + CHR$(34) + " " + CHR$(34) + dest + CHR$(34)
+            ELSE
+                ' Cut/move: if same dir, skip (source = dest); otherwise move.
+                IF src <> dest THEN
+                    cmd = "mv -f " + CHR$(34) + src + CHR$(34) + " " + CHR$(34) + dest + CHR$(34)
+                ELSE
+                    cmd = ""
+                END IF
+            END IF
+            IF LEN(cmd) > 0 THEN SHELL _HIDE cmd
+        END IF
+    NEXT i
+
+    IF FD_CLIP_MODE = FD_CLIP_CUT THEN
+        FD_CLIP_COUNT = 0
+        FD_CLIP_MODE  = FD_CLIP_COPY
+    END IF
+
+    FD_FS_refresh
 END SUB
 
 SUB FD_INPUT_ctx_menu_open (entryIndex AS INTEGER, mx AS INTEGER, my AS INTEGER)
@@ -478,6 +712,11 @@ SUB FD_INPUT_mouse
             FD_STATE.dirty = -1
             EXIT SUB
         END IF
+        ' Menu is open but no button was pressed — prevent content/places area from
+        ' updating hoverIndex, which would highlight file rows behind the menu popup.
+        FD_STATE.hoverIndex = -1
+        FD_STATE.dirty = -1
+        EXIT SUB
     END IF
 
     ' --- Handle active drag operations first ---
@@ -1086,6 +1325,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
     IF FD_STATE.mouseWheel <> 0 THEN
         FD_STATE.placesScroll = FD_STATE.placesScroll + FD_STATE.mouseWheel * entryH * 3
         FD_places_clamp_scroll
+        FD_STATE.dirty = -1
     END IF
 
     py                   = FD_STATE.contentY + FD_PADDING - FD_STATE.placesScroll

@@ -124,24 +124,8 @@ SUB FD_RENDER_context_menu
     IF NOT FD_STATE.ctxMenuVisible THEN EXIT SUB
 
     DIM itemCount AS INTEGER
-    DIM entryIndex AS INTEGER
-    DIM isDir AS INTEGER
-
-    entryIndex = FD_STATE.ctxMenuIndex
-    isDir = 0
-    IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
-        isDir = FD_entries(entryIndex).isDirectory
-    ELSE
-        entryIndex = -1
-    END IF
-
-    IF entryIndex = -1 THEN
-        itemCount = 3
-    ELSEIF isDir THEN
-        itemCount = 5
-    ELSE
-        itemCount = 4
-    END IF
+    itemCount = FD_INPUT_ctx_menu_count%(FD_STATE.ctxMenuIndex)
+    IF itemCount < 1 THEN EXIT SUB
 
     DIM ifs AS INTEGER
     ifs = FD_CFG.inputFontScale
@@ -157,29 +141,8 @@ SUB FD_RENDER_context_menu
     DIM i AS INTEGER
     FOR i = 1 TO itemCount
         DIM lbl AS STRING
-        IF entryIndex = -1 THEN
-            SELECT CASE i
-                CASE 1: lbl = "CREATE FOLDER"
-                CASE 2: lbl = "REVEAL FOLDER"
-                CASE 3: lbl = "ADD TO BROWSER PLACES"
-            END SELECT
-        ELSEIF isDir THEN
-            SELECT CASE i
-                CASE 1: lbl = "RENAME"
-                CASE 2: lbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 3: lbl = "REVEAL FOLDER"
-                CASE 4: lbl = "ADD TO BROWSER PLACES"
-                CASE 5: lbl = "DELETE"
-            END SELECT
-        ELSE
-            SELECT CASE i
-                CASE 1: lbl = "RENAME"
-                CASE 2: lbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 3: lbl = "REVEAL FOLDER"
-                CASE 4: lbl = "DELETE"
-            END SELECT
-        END IF
-
+        DIM act AS INTEGER
+        FD_INPUT_ctx_menu_item i, FD_STATE.ctxMenuIndex, act, lbl
         DIM w AS INTEGER
         w = FD_text_width%(lbl, ifs) + FD_PADDING * 2
         IF w > menuW THEN menuW = w
@@ -203,28 +166,8 @@ SUB FD_RENDER_context_menu
         itemY = y + 2 + (i - 1) * itemH
 
         DIM itemLbl AS STRING
-        IF entryIndex = -1 THEN
-            SELECT CASE i
-                CASE 1: itemLbl = "CREATE FOLDER"
-                CASE 2: itemLbl = "REVEAL FOLDER"
-                CASE 3: itemLbl = "ADD TO BROWSER PLACES"
-            END SELECT
-        ELSEIF isDir THEN
-            SELECT CASE i
-                CASE 1: itemLbl = "RENAME"
-                CASE 2: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 3: itemLbl = "REVEAL FOLDER"
-                CASE 4: itemLbl = "ADD TO BROWSER PLACES"
-                CASE 5: itemLbl = "DELETE"
-            END SELECT
-        ELSE
-            SELECT CASE i
-                CASE 1: itemLbl = "RENAME"
-                CASE 2: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 3: itemLbl = "REVEAL FOLDER"
-                CASE 4: itemLbl = "DELETE"
-            END SELECT
-        END IF
+        DIM itemAct AS INTEGER
+        FD_INPUT_ctx_menu_item i, FD_STATE.ctxMenuIndex, itemAct, itemLbl
 
         DIM itemHover AS INTEGER
         itemHover = 0

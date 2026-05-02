@@ -80,6 +80,10 @@ CONST FD_CTX_ADD_PLACE    = 3
 CONST FD_CTX_RENAME       = 4
 CONST FD_CTX_DELETE       = 5
 CONST FD_CTX_CREATE_DIR   = 6
+CONST FD_CTX_CUT          = 7   ' Cut selected file(s) to clipboard
+CONST FD_CTX_COPY         = 8   ' Copy selected file(s) to clipboard
+CONST FD_CTX_PASTE        = 9   ' Paste clipboard into current directory
+CONST FD_CTX_ADD_RECENT   = 10  ' Add file to host app's recent files list
 
 
 ' --- Type Definitions --------------------------------------------------------
@@ -310,6 +314,9 @@ TYPE FD_STATE_OBJ
     ' Animation
     cursorBlink AS INTEGER          ' Cursor blink state
     cursorTimer AS DOUBLE           ' Cursor blink timer
+
+    ' Pending host-app callback actions (checked & cleared by the host after each tick)
+    pendingRecentPath AS STRING * 260  ' Non-empty = host should add this path to its recent list
 END TYPE
 
 ' --- Thumbnail Cache ---------------------------------------------------------
@@ -377,6 +384,13 @@ DECLARE SUB FD_clear_custom_places ()
 DECLARE SUB FD_clear_all_selected ()
 DECLARE SUB FD_toggle_selected (filteredIndex AS INTEGER)
 DECLARE SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
+
+' Clipboard for copy/cut-paste operations
+CONST FD_CLIP_COPY = 0   ' Clipboard mode: copy
+CONST FD_CLIP_CUT  = 1   ' Clipboard mode: cut (move on paste)
+DIM SHARED FD_CLIP_COUNT AS INTEGER
+DIM SHARED FD_CLIP_MODE  AS INTEGER
+DIM SHARED FD_CLIP_FILES(FD_MAX_MULTI_RESULTS - 1) AS STRING * 260
 
 ' Thumbnail cache pool
 DIM SHARED FD_thumbs(FD_MAX_THUMB_CACHE - 1) AS FD_THUMB_SLOT
