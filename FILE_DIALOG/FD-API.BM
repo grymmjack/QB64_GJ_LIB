@@ -352,9 +352,8 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     END IF
 END SUB
 ' --------------------------------------------------------------------------
-SUB FD_cleanup
-    ' Save config
-    FD_save_config
+SUB FD_cleanup_internal (saveConfig AS INTEGER)
+    IF saveConfig THEN FD_save_config
 
     ' Free themed font if one was injected (e.g. by DRAW_FD_apply_theme)
     ' Reset font on image buffer to built-in first — _FREEFONT fails if the
@@ -404,6 +403,14 @@ SUB FD_cleanup
         $END IF
         fdDrainK& = _KEYHIT
     LOOP
+END SUB
+
+SUB FD_cleanup
+    FD_cleanup_internal TRUE
+END SUB
+
+SUB FD_cleanup_runtime
+    FD_cleanup_internal FALSE
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -462,6 +469,12 @@ END SUB
 SUB FD_LAYOUT_calculate
     DIM y AS INTEGER
 
+    ' FD_STATE.scale holds the host blit multiplier (1 = modal/1:1, 2 = browser/ts=2).
+    ' Divide all hardcoded minimum heights by this factor so that after the blit
+    ' the apparent sizes match a 1:1 rendering at the same fontScale.
+    DIM bs AS INTEGER
+    bs = FD_STATE.scale: IF bs < 1 THEN bs = 1
+
     ' Compute dynamic bar heights based on font scales
     ' Each bar: font_height + padding. Minimum is the original constant value.
     DIM tfs  AS INTEGER, pfs AS INTEGER, sfs AS INTEGER
@@ -473,37 +486,53 @@ SUB FD_LAYOUT_calculate
     ifs  = FD_CFG.inputFontScale  : IF ifs < 1 THEN ifs = 1
 
     FD_STATE.titleBarH = FD_CFG.fontH * tfs + 8
-    IF FD_STATE.titleBarH < FD_TITLE_BAR_H THEN FD_STATE.titleBarH = FD_TITLE_BAR_H
+    IF FD_STATE.titleBarH < FD_TITLE_BAR_H \ bs THEN FD_STATE.titleBarH = FD_TITLE_BAR_H \ bs
 
     ' Path bar / toolbar must accommodate icons (which are scaled by
     ' iconScale, independent of fontScale). Otherwise large icons squeeze
     ' the bars and the rows visually touch.
     DIM iscBar AS INTEGER, iconBarH AS INTEGER
-    iscBar   = FD_CFG.iconScale: IF iscBar < 1 THEN iscBar = 2
+    iscBar   = FD_CFG.iconScale: IF iscBar < 1 THEN iscBar = 1
     iconBarH = 11 * iscBar + 8
     IF FD_ICONS_has_png%(FD_ICON_TB_UP) THEN iconBarH = FD_iconW(FD_ICON_TB_UP) * iscBar + 8
 
     FD_STATE.pathBarH = FD_CFG.fontH * pfs + 8
-    IF FD_STATE.pathBarH < FD_PATH_BAR_H THEN FD_STATE.pathBarH = FD_PATH_BAR_H
+    IF FD_STATE.pathBarH < FD_PATH_BAR_H \ bs THEN FD_STATE.pathBarH = FD_PATH_BAR_H \ bs
     IF FD_STATE.pathBarH < iconBarH THEN FD_STATE.pathBarH = iconBarH
 
     FD_STATE.toolBarH = FD_CFG.fontH * sfs + 8
-    IF FD_STATE.toolBarH < FD_TOOLBAR_H THEN FD_STATE.toolBarH = FD_TOOLBAR_H
+    IF FD_STATE.toolBarH < FD_TOOLBAR_H \ bs THEN FD_STATE.toolBarH = FD_TOOLBAR_H \ bs
     IF FD_STATE.toolBarH < iconBarH THEN FD_STATE.toolBarH = iconBarH
 
     FD_STATE.columnHeaderH = FD_CFG.fontH * sfs + 6
-    IF FD_STATE.columnHeaderH < FD_COL_HEADER_H THEN FD_STATE.columnHeaderH = FD_COL_HEADER_H
+    IF FD_STATE.columnHeaderH < FD_COL_HEADER_H \ bs THEN FD_STATE.columnHeaderH = FD_COL_HEADER_H \ bs
 
     FD_STATE.statusBarH = FD_CFG.fontH * stfs + 6
-    IF FD_STATE.statusBarH < FD_STATUS_BAR_H THEN FD_STATE.statusBarH = FD_STATUS_BAR_H
+    IF FD_STATE.statusBarH < FD_STATUS_BAR_H \ bs THEN FD_STATE.statusBarH = FD_STATUS_BAR_H \ bs
 
-    FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
-    IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H
+    IF FD_STATE.hideButtonBar THEN
+        FD_STATE.buttonBarH = 0
+        FD_STATE.filterDropdownOpen = FALSE
+    ELSE
+        FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
+        IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H \ bs THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H \ bs
+    END IF
 
-    DIM cfs AS INTEGER
+    DIM cfs AS INTEGER, isc AS INTEGER
     cfs                = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
+    isc                = FD_CFG.iconScale:        IF isc < 1 THEN isc = 1
     FD_STATE.rowHeight = FD_CFG.fontH * cfs + 4
-    IF FD_STATE.rowHeight < FD_ROW_HEIGHT THEN FD_STATE.rowHeight = FD_ROW_HEIGHT
+    ' Rows must be tall enough to contain their icons without overflow.
+    ' Use the actual loaded icon native height (FD_ICON_FOLDER) if available,
+    ' otherwise fall back to FD_ICON_SIZE (16px hardcoded).  This prevents
+    ' rows from being bloated when icons are smaller than 16px native.
+    DIM iconRowMin AS INTEGER
+    DIM nativeIconH AS INTEGER
+    nativeIconH = FD_ICON_SIZE   ' default = 16
+    IF FD_iconH(FD_ICON_FOLDER) > 0 THEN nativeIconH = FD_iconH(FD_ICON_FOLDER)
+    iconRowMin = nativeIconH * isc + 4
+    IF FD_STATE.rowHeight < iconRowMin             THEN FD_STATE.rowHeight = iconRowMin
+    IF FD_STATE.rowHeight < FD_ROW_HEIGHT \ bs     THEN FD_STATE.rowHeight = FD_ROW_HEIGHT \ bs
 
     ' Keep fixed columns readable at larger font sizes.
     DIM minTypeW AS INTEGER, minSizeW AS INTEGER, minDateW AS INTEGER
@@ -987,6 +1016,9 @@ SUB FD_load_config
     IF FD_CFG.statusFontScale > 4 THEN FD_CFG.statusFontScale = 4
     IF FD_CFG.sortFontScale < 1 THEN FD_CFG.sortFontScale = 1
     IF FD_CFG.sortFontScale > 4 THEN FD_CFG.sortFontScale = 4
+    ' Normalize showPreview to proper QB64 boolean (-1=TRUE, 0=FALSE).
+    ' Values like 1 break `NOT FD_CFG.showPreview` checks (NOT 1 = -2, truthy).
+    IF FD_CFG.showPreview THEN FD_CFG.showPreview = -1 ELSE FD_CFG.showPreview = 0
 END SUB
 
 ' --------------------------------------------------------------------------

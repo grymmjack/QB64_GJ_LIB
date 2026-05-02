@@ -54,6 +54,553 @@ SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
     NEXT ri
 END SUB
 
+FUNCTION FD_INPUT_has_shell_metachar% (text AS STRING)
+    FD_INPUT_has_shell_metachar% = 0
+
+    DIM i AS INTEGER
+    FOR i = 1 TO LEN(text)
+        DIM c AS STRING
+        c = MID$(text, i, 1)
+        SELECT CASE c
+            CASE CHR$(0), CHR$(10), CHR$(13), CHR$(34), "`", "|", "&", ";", "<", ">", "$"
+                FD_INPUT_has_shell_metachar% = -1
+                EXIT FUNCTION
+        END SELECT
+    NEXT i
+END FUNCTION
+
+SUB FD_INPUT_open_with_default_os (targetPath AS STRING)
+    DIM p AS STRING
+    p = RTRIM$(targetPath)
+    IF LEN(p) = 0 THEN EXIT SUB
+    IF FD_INPUT_has_shell_metachar%(p) THEN EXIT SUB
+
+    $IF WIN THEN
+        SHELL _DONTWAIT "start " + CHR$(34) + CHR$(34) + " " + CHR$(34) + p + CHR$(34)
+    $ELSEIF MAC THEN
+        SHELL _DONTWAIT "open " + CHR$(34) + p + CHR$(34)
+    $ELSE
+        SHELL _DONTWAIT "setsid --fork xdg-open " + CHR$(34) + p + CHR$(34)
+    $END IF
+END SUB
+
+SUB FD_INPUT_reveal_folder_os (folderPath AS STRING)
+    DIM p AS STRING
+    p = RTRIM$(folderPath)
+    IF LEN(p) = 0 THEN EXIT SUB
+    IF FD_INPUT_has_shell_metachar%(p) THEN EXIT SUB
+
+    $IF WIN THEN
+        SHELL _DONTWAIT "explorer /e " + CHR$(34) + p + CHR$(34)
+    $ELSEIF MAC THEN
+        SHELL _DONTWAIT "open " + CHR$(34) + p + CHR$(34)
+    $ELSE
+        SHELL _DONTWAIT "xdg-open " + CHR$(34) + p + CHR$(34)
+    $END IF
+END SUB
+
+FUNCTION FD_INPUT_is_valid_name% (itemName AS STRING)
+    FD_INPUT_is_valid_name% = 0
+
+    DIM n AS STRING
+    n = LTRIM$(RTRIM$(itemName))
+    IF LEN(n) = 0 THEN EXIT FUNCTION
+    IF n = "." OR n = ".." THEN EXIT FUNCTION
+
+    DIM i AS INTEGER
+    FOR i = 1 TO LEN(n)
+        DIM c AS STRING
+        c = MID$(n, i, 1)
+        SELECT CASE c
+            CASE CHR$(0), CHR$(10), CHR$(13), "/", "\\", ":", "*", "?", CHR$(34), "<", ">", "|"
+                EXIT FUNCTION
+        END SELECT
+    NEXT i
+
+    FD_INPUT_is_valid_name% = -1
+END FUNCTION
+
+SUB FD_INPUT_rename_entry (entryIndex AS INTEGER)
+    IF entryIndex < 0 OR entryIndex >= FD_STATE.entryCount THEN EXIT SUB
+
+    DIM oldName AS STRING
+    oldName = RTRIM$(FD_entries(entryIndex).fileName)
+    IF LEN(oldName) = 0 THEN EXIT SUB
+
+    DIM newName AS STRING
+    newName = _INPUTBOX$("Rename", "Enter new name:", oldName)
+    newName = LTRIM$(RTRIM$(newName))
+    IF LEN(newName) = 0 THEN EXIT SUB
+    IF newName = oldName THEN EXIT SUB
+
+    IF NOT FD_INPUT_is_valid_name%(newName) THEN
+        _MESSAGEBOX "Rename", "Invalid name.", "error"
+        EXIT SUB
+    END IF
+
+    DIM curPath AS STRING
+    DIM oldPath AS STRING
+    DIM newPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    oldPath = FD_PLAT_path_join$(curPath, oldName)
+    newPath = FD_PLAT_path_join$(curPath, newName)
+
+    IF _FILEEXISTS(newPath) OR _DIREXISTS(newPath) THEN
+        _MESSAGEBOX "Rename", "An item with that name already exists.", "info"
+        EXIT SUB
+    END IF
+
+    NAME oldPath AS newPath
+
+    IF _FILEEXISTS(newPath) OR _DIREXISTS(newPath) THEN
+        FD_FS_refresh
+    ELSE
+        _MESSAGEBOX "Rename", "Rename failed.", "error"
+    END IF
+END SUB
+
+SUB FD_INPUT_delete_path (targetPath AS STRING, isDirectory AS INTEGER)
+    IF LEN(RTRIM$(targetPath)) = 0 THEN EXIT SUB
+
+    IF isDirectory THEN
+        RMDIR targetPath
+    ELSE
+        KILL targetPath
+    END IF
+END SUB
+
+SUB FD_INPUT_delete_entry_or_selection (entryIndex AS INTEGER)
+    IF entryIndex < 0 OR entryIndex >= FD_STATE.entryCount THEN EXIT SUB
+
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+
+    IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 1 THEN
+        IF NOT FD_entries(entryIndex).isDirectory AND FD_entries(entryIndex).selected THEN
+            DIM vi AS INTEGER
+            FOR vi = 0 TO FD_STATE.visibleCount - 1
+                DIM sIdx AS INTEGER
+                sIdx = FD_filtered(vi)
+                IF FD_entries(sIdx).selected AND NOT FD_entries(sIdx).isDirectory THEN
+                    DIM sPath AS STRING
+                    sPath = FD_PLAT_path_join$(curPath, RTRIM$(FD_entries(sIdx).fileName))
+                    FD_INPUT_delete_path sPath, 0
+                END IF
+            NEXT vi
+            FD_FS_refresh
+            EXIT SUB
+        END IF
+    END IF
+
+    DIM fullPath AS STRING
+    fullPath = FD_PLAT_path_join$(curPath, RTRIM$(FD_entries(entryIndex).fileName))
+    FD_INPUT_delete_path fullPath, FD_entries(entryIndex).isDirectory
+    FD_FS_refresh
+END SUB
+
+FUNCTION FD_INPUT_ctx_menu_count% (entryIndex AS INTEGER)
+    DIM hasPaste AS INTEGER
+    hasPaste = (FD_CLIP_COUNT > 0)
+
+    IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
+        IF FD_entries(entryIndex).isDirectory THEN
+            ' Dir: RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, DELETE
+            IF hasPaste THEN
+                FD_INPUT_ctx_menu_count% = 8
+            ELSE
+                FD_INPUT_ctx_menu_count% = 7
+            END IF
+        ELSE
+            ' File: OPEN IN DRAW, RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, ADD RECENT, DELETE
+            IF hasPaste THEN
+                FD_INPUT_ctx_menu_count% = 10
+            ELSE
+                FD_INPUT_ctx_menu_count% = 9
+            END IF
+        END IF
+    ELSE
+        ' Empty area: CREATE DIR, REVEAL, ADD PLACE [+PASTE if clipboard]
+        IF hasPaste THEN
+            FD_INPUT_ctx_menu_count% = 4
+        ELSE
+            FD_INPUT_ctx_menu_count% = 3
+        END IF
+    END IF
+END FUNCTION
+
+SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS INTEGER, label AS STRING)
+    action = FD_CTX_NONE
+    label = ""
+
+    DIM hasPaste AS INTEGER
+    DIM pasteMode AS STRING
+    hasPaste = (FD_CLIP_COUNT > 0)
+    IF hasPaste THEN
+        IF FD_CLIP_MODE = FD_CLIP_CUT THEN pasteMode = " (MOVE)" ELSE pasteMode = " (COPY)"
+    END IF
+
+    IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
+        IF FD_entries(entryIndex).isDirectory THEN
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_RENAME
+                    label = "RENAME"
+                CASE 2
+                    action = FD_CTX_CUT
+                    label = "CUT"
+                CASE 3
+                    action = FD_CTX_COPY
+                    label = "COPY"
+                CASE 4
+                    IF hasPaste THEN
+                        action = FD_CTX_PASTE
+                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                    ELSE
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    END IF
+                CASE 5
+                    IF hasPaste THEN
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    ELSE
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    END IF
+                CASE 6
+                    IF hasPaste THEN
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    ELSE
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    END IF
+                CASE 7
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    ELSE
+                        action = FD_CTX_DELETE
+                        label = "DELETE"
+                    END IF
+                CASE 8
+                    action = FD_CTX_DELETE
+                    label = "DELETE"
+            END SELECT
+        ELSE
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_OPEN_IN_DRAW
+                    label = "OPEN IN DRAW"
+                CASE 2
+                    action = FD_CTX_RENAME
+                    label = "RENAME"
+                CASE 3
+                    action = FD_CTX_CUT
+                    label = "CUT"
+                CASE 4
+                    action = FD_CTX_COPY
+                    label = "COPY"
+                CASE 5
+                    IF hasPaste THEN
+                        action = FD_CTX_PASTE
+                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                    ELSE
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    END IF
+                CASE 6
+                    IF hasPaste THEN
+                        action = FD_CTX_OPEN_DEFAULT
+                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                    ELSE
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    END IF
+                CASE 7
+                    IF hasPaste THEN
+                        action = FD_CTX_REVEAL
+                        label = "REVEAL FOLDER"
+                    ELSE
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    END IF
+                CASE 8
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_PLACE
+                        label = "ADD TO BROWSER PLACES"
+                    ELSE
+                        action = FD_CTX_ADD_RECENT
+                        label = "ADD TO RECENT FILES"
+                    END IF
+                CASE 9
+                    IF hasPaste THEN
+                        action = FD_CTX_ADD_RECENT
+                        label = "ADD TO RECENT FILES"
+                    ELSE
+                        action = FD_CTX_DELETE
+                        label = "DELETE"
+                    END IF
+                CASE 10
+                    action = FD_CTX_DELETE
+                    label = "DELETE"
+            END SELECT
+        END IF
+    ELSE
+        ' Empty area
+        IF hasPaste THEN
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_CREATE_DIR
+                    label = "CREATE FOLDER"
+                CASE 2
+                    action = FD_CTX_PASTE
+                    label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                CASE 3
+                    action = FD_CTX_REVEAL
+                    label = "REVEAL FOLDER"
+                CASE 4
+                    action = FD_CTX_ADD_PLACE
+                    label = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSE
+            SELECT CASE itemPos
+                CASE 1
+                    action = FD_CTX_CREATE_DIR
+                    label = "CREATE FOLDER"
+                CASE 2
+                    action = FD_CTX_REVEAL
+                    label = "REVEAL FOLDER"
+                CASE 3
+                    action = FD_CTX_ADD_PLACE
+                    label = "ADD TO BROWSER PLACES"
+            END SELECT
+        END IF
+    END IF
+END SUB
+
+FUNCTION FD_INPUT_ctx_menu_hit% (mx AS INTEGER, my AS INTEGER)
+    FD_INPUT_ctx_menu_hit% = 0
+    IF NOT FD_STATE.ctxMenuVisible THEN EXIT FUNCTION
+
+    DIM itemCount AS INTEGER
+    itemCount = FD_INPUT_ctx_menu_count%(FD_STATE.ctxMenuIndex)
+    IF itemCount < 1 THEN EXIT FUNCTION
+
+    DIM ifs AS INTEGER
+    ifs = FD_CFG.inputFontScale
+    IF ifs < 1 THEN ifs = 1
+
+    DIM menuW AS INTEGER
+    DIM menuH AS INTEGER
+    DIM itemH AS INTEGER
+    DIM i AS INTEGER
+    itemH = FD_text_height%(ifs) + 6
+    menuW = 120
+    menuH = itemCount * itemH + 4
+
+    FOR i = 1 TO itemCount
+        DIM itemAction AS INTEGER
+        DIM itemLabel AS STRING
+        FD_INPUT_ctx_menu_item i, FD_STATE.ctxMenuIndex, itemAction, itemLabel
+        DIM itemW AS INTEGER
+        itemW = FD_text_width%(itemLabel, ifs) + FD_PADDING * 2
+        IF itemW > menuW THEN menuW = itemW
+    NEXT i
+
+    DIM x AS INTEGER, y AS INTEGER
+    x = FD_STATE.ctxMenuX
+    y = FD_STATE.ctxMenuY
+
+    IF x + menuW > FD_STATE.dialogW - 2 THEN x = FD_STATE.dialogW - menuW - 2
+    IF y + menuH > FD_STATE.dialogH - 2 THEN y = FD_STATE.dialogH - menuH - 2
+    IF x < 2 THEN x = 2
+    IF y < 2 THEN y = 2
+
+    IF mx < x OR mx >= x + menuW THEN EXIT FUNCTION
+    IF my < y OR my >= y + menuH THEN EXIT FUNCTION
+
+    IF my < y + 2 THEN EXIT FUNCTION
+    DIM idx AS INTEGER
+    idx = ((my - (y + 2)) \ itemH) + 1
+    IF idx < 1 OR idx > itemCount THEN EXIT FUNCTION
+
+    FD_INPUT_ctx_menu_hit% = idx
+END FUNCTION
+
+SUB FD_INPUT_ctx_menu_execute (itemPos AS INTEGER)
+    DIM action AS INTEGER
+    DIM label AS STRING
+    FD_INPUT_ctx_menu_item itemPos, FD_STATE.ctxMenuIndex, action, label
+    IF action = FD_CTX_NONE THEN EXIT SUB
+
+    DIM fullPath AS STRING
+    DIM folderPath AS STRING
+
+    fullPath = ""
+    folderPath = RTRIM$(FD_STATE.currentPath)
+
+    IF FD_STATE.ctxMenuIndex >= 0 AND FD_STATE.ctxMenuIndex < FD_STATE.entryCount THEN
+        fullPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(FD_STATE.ctxMenuIndex).fileName))
+        IF FD_entries(FD_STATE.ctxMenuIndex).isDirectory THEN
+            folderPath = fullPath
+        END IF
+    END IF
+
+    SELECT CASE action
+        CASE FD_CTX_OPEN_IN_DRAW
+            IF LEN(fullPath) > 0 THEN FD_STATE.pendingOpenInDraw = fullPath
+        CASE FD_CTX_OPEN_DEFAULT
+            IF LEN(fullPath) > 0 THEN FD_INPUT_open_with_default_os fullPath
+        CASE FD_CTX_REVEAL
+            IF LEN(folderPath) > 0 THEN FD_INPUT_reveal_folder_os folderPath
+        CASE FD_CTX_ADD_PLACE
+            IF LEN(folderPath) > 0 THEN
+                FD_add_favorite folderPath
+                FD_save_favorites
+                FD_init_places
+            END IF
+        CASE FD_CTX_RENAME
+            FD_INPUT_rename_entry FD_STATE.ctxMenuIndex
+        CASE FD_CTX_DELETE
+            FD_INPUT_delete_entry_or_selection FD_STATE.ctxMenuIndex
+        CASE FD_CTX_CREATE_DIR
+            FD_FS_create_folder
+        CASE FD_CTX_CUT
+            FD_INPUT_clipboard_capture FD_STATE.ctxMenuIndex, FD_CLIP_CUT
+        CASE FD_CTX_COPY
+            FD_INPUT_clipboard_capture FD_STATE.ctxMenuIndex, FD_CLIP_COPY
+        CASE FD_CTX_PASTE
+            FD_INPUT_clipboard_paste RTRIM$(FD_STATE.currentPath)
+        CASE FD_CTX_ADD_RECENT
+            FD_STATE.pendingRecentPath = fullPath
+    END SELECT
+
+    FD_STATE.dirty = -1
+END SUB
+
+''
+' Capture the file(s) at ctxMenuIndex (or all selected files) into FD clipboard.
+' mode: FD_CLIP_COPY or FD_CLIP_CUT
+'
+SUB FD_INPUT_clipboard_capture (entryIndex AS INTEGER, mode AS INTEGER)
+    DIM i  AS INTEGER
+    DIM fp AS STRING
+
+    FD_CLIP_COUNT = 0
+    FD_CLIP_MODE  = mode
+
+    ' If the right-clicked entry is selected and there are multiple selected files,
+    ' capture all selected files; otherwise capture only the right-clicked entry.
+    DIM useMulti AS INTEGER
+    useMulti = (FD_STATE.multiSelectCount > 1) AND (entryIndex >= 0) AND FD_entries(entryIndex).selected
+
+    IF useMulti THEN
+        FOR i = 0 TO FD_STATE.entryCount - 1
+            IF FD_entries(i).selected AND NOT FD_entries(i).isDirectory THEN
+                IF FD_CLIP_COUNT < FD_MAX_MULTI_RESULTS THEN
+                    fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(i).fileName))
+                    FD_CLIP_FILES(FD_CLIP_COUNT) = fp
+                    FD_CLIP_COUNT = FD_CLIP_COUNT + 1
+                END IF
+            END IF
+        NEXT i
+    ELSEIF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
+        fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIndex).fileName))
+        FD_CLIP_FILES(0) = fp
+        FD_CLIP_COUNT    = 1
+    END IF
+END SUB
+
+''
+' Paste files from FD clipboard into destDir.
+' CUT mode moves files (mv); COPY mode copies (cp -r).
+' After paste the clipboard is cleared if mode was CUT.
+'
+' FD_INPUT_unique_dest$ — Given a destination path that already exists, generate a
+' unique path by appending " 2", " 3", … before the extension (up to 9999).
+FUNCTION FD_INPUT_unique_dest$ (destDir AS STRING, filename AS STRING)
+    DIM fn       AS STRING
+    DIM ext      AS STRING
+    DIM baseName AS STRING
+    DIM dotPos   AS INTEGER
+    DIM counter  AS INTEGER
+    DIM candidate AS STRING
+
+    fn = filename
+    dotPos = _INSTRREV(fn, ".")
+    IF dotPos > 1 THEN
+        ext      = MID$(fn, dotPos)         ' includes the dot, e.g. ".png"
+        baseName = LEFT$(fn, dotPos - 1)
+    ELSE
+        ext      = ""
+        baseName = fn
+    END IF
+
+    counter = 2
+    DO
+        candidate = FD_PLAT_path_join$(destDir, baseName + " " + _TRIM$(STR$(counter)) + ext)
+        IF NOT _FILEEXISTS(candidate) AND NOT FD_PLAT_is_dir%(candidate) THEN
+            FD_INPUT_unique_dest$ = candidate
+            EXIT FUNCTION
+        END IF
+        counter = counter + 1
+        IF counter > 9999 THEN EXIT DO
+    LOOP
+    ' Fallback: timestamp suffix
+    FD_INPUT_unique_dest$ = FD_PLAT_path_join$(destDir, baseName + " " + _TRIM$(STR$(INT(TIMER))) + ext)
+END FUNCTION
+
+SUB FD_INPUT_clipboard_paste (destDir AS STRING)
+    DIM i    AS INTEGER
+    DIM src  AS STRING
+    DIM dest AS STRING
+    DIM cmd  AS STRING
+    DIM cleanDir AS STRING
+
+    IF FD_CLIP_COUNT < 1 THEN EXIT SUB
+
+    cleanDir = RTRIM$(destDir)
+
+    FOR i = 0 TO FD_CLIP_COUNT - 1
+        src = RTRIM$(FD_CLIP_FILES(i))
+        IF LEN(src) > 0 THEN
+            dest = FD_PLAT_path_join$(cleanDir, FD_PLAT_path_filename$(src))
+
+            ' For copy (not cut), auto-generate a unique name when pasting to same location.
+            IF FD_CLIP_MODE = FD_CLIP_COPY THEN
+                IF _FILEEXISTS(dest) OR FD_PLAT_is_dir%(dest) THEN
+                    dest = FD_INPUT_unique_dest$(cleanDir, FD_PLAT_path_filename$(src))
+                END IF
+                cmd = "cp -rf " + CHR$(34) + src + CHR$(34) + " " + CHR$(34) + dest + CHR$(34)
+            ELSE
+                ' Cut/move: if same dir, skip (source = dest); otherwise move.
+                IF src <> dest THEN
+                    cmd = "mv -f " + CHR$(34) + src + CHR$(34) + " " + CHR$(34) + dest + CHR$(34)
+                ELSE
+                    cmd = ""
+                END IF
+            END IF
+            IF LEN(cmd) > 0 THEN SHELL _HIDE cmd
+        END IF
+    NEXT i
+
+    IF FD_CLIP_MODE = FD_CLIP_CUT THEN
+        FD_CLIP_COUNT = 0
+        FD_CLIP_MODE  = FD_CLIP_COPY
+    END IF
+
+    FD_FS_refresh
+END SUB
+
+SUB FD_INPUT_ctx_menu_open (entryIndex AS INTEGER, mx AS INTEGER, my AS INTEGER)
+    FD_STATE.ctxMenuVisible = -1
+    FD_STATE.ctxMenuIndex = entryIndex
+    FD_STATE.ctxMenuX = mx
+    FD_STATE.ctxMenuY = my
+    FD_STATE.dirty = -1
+END SUB
+
 ' --------------------------------------------------------------------------
 ' FD_INPUT_poll — Poll mouse and keyboard state
 ' --------------------------------------------------------------------------
@@ -115,11 +662,13 @@ END SUB
 SUB FD_INPUT_mouse
     DIM mx           AS INTEGER, my AS INTEGER
     DIM justPressed  AS INTEGER
+    DIM justPressedB2 AS INTEGER
     DIM justReleased AS INTEGER
 
     mx           = FD_STATE.mouseX
     my           = FD_STATE.mouseY
     justPressed  = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
+    justPressedB2 = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
     justReleased = (NOT FD_STATE.mouseB1 AND FD_STATE.oldMouseB1)
 
     ' --- Back/Forward thumb buttons — navigate history ---
@@ -133,6 +682,8 @@ SUB FD_INPUT_mouse
     END IF
 
     ' --- Handle filter dropdown popup first (modal overlay) ---
+    IF FD_STATE.hideButtonBar THEN FD_STATE.filterDropdownOpen = FALSE
+
     IF FD_STATE.filterDropdownOpen THEN
         IF justPressed THEN
             ' Check if click is inside the popup
@@ -153,6 +704,23 @@ SUB FD_INPUT_mouse
                 FD_STATE.dirty              = -1
             END IF
         END IF
+        EXIT SUB
+    END IF
+
+    IF FD_STATE.ctxMenuVisible THEN
+        IF justPressed OR justPressedB2 THEN
+            DIM ctxHit AS INTEGER
+            ctxHit = 0
+            IF justPressed THEN ctxHit = FD_INPUT_ctx_menu_hit%(mx, my)
+            IF ctxHit > 0 THEN FD_INPUT_ctx_menu_execute ctxHit
+            FD_STATE.ctxMenuVisible = 0
+            FD_STATE.dirty = -1
+            EXIT SUB
+        END IF
+        ' Menu is open but no button was pressed — prevent content/places area from
+        ' updating hoverIndex, which would highlight file rows behind the menu popup.
+        FD_STATE.hoverIndex = -1
+        FD_STATE.dirty = -1
         EXIT SUB
     END IF
 
@@ -358,8 +926,6 @@ SUB FD_INPUT_mouse
     ' --- Places pane ---
     IF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
         IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
-            DIM justPressedB2 AS INTEGER
-            justPressedB2 = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
             FD_INPUT_places mx, my, justPressed, justPressedB2
             EXIT SUB
         END IF
@@ -386,7 +952,7 @@ SUB FD_INPUT_mouse
 
         ' Content area
         IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
-            FD_INPUT_content mx, my, justPressed
+            FD_INPUT_content mx, my, justPressed, justPressedB2
             EXIT SUB
         END IF
     END IF
@@ -394,11 +960,13 @@ SUB FD_INPUT_mouse
     ' --- Button bar ---
     DIM btnBarY AS INTEGER
     btnBarY = FD_STATE.dialogH - FD_STATE.buttonBarH
-    IF my >= btnBarY AND my < FD_STATE.dialogH THEN
-        IF justPressed THEN
-            FD_INPUT_button_bar_click mx, my - btnBarY
+    IF NOT FD_STATE.hideButtonBar THEN
+        IF my >= btnBarY AND my < FD_STATE.dialogH THEN
+            IF justPressed THEN
+                FD_INPUT_button_bar_click mx, my - btnBarY
+            END IF
+            EXIT SUB
         END IF
-        EXIT SUB
     END IF
 
     ' --- Scroll wheel on content ---
@@ -762,6 +1330,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
     IF FD_STATE.mouseWheel <> 0 THEN
         FD_STATE.placesScroll = FD_STATE.placesScroll + FD_STATE.mouseWheel * entryH * 3
         FD_places_clamp_scroll
+        FD_STATE.dirty = -1
     END IF
 
     py                   = FD_STATE.contentY + FD_PADDING - FD_STATE.placesScroll
@@ -811,7 +1380,7 @@ END SUB
 ' --------------------------------------------------------------------------
 ' FD_INPUT_content — Handle content pane mouse input
 ' --------------------------------------------------------------------------
-SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
+SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justPressedR AS INTEGER)
     DIM contentTop AS INTEGER
     IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN
         contentTop = FD_STATE.contentY + FD_STATE.columnHeaderH
@@ -925,11 +1494,20 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
                     FD_select_range FD_STATE.anchorIndex, hitIndex
                     FD_STATE.selectedIndex = hitIndex
                 ELSE
-                    ' Plain click: clear all, select one
-                    FD_clear_all_selected
-                    FD_toggle_selected hitIndex
-                    FD_STATE.selectedIndex = hitIndex
-                    FD_STATE.anchorIndex   = hitIndex
+                    ' Plain click: if the clicked item is already part of a multi-selection,
+                    ' preserve the selection so a drag-out can carry all selected files.
+                    ' The host (BROWSER) will use the preserved flags during drop dispatch.
+                    ' A subsequent plain click on a *different* unselected item will clear.
+                    IF FD_STATE.multiSelectCount > 1 AND FD_entries(FD_filtered(hitIndex)).selected THEN
+                        ' Item is already selected in a group — keep group, just update anchor
+                        FD_STATE.selectedIndex = hitIndex
+                        FD_STATE.anchorIndex   = hitIndex
+                    ELSE
+                        FD_clear_all_selected
+                        FD_toggle_selected hitIndex
+                        FD_STATE.selectedIndex = hitIndex
+                        FD_STATE.anchorIndex   = hitIndex
+                    END IF
                 END IF
             ELSE
                 FD_STATE.selectedIndex = hitIndex
@@ -941,28 +1519,18 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER)
         END IF
     END IF
 
-    ' Right-click handling: toggle-select in multi-select mode, or add dir to favorites
-    DIM justPressedR AS INTEGER
-    justPressedR = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
-    IF justPressedR AND hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
-        DIM entIdx AS INTEGER
-        entIdx = FD_filtered(hitIndex)
-        IF FD_entries(entIdx).isDirectory THEN
-            ' Right-click directory — add to favorites
-            DIM favDir AS STRING
-            favDir = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entIdx).fileName))
-            FD_add_favorite favDir
-            FD_save_favorites
-            FD_init_places
-            FD_STATE.dirty = -1
-        ELSEIF FD_STATE.multiSelect THEN
-            ' Right-click file in multi-select mode — toggle selection
-            ' (On macOS, Ctrl+Click = right-click, so this gives Ctrl+Click toggle)
-            FD_toggle_selected hitIndex
+    IF justPressedR THEN
+        IF hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
+            DIM entIdx AS INTEGER
+            entIdx = FD_filtered(hitIndex)
             FD_STATE.selectedIndex = hitIndex
-            FD_STATE.anchorIndex   = hitIndex
-            FD_STATE.dirty         = -1
+            FD_INPUT_update_preview
+            FD_INPUT_update_filename
+            FD_INPUT_ctx_menu_open entIdx, mx, my
+        ELSE
+            FD_INPUT_ctx_menu_open -1, mx, my
         END IF
+        EXIT SUB
     END IF
 
     FD_STATE.dirty = -1
@@ -1014,6 +1582,8 @@ END SUB
 ' FD_INPUT_button_bar_click — Handle click in button bar
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_button_bar_click (mx AS INTEGER, my AS INTEGER)
+    IF FD_STATE.hideButtonBar THEN EXIT SUB
+
     DIM ifs      AS INTEGER
     DIM okLabel  AS STRING
     DIM btnW     AS INTEGER
@@ -1214,7 +1784,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Places / content splitter
                 DIM newPlacesW  AS INTEGER
                 newPlacesW = mx - FD_STATE.placesX
-                IF newPlacesW < 80 THEN newPlacesW = 80
+                DIM plMin AS INTEGER
+                plMin = FD_STATE.placesMinW: IF plMin < 40 THEN plMin = 80
+                IF newPlacesW < plMin THEN newPlacesW = plMin
                 IF newPlacesW > FD_STATE.dialogW \ 3 THEN newPlacesW = FD_STATE.dialogW \ 3
                 FD_STATE.placesW   = newPlacesW
                 FD_CFG.placesWidth = newPlacesW
@@ -1224,7 +1796,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Content / preview splitter
                 DIM newPreviewW AS INTEGER
                 newPreviewW = FD_STATE.dialogW - mx
-                IF newPreviewW < 100 THEN newPreviewW = 100
+                DIM pvMin AS INTEGER
+                pvMin = FD_STATE.previewMinW: IF pvMin < 40 THEN pvMin = 100
+                IF newPreviewW < pvMin THEN newPreviewW = pvMin
                 IF newPreviewW > FD_STATE.dialogW \ 2 THEN newPreviewW = FD_STATE.dialogW \ 2
                 FD_STATE.previewW   = newPreviewW
                 FD_CFG.previewWidth = newPreviewW
@@ -1249,6 +1823,15 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     scrW = _WIDTH(0) \ FD_STATE.scale
     scrH = _HEIGHT(0) \ FD_STATE.scale
 
+    DIM minDialogW AS INTEGER, minDialogH AS INTEGER
+    IF FD_STATE.embeddedMode THEN
+        minDialogW = 320
+        minDialogH = 220
+    ELSE
+        minDialogW = FD_MIN_DIALOG_W
+        minDialogH = FD_MIN_DIALOG_H
+    END IF
+
     DIM newX AS INTEGER, newY AS INTEGER, newW AS INTEGER, newH AS INTEGER
     newX = FD_STATE.dialogX
     newY = FD_STATE.dialogY
@@ -1258,7 +1841,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
     ' East edges
     IF FD_STATE.resizeEdge = FD_RESIZE_E OR FD_STATE.resizeEdge = FD_RESIZE_NE OR FD_STATE.resizeEdge = FD_RESIZE_SE THEN
         newW = mx
-        IF newW < FD_MIN_DIALOG_W THEN newW = FD_MIN_DIALOG_W
+        IF newW < minDialogW THEN newW = minDialogW
     END IF
 
     ' West edges
@@ -1266,14 +1849,14 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
         DIM deltaW AS INTEGER
         deltaW = FD_STATE.dragStartX - mx
         newW   = FD_STATE.dialogW + deltaW
-        IF newW < FD_MIN_DIALOG_W THEN newW = FD_MIN_DIALOG_W
+        IF newW < minDialogW THEN newW = minDialogW
         newX = FD_STATE.dialogX + FD_STATE.dialogW - newW
     END IF
 
     ' South edges
     IF FD_STATE.resizeEdge = FD_RESIZE_S OR FD_STATE.resizeEdge = FD_RESIZE_SE OR FD_STATE.resizeEdge = FD_RESIZE_SW THEN
         newH = my
-        IF newH < FD_MIN_DIALOG_H THEN newH = FD_MIN_DIALOG_H
+        IF newH < minDialogH THEN newH = minDialogH
     END IF
 
     ' North edges
@@ -1281,7 +1864,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
         DIM deltaH AS INTEGER
         deltaH = FD_STATE.dragStartY - my
         newH   = FD_STATE.dialogH + deltaH
-        IF newH < FD_MIN_DIALOG_H THEN newH = FD_MIN_DIALOG_H
+        IF newH < minDialogH THEN newH = minDialogH
         newY = FD_STATE.dialogY + FD_STATE.dialogH - newH
     END IF
 
