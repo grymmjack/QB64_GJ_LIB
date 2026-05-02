@@ -72,6 +72,12 @@ CONST FD_RESIZE_NW   = 6
 CONST FD_RESIZE_SE   = 7
 CONST FD_RESIZE_SW   = 8
 
+' Context menu actions
+CONST FD_CTX_NONE         = 0
+CONST FD_CTX_OPEN_DEFAULT = 1
+CONST FD_CTX_REVEAL       = 2
+CONST FD_CTX_ADD_PLACE    = 3
+
 
 ' --- Type Definitions --------------------------------------------------------
 

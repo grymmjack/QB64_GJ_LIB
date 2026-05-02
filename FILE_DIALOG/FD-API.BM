@@ -352,9 +352,8 @@ SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir 
     END IF
 END SUB
 ' --------------------------------------------------------------------------
-SUB FD_cleanup
-    ' Save config
-    FD_save_config
+SUB FD_cleanup_internal (saveConfig AS INTEGER)
+    IF saveConfig THEN FD_save_config
 
     ' Free themed font if one was injected (e.g. by DRAW_FD_apply_theme)
     ' Reset font on image buffer to built-in first — _FREEFONT fails if the
@@ -404,6 +403,14 @@ SUB FD_cleanup
         $END IF
         fdDrainK& = _KEYHIT
     LOOP
+END SUB
+
+SUB FD_cleanup
+    FD_cleanup_internal TRUE
+END SUB
+
+SUB FD_cleanup_runtime
+    FD_cleanup_internal FALSE
 END SUB
 
 ' --------------------------------------------------------------------------

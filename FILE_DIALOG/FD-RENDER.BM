@@ -109,6 +109,7 @@ SUB FD_RENDER_all
 
     ' Draw popups/overlays (must be last, on top of everything)
     FD_RENDER_filter_dropdown
+    FD_RENDER_context_menu
 
     ' Draw tooltip (always topmost)
     FD_RENDER_tooltip
@@ -117,6 +118,117 @@ SUB FD_RENDER_all
     IF FD_THEME.fontHandle > 0 THEN _FONT fdOldFont, FD_STATE.imgHandle
 
     _DEST oldDest
+END SUB
+
+SUB FD_RENDER_context_menu
+    IF NOT FD_STATE.ctxMenuVisible THEN EXIT SUB
+
+    DIM itemCount AS INTEGER
+    DIM entryIndex AS INTEGER
+    DIM isDir AS INTEGER
+
+    entryIndex = FD_STATE.ctxMenuIndex
+    isDir = 0
+    IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
+        isDir = FD_entries(entryIndex).isDirectory
+    ELSE
+        entryIndex = -1
+    END IF
+
+    IF entryIndex = -1 THEN
+        itemCount = 2
+    ELSEIF isDir THEN
+        itemCount = 3
+    ELSE
+        itemCount = 2
+    END IF
+
+    DIM ifs AS INTEGER
+    ifs = FD_CFG.inputFontScale
+    IF ifs < 1 THEN ifs = 1
+
+    DIM itemH AS INTEGER
+    DIM menuW AS INTEGER
+    DIM menuH AS INTEGER
+    itemH = FD_text_height%(ifs) + 6
+    menuW = 120
+    menuH = itemCount * itemH + 4
+
+    DIM i AS INTEGER
+    FOR i = 1 TO itemCount
+        DIM lbl AS STRING
+        IF entryIndex = -1 THEN
+            SELECT CASE i
+                CASE 1: lbl = "REVEAL FOLDER"
+                CASE 2: lbl = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSEIF isDir THEN
+            SELECT CASE i
+                CASE 1: lbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 2: lbl = "REVEAL FOLDER"
+                CASE 3: lbl = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSE
+            SELECT CASE i
+                CASE 1: lbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 2: lbl = "REVEAL FOLDER"
+            END SELECT
+        END IF
+
+        DIM w AS INTEGER
+        w = FD_text_width%(lbl, ifs) + FD_PADDING * 2
+        IF w > menuW THEN menuW = w
+    NEXT i
+
+    DIM x AS INTEGER, y AS INTEGER
+    x = FD_STATE.ctxMenuX
+    y = FD_STATE.ctxMenuY
+
+    IF x + menuW > FD_STATE.dialogW - 2 THEN x = FD_STATE.dialogW - menuW - 2
+    IF y + menuH > FD_STATE.dialogH - 2 THEN y = FD_STATE.dialogH - menuH - 2
+    IF x < 2 THEN x = 2
+    IF y < 2 THEN y = 2
+
+    LINE (x + 2, y + 2)-(x + menuW + 1, y + menuH + 1), &HFF000000, BF
+    LINE (x, y)-(x + menuW - 1, y + menuH - 1), FD_CLR_BG~&, BF
+    LINE (x, y)-(x + menuW - 1, y + menuH - 1), FD_CLR_BORDER~&, B
+
+    FOR i = 1 TO itemCount
+        DIM itemY AS INTEGER
+        itemY = y + 2 + (i - 1) * itemH
+
+        DIM itemLbl AS STRING
+        IF entryIndex = -1 THEN
+            SELECT CASE i
+                CASE 1: itemLbl = "REVEAL FOLDER"
+                CASE 2: itemLbl = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSEIF isDir THEN
+            SELECT CASE i
+                CASE 1: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 2: itemLbl = "REVEAL FOLDER"
+                CASE 3: itemLbl = "ADD TO BROWSER PLACES"
+            END SELECT
+        ELSE
+            SELECT CASE i
+                CASE 1: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 2: itemLbl = "REVEAL FOLDER"
+            END SELECT
+        END IF
+
+        DIM itemHover AS INTEGER
+        itemHover = 0
+        IF FD_STATE.mouseX >= x AND FD_STATE.mouseX < x + menuW THEN
+            IF FD_STATE.mouseY >= itemY AND FD_STATE.mouseY < itemY + itemH THEN itemHover = -1
+        END IF
+
+        IF itemHover THEN
+            LINE (x + 1, itemY)-(x + menuW - 2, itemY + itemH - 1), FD_CLR_HOVER~&, BF
+        END IF
+
+        COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
+        FD_print_scaled x + FD_PADDING, itemY + (itemH - FD_text_height%(ifs)) \ 2, itemLbl, ifs
+    NEXT i
 END SUB
 
 ' --------------------------------------------------------------------------

@@ -37,6 +37,7 @@ $END IF
 ' --- Forward declarations for cross-module calls ---
 DECLARE SUB FD_add_favorite (dirPath AS STRING)
 DECLARE SUB FD_remove_favorite (dirPath AS STRING)
+DECLARE SUB FD_cleanup_runtime
 DECLARE SUB FD_save_favorites
 DECLARE SUB FD_init_places
 DECLARE FUNCTION FD_places_content_height% ()
