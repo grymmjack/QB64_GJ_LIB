@@ -1530,7 +1530,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Places / content splitter
                 DIM newPlacesW  AS INTEGER
                 newPlacesW = mx - FD_STATE.placesX
-                IF newPlacesW < 80 THEN newPlacesW = 80
+                DIM plMin AS INTEGER
+                plMin = FD_STATE.placesMinW: IF plMin < 40 THEN plMin = 80
+                IF newPlacesW < plMin THEN newPlacesW = plMin
                 IF newPlacesW > FD_STATE.dialogW \ 3 THEN newPlacesW = FD_STATE.dialogW \ 3
                 FD_STATE.placesW   = newPlacesW
                 FD_CFG.placesWidth = newPlacesW
@@ -1540,7 +1542,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Content / preview splitter
                 DIM newPreviewW AS INTEGER
                 newPreviewW = FD_STATE.dialogW - mx
-                IF newPreviewW < 100 THEN newPreviewW = 100
+                DIM pvMin AS INTEGER
+                pvMin = FD_STATE.previewMinW: IF pvMin < 40 THEN pvMin = 100
+                IF newPreviewW < pvMin THEN newPreviewW = pvMin
                 IF newPreviewW > FD_STATE.dialogW \ 2 THEN newPreviewW = FD_STATE.dialogW \ 2
                 FD_STATE.previewW   = newPreviewW
                 FD_CFG.previewWidth = newPreviewW

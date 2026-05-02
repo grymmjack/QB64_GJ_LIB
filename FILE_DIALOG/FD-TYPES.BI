@@ -301,7 +301,8 @@ TYPE FD_STATE_OBJ
     previewImgHandle AS LONG        ' Loaded preview image of selected file
     dirty            AS INTEGER     ' TRUE = needs full redraw
     scale            AS INTEGER     ' Display scale factor
-
+    placesMinW       AS INTEGER     ' Minimum places pane width (0 = use library default)
+    previewMinW      AS INTEGER     ' Minimum preview pane width (0 = use library default)
     ' Double-click detection
     lastClickTime  AS DOUBLE        ' Timer value of last click
     lastClickIndex AS INTEGER       ' Index of last clicked entry
