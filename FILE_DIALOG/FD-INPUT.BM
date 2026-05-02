@@ -211,11 +211,11 @@ FUNCTION FD_INPUT_ctx_menu_count% (entryIndex AS INTEGER)
                 FD_INPUT_ctx_menu_count% = 7
             END IF
         ELSE
-            ' File: RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, ADD RECENT, DELETE
+            ' File: OPEN IN DRAW, RENAME, CUT, COPY [+PASTE], OPEN DEFAULT, REVEAL, ADD PLACE, ADD RECENT, DELETE
             IF hasPaste THEN
-                FD_INPUT_ctx_menu_count% = 9
+                FD_INPUT_ctx_menu_count% = 10
             ELSE
-                FD_INPUT_ctx_menu_count% = 8
+                FD_INPUT_ctx_menu_count% = 9
             END IF
         END IF
     ELSE
@@ -290,15 +290,18 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
         ELSE
             SELECT CASE itemPos
                 CASE 1
+                    action = FD_CTX_OPEN_IN_DRAW
+                    label = "OPEN IN DRAW"
+                CASE 2
                     action = FD_CTX_RENAME
                     label = "RENAME"
-                CASE 2
+                CASE 3
                     action = FD_CTX_CUT
                     label = "CUT"
-                CASE 3
+                CASE 4
                     action = FD_CTX_COPY
                     label = "COPY"
-                CASE 4
+                CASE 5
                     IF hasPaste THEN
                         action = FD_CTX_PASTE
                         label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
@@ -306,7 +309,7 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                         action = FD_CTX_OPEN_DEFAULT
                         label = "OPEN WITH DEFAULT OS PROGRAM"
                     END IF
-                CASE 5
+                CASE 6
                     IF hasPaste THEN
                         action = FD_CTX_OPEN_DEFAULT
                         label = "OPEN WITH DEFAULT OS PROGRAM"
@@ -314,7 +317,7 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                         action = FD_CTX_REVEAL
                         label = "REVEAL FOLDER"
                     END IF
-                CASE 6
+                CASE 7
                     IF hasPaste THEN
                         action = FD_CTX_REVEAL
                         label = "REVEAL FOLDER"
@@ -322,7 +325,7 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                         action = FD_CTX_ADD_PLACE
                         label = "ADD TO BROWSER PLACES"
                     END IF
-                CASE 7
+                CASE 8
                     IF hasPaste THEN
                         action = FD_CTX_ADD_PLACE
                         label = "ADD TO BROWSER PLACES"
@@ -330,7 +333,7 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                         action = FD_CTX_ADD_RECENT
                         label = "ADD TO RECENT FILES"
                     END IF
-                CASE 8
+                CASE 9
                     IF hasPaste THEN
                         action = FD_CTX_ADD_RECENT
                         label = "ADD TO RECENT FILES"
@@ -338,7 +341,7 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
                         action = FD_CTX_DELETE
                         label = "DELETE"
                     END IF
-                CASE 9
+                CASE 10
                     action = FD_CTX_DELETE
                     label = "DELETE"
             END SELECT
@@ -445,6 +448,8 @@ SUB FD_INPUT_ctx_menu_execute (itemPos AS INTEGER)
     END IF
 
     SELECT CASE action
+        CASE FD_CTX_OPEN_IN_DRAW
+            IF LEN(fullPath) > 0 THEN FD_STATE.pendingOpenInDraw = fullPath
         CASE FD_CTX_OPEN_DEFAULT
             IF LEN(fullPath) > 0 THEN FD_INPUT_open_with_default_os fullPath
         CASE FD_CTX_REVEAL
@@ -1489,11 +1494,20 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, just
                     FD_select_range FD_STATE.anchorIndex, hitIndex
                     FD_STATE.selectedIndex = hitIndex
                 ELSE
-                    ' Plain click: clear all, select one
-                    FD_clear_all_selected
-                    FD_toggle_selected hitIndex
-                    FD_STATE.selectedIndex = hitIndex
-                    FD_STATE.anchorIndex   = hitIndex
+                    ' Plain click: if the clicked item is already part of a multi-selection,
+                    ' preserve the selection so a drag-out can carry all selected files.
+                    ' The host (BROWSER) will use the preserved flags during drop dispatch.
+                    ' A subsequent plain click on a *different* unselected item will clear.
+                    IF FD_STATE.multiSelectCount > 1 AND FD_entries(FD_filtered(hitIndex)).selected THEN
+                        ' Item is already selected in a group — keep group, just update anchor
+                        FD_STATE.selectedIndex = hitIndex
+                        FD_STATE.anchorIndex   = hitIndex
+                    ELSE
+                        FD_clear_all_selected
+                        FD_toggle_selected hitIndex
+                        FD_STATE.selectedIndex = hitIndex
+                        FD_STATE.anchorIndex   = hitIndex
+                    END IF
                 END IF
             ELSE
                 FD_STATE.selectedIndex = hitIndex

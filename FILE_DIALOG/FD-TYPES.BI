@@ -84,6 +84,7 @@ CONST FD_CTX_CUT          = 7   ' Cut selected file(s) to clipboard
 CONST FD_CTX_COPY         = 8   ' Copy selected file(s) to clipboard
 CONST FD_CTX_PASTE        = 9   ' Paste clipboard into current directory
 CONST FD_CTX_ADD_RECENT   = 10  ' Add file to host app's recent files list
+CONST FD_CTX_OPEN_IN_DRAW = 11  ' Open file directly in the host application (DRAW)
 
 
 ' --- Type Definitions --------------------------------------------------------
@@ -316,7 +317,8 @@ TYPE FD_STATE_OBJ
     cursorTimer AS DOUBLE           ' Cursor blink timer
 
     ' Pending host-app callback actions (checked & cleared by the host after each tick)
-    pendingRecentPath AS STRING * 260  ' Non-empty = host should add this path to its recent list
+    pendingRecentPath   AS STRING * 260  ' Non-empty = host should add this path to its recent list
+    pendingOpenInDraw   AS STRING * 260  ' Non-empty = host should open this path as a document
 END TYPE
 
 ' --- Thumbnail Cache ---------------------------------------------------------
