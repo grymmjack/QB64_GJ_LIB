@@ -77,6 +77,9 @@ CONST FD_CTX_NONE         = 0
 CONST FD_CTX_OPEN_DEFAULT = 1
 CONST FD_CTX_REVEAL       = 2
 CONST FD_CTX_ADD_PLACE    = 3
+CONST FD_CTX_RENAME       = 4
+CONST FD_CTX_DELETE       = 5
+CONST FD_CTX_CREATE_DIR   = 6
 
 
 ' --- Type Definitions --------------------------------------------------------

@@ -136,11 +136,11 @@ SUB FD_RENDER_context_menu
     END IF
 
     IF entryIndex = -1 THEN
-        itemCount = 2
-    ELSEIF isDir THEN
         itemCount = 3
+    ELSEIF isDir THEN
+        itemCount = 5
     ELSE
-        itemCount = 2
+        itemCount = 4
     END IF
 
     DIM ifs AS INTEGER
@@ -159,19 +159,24 @@ SUB FD_RENDER_context_menu
         DIM lbl AS STRING
         IF entryIndex = -1 THEN
             SELECT CASE i
-                CASE 1: lbl = "REVEAL FOLDER"
-                CASE 2: lbl = "ADD TO BROWSER PLACES"
-            END SELECT
-        ELSEIF isDir THEN
-            SELECT CASE i
-                CASE 1: lbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 1: lbl = "CREATE FOLDER"
                 CASE 2: lbl = "REVEAL FOLDER"
                 CASE 3: lbl = "ADD TO BROWSER PLACES"
             END SELECT
+        ELSEIF isDir THEN
+            SELECT CASE i
+                CASE 1: lbl = "RENAME"
+                CASE 2: lbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 3: lbl = "REVEAL FOLDER"
+                CASE 4: lbl = "ADD TO BROWSER PLACES"
+                CASE 5: lbl = "DELETE"
+            END SELECT
         ELSE
             SELECT CASE i
-                CASE 1: lbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 2: lbl = "REVEAL FOLDER"
+                CASE 1: lbl = "RENAME"
+                CASE 2: lbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 3: lbl = "REVEAL FOLDER"
+                CASE 4: lbl = "DELETE"
             END SELECT
         END IF
 
@@ -200,19 +205,24 @@ SUB FD_RENDER_context_menu
         DIM itemLbl AS STRING
         IF entryIndex = -1 THEN
             SELECT CASE i
-                CASE 1: itemLbl = "REVEAL FOLDER"
-                CASE 2: itemLbl = "ADD TO BROWSER PLACES"
-            END SELECT
-        ELSEIF isDir THEN
-            SELECT CASE i
-                CASE 1: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 1: itemLbl = "CREATE FOLDER"
                 CASE 2: itemLbl = "REVEAL FOLDER"
                 CASE 3: itemLbl = "ADD TO BROWSER PLACES"
             END SELECT
+        ELSEIF isDir THEN
+            SELECT CASE i
+                CASE 1: itemLbl = "RENAME"
+                CASE 2: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 3: itemLbl = "REVEAL FOLDER"
+                CASE 4: itemLbl = "ADD TO BROWSER PLACES"
+                CASE 5: itemLbl = "DELETE"
+            END SELECT
         ELSE
             SELECT CASE i
-                CASE 1: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 2: itemLbl = "REVEAL FOLDER"
+                CASE 1: itemLbl = "RENAME"
+                CASE 2: itemLbl = "OPEN WITH DEFAULT OS PROGRAM"
+                CASE 3: itemLbl = "REVEAL FOLDER"
+                CASE 4: itemLbl = "DELETE"
             END SELECT
         END IF
 
@@ -456,7 +466,7 @@ SUB FD_RENDER_places
     DIM pfs    AS INTEGER
     DIM plIsc  AS INTEGER
     pfs    = FD_CFG.placesFontScale : IF pfs < 1 THEN pfs = 1
-    plIsc  = FD_CFG.iconScale       : IF plIsc < 1 THEN plIsc = 2
+    plIsc  = FD_CFG.iconScale       : IF plIsc < 1 THEN plIsc = 1
     entryH = FD_STATE.rowHeight
 
     py = y1 + FD_PADDING - FD_STATE.placesScroll

@@ -99,15 +99,114 @@ SUB FD_INPUT_reveal_folder_os (folderPath AS STRING)
     $END IF
 END SUB
 
+FUNCTION FD_INPUT_is_valid_name% (itemName AS STRING)
+    FD_INPUT_is_valid_name% = 0
+
+    DIM n AS STRING
+    n = LTRIM$(RTRIM$(itemName))
+    IF LEN(n) = 0 THEN EXIT FUNCTION
+    IF n = "." OR n = ".." THEN EXIT FUNCTION
+
+    DIM i AS INTEGER
+    FOR i = 1 TO LEN(n)
+        DIM c AS STRING
+        c = MID$(n, i, 1)
+        SELECT CASE c
+            CASE CHR$(0), CHR$(10), CHR$(13), "/", "\\", ":", "*", "?", CHR$(34), "<", ">", "|"
+                EXIT FUNCTION
+        END SELECT
+    NEXT i
+
+    FD_INPUT_is_valid_name% = -1
+END FUNCTION
+
+SUB FD_INPUT_rename_entry (entryIndex AS INTEGER)
+    IF entryIndex < 0 OR entryIndex >= FD_STATE.entryCount THEN EXIT SUB
+
+    DIM oldName AS STRING
+    oldName = RTRIM$(FD_entries(entryIndex).fileName)
+    IF LEN(oldName) = 0 THEN EXIT SUB
+
+    DIM newName AS STRING
+    newName = _INPUTBOX$("Rename", "Enter new name:", oldName)
+    newName = LTRIM$(RTRIM$(newName))
+    IF LEN(newName) = 0 THEN EXIT SUB
+    IF newName = oldName THEN EXIT SUB
+
+    IF NOT FD_INPUT_is_valid_name%(newName) THEN
+        _MESSAGEBOX "Rename", "Invalid name.", "error"
+        EXIT SUB
+    END IF
+
+    DIM curPath AS STRING
+    DIM oldPath AS STRING
+    DIM newPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+    oldPath = FD_PLAT_path_join$(curPath, oldName)
+    newPath = FD_PLAT_path_join$(curPath, newName)
+
+    IF _FILEEXISTS(newPath) OR _DIREXISTS(newPath) THEN
+        _MESSAGEBOX "Rename", "An item with that name already exists.", "info"
+        EXIT SUB
+    END IF
+
+    NAME oldPath AS newPath
+
+    IF _FILEEXISTS(newPath) OR _DIREXISTS(newPath) THEN
+        FD_FS_refresh
+    ELSE
+        _MESSAGEBOX "Rename", "Rename failed.", "error"
+    END IF
+END SUB
+
+SUB FD_INPUT_delete_path (targetPath AS STRING, isDirectory AS INTEGER)
+    IF LEN(RTRIM$(targetPath)) = 0 THEN EXIT SUB
+
+    IF isDirectory THEN
+        RMDIR targetPath
+    ELSE
+        KILL targetPath
+    END IF
+END SUB
+
+SUB FD_INPUT_delete_entry_or_selection (entryIndex AS INTEGER)
+    IF entryIndex < 0 OR entryIndex >= FD_STATE.entryCount THEN EXIT SUB
+
+    DIM curPath AS STRING
+    curPath = RTRIM$(FD_STATE.currentPath)
+
+    IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 1 THEN
+        IF NOT FD_entries(entryIndex).isDirectory AND FD_entries(entryIndex).selected THEN
+            DIM vi AS INTEGER
+            FOR vi = 0 TO FD_STATE.visibleCount - 1
+                DIM sIdx AS INTEGER
+                sIdx = FD_filtered(vi)
+                IF FD_entries(sIdx).selected AND NOT FD_entries(sIdx).isDirectory THEN
+                    DIM sPath AS STRING
+                    sPath = FD_PLAT_path_join$(curPath, RTRIM$(FD_entries(sIdx).fileName))
+                    FD_INPUT_delete_path sPath, 0
+                END IF
+            NEXT vi
+            FD_FS_refresh
+            EXIT SUB
+        END IF
+    END IF
+
+    DIM fullPath AS STRING
+    fullPath = FD_PLAT_path_join$(curPath, RTRIM$(FD_entries(entryIndex).fileName))
+    FD_INPUT_delete_path fullPath, FD_entries(entryIndex).isDirectory
+    FD_FS_refresh
+END SUB
+
 FUNCTION FD_INPUT_ctx_menu_count% (entryIndex AS INTEGER)
     IF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
         IF FD_entries(entryIndex).isDirectory THEN
-            FD_INPUT_ctx_menu_count% = 3
+            FD_INPUT_ctx_menu_count% = 5
         ELSE
-            FD_INPUT_ctx_menu_count% = 2
+            FD_INPUT_ctx_menu_count% = 4
         END IF
     ELSE
-        FD_INPUT_ctx_menu_count% = 2
+        FD_INPUT_ctx_menu_count% = 3
     END IF
 END FUNCTION
 
@@ -119,31 +218,46 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
         IF FD_entries(entryIndex).isDirectory THEN
             SELECT CASE itemPos
                 CASE 1
+                    action = FD_CTX_RENAME
+                    label = "RENAME"
+                CASE 2
                     action = FD_CTX_OPEN_DEFAULT
                     label = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 2
+                CASE 3
                     action = FD_CTX_REVEAL
                     label = "REVEAL FOLDER"
-                CASE 3
+                CASE 4
                     action = FD_CTX_ADD_PLACE
                     label = "ADD TO BROWSER PLACES"
+                CASE 5
+                    action = FD_CTX_DELETE
+                    label = "DELETE"
             END SELECT
         ELSE
             SELECT CASE itemPos
                 CASE 1
+                    action = FD_CTX_RENAME
+                    label = "RENAME"
+                CASE 2
                     action = FD_CTX_OPEN_DEFAULT
                     label = "OPEN WITH DEFAULT OS PROGRAM"
-                CASE 2
+                CASE 3
                     action = FD_CTX_REVEAL
                     label = "REVEAL FOLDER"
+                CASE 4
+                    action = FD_CTX_DELETE
+                    label = "DELETE"
             END SELECT
         END IF
     ELSE
         SELECT CASE itemPos
             CASE 1
+                action = FD_CTX_CREATE_DIR
+                label = "CREATE FOLDER"
+            CASE 2
                 action = FD_CTX_REVEAL
                 label = "REVEAL FOLDER"
-            CASE 2
+            CASE 3
                 action = FD_CTX_ADD_PLACE
                 label = "ADD TO BROWSER PLACES"
         END SELECT
@@ -229,6 +343,12 @@ SUB FD_INPUT_ctx_menu_execute (itemPos AS INTEGER)
                 FD_save_favorites
                 FD_init_places
             END IF
+        CASE FD_CTX_RENAME
+            FD_INPUT_rename_entry FD_STATE.ctxMenuIndex
+        CASE FD_CTX_DELETE
+            FD_INPUT_delete_entry_or_selection FD_STATE.ctxMenuIndex
+        CASE FD_CTX_CREATE_DIR
+            FD_FS_create_folder
     END SELECT
 
     FD_STATE.dirty = -1
