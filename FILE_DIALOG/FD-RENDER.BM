@@ -143,7 +143,7 @@ SUB FD_RENDER_context_menu
         DIM lbl AS STRING
         DIM act AS INTEGER
         FD_INPUT_ctx_menu_item i, FD_STATE.ctxMenuIndex, act, lbl
-        DIM w AS INTEGER
+        DIM w   AS INTEGER
         w = FD_text_width%(lbl, ifs) + FD_PADDING * 2
         IF w > menuW THEN menuW = w
     NEXT i
@@ -1000,7 +1000,7 @@ SUB FD_RENDER_status_bar
     DIM bbH AS INTEGER
     bbH = FD_STATE.buttonBarH
     IF bbH < 1 AND NOT FD_STATE.hideButtonBar THEN bbH = FD_BUTTON_BAR_H
-    y1  = FD_STATE.dialogH - sbH - bbH
+    y1 = FD_STATE.dialogH - sbH - bbH
 
     DIM stfs AS INTEGER
     stfs = FD_CFG.statusFontScale: IF stfs < 1 THEN stfs = 1

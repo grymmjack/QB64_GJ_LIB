@@ -511,24 +511,24 @@ SUB FD_LAYOUT_calculate
     IF FD_STATE.statusBarH < FD_STATUS_BAR_H \ bs THEN FD_STATE.statusBarH = FD_STATUS_BAR_H \ bs
 
     IF FD_STATE.hideButtonBar THEN
-        FD_STATE.buttonBarH = 0
+        FD_STATE.buttonBarH         = 0
         FD_STATE.filterDropdownOpen = FALSE
     ELSE
         FD_STATE.buttonBarH = FD_CFG.fontH * ifs + 20
         IF FD_STATE.buttonBarH < FD_BUTTON_BAR_H \ bs THEN FD_STATE.buttonBarH = FD_BUTTON_BAR_H \ bs
     END IF
 
-    DIM cfs AS INTEGER, isc AS INTEGER
-    cfs                = FD_CFG.contentFontScale: IF cfs < 1 THEN cfs = 1
-    isc                = FD_CFG.iconScale:        IF isc < 1 THEN isc = 1
+    DIM cfs         AS INTEGER, isc AS INTEGER
+    cfs                = FD_CFG.contentFontScale : IF cfs < 1 THEN cfs = 1
+    isc                = FD_CFG.iconScale        : IF isc < 1 THEN isc = 1
     FD_STATE.rowHeight = FD_CFG.fontH * cfs + 4
     ' Rows must be tall enough to contain their icons without overflow.
     ' Use the actual loaded icon native height (FD_ICON_FOLDER) if available,
     ' otherwise fall back to FD_ICON_SIZE (16px hardcoded).  This prevents
     ' rows from being bloated when icons are smaller than 16px native.
-    DIM iconRowMin AS INTEGER
+    DIM iconRowMin  AS INTEGER
     DIM nativeIconH AS INTEGER
-    nativeIconH = FD_ICON_SIZE   ' default = 16
+    nativeIconH = FD_ICON_SIZE ' default = 16
     IF FD_iconH(FD_ICON_FOLDER) > 0 THEN nativeIconH = FD_iconH(FD_ICON_FOLDER)
     iconRowMin = nativeIconH * isc + 4
     IF FD_STATE.rowHeight < iconRowMin             THEN FD_STATE.rowHeight = iconRowMin

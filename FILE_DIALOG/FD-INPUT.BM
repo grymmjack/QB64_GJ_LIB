@@ -230,9 +230,9 @@ END FUNCTION
 
 SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS INTEGER, label AS STRING)
     action = FD_CTX_NONE
-    label = ""
+    label  = ""
 
-    DIM hasPaste AS INTEGER
+    DIM hasPaste  AS INTEGER
     DIM pasteMode AS STRING
     hasPaste = (FD_CLIP_COUNT > 0)
     IF hasPaste THEN
@@ -244,106 +244,106 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
             SELECT CASE itemPos
                 CASE 1
                     action = FD_CTX_RENAME
-                    label = "RENAME"
+                    label  = "RENAME"
                 CASE 2
                     action = FD_CTX_CUT
-                    label = "CUT"
+                    label  = "CUT"
                 CASE 3
                     action = FD_CTX_COPY
-                    label = "COPY"
+                    label  = "COPY"
                 CASE 4
                     IF hasPaste THEN
                         action = FD_CTX_PASTE
-                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                        label  = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
                     ELSE
                         action = FD_CTX_OPEN_DEFAULT
-                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                        label  = "OPEN WITH DEFAULT OS PROGRAM"
                     END IF
                 CASE 5
                     IF hasPaste THEN
                         action = FD_CTX_OPEN_DEFAULT
-                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                        label  = "OPEN WITH DEFAULT OS PROGRAM"
                     ELSE
                         action = FD_CTX_REVEAL
-                        label = "REVEAL FOLDER"
+                        label  = "REVEAL FOLDER"
                     END IF
                 CASE 6
                     IF hasPaste THEN
                         action = FD_CTX_REVEAL
-                        label = "REVEAL FOLDER"
+                        label  = "REVEAL FOLDER"
                     ELSE
                         action = FD_CTX_ADD_PLACE
-                        label = "ADD TO BROWSER PLACES"
+                        label  = "ADD TO BROWSER PLACES"
                     END IF
                 CASE 7
                     IF hasPaste THEN
                         action = FD_CTX_ADD_PLACE
-                        label = "ADD TO BROWSER PLACES"
+                        label  = "ADD TO BROWSER PLACES"
                     ELSE
                         action = FD_CTX_DELETE
-                        label = "DELETE"
+                        label  = "DELETE"
                     END IF
                 CASE 8
                     action = FD_CTX_DELETE
-                    label = "DELETE"
+                    label  = "DELETE"
             END SELECT
         ELSE
             SELECT CASE itemPos
                 CASE 1
                     action = FD_CTX_OPEN_IN_DRAW
-                    label = "OPEN IN DRAW"
+                    label  = "OPEN IN DRAW"
                 CASE 2
                     action = FD_CTX_RENAME
-                    label = "RENAME"
+                    label  = "RENAME"
                 CASE 3
                     action = FD_CTX_CUT
-                    label = "CUT"
+                    label  = "CUT"
                 CASE 4
                     action = FD_CTX_COPY
-                    label = "COPY"
+                    label  = "COPY"
                 CASE 5
                     IF hasPaste THEN
                         action = FD_CTX_PASTE
-                        label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                        label  = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
                     ELSE
                         action = FD_CTX_OPEN_DEFAULT
-                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                        label  = "OPEN WITH DEFAULT OS PROGRAM"
                     END IF
                 CASE 6
                     IF hasPaste THEN
                         action = FD_CTX_OPEN_DEFAULT
-                        label = "OPEN WITH DEFAULT OS PROGRAM"
+                        label  = "OPEN WITH DEFAULT OS PROGRAM"
                     ELSE
                         action = FD_CTX_REVEAL
-                        label = "REVEAL FOLDER"
+                        label  = "REVEAL FOLDER"
                     END IF
                 CASE 7
                     IF hasPaste THEN
                         action = FD_CTX_REVEAL
-                        label = "REVEAL FOLDER"
+                        label  = "REVEAL FOLDER"
                     ELSE
                         action = FD_CTX_ADD_PLACE
-                        label = "ADD TO BROWSER PLACES"
+                        label  = "ADD TO BROWSER PLACES"
                     END IF
                 CASE 8
                     IF hasPaste THEN
                         action = FD_CTX_ADD_PLACE
-                        label = "ADD TO BROWSER PLACES"
+                        label  = "ADD TO BROWSER PLACES"
                     ELSE
                         action = FD_CTX_ADD_RECENT
-                        label = "ADD TO RECENT FILES"
+                        label  = "ADD TO RECENT FILES"
                     END IF
                 CASE 9
                     IF hasPaste THEN
                         action = FD_CTX_ADD_RECENT
-                        label = "ADD TO RECENT FILES"
+                        label  = "ADD TO RECENT FILES"
                     ELSE
                         action = FD_CTX_DELETE
-                        label = "DELETE"
+                        label  = "DELETE"
                     END IF
                 CASE 10
                     action = FD_CTX_DELETE
-                    label = "DELETE"
+                    label  = "DELETE"
             END SELECT
         END IF
     ELSE
@@ -352,28 +352,28 @@ SUB FD_INPUT_ctx_menu_item (itemPos AS INTEGER, entryIndex AS INTEGER, action AS
             SELECT CASE itemPos
                 CASE 1
                     action = FD_CTX_CREATE_DIR
-                    label = "CREATE FOLDER"
+                    label  = "CREATE FOLDER"
                 CASE 2
                     action = FD_CTX_PASTE
-                    label = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
+                    label  = "PASTE " + _TRIM$(STR$(FD_CLIP_COUNT)) + pasteMode
                 CASE 3
                     action = FD_CTX_REVEAL
-                    label = "REVEAL FOLDER"
+                    label  = "REVEAL FOLDER"
                 CASE 4
                     action = FD_CTX_ADD_PLACE
-                    label = "ADD TO BROWSER PLACES"
+                    label  = "ADD TO BROWSER PLACES"
             END SELECT
         ELSE
             SELECT CASE itemPos
                 CASE 1
                     action = FD_CTX_CREATE_DIR
-                    label = "CREATE FOLDER"
+                    label  = "CREATE FOLDER"
                 CASE 2
                     action = FD_CTX_REVEAL
-                    label = "REVEAL FOLDER"
+                    label  = "REVEAL FOLDER"
                 CASE 3
                     action = FD_CTX_ADD_PLACE
-                    label = "ADD TO BROWSER PLACES"
+                    label  = "ADD TO BROWSER PLACES"
             END SELECT
         END IF
     END IF
@@ -394,16 +394,16 @@ FUNCTION FD_INPUT_ctx_menu_hit% (mx AS INTEGER, my AS INTEGER)
     DIM menuW AS INTEGER
     DIM menuH AS INTEGER
     DIM itemH AS INTEGER
-    DIM i AS INTEGER
+    DIM i     AS INTEGER
     itemH = FD_text_height%(ifs) + 6
     menuW = 120
     menuH = itemCount * itemH + 4
 
     FOR i = 1 TO itemCount
         DIM itemAction AS INTEGER
-        DIM itemLabel AS STRING
+        DIM itemLabel  AS STRING
         FD_INPUT_ctx_menu_item i, FD_STATE.ctxMenuIndex, itemAction, itemLabel
-        DIM itemW AS INTEGER
+        DIM itemW      AS INTEGER
         itemW = FD_text_width%(itemLabel, ifs) + FD_PADDING * 2
         IF itemW > menuW THEN menuW = itemW
     NEXT i
@@ -430,14 +430,14 @@ END FUNCTION
 
 SUB FD_INPUT_ctx_menu_execute (itemPos AS INTEGER)
     DIM action AS INTEGER
-    DIM label AS STRING
+    DIM label  AS STRING
     FD_INPUT_ctx_menu_item itemPos, FD_STATE.ctxMenuIndex, action, label
     IF action = FD_CTX_NONE THEN EXIT SUB
 
-    DIM fullPath AS STRING
+    DIM fullPath   AS STRING
     DIM folderPath AS STRING
 
-    fullPath = ""
+    fullPath   = ""
     folderPath = RTRIM$(FD_STATE.currentPath)
 
     IF FD_STATE.ctxMenuIndex >= 0 AND FD_STATE.ctxMenuIndex < FD_STATE.entryCount THEN
@@ -499,14 +499,14 @@ SUB FD_INPUT_clipboard_capture (entryIndex AS INTEGER, mode AS INTEGER)
         FOR i = 0 TO FD_STATE.entryCount - 1
             IF FD_entries(i).selected AND NOT FD_entries(i).isDirectory THEN
                 IF FD_CLIP_COUNT < FD_MAX_MULTI_RESULTS THEN
-                    fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(i).fileName))
+                    fp                           = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(i).fileName))
                     FD_CLIP_FILES(FD_CLIP_COUNT) = fp
                     FD_CLIP_COUNT = FD_CLIP_COUNT + 1
                 END IF
             END IF
         NEXT i
     ELSEIF entryIndex >= 0 AND entryIndex < FD_STATE.entryCount THEN
-        fp = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIndex).fileName))
+        fp               = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), RTRIM$(FD_entries(entryIndex).fileName))
         FD_CLIP_FILES(0) = fp
         FD_CLIP_COUNT    = 1
     END IF
@@ -520,17 +520,17 @@ END SUB
 ' FD_INPUT_unique_dest$ — Given a destination path that already exists, generate a
 ' unique path by appending " 2", " 3", … before the extension (up to 9999).
 FUNCTION FD_INPUT_unique_dest$ (destDir AS STRING, filename AS STRING)
-    DIM fn       AS STRING
-    DIM ext      AS STRING
-    DIM baseName AS STRING
-    DIM dotPos   AS INTEGER
-    DIM counter  AS INTEGER
+    DIM fn        AS STRING
+    DIM ext       AS STRING
+    DIM baseName  AS STRING
+    DIM dotPos    AS INTEGER
+    DIM counter   AS INTEGER
     DIM candidate AS STRING
 
-    fn = filename
+    fn     = filename
     dotPos = _INSTRREV(fn, ".")
     IF dotPos > 1 THEN
-        ext      = MID$(fn, dotPos)         ' includes the dot, e.g. ".png"
+        ext      = MID$(fn, dotPos) ' includes the dot, e.g. ".png"
         baseName = LEFT$(fn, dotPos - 1)
     ELSE
         ext      = ""
@@ -552,10 +552,10 @@ FUNCTION FD_INPUT_unique_dest$ (destDir AS STRING, filename AS STRING)
 END FUNCTION
 
 SUB FD_INPUT_clipboard_paste (destDir AS STRING)
-    DIM i    AS INTEGER
-    DIM src  AS STRING
-    DIM dest AS STRING
-    DIM cmd  AS STRING
+    DIM i        AS INTEGER
+    DIM src      AS STRING
+    DIM dest     AS STRING
+    DIM cmd      AS STRING
     DIM cleanDir AS STRING
 
     IF FD_CLIP_COUNT < 1 THEN EXIT SUB
@@ -595,10 +595,10 @@ END SUB
 
 SUB FD_INPUT_ctx_menu_open (entryIndex AS INTEGER, mx AS INTEGER, my AS INTEGER)
     FD_STATE.ctxMenuVisible = -1
-    FD_STATE.ctxMenuIndex = entryIndex
-    FD_STATE.ctxMenuX = mx
-    FD_STATE.ctxMenuY = my
-    FD_STATE.dirty = -1
+    FD_STATE.ctxMenuIndex   = entryIndex
+    FD_STATE.ctxMenuX       = mx
+    FD_STATE.ctxMenuY       = my
+    FD_STATE.dirty          = -1
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -660,16 +660,16 @@ END SUB
 ' FD_INPUT_mouse — Process mouse input
 ' --------------------------------------------------------------------------
 SUB FD_INPUT_mouse
-    DIM mx           AS INTEGER, my AS INTEGER
-    DIM justPressed  AS INTEGER
+    DIM mx            AS INTEGER, my AS INTEGER
+    DIM justPressed   AS INTEGER
     DIM justPressedB2 AS INTEGER
-    DIM justReleased AS INTEGER
+    DIM justReleased  AS INTEGER
 
-    mx           = FD_STATE.mouseX
-    my           = FD_STATE.mouseY
-    justPressed  = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
+    mx            = FD_STATE.mouseX
+    my            = FD_STATE.mouseY
+    justPressed   = (FD_STATE.mouseB1 AND NOT FD_STATE.oldMouseB1)
     justPressedB2 = (FD_STATE.mouseB2 AND NOT FD_STATE.oldMouseB2)
-    justReleased = (NOT FD_STATE.mouseB1 AND FD_STATE.oldMouseB1)
+    justReleased  = (NOT FD_STATE.mouseB1 AND FD_STATE.oldMouseB1)
 
     ' --- Back/Forward thumb buttons — navigate history ---
     IF FD_STATE.mouseB4 AND NOT FD_STATE.oldMouseB4 THEN
@@ -714,13 +714,13 @@ SUB FD_INPUT_mouse
             IF justPressed THEN ctxHit = FD_INPUT_ctx_menu_hit%(mx, my)
             IF ctxHit > 0 THEN FD_INPUT_ctx_menu_execute ctxHit
             FD_STATE.ctxMenuVisible = 0
-            FD_STATE.dirty = -1
+            FD_STATE.dirty          = -1
             EXIT SUB
         END IF
         ' Menu is open but no button was pressed — prevent content/places area from
         ' updating hoverIndex, which would highlight file rows behind the menu popup.
         FD_STATE.hoverIndex = -1
-        FD_STATE.dirty = -1
+        FD_STATE.dirty      = -1
         EXIT SUB
     END IF
 
@@ -1522,7 +1522,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, just
     IF justPressedR THEN
         IF hitIndex >= 0 AND hitIndex < FD_STATE.visibleCount THEN
             DIM entIdx AS INTEGER
-            entIdx = FD_filtered(hitIndex)
+            entIdx                 = FD_filtered(hitIndex)
             FD_STATE.selectedIndex = hitIndex
             FD_INPUT_update_preview
             FD_INPUT_update_filename
@@ -1784,7 +1784,7 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Places / content splitter
                 DIM newPlacesW  AS INTEGER
                 newPlacesW = mx - FD_STATE.placesX
-                DIM plMin AS INTEGER
+                DIM plMin       AS INTEGER
                 plMin = FD_STATE.placesMinW: IF plMin < 40 THEN plMin = 80
                 IF newPlacesW < plMin THEN newPlacesW = plMin
                 IF newPlacesW > FD_STATE.dialogW \ 3 THEN newPlacesW = FD_STATE.dialogW \ 3
@@ -1796,7 +1796,7 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 ' Content / preview splitter
                 DIM newPreviewW AS INTEGER
                 newPreviewW = FD_STATE.dialogW - mx
-                DIM pvMin AS INTEGER
+                DIM pvMin       AS INTEGER
                 pvMin = FD_STATE.previewMinW: IF pvMin < 40 THEN pvMin = 100
                 IF newPreviewW < pvMin THEN newPreviewW = pvMin
                 IF newPreviewW > FD_STATE.dialogW \ 2 THEN newPreviewW = FD_STATE.dialogW \ 2

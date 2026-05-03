@@ -80,11 +80,11 @@ CONST FD_CTX_ADD_PLACE    = 3
 CONST FD_CTX_RENAME       = 4
 CONST FD_CTX_DELETE       = 5
 CONST FD_CTX_CREATE_DIR   = 6
-CONST FD_CTX_CUT          = 7   ' Cut selected file(s) to clipboard
-CONST FD_CTX_COPY         = 8   ' Copy selected file(s) to clipboard
-CONST FD_CTX_PASTE        = 9   ' Paste clipboard into current directory
-CONST FD_CTX_ADD_RECENT   = 10  ' Add file to host app's recent files list
-CONST FD_CTX_OPEN_IN_DRAW = 11  ' Open file directly in the host application (DRAW)
+CONST FD_CTX_CUT          = 7     ' Cut selected file(s) to clipboard
+CONST FD_CTX_COPY         = 8     ' Copy selected file(s) to clipboard
+CONST FD_CTX_PASTE        = 9     ' Paste clipboard into current directory
+CONST FD_CTX_ADD_RECENT   = 10    ' Add file to host app's recent files list
+CONST FD_CTX_OPEN_IN_DRAW = 11    ' Open file directly in the host application (DRAW)
 
 
 ' --- Type Definitions --------------------------------------------------------
@@ -182,143 +182,143 @@ END TYPE
 
 TYPE FD_STATE_OBJ
     ' Operating mode
-    mode         AS INTEGER         ' FD_MODE_* constant
-    embeddedMode AS INTEGER         ' TRUE when dialog is hosted non-modally inside another UI panel
-    hideButtonBar AS INTEGER        ' TRUE to hide action bar (Open/Cancel/Filename/Filter)
-    title        AS STRING * 128    ' Dialog title bar text
-    confirmLabel AS STRING * 32     ' OK button label ("Open", "Save", etc.)
-    defaultExt   AS STRING * 16     ' Default extension for save mode
+    mode          AS INTEGER          ' FD_MODE_* constant
+    embeddedMode  AS INTEGER          ' TRUE when dialog is hosted non-modally inside another UI panel
+    hideButtonBar AS INTEGER          ' TRUE to hide action bar (Open/Cancel/Filename/Filter)
+    title         AS STRING * 128     ' Dialog title bar text
+    confirmLabel  AS STRING * 32      ' OK button label ("Open", "Save", etc.)
+    defaultExt    AS STRING * 16      ' Default extension for save mode
 
     ' Filter state
-    filterCount        AS INTEGER   ' Number of filter entries
-    activeFilter       AS INTEGER   ' Currently selected filter index
-    filterDropdownOpen AS INTEGER   ' TRUE = filter dropdown popup is visible
+    filterCount        AS INTEGER     ' Number of filter entries
+    activeFilter       AS INTEGER     ' Currently selected filter index
+    filterDropdownOpen AS INTEGER     ' TRUE = filter dropdown popup is visible
 
     ' Navigation
-    currentPath     AS STRING * 260 ' Current directory being displayed
-    pathInput       AS STRING * 260 ' Path bar text input (legacy, synced from TI)
-    pathInputActive AS INTEGER      ' TRUE = path bar has focus for text entry
-    pathInputCursor AS INTEGER      ' Cursor position in path input
-    tiPathId        AS INTEGER      ' TI widget ID for path input
-    tiFileNameId    AS INTEGER      ' TI widget ID for filename input
-    tiFontHandle    AS LONG         ' Optional scaled TTF handle for TI widgets
+    currentPath     AS STRING * 260   ' Current directory being displayed
+    pathInput       AS STRING * 260   ' Path bar text input (legacy, synced from TI)
+    pathInputActive AS INTEGER        ' TRUE = path bar has focus for text entry
+    pathInputCursor AS INTEGER        ' Cursor position in path input
+    tiPathId        AS INTEGER        ' TI widget ID for path input
+    tiFileNameId    AS INTEGER        ' TI widget ID for filename input
+    tiFontHandle    AS LONG           ' Optional scaled TTF handle for TI widgets
 
     ' Filename input (for save mode)
-    fileNameInput  AS STRING * 260  ' Filename text input (legacy, synced from TI)
-    fileNameCursor AS INTEGER       ' Cursor position in filename input
+    fileNameInput  AS STRING * 260    ' Filename text input (legacy, synced from TI)
+    fileNameCursor AS INTEGER         ' Cursor position in filename input
 
     ' Search / type-ahead
-    searchText AS STRING * 64       ' Type-ahead filter text
-    searchLen  AS INTEGER           ' Length of search text
+    searchText AS STRING * 64         ' Type-ahead filter text
+    searchLen  AS INTEGER             ' Length of search text
 
     ' Content state
-    entryCount    AS INTEGER        ' Number of entries in current listing
-    visibleCount  AS INTEGER        ' Number of entries after filtering
-    scrollOffset  AS INTEGER        ' Pixel scroll offset
-    maxScroll     AS INTEGER        ' Maximum scroll offset
-    selectedIndex AS INTEGER        ' Selected/focused entry index (-1 = none)
-    hoverIndex    AS INTEGER        ' Hovered entry index (-1 = none)
+    entryCount    AS INTEGER          ' Number of entries in current listing
+    visibleCount  AS INTEGER          ' Number of entries after filtering
+    scrollOffset  AS INTEGER          ' Pixel scroll offset
+    maxScroll     AS INTEGER          ' Maximum scroll offset
+    selectedIndex AS INTEGER          ' Selected/focused entry index (-1 = none)
+    hoverIndex    AS INTEGER          ' Hovered entry index (-1 = none)
 
     ' Multi-select state
-    multiSelect      AS INTEGER     ' TRUE = multi-select mode enabled
-    multiSelectCount AS INTEGER     ' Number of entries with .selected = TRUE
-    anchorIndex      AS INTEGER     ' Anchor index for Shift+click range selection
+    multiSelect      AS INTEGER       ' TRUE = multi-select mode enabled
+    multiSelectCount AS INTEGER       ' Number of entries with .selected = TRUE
+    anchorIndex      AS INTEGER       ' Anchor index for Shift+click range selection
 
     ' Dialog geometry (screen coordinates)
-    dialogX AS INTEGER              ' Dialog X position on screen
-    dialogY AS INTEGER              ' Dialog Y position on screen
-    dialogW AS INTEGER              ' Dialog width
-    dialogH AS INTEGER              ' Dialog height
+    dialogX AS INTEGER                ' Dialog X position on screen
+    dialogY AS INTEGER                ' Dialog Y position on screen
+    dialogW AS INTEGER                ' Dialog width
+    dialogH AS INTEGER                ' Dialog height
 
     ' Calculated pane geometry
-    titleBarH     AS INTEGER        ' Title bar height
-    toolBarH      AS INTEGER        ' Toolbar height
-    pathBarH      AS INTEGER        ' Path bar height
-    columnHeaderH AS INTEGER        ' Column header height (details mode)
-    statusBarH    AS INTEGER        ' Status bar height
-    buttonBarH    AS INTEGER        ' OK/Cancel button bar height
-    placesX       AS INTEGER        ' Places pane X
-    placesW       AS INTEGER        ' Places pane width
-    contentX      AS INTEGER        ' Content pane X
-    contentW      AS INTEGER        ' Content pane width
-    contentY      AS INTEGER        ' Content pane Y
-    contentH      AS INTEGER        ' Content pane height
-    previewX      AS INTEGER        ' Preview pane X
-    previewW      AS INTEGER        ' Preview pane width
-    rowHeight     AS INTEGER        ' Row height in list/details mode
+    titleBarH     AS INTEGER          ' Title bar height
+    toolBarH      AS INTEGER          ' Toolbar height
+    pathBarH      AS INTEGER          ' Path bar height
+    columnHeaderH AS INTEGER          ' Column header height (details mode)
+    statusBarH    AS INTEGER          ' Status bar height
+    buttonBarH    AS INTEGER          ' OK/Cancel button bar height
+    placesX       AS INTEGER          ' Places pane X
+    placesW       AS INTEGER          ' Places pane width
+    contentX      AS INTEGER          ' Content pane X
+    contentW      AS INTEGER          ' Content pane width
+    contentY      AS INTEGER          ' Content pane Y
+    contentH      AS INTEGER          ' Content pane height
+    previewX      AS INTEGER          ' Preview pane X
+    previewW      AS INTEGER          ' Preview pane width
+    rowHeight     AS INTEGER          ' Row height in list/details mode
 
     ' Interaction state
-    dragging         AS INTEGER     ' TRUE = currently dragging something
-    dragType         AS INTEGER     ' 0 = none, 1 = dialog move, 2 = resize, 3 = col resize, 4 = splitter
-    dragStartX       AS INTEGER     ' Mouse X when drag started
-    dragStartY       AS INTEGER     ' Mouse Y when drag started
-    dragOrigVal      AS INTEGER     ' Original value being dragged (column width, etc.)
-    resizeEdge       AS INTEGER     ' FD_RESIZE_* constant
-    colResizing      AS INTEGER     ' Column index being resized (-1 = none)
-    splitterDragging AS INTEGER     ' 0 = none, 1 = places/content, 2 = content/preview
-    lastCursor       AS STRING * 24 ' Last cursor shape set (to avoid redundant _MOUSESHOW calls)
+    dragging         AS INTEGER       ' TRUE = currently dragging something
+    dragType         AS INTEGER       ' 0 = none, 1 = dialog move, 2 = resize, 3 = col resize, 4 = splitter
+    dragStartX       AS INTEGER       ' Mouse X when drag started
+    dragStartY       AS INTEGER       ' Mouse Y when drag started
+    dragOrigVal      AS INTEGER       ' Original value being dragged (column width, etc.)
+    resizeEdge       AS INTEGER       ' FD_RESIZE_* constant
+    colResizing      AS INTEGER       ' Column index being resized (-1 = none)
+    splitterDragging AS INTEGER       ' 0 = none, 1 = places/content, 2 = content/preview
+    lastCursor       AS STRING * 24   ' Last cursor shape set (to avoid redundant _MOUSESHOW calls)
 
     ' Mouse state (raw screen coords)
     mouseX     AS INTEGER
     mouseY     AS INTEGER
-    mouseB1    AS INTEGER           ' Left button state
-    mouseB2    AS INTEGER           ' Right button state
-    mouseB4    AS INTEGER           ' Back thumb button state
-    mouseB5    AS INTEGER           ' Forward thumb button state
-    oldMouseB1 AS INTEGER           ' Previous frame left button
-    oldMouseB2 AS INTEGER           ' Previous frame right button
-    oldMouseB4 AS INTEGER           ' Previous frame back thumb button
-    oldMouseB5 AS INTEGER           ' Previous frame forward thumb button
-    mouseWheel AS INTEGER           ' Scroll wheel delta
+    mouseB1    AS INTEGER             ' Left button state
+    mouseB2    AS INTEGER             ' Right button state
+    mouseB4    AS INTEGER             ' Back thumb button state
+    mouseB5    AS INTEGER             ' Forward thumb button state
+    oldMouseB1 AS INTEGER             ' Previous frame left button
+    oldMouseB2 AS INTEGER             ' Previous frame right button
+    oldMouseB4 AS INTEGER             ' Previous frame back thumb button
+    oldMouseB5 AS INTEGER             ' Previous frame forward thumb button
+    mouseWheel AS INTEGER             ' Scroll wheel delta
 
     ' Modifier key state (captured during poll to avoid timing issues)
-    modCtrl  AS INTEGER             ' Ctrl held (left or right)
-    modAlt   AS INTEGER             ' Alt/Option held (left or right)
-    modShift AS INTEGER             ' Shift held (left or right)
+    modCtrl  AS INTEGER               ' Ctrl held (left or right)
+    modAlt   AS INTEGER               ' Alt/Option held (left or right)
+    modShift AS INTEGER               ' Shift held (left or right)
 
     ' Navigation history (for mouse back/forward buttons)
-    navBackTop AS INTEGER           ' Top of back stack (-1 = empty)
-    navFwdTop  AS INTEGER           ' Top of forward stack (-1 = empty)
+    navBackTop AS INTEGER             ' Top of back stack (-1 = empty)
+    navFwdTop  AS INTEGER             ' Top of forward stack (-1 = empty)
 
     ' Focus
-    focusPane AS INTEGER            ' FD_FOCUS_* constant
+    focusPane AS INTEGER              ' FD_FOCUS_* constant
 
     ' Places bar state
-    placesCount  AS INTEGER         ' Number of places entries
-    placesHover  AS INTEGER         ' Hovered places entry (-1 = none)
-    placesScroll AS INTEGER         ' Places scroll offset
+    placesCount  AS INTEGER           ' Number of places entries
+    placesHover  AS INTEGER           ' Hovered places entry (-1 = none)
+    placesScroll AS INTEGER           ' Places scroll offset
 
     ' Context menu
-    ctxMenuVisible AS INTEGER       ' TRUE if context menu is shown
+    ctxMenuVisible AS INTEGER         ' TRUE if context menu is shown
     ctxMenuX       AS INTEGER
     ctxMenuY       AS INTEGER
-    ctxMenuIndex   AS INTEGER       ' Entry index context menu was opened on
+    ctxMenuIndex   AS INTEGER         ' Entry index context menu was opened on
 
     ' Result
-    done        AS INTEGER          ' TRUE if dialog should close
-    confirmed   AS INTEGER          ' TRUE if user confirmed (OK/Open/Save)
-    resultPath  AS STRING * 260     ' Full path of selected/entered file (single-select)
-    resultCount AS INTEGER          ' Number of results (multi-select; 0 or 1 for single)
+    done        AS INTEGER            ' TRUE if dialog should close
+    confirmed   AS INTEGER            ' TRUE if user confirmed (OK/Open/Save)
+    resultPath  AS STRING * 260       ' Full path of selected/entered file (single-select)
+    resultCount AS INTEGER            ' Number of results (multi-select; 0 or 1 for single)
 
     ' Rendering
-    imgHandle        AS LONG        ' Offscreen dialog image buffer
-    screenShot       AS LONG        ' Background screen capture
-    previewImgHandle AS LONG        ' Loaded preview image of selected file
-    dirty            AS INTEGER     ' TRUE = needs full redraw
-    scale            AS INTEGER     ' Display scale factor
-    placesMinW       AS INTEGER     ' Minimum places pane width (0 = use library default)
-    previewMinW      AS INTEGER     ' Minimum preview pane width (0 = use library default)
+    imgHandle        AS LONG          ' Offscreen dialog image buffer
+    screenShot       AS LONG          ' Background screen capture
+    previewImgHandle AS LONG          ' Loaded preview image of selected file
+    dirty            AS INTEGER       ' TRUE = needs full redraw
+    scale            AS INTEGER       ' Display scale factor
+    placesMinW       AS INTEGER       ' Minimum places pane width (0 = use library default)
+    previewMinW      AS INTEGER       ' Minimum preview pane width (0 = use library default)
     ' Double-click detection
-    lastClickTime  AS DOUBLE        ' Timer value of last click
-    lastClickIndex AS INTEGER       ' Index of last clicked entry
+    lastClickTime    AS DOUBLE        ' Timer value of last click
+    lastClickIndex   AS INTEGER       ' Index of last clicked entry
 
     ' Animation
-    cursorBlink AS INTEGER          ' Cursor blink state
-    cursorTimer AS DOUBLE           ' Cursor blink timer
+    cursorBlink AS INTEGER            ' Cursor blink state
+    cursorTimer AS DOUBLE             ' Cursor blink timer
 
     ' Pending host-app callback actions (checked & cleared by the host after each tick)
-    pendingRecentPath   AS STRING * 260  ' Non-empty = host should add this path to its recent list
-    pendingOpenInDraw   AS STRING * 260  ' Non-empty = host should open this path as a document
+    pendingRecentPath AS STRING * 260 ' Non-empty = host should add this path to its recent list
+    pendingOpenInDraw AS STRING * 260 ' Non-empty = host should open this path as a document
 END TYPE
 
 ' --- Thumbnail Cache ---------------------------------------------------------
@@ -388,8 +388,8 @@ DECLARE SUB FD_toggle_selected (filteredIndex AS INTEGER)
 DECLARE SUB FD_select_range (fromIdx AS INTEGER, toIdx AS INTEGER)
 
 ' Clipboard for copy/cut-paste operations
-CONST FD_CLIP_COPY = 0   ' Clipboard mode: copy
-CONST FD_CLIP_CUT  = 1   ' Clipboard mode: cut (move on paste)
+CONST FD_CLIP_COPY = 0 ' Clipboard mode: copy
+CONST FD_CLIP_CUT  = 1 ' Clipboard mode: cut (move on paste)
 DIM SHARED FD_CLIP_COUNT AS INTEGER
 DIM SHARED FD_CLIP_MODE  AS INTEGER
 DIM SHARED FD_CLIP_FILES(FD_MAX_MULTI_RESULTS - 1) AS STRING * 260
