@@ -481,9 +481,9 @@ END SUB
 ' CP_RENDER_history_row — Draw 2 rows of 8 recent-color chips
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_history_row
-    DIM xBase AS INTEGER: xBase% = CP_THEME.padding%
-    DIM avail AS INTEGER: avail% = CP_STATE.dialogW - 2 * CP_THEME.padding%
-    DIM y     AS INTEGER: y%     = CP_STATE.histY
+    DIM xBase AS INTEGER : xBase% = CP_THEME.padding%
+    DIM avail AS INTEGER : avail% = CP_STATE.dialogW - 2 * CP_THEME.padding%
+    DIM y     AS INTEGER : y% = CP_STATE.histY
 
     ' Label
     COLOR CP_THEME.textDim~&, _RGBA32(0, 0, 0, 0)
@@ -491,16 +491,16 @@ SUB CP_RENDER_history_row
     y% = y% + CP_STATE.fontH + 4
 
     ' Chip dimensions: 8 chips per row, with histChipGap between them
-    DIM cGap AS INTEGER: cGap% = CP_THEME.histChipGap%
-    DIM cW   AS INTEGER: cW%   = (avail% - 7 * cGap%) \ 8
+    DIM cGap AS INTEGER : cGap% = CP_THEME.histChipGap%
+    DIM cW   AS INTEGER : cW% = (avail% - 7 * cGap%) \ 8
     IF cW% < 6 THEN cW% = 6
-    DIM cH   AS INTEGER: cH%   = CP_THEME.histChipH%
+    DIM cH   AS INTEGER: cH% = CP_THEME.histChipH%
 
     DIM row AS INTEGER, col AS INTEGER
     FOR row% = 0 TO 1
         FOR col% = 0 TO 7
-            DIM idx AS INTEGER: idx% = row% * 8 + col%
-            DIM cx  AS INTEGER: cx%  = xBase% + col% * (cW% + cGap%)
+            DIM idx AS INTEGER : idx% = row% * 8 + col%
+            DIM cx  AS INTEGER : cx% = xBase% + col% * (cW% + cGap%)
             IF idx% < CP_STATE.histCount THEN
                 LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), CP_COLOR_HISTORY(idx%), BF
                 IF idx% = CP_STATE.histHover THEN
@@ -522,10 +522,10 @@ END SUB
 ' CP_RENDER_blender_row — Draw FG<->BG interpolation strip
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_blender_row
-    DIM xBase  AS INTEGER: xBase%  = CP_THEME.padding%
-    DIM avail  AS INTEGER: avail%  = CP_STATE.dialogW - 2 * CP_THEME.padding%
-    DIM stripH AS INTEGER: stripH% = CP_THEME.histChipH%
-    DIM y      AS INTEGER: y%      = CP_STATE.blenderY
+    DIM xBase  AS INTEGER : xBase% = CP_THEME.padding%
+    DIM avail  AS INTEGER : avail% = CP_STATE.dialogW - 2 * CP_THEME.padding%
+    DIM stripH AS INTEGER : stripH% = CP_THEME.histChipH%
+    DIM y      AS INTEGER : y% = CP_STATE.blenderY
 
     ' Label
     COLOR CP_THEME.textDim~&, _RGBA32(0, 0, 0, 0)

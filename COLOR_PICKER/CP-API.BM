@@ -185,7 +185,7 @@ SUB CP_THEME_scale_geometry
     ' History chips
     CP_THEME.histChipH%   = INT(CSNG(CP_HIST_CHIP_H)   * s! + 0.5)
     CP_THEME.histChipGap% = INT(CSNG(CP_HIST_CHIP_GAP) * s! + 0.5)
-    IF CP_THEME.histChipH%   < 8 THEN CP_THEME.histChipH%   = 8
+    IF CP_THEME.histChipH%   < 8 THEN CP_THEME.histChipH% = 8
     IF CP_THEME.histChipGap% < 1 THEN CP_THEME.histChipGap% = 1
 
     ' --- Compute minimum content width from widest text row ---
@@ -303,7 +303,7 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB CP_history_push (col AS _UNSIGNED LONG)
     DIM c AS _UNSIGNED LONG
-    c~& = col~& OR &HFF000000~&  ' Force fully opaque
+    c~& = col~& OR &HFF000000~& ' Force fully opaque
     IF CP_STATE.histCount > 0 THEN
         IF CP_COLOR_HISTORY(0) = c~& THEN EXIT SUB  ' Already the most-recent
     END IF
@@ -521,14 +521,14 @@ SUB CP_layout_calculate
 
     ' ── History: 2 rows of 8 recent-color chips ──────────────────────────────
     CP_STATE.histY = y
-    y = y + CP_STATE.fontH + 4           ' label row + gap
-    y = y + CP_THEME.histChipH% + CP_THEME.histChipGap%  ' chip row 1
-    y = y + CP_THEME.histChipH% + CP_THEME.sectionGap%   ' chip row 2 + section gap
+    y = y + CP_STATE.fontH + 4                                      ' label row + gap
+    y = y + CP_THEME.histChipH% + CP_THEME.histChipGap%             ' chip row 1
+    y = y + CP_THEME.histChipH% + CP_THEME.sectionGap%              ' chip row 2 + section gap
 
     ' ── FG<->BG blender strip ────────────────────────────────────────────────
     CP_STATE.blenderY = y
-    y = y + CP_STATE.fontH + 4           ' label row + gap
-    y = y + CP_THEME.histChipH%          ' gradient strip
+    y = y + CP_STATE.fontH + 4                                      ' label row + gap
+    y = y + CP_THEME.histChipH%                                     ' gradient strip
     y = y + CP_THEME.sectionGap%
 
     ' Button bar

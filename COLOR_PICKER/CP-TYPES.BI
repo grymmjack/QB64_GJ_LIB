@@ -37,25 +37,25 @@ CONST CP_HUE_GAP   = 8      ' Gap between SV square and hue bar
 
 TYPE CP_STATE_OBJ
     ' Color values (canonical representation is HSV)
-    hue AS SINGLE               ' 0..360
-    sat AS SINGLE               ' 0..1
-    val AS SINGLE               ' 0..1 (brightness)
+    hue AS SINGLE                  ' 0..360
+    sat AS SINGLE                  ' 0..1
+    val AS SINGLE                  ' 0..1 (brightness)
 
     ' RGB representation (derived from HSV)
-    cR AS INTEGER               ' 0..255
-    cG AS INTEGER               ' 0..255
-    cB AS INTEGER               ' 0..255
+    cR AS INTEGER                  ' 0..255
+    cG AS INTEGER                  ' 0..255
+    cB AS INTEGER                  ' 0..255
 
     ' HSL representation (derived from HSV)
-    hslH AS SINGLE              ' 0..360
-    hslS AS SINGLE              ' 0..100
-    hslL AS SINGLE              ' 0..100
+    hslH AS SINGLE                 ' 0..360
+    hslS AS SINGLE                 ' 0..100
+    hslL AS SINGLE                 ' 0..100
 
     ' Original color (for old/new preview)
-    origColor AS _UNSIGNED LONG ' Original color passed in
+    origColor AS _UNSIGNED LONG    ' Original color passed in
 
     ' Hex input
-    tiHexId AS INTEGER          ' TI widget ID for hex input field
+    tiHexId AS INTEGER             ' TI widget ID for hex input field
 
     ' Dialog geometry
     dialogX AS INTEGER
@@ -79,8 +79,8 @@ TYPE CP_STATE_OBJ
     sliderX      AS INTEGER
     sliderY      AS INTEGER
     sliderW      AS INTEGER
-    sliderLabelW AS INTEGER     ' Width of "R:" / "H:" labels
-    sliderValueW AS INTEGER     ' Width of value text area
+    sliderLabelW AS INTEGER        ' Width of "R:" / "H:" labels
+    sliderValueW AS INTEGER        ' Width of value text area
 
     ' Preview area layout
     previewY    AS INTEGER
@@ -98,65 +98,65 @@ TYPE CP_STATE_OBJ
     buttonBarY AS INTEGER
 
     ' Interaction
-    dragging    AS INTEGER      ' CP_DRAG_* constant
+    dragging    AS INTEGER         ' CP_DRAG_* constant
     dragStartX  AS INTEGER
     dragStartY  AS INTEGER
     dragOrigX   AS INTEGER
     dragOrigY   AS INTEGER
-    hoverButton AS INTEGER      ' -1 = none, -2 = close, 0 = OK, 1 = Cancel, 2 = copy, 3 = paste
+    hoverButton AS INTEGER         ' -1 = none, -2 = close, 0 = OK, 1 = Cancel, 2 = copy, 3 = paste
 
     ' Mouse state (dialog-relative)
     mouseX     AS INTEGER
     mouseY     AS INTEGER
     mouseB1    AS INTEGER
     oldMouseB1 AS INTEGER
-    mouseWheel AS INTEGER       ' Accumulated wheel delta this frame
+    mouseWheel AS INTEGER          ' Accumulated wheel delta this frame
 
     ' Posterize / snap mode (for pixel art)
-    posterize      AS INTEGER   ' 0 = off, 2-16 = number of levels
-    posterizeY     AS INTEGER   ' Y position of posterize row
-    hoverPosterize AS INTEGER   ' -1 = none, 0-7 = which option is hovered
+    posterize      AS INTEGER      ' 0 = off, 2-16 = number of levels
+    posterizeY     AS INTEGER      ' Y position of posterize row
+    hoverPosterize AS INTEGER      ' -1 = none, 0-7 = which option is hovered
 
     ' Pre-rendered images
-    svImage     AS LONG         ' SV square image (re-rendered on hue change)
-    hueBarImage AS LONG         ' Hue bar image (rendered once)
+    svImage     AS LONG            ' SV square image (re-rendered on hue change)
+    hueBarImage AS LONG            ' Hue bar image (rendered once)
 
     ' Result
     done   AS INTEGER
-    result AS INTEGER           ' CP_RESULT_*
+    result AS INTEGER              ' CP_RESULT_*
 
     ' Rendering
-    imgHandle  AS LONG          ' Offscreen dialog buffer
-    screenShot AS LONG          ' Background screen capture
+    imgHandle  AS LONG             ' Offscreen dialog buffer
+    screenShot AS LONG             ' Background screen capture
     dirty      AS INTEGER
-    svDirty    AS INTEGER       ' TRUE = SV square needs re-render
+    svDirty    AS INTEGER          ' TRUE = SV square needs re-render
     scale      AS INTEGER
 
     ' Font settings
-    fontID AS INTEGER           ' Built-in font ID (8 or 16)
-    fontW  AS INTEGER           ' Char width in pixels
-    fontH  AS INTEGER           ' Char height in pixels
+    fontID AS INTEGER              ' Built-in font ID (8 or 16)
+    fontW  AS INTEGER              ' Char width in pixels
+    fontH  AS INTEGER              ' Char height in pixels
 
     ' Title bar text (set before rendering; default "Color Picker")
     title AS STRING * 32
 
     ' Color history (16 recent colors, newest at index 0)
-    histCount  AS INTEGER        ' 0..16 valid entries
-    histY      AS INTEGER        ' Y of history section in native dialog pixels
-    histHover  AS INTEGER        ' -1=none, 0..15=hovered chip index
+    histCount AS INTEGER           ' 0..16 valid entries
+    histY     AS INTEGER           ' Y of history section in native dialog pixels
+    histHover AS INTEGER           ' -1=none, 0..15=hovered chip index
 
     ' FG<->BG blender strip
-    blenderY      AS INTEGER        ' Y of blender strip in native dialog pixels
-    blenderHover  AS INTEGER        ' -1=none, 0..blenderW-1 native x position
-    blenderOrigR  AS INTEGER        ' FG R captured at blender drag start (legacy, kept for compat)
-    blenderOrigG  AS INTEGER        ' FG G captured at blender drag start
-    blenderOrigB  AS INTEGER        ' FG B captured at blender drag start
-    bgColorRef    AS _UNSIGNED LONG ' Background color for blender (host sets this)
+    blenderY     AS INTEGER        ' Y of blender strip in native dialog pixels
+    blenderHover AS INTEGER        ' -1=none, 0..blenderW-1 native x position
+    blenderOrigR AS INTEGER        ' FG R captured at blender drag start (legacy, kept for compat)
+    blenderOrigG AS INTEGER        ' FG G captured at blender drag start
+    blenderOrigB AS INTEGER        ' FG B captured at blender drag start
+    bgColorRef   AS _UNSIGNED LONG ' Background color for blender (host sets this)
     ' Fixed FG endpoint for blender gradient — updated only on external FG change or drag release,
     ' never while the blender itself is being dragged. Prevents gradient drift during picks.
-    blenderFGR    AS INTEGER        ' Stable FG endpoint R
-    blenderFGG    AS INTEGER        ' Stable FG endpoint G
-    blenderFGB    AS INTEGER        ' Stable FG endpoint B
+    blenderFGR   AS INTEGER        ' Stable FG endpoint R
+    blenderFGG   AS INTEGER        ' Stable FG endpoint G
+    blenderFGB   AS INTEGER        ' Stable FG endpoint B
 END TYPE
 
 ' --- Options (set before calling CP_pick_color&) -----------------------------
@@ -245,7 +245,7 @@ CONST CP_DRAG_BLENDER = 10
 
 ' --- Shared State ------------------------------------------------------------
 
-DIM SHARED CP_OPTIONS       AS CP_OPTIONS_OBJ
-DIM SHARED CP_STATE         AS CP_STATE_OBJ
-DIM SHARED CP_THEME         AS CP_THEME_OBJ
+DIM SHARED CP_OPTIONS AS CP_OPTIONS_OBJ
+DIM SHARED CP_STATE   AS CP_STATE_OBJ
+DIM SHARED CP_THEME   AS CP_THEME_OBJ
 DIM SHARED CP_COLOR_HISTORY(15) AS _UNSIGNED LONG ' 16-entry recent color ring (newest = 0)

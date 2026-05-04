@@ -123,13 +123,13 @@ SUB CP_INPUT_mouse
                     ' Interpolate from stable FG endpoint toward bgColorRef
                     DIM blAvail AS INTEGER
                     blAvail = CP_STATE.dialogW - 2 * CP_THEME.padding%
-                    DIM blXPos AS INTEGER
+                    DIM blXPos  AS INTEGER
                     blXPos = lx - CP_THEME.padding%
                     IF blXPos < 0 THEN blXPos = 0
                     IF blXPos >= blAvail THEN blXPos = blAvail - 1
                     CP_STATE.blenderHover = blXPos
-                    DIM blT   AS SINGLE: blT! = CSNG(blXPos) / CSNG(blAvail - 1)
-                    DIM blR   AS INTEGER, blG AS INTEGER, blB AS INTEGER
+                    DIM blT     AS SINGLE: blT! = CSNG(blXPos) / CSNG(blAvail - 1)
+                    DIM blR     AS INTEGER, blG AS INTEGER, blB AS INTEGER
                     blR% = INT(CP_STATE.blenderFGR + (_RED32(CP_STATE.bgColorRef)   - CP_STATE.blenderFGR) * blT! + 0.5)
                     blG% = INT(CP_STATE.blenderFGG + (_GREEN32(CP_STATE.bgColorRef) - CP_STATE.blenderFGG) * blT! + 0.5)
                     blB% = INT(CP_STATE.blenderFGB + (_BLUE32(CP_STATE.bgColorRef)  - CP_STATE.blenderFGB) * blT! + 0.5)
@@ -204,13 +204,13 @@ SUB CP_INPUT_mouse
         ' History chip hover
         DIM oldHistHov AS INTEGER: oldHistHov% = CP_STATE.histHover
         CP_STATE.histHover = -1
-        DIM hChipH   AS INTEGER: hChipH%   = CP_THEME.histChipH%
-        DIM hChipGap AS INTEGER: hChipGap% = CP_THEME.histChipGap%
-        DIM hChipW   AS INTEGER: hChipW%   = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hChipGap%) \ 8
+        DIM hChipH     AS INTEGER : hChipH% = CP_THEME.histChipH%
+        DIM hChipGap   AS INTEGER : hChipGap% = CP_THEME.histChipGap%
+        DIM hChipW     AS INTEGER : hChipW% = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hChipGap%) \ 8
         IF hChipW% < 6 THEN hChipW% = 6
-        DIM hChipRowY0 AS INTEGER: hChipRowY0% = CP_STATE.histY + CP_STATE.fontH + 4
-        DIM hChipRowY1 AS INTEGER: hChipRowY1% = hChipRowY0% + hChipH% + hChipGap%
-        DIM hovHRow    AS INTEGER: hovHRow%    = -1
+        DIM hChipRowY0 AS INTEGER : hChipRowY0% = CP_STATE.histY + CP_STATE.fontH + 4
+        DIM hChipRowY1 AS INTEGER : hChipRowY1% = hChipRowY0% + hChipH% + hChipGap%
+        DIM hovHRow    AS INTEGER : hovHRow% = -1
         IF ly >= hChipRowY0% AND ly < hChipRowY0% + hChipH% THEN hovHRow% = 0
         IF ly >= hChipRowY1% AND ly < hChipRowY1% + hChipH% THEN hovHRow% = 1
         IF hovHRow% >= 0 THEN
@@ -223,8 +223,8 @@ SUB CP_INPUT_mouse
         IF CP_STATE.histHover <> oldHistHov% THEN CP_STATE.dirty = -1
 
         ' Blender strip hover
-        DIM oldBlHov  AS INTEGER: oldBlHov%  = CP_STATE.blenderHover
-        DIM blStripY  AS INTEGER: blStripY%  = CP_STATE.blenderY + CP_STATE.fontH + 4
+        DIM oldBlHov AS INTEGER : oldBlHov% = CP_STATE.blenderHover
+        DIM blStripY AS INTEGER : blStripY% = CP_STATE.blenderY + CP_STATE.fontH + 4
         IF CP_STATE.dragging <> CP_DRAG_BLENDER THEN
             CP_STATE.blenderHover = -1
             IF ly >= blStripY% AND ly < blStripY% + hChipH% THEN
@@ -385,13 +385,13 @@ SUB CP_INPUT_mouse
         END IF
 
         ' History chip click — apply color
-        DIM hcChipH   AS INTEGER: hcChipH%   = CP_THEME.histChipH%
-        DIM hcChipGap AS INTEGER: hcChipGap% = CP_THEME.histChipGap%
-        DIM hcChipW   AS INTEGER: hcChipW%   = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hcChipGap%) \ 8
+        DIM hcChipH    AS INTEGER : hcChipH% = CP_THEME.histChipH%
+        DIM hcChipGap  AS INTEGER : hcChipGap% = CP_THEME.histChipGap%
+        DIM hcChipW    AS INTEGER : hcChipW% = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hcChipGap%) \ 8
         IF hcChipW% < 6 THEN hcChipW% = 6
-        DIM hcRow0Y AS INTEGER: hcRow0Y% = CP_STATE.histY + CP_STATE.fontH + 4
-        DIM hcRow1Y AS INTEGER: hcRow1Y% = hcRow0Y% + hcChipH% + hcChipGap%
-        DIM hcClickRow AS INTEGER: hcClickRow% = -1
+        DIM hcRow0Y    AS INTEGER : hcRow0Y% = CP_STATE.histY + CP_STATE.fontH + 4
+        DIM hcRow1Y    AS INTEGER : hcRow1Y% = hcRow0Y% + hcChipH% + hcChipGap%
+        DIM hcClickRow AS INTEGER : hcClickRow% = -1
         IF ly >= hcRow0Y% AND ly < hcRow0Y% + hcChipH% THEN hcClickRow% = 0
         IF ly >= hcRow1Y% AND ly < hcRow1Y% + hcChipH% THEN hcClickRow% = 1
         IF hcClickRow% >= 0 THEN
@@ -412,8 +412,8 @@ SUB CP_INPUT_mouse
         ' Blender strip click — start drag, interpolate from stable FG endpoint
         DIM blClickY AS INTEGER: blClickY% = CP_STATE.blenderY + CP_STATE.fontH + 4
         IF ly >= blClickY% AND ly < blClickY% + hcChipH% THEN
-            DIM blClickX AS INTEGER: blClickX% = lx - CP_THEME.padding%
-            DIM blW      AS INTEGER: blW%      = CP_STATE.dialogW - 2 * CP_THEME.padding%
+            DIM blClickX AS INTEGER : blClickX% = lx - CP_THEME.padding%
+            DIM blW      AS INTEGER : blW% = CP_STATE.dialogW - 2 * CP_THEME.padding%
             IF blClickX% >= 0 AND blClickX% < blW% THEN
                 CP_STATE.dragging     = CP_DRAG_BLENDER
                 CP_STATE.blenderHover = blClickX%
