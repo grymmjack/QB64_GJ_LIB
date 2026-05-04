@@ -139,6 +139,24 @@ TYPE CP_STATE_OBJ
 
     ' Title bar text (set before rendering; default "Color Picker")
     title AS STRING * 32
+
+    ' Color history (16 recent colors, newest at index 0)
+    histCount  AS INTEGER        ' 0..16 valid entries
+    histY      AS INTEGER        ' Y of history section in native dialog pixels
+    histHover  AS INTEGER        ' -1=none, 0..15=hovered chip index
+
+    ' FG<->BG blender strip
+    blenderY      AS INTEGER        ' Y of blender strip in native dialog pixels
+    blenderHover  AS INTEGER        ' -1=none, 0..blenderW-1 native x position
+    blenderOrigR  AS INTEGER        ' FG R captured at blender drag start (legacy, kept for compat)
+    blenderOrigG  AS INTEGER        ' FG G captured at blender drag start
+    blenderOrigB  AS INTEGER        ' FG B captured at blender drag start
+    bgColorRef    AS _UNSIGNED LONG ' Background color for blender (host sets this)
+    ' Fixed FG endpoint for blender gradient — updated only on external FG change or drag release,
+    ' never while the blender itself is being dragged. Prevents gradient drift during picks.
+    blenderFGR    AS INTEGER        ' Stable FG endpoint R
+    blenderFGG    AS INTEGER        ' Stable FG endpoint G
+    blenderFGB    AS INTEGER        ' Stable FG endpoint B
 END TYPE
 
 ' --- Options (set before calling CP_pick_color&) -----------------------------
@@ -218,10 +236,16 @@ TYPE CP_THEME_OBJ
     svSize        AS INTEGER          ' SV square width & height
     hueBarW       AS INTEGER          ' Hue bar width
     hueGap        AS INTEGER          ' Gap between SV square and hue bar
+    histChipH     AS INTEGER          ' History chip height
+    histChipGap   AS INTEGER          ' Gap between history chips
 END TYPE
+
+' --- Drag constant for blender ----------------------------------------------
+CONST CP_DRAG_BLENDER = 10
 
 ' --- Shared State ------------------------------------------------------------
 
-DIM SHARED CP_OPTIONS AS CP_OPTIONS_OBJ
-DIM SHARED CP_STATE   AS CP_STATE_OBJ
-DIM SHARED CP_THEME   AS CP_THEME_OBJ
+DIM SHARED CP_OPTIONS       AS CP_OPTIONS_OBJ
+DIM SHARED CP_STATE         AS CP_STATE_OBJ
+DIM SHARED CP_THEME         AS CP_THEME_OBJ
+DIM SHARED CP_COLOR_HISTORY(15) AS _UNSIGNED LONG ' 16-entry recent color ring (newest = 0)

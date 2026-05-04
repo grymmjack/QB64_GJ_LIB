@@ -41,6 +41,8 @@ SUB CP_RENDER_all
     CP_RENDER_sliders_hsl
     CP_RENDER_hex_row
     CP_RENDER_posterize_row
+    CP_RENDER_history_row
+    CP_RENDER_blender_row
     CP_RENDER_button_bar
 
     ' Border
@@ -473,4 +475,96 @@ SUB CP_RENDER_button_bar
     DIM cancelTW AS INTEGER
     cancelTW% = _UPRINTWIDTH("CANCEL")
     _UPRINTSTRING (cancelX + (CP_THEME.buttonW% - cancelTW%) \ 2, by + (CP_THEME.buttonH% - CP_STATE.fontH) \ 2), "CANCEL"
+END SUB
+
+' --------------------------------------------------------------------------
+' CP_RENDER_history_row — Draw 2 rows of 8 recent-color chips
+' --------------------------------------------------------------------------
+SUB CP_RENDER_history_row
+    DIM xBase AS INTEGER: xBase% = CP_THEME.padding%
+    DIM avail AS INTEGER: avail% = CP_STATE.dialogW - 2 * CP_THEME.padding%
+    DIM y     AS INTEGER: y%     = CP_STATE.histY
+
+    ' Label
+    COLOR CP_THEME.textDim~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (xBase%, y%), "HISTORY"
+    y% = y% + CP_STATE.fontH + 4
+
+    ' Chip dimensions: 8 chips per row, with histChipGap between them
+    DIM cGap AS INTEGER: cGap% = CP_THEME.histChipGap%
+    DIM cW   AS INTEGER: cW%   = (avail% - 7 * cGap%) \ 8
+    IF cW% < 6 THEN cW% = 6
+    DIM cH   AS INTEGER: cH%   = CP_THEME.histChipH%
+
+    DIM row AS INTEGER, col AS INTEGER
+    FOR row% = 0 TO 1
+        FOR col% = 0 TO 7
+            DIM idx AS INTEGER: idx% = row% * 8 + col%
+            DIM cx  AS INTEGER: cx%  = xBase% + col% * (cW% + cGap%)
+            IF idx% < CP_STATE.histCount THEN
+                LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), CP_COLOR_HISTORY(idx%), BF
+                IF idx% = CP_STATE.histHover THEN
+                    LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), CP_THEME.textBright~&, B
+                ELSE
+                    LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), CP_THEME.border~&, B
+                END IF
+            ELSE
+                ' Empty slot
+                LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), _RGB32(40, 40, 42), BF
+                LINE (cx%, y%)-(cx% + cW% - 1, y% + cH% - 1), CP_THEME.divider~&, B
+            END IF
+        NEXT col%
+        y% = y% + cH% + cGap%
+    NEXT row%
+END SUB
+
+' --------------------------------------------------------------------------
+' CP_RENDER_blender_row — Draw FG<->BG interpolation strip
+' --------------------------------------------------------------------------
+SUB CP_RENDER_blender_row
+    DIM xBase  AS INTEGER: xBase%  = CP_THEME.padding%
+    DIM avail  AS INTEGER: avail%  = CP_STATE.dialogW - 2 * CP_THEME.padding%
+    DIM stripH AS INTEGER: stripH% = CP_THEME.histChipH%
+    DIM y      AS INTEGER: y%      = CP_STATE.blenderY
+
+    ' Label
+    COLOR CP_THEME.textDim~&, _RGBA32(0, 0, 0, 0)
+    _UPRINTSTRING (xBase%, y%), "FG<>BG"
+    y% = y% + CP_STATE.fontH + 4
+
+    ' Use stable FG endpoint — updated only on external FG change or drag release,
+    ' so the gradient never shifts while picking from the middle of the strip.
+    DIM fgR AS INTEGER, fgG AS INTEGER, fgB AS INTEGER
+    fgR% = CP_STATE.blenderFGR
+    fgG% = CP_STATE.blenderFGG
+    fgB% = CP_STATE.blenderFGB
+    DIM bgR AS INTEGER, bgG AS INTEGER, bgB AS INTEGER
+    bgR% = _RED32(CP_STATE.bgColorRef)
+    bgG% = _GREEN32(CP_STATE.bgColorRef)
+    bgB% = _BLUE32(CP_STATE.bgColorRef)
+
+    ' Render gradient column by column
+    DIM bx AS INTEGER
+    FOR bx% = 0 TO avail% - 1
+        DIM t  AS SINGLE: t!  = CSNG(bx%) / CSNG(avail% - 1)
+        DIM pr AS INTEGER, pg AS INTEGER, pb AS INTEGER
+        pr% = INT(fgR% + (bgR% - fgR%) * t! + 0.5)
+        pg% = INT(fgG% + (bgG% - fgG%) * t! + 0.5)
+        pb% = INT(fgB% + (bgB% - fgB%) * t! + 0.5)
+        IF CP_STATE.posterize > 0 THEN
+            pr% = CP_posterize_value%(pr%, 255)
+            pg% = CP_posterize_value%(pg%, 255)
+            pb% = CP_posterize_value%(pb%, 255)
+        END IF
+        LINE (xBase% + bx%, y%)-(xBase% + bx%, y% + stripH% - 1), _RGB32(pr%, pg%, pb%)
+    NEXT bx%
+
+    ' Hover/drag marker
+    IF CP_STATE.blenderHover >= 0 THEN
+        DIM hx AS INTEGER: hx% = xBase% + CP_STATE.blenderHover
+        LINE (hx%, y% - 1)-(hx%, y% + stripH%), CP_THEME.textBright~&
+    END IF
+
+    ' Border
+    LINE (xBase%, y%)-(xBase% + avail% - 1, y% + stripH% - 1), CP_THEME.border~&, B
 END SUB

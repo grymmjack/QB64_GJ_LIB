@@ -118,10 +118,39 @@ SUB CP_INPUT_mouse
                     CP_INPUT_pick_slider lx, lBase, lVal, 100
                     CP_STATE.hslL = lVal
                     CP_update_from_hsl
+
+                CASE CP_DRAG_BLENDER
+                    ' Interpolate from stable FG endpoint toward bgColorRef
+                    DIM blAvail AS INTEGER
+                    blAvail = CP_STATE.dialogW - 2 * CP_THEME.padding%
+                    DIM blXPos AS INTEGER
+                    blXPos = lx - CP_THEME.padding%
+                    IF blXPos < 0 THEN blXPos = 0
+                    IF blXPos >= blAvail THEN blXPos = blAvail - 1
+                    CP_STATE.blenderHover = blXPos
+                    DIM blT   AS SINGLE: blT! = CSNG(blXPos) / CSNG(blAvail - 1)
+                    DIM blR   AS INTEGER, blG AS INTEGER, blB AS INTEGER
+                    blR% = INT(CP_STATE.blenderFGR + (_RED32(CP_STATE.bgColorRef)   - CP_STATE.blenderFGR) * blT! + 0.5)
+                    blG% = INT(CP_STATE.blenderFGG + (_GREEN32(CP_STATE.bgColorRef) - CP_STATE.blenderFGG) * blT! + 0.5)
+                    blB% = INT(CP_STATE.blenderFGB + (_BLUE32(CP_STATE.bgColorRef)  - CP_STATE.blenderFGB) * blT! + 0.5)
+                    IF CP_STATE.posterize > 0 THEN
+                        blR% = CP_posterize_value%(blR%, 255)
+                        blG% = CP_posterize_value%(blG%, 255)
+                        blB% = CP_posterize_value%(blB%, 255)
+                    END IF
+                    CP_STATE.cR = blR%
+                    CP_STATE.cG = blG%
+                    CP_STATE.cB = blB%
+                    CP_update_from_rgb
             END SELECT
             CP_STATE.dirty = -1
         ELSE
-            ' Released
+            ' Released — commit blender pick as the new stable FG endpoint
+            IF CP_STATE.dragging = CP_DRAG_BLENDER THEN
+                CP_STATE.blenderFGR = CP_STATE.cR
+                CP_STATE.blenderFGG = CP_STATE.cG
+                CP_STATE.blenderFGB = CP_STATE.cB
+            END IF
             CP_STATE.dragging = CP_DRAG_NONE
         END IF
         EXIT SUB
@@ -171,6 +200,41 @@ SUB CP_INPUT_mouse
             CP_STATE.hoverPosterize = CP_INPUT_hit_posterize%(lx, ly)
         END IF
         IF CP_STATE.hoverPosterize <> oldPH THEN CP_STATE.dirty = -1
+
+        ' History chip hover
+        DIM oldHistHov AS INTEGER: oldHistHov% = CP_STATE.histHover
+        CP_STATE.histHover = -1
+        DIM hChipH   AS INTEGER: hChipH%   = CP_THEME.histChipH%
+        DIM hChipGap AS INTEGER: hChipGap% = CP_THEME.histChipGap%
+        DIM hChipW   AS INTEGER: hChipW%   = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hChipGap%) \ 8
+        IF hChipW% < 6 THEN hChipW% = 6
+        DIM hChipRowY0 AS INTEGER: hChipRowY0% = CP_STATE.histY + CP_STATE.fontH + 4
+        DIM hChipRowY1 AS INTEGER: hChipRowY1% = hChipRowY0% + hChipH% + hChipGap%
+        DIM hovHRow    AS INTEGER: hovHRow%    = -1
+        IF ly >= hChipRowY0% AND ly < hChipRowY0% + hChipH% THEN hovHRow% = 0
+        IF ly >= hChipRowY1% AND ly < hChipRowY1% + hChipH% THEN hovHRow% = 1
+        IF hovHRow% >= 0 THEN
+            DIM hovHCol AS INTEGER: hovHCol% = (lx - CP_THEME.padding%) \ (hChipW% + hChipGap%)
+            IF hovHCol% >= 0 AND hovHCol% <= 7 THEN
+                DIM hovHIdx AS INTEGER: hovHIdx% = hovHRow% * 8 + hovHCol%
+                IF hovHIdx% < CP_STATE.histCount THEN CP_STATE.histHover = hovHIdx%
+            END IF
+        END IF
+        IF CP_STATE.histHover <> oldHistHov% THEN CP_STATE.dirty = -1
+
+        ' Blender strip hover
+        DIM oldBlHov  AS INTEGER: oldBlHov%  = CP_STATE.blenderHover
+        DIM blStripY  AS INTEGER: blStripY%  = CP_STATE.blenderY + CP_STATE.fontH + 4
+        IF CP_STATE.dragging <> CP_DRAG_BLENDER THEN
+            CP_STATE.blenderHover = -1
+            IF ly >= blStripY% AND ly < blStripY% + hChipH% THEN
+                DIM blHovX AS INTEGER: blHovX% = lx - CP_THEME.padding%
+                IF blHovX% >= 0 AND blHovX% < CP_STATE.dialogW - 2 * CP_THEME.padding% THEN
+                    CP_STATE.blenderHover = blHovX%
+                END IF
+            END IF
+        END IF
+        IF CP_STATE.blenderHover <> oldBlHov% THEN CP_STATE.dirty = -1
     END IF
 
     IF CP_STATE.hoverButton <> oldHover THEN CP_STATE.dirty = -1
@@ -316,6 +380,59 @@ SUB CP_INPUT_mouse
                 END IF
                 CP_STATE.svDirty = -1
                 CP_STATE.dirty   = -1
+                EXIT SUB
+            END IF
+        END IF
+
+        ' History chip click — apply color
+        DIM hcChipH   AS INTEGER: hcChipH%   = CP_THEME.histChipH%
+        DIM hcChipGap AS INTEGER: hcChipGap% = CP_THEME.histChipGap%
+        DIM hcChipW   AS INTEGER: hcChipW%   = (CP_STATE.dialogW - 2 * CP_THEME.padding% - 7 * hcChipGap%) \ 8
+        IF hcChipW% < 6 THEN hcChipW% = 6
+        DIM hcRow0Y AS INTEGER: hcRow0Y% = CP_STATE.histY + CP_STATE.fontH + 4
+        DIM hcRow1Y AS INTEGER: hcRow1Y% = hcRow0Y% + hcChipH% + hcChipGap%
+        DIM hcClickRow AS INTEGER: hcClickRow% = -1
+        IF ly >= hcRow0Y% AND ly < hcRow0Y% + hcChipH% THEN hcClickRow% = 0
+        IF ly >= hcRow1Y% AND ly < hcRow1Y% + hcChipH% THEN hcClickRow% = 1
+        IF hcClickRow% >= 0 THEN
+            DIM hcCol AS INTEGER: hcCol% = (lx - CP_THEME.padding%) \ (hcChipW% + hcChipGap%)
+            IF hcCol% >= 0 AND hcCol% <= 7 THEN
+                DIM hcIdx AS INTEGER: hcIdx% = hcClickRow% * 8 + hcCol%
+                IF hcIdx% < CP_STATE.histCount THEN
+                    CP_STATE.cR = _RED32(CP_COLOR_HISTORY(hcIdx%))
+                    CP_STATE.cG = _GREEN32(CP_COLOR_HISTORY(hcIdx%))
+                    CP_STATE.cB = _BLUE32(CP_COLOR_HISTORY(hcIdx%))
+                    CP_update_from_rgb
+                    CP_STATE.dirty = -1
+                    EXIT SUB
+                END IF
+            END IF
+        END IF
+
+        ' Blender strip click — start drag, interpolate from stable FG endpoint
+        DIM blClickY AS INTEGER: blClickY% = CP_STATE.blenderY + CP_STATE.fontH + 4
+        IF ly >= blClickY% AND ly < blClickY% + hcChipH% THEN
+            DIM blClickX AS INTEGER: blClickX% = lx - CP_THEME.padding%
+            DIM blW      AS INTEGER: blW%      = CP_STATE.dialogW - 2 * CP_THEME.padding%
+            IF blClickX% >= 0 AND blClickX% < blW% THEN
+                CP_STATE.dragging     = CP_DRAG_BLENDER
+                CP_STATE.blenderHover = blClickX%
+                ' Apply immediately at click position using stable FG endpoint
+                DIM blCT AS SINGLE: blCT! = CSNG(blClickX%) / CSNG(blW% - 1)
+                DIM blCR AS INTEGER, blCG AS INTEGER, blCB AS INTEGER
+                blCR% = INT(CP_STATE.blenderFGR + (_RED32(CP_STATE.bgColorRef)   - CP_STATE.blenderFGR) * blCT! + 0.5)
+                blCG% = INT(CP_STATE.blenderFGG + (_GREEN32(CP_STATE.bgColorRef) - CP_STATE.blenderFGG) * blCT! + 0.5)
+                blCB% = INT(CP_STATE.blenderFGB + (_BLUE32(CP_STATE.bgColorRef)  - CP_STATE.blenderFGB) * blCT! + 0.5)
+                IF CP_STATE.posterize > 0 THEN
+                    blCR% = CP_posterize_value%(blCR%, 255)
+                    blCG% = CP_posterize_value%(blCG%, 255)
+                    blCB% = CP_posterize_value%(blCB%, 255)
+                END IF
+                CP_STATE.cR = blCR%
+                CP_STATE.cG = blCG%
+                CP_STATE.cB = blCB%
+                CP_update_from_rgb
+                CP_STATE.dirty = -1
                 EXIT SUB
             END IF
         END IF

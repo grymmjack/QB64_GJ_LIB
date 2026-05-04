@@ -35,6 +35,8 @@ CONST CP_PASTE_BTN_W     = 44 ' Paste button width
 CONST CP_POSTERIZE_ROW_H = 20 ' Posterize option row height
 CONST CP_SNAP_CHIP_W     = 20 ' Width of each snap level chip
 CONST CP_SNAP_CHIP_GAP   = 2  ' Gap between snap chips
+CONST CP_HIST_CHIP_H     = 14 ' History chip height
+CONST CP_HIST_CHIP_GAP   = 2  ' Gap between history chips
 
 ' --- Color Palette (Dark Flat Theme) -----------------------------------------
 
