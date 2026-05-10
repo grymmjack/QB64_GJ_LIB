@@ -1985,9 +1985,16 @@ SUB FD_INPUT_confirm
 
         ' Add default extension if none
         DIM ext AS STRING
+        DIM defExt AS STRING
         ext = FD_PLAT_path_extension$(fn)
-        IF LEN(ext) = 0 AND LEN(RTRIM$(FD_STATE.defaultExt)) > 0 THEN
-            fn = fn + "." + RTRIM$(FD_STATE.defaultExt)
+        defExt = RTRIM$(FD_STATE.defaultExt)
+        IF LEN(ext) = 0 AND LEN(defExt) > 0 THEN
+            ' Tolerate callers that pass either ".png" or "png"
+            IF LEFT$(defExt, 1) = "." THEN
+                fn = fn + defExt
+            ELSE
+                fn = fn + "." + defExt
+            END IF
         END IF
 
         resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), fn)
