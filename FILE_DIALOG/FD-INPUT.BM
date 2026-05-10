@@ -1984,9 +1984,9 @@ SUB FD_INPUT_confirm
         IF LEN(fn) = 0 THEN EXIT SUB  ' No filename entered
 
         ' Add default extension if none
-        DIM ext AS STRING
+        DIM ext    AS STRING
         DIM defExt AS STRING
-        ext = FD_PLAT_path_extension$(fn)
+        ext    = FD_PLAT_path_extension$(fn)
         defExt = RTRIM$(FD_STATE.defaultExt)
         IF LEN(ext) = 0 AND LEN(defExt) > 0 THEN
             ' Tolerate callers that pass either ".png" or "png"
