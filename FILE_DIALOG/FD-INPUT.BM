@@ -1870,7 +1870,7 @@ SUB FD_INPUT_do_resize (mx AS INTEGER, my AS INTEGER)
 
     ' Recreate offscreen buffer if size changed
     IF newW <> FD_STATE.dialogW OR newH <> FD_STATE.dialogH THEN
-        IF FD_STATE.imgHandle < -1 THEN _FREEIMAGE FD_STATE.imgHandle
+        IF FD_STATE.imgHandle < -1 THEN QB64_GJ_SAFE_FREE_IMAGE FD_STATE.imgHandle
         FD_STATE.imgHandle = _NEWIMAGE(newW, newH, 32)
         _FONT FD_CFG.fontID, FD_STATE.imgHandle
     END IF
@@ -2047,7 +2047,7 @@ END SUB
 SUB FD_INPUT_update_preview
     ' Free old preview
     IF FD_STATE.previewImgHandle < -1 THEN
-        _FREEIMAGE FD_STATE.previewImgHandle
+        QB64_GJ_SAFE_FREE_IMAGE FD_STATE.previewImgHandle
         FD_STATE.previewImgHandle = -1
     END IF
 

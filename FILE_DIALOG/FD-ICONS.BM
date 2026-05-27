@@ -434,7 +434,7 @@ SUB FD_ICONS_load_one (iconId AS INTEGER, filename AS STRING)
     img = _LOADIMAGE(path, 32)
     IF img < -1 THEN
         ' Free any previously loaded handle
-        IF FD_iconHandles(iconId) < -1 THEN _FREEIMAGE FD_iconHandles(iconId)
+        IF FD_iconHandles(iconId) < -1 THEN QB64_GJ_SAFE_FREE_IMAGE FD_iconHandles(iconId)
         FD_iconHandles(iconId) = img
         FD_iconW(iconId)       = _WIDTH(img)
         FD_iconH(iconId)       = _HEIGHT(img)
@@ -499,9 +499,7 @@ END SUB
 SUB FD_ICONS_free_all ()
     DIM i AS INTEGER
     FOR i = 0 TO FD_ICON_COUNT - 1
-        IF FD_iconHandles(i) < -1 THEN
-            _FREEIMAGE FD_iconHandles(i)
-        END IF
+        QB64_GJ_SAFE_FREE_IMAGE FD_iconHandles(i)
         FD_iconHandles(i) = -1
         FD_iconW(i)       = 0
         FD_iconH(i)       = 0

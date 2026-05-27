@@ -109,7 +109,7 @@ END SUB
 ' CP_RENDER_build_sv — Build the SV square image for current hue
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_build_sv
-    IF CP_STATE.svImage < -1 THEN _FREEIMAGE CP_STATE.svImage
+    IF CP_STATE.svImage < -1 THEN QB64_GJ_SAFE_FREE_IMAGE CP_STATE.svImage
     CP_STATE.svImage = _NEWIMAGE(CP_STATE.svW, CP_STATE.svH, 32)
 
     DIM oldDest AS LONG
@@ -147,7 +147,7 @@ END SUB
 ' CP_RENDER_build_hue_bar — Build the vertical hue bar (rendered once)
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_build_hue_bar
-    IF CP_STATE.hueBarImage < -1 THEN _FREEIMAGE CP_STATE.hueBarImage
+    IF CP_STATE.hueBarImage < -1 THEN QB64_GJ_SAFE_FREE_IMAGE CP_STATE.hueBarImage
     CP_STATE.hueBarImage = _NEWIMAGE(CP_STATE.hueBarW, CP_STATE.hueBarH, 32)
 
     DIM oldDest AS LONG

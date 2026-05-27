@@ -33,7 +33,7 @@ SUB FD_THUMB_invalidate_all
     DIM i AS INTEGER
     FOR i = 0 TO FD_MAX_THUMB_CACHE - 1
         IF FD_thumbs(i).inUse AND FD_thumbs(i).imgHandle < -1 THEN
-            _FREEIMAGE FD_thumbs(i).imgHandle
+            QB64_GJ_SAFE_FREE_IMAGE FD_thumbs(i).imgHandle
         END IF
         FD_thumbs(i).filePath  = ""
         FD_thumbs(i).imgHandle = -1
@@ -107,7 +107,7 @@ FUNCTION FD_THUMB_evict_lru%
                 FD_entries(ei).thumbState  = FD_THUMB_PENDING
             END IF
         NEXT ei
-        _FREEIMAGE FD_thumbs(oldest).imgHandle
+        QB64_GJ_SAFE_FREE_IMAGE FD_thumbs(oldest).imgHandle
     END IF
     FD_thumbs(oldest).inUse     = 0
     FD_thumbs(oldest).imgHandle = -1
@@ -165,7 +165,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     srcW = _WIDTH(rawImg)
     srcH = _HEIGHT(rawImg)
     IF srcW <= 0 OR srcH <= 0 THEN
-        _FREEIMAGE rawImg
+        QB64_GJ_SAFE_FREE_IMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
     END IF
@@ -185,7 +185,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     DIM thumbImg AS LONG
     thumbImg = _NEWIMAGE(dstW, dstH, 32)
     IF thumbImg = -1 OR thumbImg >= 0 THEN
-        _FREEIMAGE rawImg
+        QB64_GJ_SAFE_FREE_IMAGE rawImg
         FD_THUMB_load_one& = -1
         EXIT FUNCTION
     END IF
@@ -209,7 +209,7 @@ FUNCTION FD_THUMB_load_one& (fullPath AS STRING, thumbSize AS INTEGER)
     NEXT dy
     _MEMFREE srcMem
     _MEMFREE dstMem
-    _FREEIMAGE rawImg
+    QB64_GJ_SAFE_FREE_IMAGE rawImg
 
     ' Store in cache
     DIM slot AS INTEGER

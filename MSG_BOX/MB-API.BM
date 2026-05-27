@@ -179,24 +179,24 @@ SUB MB_cleanup
     END IF
 
     ' Free icon images
-    IF MB_STATE.iconImgInfo < -1 THEN _FREEIMAGE MB_STATE.iconImgInfo
+    IF MB_STATE.iconImgInfo < -1 THEN QB64_GJ_SAFE_FREE_IMAGE MB_STATE.iconImgInfo
     MB_STATE.iconImgInfo = 0
-    IF MB_STATE.iconImgWarning < -1 THEN _FREEIMAGE MB_STATE.iconImgWarning
+    IF MB_STATE.iconImgWarning < -1 THEN QB64_GJ_SAFE_FREE_IMAGE MB_STATE.iconImgWarning
     MB_STATE.iconImgWarning = 0
-    IF MB_STATE.iconImgError < -1 THEN _FREEIMAGE MB_STATE.iconImgError
+    IF MB_STATE.iconImgError < -1 THEN QB64_GJ_SAFE_FREE_IMAGE MB_STATE.iconImgError
     MB_STATE.iconImgError = 0
-    IF MB_STATE.iconImgQuestion < -1 THEN _FREEIMAGE MB_STATE.iconImgQuestion
+    IF MB_STATE.iconImgQuestion < -1 THEN QB64_GJ_SAFE_FREE_IMAGE MB_STATE.iconImgQuestion
     MB_STATE.iconImgQuestion = 0
 
     ' Free offscreen buffer
     IF MB_STATE.imgHandle < -1 THEN
-        _FREEIMAGE MB_STATE.imgHandle
+        QB64_GJ_SAFE_FREE_IMAGE MB_STATE.imgHandle
         MB_STATE.imgHandle = -1
     END IF
 
     ' Free screenshot
     IF MB_STATE.screenShot < -1 THEN
-        _FREEIMAGE MB_STATE.screenShot
+        QB64_GJ_SAFE_FREE_IMAGE MB_STATE.screenShot
         MB_STATE.screenShot = -1
     END IF
 

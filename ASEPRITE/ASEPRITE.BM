@@ -435,7 +435,7 @@ SUB display_aseprite_image (aseprite_img AS ASEPRITE_IMAGE, scale AS SINGLE, cen
     END IF
     
     ' Clean up
-    _FREEIMAGE image_handle
+    QB64_GJ_SAFE_FREE_IMAGE image_handle
 END SUB
 
 ''
@@ -1600,7 +1600,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
             _PUTIMAGE (0, 0), temp_image
             _DEST old_dest
             
-            _FREEIMAGE temp_image
+            QB64_GJ_SAFE_FREE_IMAGE temp_image
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Loaded actual pixel data for layer " + STR$(target_layer_index) + " (" + get_layer_name$(enhanced_img, target_layer_index) + ")"
         ELSE
             ' Layer has no pixel data - create transparent image
@@ -1625,7 +1625,7 @@ SUB update_composite_image (enhanced_img AS ASEPRITE_ENHANCED_IMAGE)
             _PUTIMAGE (0, 0), temp_image
             _DEST old_dest
             
-            _FREEIMAGE temp_image
+            QB64_GJ_SAFE_FREE_IMAGE temp_image
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Composite updated with merged image data (" + STR$(visible_count) + " visible layers)"
         END IF
     END IF
@@ -1784,7 +1784,7 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
         load_specific_layer_image& = image_handle
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Successfully loaded " + STR$(chunks_found) + " CEL chunks for layer " + STR$(target_layer_index)
     ELSE
-        _FREEIMAGE image_handle
+        QB64_GJ_SAFE_FREE_IMAGE image_handle
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: No CEL chunks found for layer " + STR$(target_layer_index)
     END IF
 END FUNCTION
@@ -1886,7 +1886,7 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
                                 
                                 ' Resize image to CEL dimensions if this is our first CEL found
                                 IF chunks_found = 0 THEN
-                                    _FREEIMAGE image_handle
+                                    QB64_GJ_SAFE_FREE_IMAGE image_handle
                                     image_handle = _NEWIMAGE(cel_width, cel_height, 32)
                                     _CLEARCOLOR _RGBA32(0, 0, 0, 0), image_handle ' Transparent background
                                 END IF
@@ -1919,7 +1919,7 @@ FUNCTION load_specific_layer_image_enhanced& (filename AS STRING, target_layer_i
         load_specific_layer_image_enhanced& = image_handle
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: load_specific_layer_image_enhanced returned handle: " + STR$(image_handle)
     ELSE
-        _FREEIMAGE image_handle
+        QB64_GJ_SAFE_FREE_IMAGE image_handle
         load_specific_layer_image_enhanced& = 0
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: No CEL chunks found for layer " + STR$(target_layer_index) + " in frame " + STR$(frame_index)
     END IF
@@ -2041,7 +2041,7 @@ SUB display_aseprite_enhanced (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, scale AS
         ELSE
             _PUTIMAGE (x_pos, y_pos)-(x_pos + display_width - 1, y_pos + display_height - 1), base_image_handle
         END IF
-        _FREEIMAGE base_image_handle
+        QB64_GJ_SAFE_FREE_IMAGE base_image_handle
     END IF
     
     ' Display controls
@@ -2070,7 +2070,7 @@ END SUB
 ' @example
 '   composite& = create_full_composite_image&("sprite.aseprite", 0)
 '   _PUTIMAGE (100, 100), composite&
-'   _FREEIMAGE composite&
+'   QB64_GJ_SAFE_FREE_IMAGE composite&
 '
 FUNCTION create_full_composite_image& (filename AS STRING, frame_index AS INTEGER)
     IF NOT _FILEEXISTS(filename) THEN
@@ -2171,7 +2171,7 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
     composite_img = _NEWIMAGE(width, height, 32)
     IF composite_img = 0 THEN 
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: failed to create image"
-        _FREEIMAGE composite_img
+        QB64_GJ_SAFE_FREE_IMAGE composite_img
         create_composite_image_from_aseprite& = 0
         EXIT FUNCTION
     END IF
@@ -2189,7 +2189,7 @@ FUNCTION create_composite_image_from_aseprite& (aseprite_img AS ASEPRITE_IMAGE)
         IF layer_img < -1 THEN
             ' layer_img uses CEL positions internally, so put at 0,0
             _PUTIMAGE (0, 0), layer_img, composite_img
-            _FREEIMAGE layer_img
+            QB64_GJ_SAFE_FREE_IMAGE layer_img
         ELSE
             ' Group layers and empty layers have no pixel data — skip them
             IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_composite_image_from_aseprite: no data for layer " + STR$(i) + " (group or empty)"
@@ -2210,7 +2210,7 @@ END FUNCTION
 ' @example
 '   composite& = create_all_layers_composite&("sprite.aseprite", 0, _RGB32(255, 255, 255))
 '   _PUTIMAGE (100, 100), composite&
-'   _FREEIMAGE composite&
+'   QB64_GJ_SAFE_FREE_IMAGE composite&
 '
 FUNCTION create_all_layers_composite& (filename AS STRING, frame_index AS INTEGER, background_color AS _UNSIGNED LONG)   
     ' First create transparent composite
@@ -2233,7 +2233,7 @@ FUNCTION create_all_layers_composite& (filename AS STRING, frame_index AS INTEGE
     _PUTIMAGE (0, 0), transparent_composite, final_composite
     
     _DEST 0
-    _FREEIMAGE transparent_composite
+    QB64_GJ_SAFE_FREE_IMAGE transparent_composite
     
     create_all_layers_composite& = final_composite
 END FUNCTION
@@ -2260,7 +2260,7 @@ SUB save_composite_image (filename AS STRING, frame_index AS INTEGER, output_fil
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "Failed to create composite for saving"
     END IF
 
-    _FREEIMAGE composite
+    QB64_GJ_SAFE_FREE_IMAGE composite
 END SUB
 
 
@@ -2537,7 +2537,7 @@ FUNCTION create_z_ordered_composite& (enhanced_img AS ASEPRITE_ENHANCED_IMAGE, f
             
             ' Composite with transparency
             _PUTIMAGE (cel_x, cel_y), layer_img, composite_img
-            _FREEIMAGE layer_img
+            QB64_GJ_SAFE_FREE_IMAGE layer_img
         ELSE
           IF ASEPRITE_DEBUG_MODE THEN _ECHO "create_z_ordered_composite: no data for layer " + STR$(render_items(i).layer_index) + " (group or empty)"
         END IF

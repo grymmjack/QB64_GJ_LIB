@@ -50,7 +50,7 @@ SUB FD_print_scaled (x AS INTEGER, y AS INTEGER, text AS STRING, scale AS INTEGE
 
     ' Scale blit with alpha
     _PUTIMAGE (x, y)-(x + tw * s - 1, y + th * s - 1), tmp, , (0, 0)-(tw - 1, th - 1)
-    _FREEIMAGE tmp
+    QB64_GJ_SAFE_FREE_IMAGE tmp
 END SUB
 
 ' --------------------------------------------------------------------------
