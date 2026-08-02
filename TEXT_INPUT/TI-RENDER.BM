@@ -269,17 +269,19 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
     DIM textLen AS INTEGER
     textLen = LEN(t)
 
+    ' Walk VISUAL lines, so soft-wrapped rows render exactly like hard ones
+    TI__build_vlines id
+    DIM vIdx AS INTEGER
+    vIdx = 0
     DO
-        ' Find end of current line
-        DIM lineEnd AS INTEGER
-        lineEnd = charIdx
-        DO WHILE lineEnd < textLen
-            IF MID$(t, lineEnd + 1, 1) = CHR$(10) THEN EXIT DO
-            lineEnd = lineEnd + 1
-        LOOP
+        vIdx = vIdx + 1
+        IF vIdx > TI_VL_COUNT THEN EXIT DO
 
-        ' lineBegin..lineEnd is the current line (excluding newline)
-        lineStr = MID$(t, lineBegin + 1, lineEnd - lineBegin)
+        lineBegin = TI_VL_START(vIdx)
+        DIM lineEnd AS INTEGER
+        lineEnd   = lineBegin + TI_VL_LEN(vIdx)
+        lineRow   = vIdx - 1
+        lineStr   = MID$(t, lineBegin + 1, TI_VL_LEN(vIdx))
 
         ' Only draw if within visible area
         DIM rowPxY AS INTEGER
@@ -344,16 +346,7 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
             END IF
         END IF
 
-        ' Advance to next line
-        lineRow = lineRow + 1
-        IF lineEnd < textLen THEN
-            charIdx = lineEnd + 1 ' skip the newline
-        ELSE
-            EXIT DO
-        END IF
-        lineBegin = charIdx
-
-        ' Stop if beyond visible area
+        ' Stop once we are past the bottom of the visible area
         IF lineRow * TI_fontH - scrollPxY > visibleH + TI_fontH THEN EXIT DO
     LOOP
 

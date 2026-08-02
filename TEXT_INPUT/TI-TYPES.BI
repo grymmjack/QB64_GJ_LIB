@@ -149,3 +149,17 @@ DIM SHARED TI_undoCount(1 TO TI_MAX_INPUTS) AS INTEGER    ' Available undo state
 DIM SHARED TI_redoCount(1 TO TI_MAX_INPUTS) AS INTEGER    ' Available redo states
 DIM SHARED TI_undoLastTime(1 TO TI_MAX_INPUTS) AS DOUBLE  ' Timer of last undo push
 DIM SHARED TI_undoLastType(1 TO TI_MAX_INPUTS) AS INTEGER ' Action type of last push
+
+' --- Visual line table (soft word wrap) -------------------------------------
+' A "row" in a multiline input is a VISUAL line, which with wordWrap enabled is
+' not the same as a hard newline-delimited line. This table is the single
+' source of truth for that mapping: TI__build_vlines fills it, and every
+' row/column helper, the renderer, mouse hit-testing and arrow navigation read
+' it, so wrapped and unwrapped inputs behave identically everywhere.
+'
+' Visual lines are CONTIGUOUS: a soft break happens after a space, so
+' start(n+1) = start(n) + len(n). Only a hard newline consumes an extra char.
+CONST TI_MAX_VLINES = 1024
+DIM SHARED TI_VL_START(1 TO TI_MAX_VLINES) AS INTEGER ' 0-based offset of line start
+DIM SHARED TI_VL_LEN(1 TO TI_MAX_VLINES) AS INTEGER   ' length, excluding any newline
+DIM SHARED TI_VL_COUNT AS INTEGER                     ' visual lines currently in the table

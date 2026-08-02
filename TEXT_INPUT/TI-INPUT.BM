@@ -1065,15 +1065,119 @@ END SUB
 ' ==========================================================================
 
 ' --------------------------------------------------------------------------
+' TI__build_vlines — Build the visual line table for an input
+' --------------------------------------------------------------------------
+' Splits the text into VISUAL lines: always at hard newlines, and additionally
+' at word boundaries when wordWrap is on and a line exceeds the widget width.
+'
+' Soft breaks happen AFTER the space that causes them, so visual lines stay
+' contiguous (start(n+1) = start(n) + len(n)) and every character offset maps
+' to exactly one row/column. Only a hard newline consumes an extra character.
+'
+' Rebuilt on demand rather than cached: the buffer is at most TI_MAX_TEXT_LEN
+' and a stale table would put the caret in the wrong place, which is far worse
+' than the scan.
+' --------------------------------------------------------------------------
+SUB TI__build_vlines (id AS INTEGER)
+    TI_VL_COUNT = 0
+    IF id < 1 OR id > TI_MAX_INPUTS THEN EXIT SUB
+
+    DIM t  AS STRING
+    DIM tl AS INTEGER
+    t  = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
+    tl = LEN(t)
+
+    ' Column budget — 0 disables soft wrapping
+    DIM cols AS INTEGER
+    cols = 0
+    IF TI_inputs(id).multiline AND TI_inputs(id).wordWrap THEN
+        DIM fw AS INTEGER
+        fw = TI__eff_fontW%(id)
+        IF fw < 1 THEN fw = 8
+        cols = (TI_inputs(id).w - TI_SCROLL_PADDING * 2) \ fw
+        IF cols < 1 THEN cols = 1
+    END IF
+
+    DIM vpos AS INTEGER
+    vpos = 0
+    DO
+        ' End of the hard line starting at vpos
+        DIM he AS INTEGER
+        he = vpos
+        DO WHILE he < tl
+            IF MID$(t, he + 1, 1) = CHR$(10) THEN EXIT DO
+            he = he + 1
+        LOOP
+
+        ' Emit one or more visual lines covering [vpos, he)
+        DIM segStart AS INTEGER
+        segStart = vpos
+        DO
+            DIM segLen AS INTEGER
+            segLen = he - segStart
+
+            IF cols > 0 AND segLen > cols THEN
+                ' Break after the last space within the budget; a word longer
+                ' than the whole line is split hard so it cannot loop forever
+                DIM brk AS INTEGER, k AS INTEGER
+                brk = 0
+                FOR k = cols TO 1 STEP -1
+                    IF MID$(t, segStart + k, 1) = " " THEN
+                        brk = k
+                        EXIT FOR
+                    END IF
+                NEXT k
+                IF brk < 1 THEN brk = cols
+                segLen = brk
+            END IF
+
+            IF TI_VL_COUNT < TI_MAX_VLINES THEN
+                TI_VL_COUNT              = TI_VL_COUNT + 1
+                TI_VL_START(TI_VL_COUNT) = segStart
+                TI_VL_LEN(TI_VL_COUNT)   = segLen
+            END IF
+
+            segStart = segStart + segLen
+            IF segStart >= he THEN EXIT DO
+        LOOP
+
+        IF he >= tl THEN EXIT DO
+        vpos = he + 1                    ' step over the newline
+
+        ' Text ending in a newline still has an empty final line
+        IF vpos > tl THEN EXIT DO
+        IF vpos = tl THEN
+            IF TI_VL_COUNT < TI_MAX_VLINES THEN
+                TI_VL_COUNT              = TI_VL_COUNT + 1
+                TI_VL_START(TI_VL_COUNT) = vpos
+                TI_VL_LEN(TI_VL_COUNT)   = 0
+            END IF
+            EXIT DO
+        END IF
+    LOOP
+
+    ' Empty buffer is still one (empty) line
+    IF TI_VL_COUNT = 0 THEN
+        TI_VL_COUNT   = 1
+        TI_VL_START(1) = 0
+        TI_VL_LEN(1)   = 0
+    END IF
+END SUB
+
+
+' --------------------------------------------------------------------------
 ' TI__cursor_row% — Get 0-based row index from flat cursor position
 ' --------------------------------------------------------------------------
 FUNCTION TI__cursor_row% (id AS INTEGER)
-    DIM t AS STRING
-    t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    DIM r AS INTEGER, i AS INTEGER
-    r = 0
-    FOR i = 1 TO TI_inputs(id).cursorPos
-        IF MID$(t, i, 1) = CHR$(10) THEN r = r + 1
+    TI__build_vlines id
+    DIM cp AS INTEGER, i AS INTEGER, r AS INTEGER
+    cp = TI_inputs(id).cursorPos
+    r  = 0
+    ' Last line whose start is at or before the cursor. A cursor sitting
+    ' exactly on a soft break therefore belongs to the following line, which
+    ' is what a user expects after typing past the wrap point.
+    FOR i = 1 TO TI_VL_COUNT
+        IF cp >= TI_VL_START(i) THEN r = i - 1 ELSE EXIT FOR
     NEXT i
     TI__cursor_row% = r
 END FUNCTION
@@ -1082,73 +1186,52 @@ END FUNCTION
 ' TI__cursor_col% — Get 0-based column within the current line
 ' --------------------------------------------------------------------------
 FUNCTION TI__cursor_col% (id AS INTEGER)
-    DIM t  AS STRING
-    t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    DIM cp AS INTEGER
+    TI__build_vlines id
+    DIM cp AS INTEGER, i AS INTEGER, st AS INTEGER
     cp = TI_inputs(id).cursorPos
-    ' Scan backwards to find line start
-    DIM i  AS INTEGER
-    FOR i = cp TO 1 STEP -1
-        IF MID$(t, i, 1) = CHR$(10) THEN
-            TI__cursor_col% = cp - i
-            EXIT FUNCTION
-        END IF
+    st = 0
+    FOR i = 1 TO TI_VL_COUNT
+        IF cp >= TI_VL_START(i) THEN st = TI_VL_START(i) ELSE EXIT FOR
     NEXT i
-    TI__cursor_col% = cp
+    TI__cursor_col% = cp - st
 END FUNCTION
 
 ' --------------------------------------------------------------------------
 ' TI__line_start% — Get flat offset where line `row` starts (0-based row)
 ' --------------------------------------------------------------------------
 FUNCTION TI__line_start% (id AS INTEGER, row AS INTEGER)
-    DIM t AS STRING
-    t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    IF row <= 0 THEN TI__line_start% = 0: EXIT FUNCTION
-    DIM r AS INTEGER, i AS INTEGER
-    r = 0
-    FOR i = 1 TO LEN(t)
-        IF MID$(t, i, 1) = CHR$(10) THEN
-            r = r + 1
-            IF r = row THEN
-                TI__line_start% = i ' offset right after the newline
-                EXIT FUNCTION
-            END IF
-        END IF
-    NEXT i
-    ' Row beyond content — return end
-    TI__line_start% = LEN(t)
+    TI__build_vlines id
+    DIM r AS INTEGER
+    r = row + 1
+    IF r < 1 THEN r = 1
+    IF r > TI_VL_COUNT THEN
+        TI__line_start% = TI_inputs(id).textLen
+        EXIT FUNCTION
+    END IF
+    TI__line_start% = TI_VL_START(r)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
 ' TI__line_end% — Get flat offset of line end (before newline) for `row`
 ' --------------------------------------------------------------------------
 FUNCTION TI__line_end% (id AS INTEGER, row AS INTEGER)
-    DIM t         AS STRING
-    t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    DIM lineStart AS INTEGER
-    lineStart = TI__line_start%(id, row)
-    DIM i         AS INTEGER
-    FOR i = lineStart + 1 TO LEN(t)
-        IF MID$(t, i, 1) = CHR$(10) THEN
-            TI__line_end% = i - 1 ' just before the newline
-            EXIT FUNCTION
-        END IF
-    NEXT i
-    TI__line_end% = LEN(t)
+    TI__build_vlines id
+    DIM r AS INTEGER
+    r = row + 1
+    IF r < 1 THEN r = 1
+    IF r > TI_VL_COUNT THEN
+        TI__line_end% = TI_inputs(id).textLen
+        EXIT FUNCTION
+    END IF
+    TI__line_end% = TI_VL_START(r) + TI_VL_LEN(r)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
 ' TI__line_count% — Count total lines (1 = no newlines)
 ' --------------------------------------------------------------------------
 FUNCTION TI__line_count% (id AS INTEGER)
-    DIM t AS STRING
-    t = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
-    DIM c AS INTEGER, i AS INTEGER
-    c = 1
-    FOR i = 1 TO LEN(t)
-        IF MID$(t, i, 1) = CHR$(10) THEN c = c + 1
-    NEXT i
-    TI__line_count% = c
+    TI__build_vlines id
+    TI__line_count% = TI_VL_COUNT
 END FUNCTION
 
 ' --------------------------------------------------------------------------
