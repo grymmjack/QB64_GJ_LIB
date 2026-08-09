@@ -407,14 +407,14 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
             DO WHILE wSelStart > 0
                 DIM lchr AS STRING
                 lchr = MID$(t, wSelStart, 1)
-                IF lchr = " " OR lchr = CHR$(10) OR lchr = CHR$(9) OR lchr = "/" OR lchr = "\" OR lchr = "." OR lchr = "," OR lchr = ";" OR lchr = ":" OR lchr = "(" OR lchr = ")" OR lchr = "[" OR lchr = "]" OR lchr = "{" OR lchr = "}" OR lchr = CHR$(34) OR lchr = "'" THEN EXIT DO
+                IF TI__is_word_sep%(lchr$) THEN EXIT DO
                 wSelStart = wSelStart - 1
             LOOP
             ' Expand right to word boundary
             DO WHILE wSelEnd < LEN(t)
                 DIM rchr AS STRING
                 rchr = MID$(t, wSelEnd + 1, 1)
-                IF rchr = " " OR rchr = CHR$(10) OR rchr = CHR$(9) OR rchr = "/" OR rchr = "\" OR rchr = "." OR rchr = "," OR rchr = ";" OR rchr = ":" OR rchr = "(" OR rchr = ")" OR rchr = "[" OR rchr = "]" OR rchr = "{" OR rchr = "}" OR rchr = CHR$(34) OR rchr = "'" THEN EXIT DO
+                IF TI__is_word_sep%(rchr$) THEN EXIT DO
                 wSelEnd = wSelEnd + 1
             LOOP
             TI_inputs(hitId).selStart  = wSelStart
@@ -647,11 +647,11 @@ FUNCTION TI_process_key% (k AS LONG)
         ' ----- Home -----
         CASE 18176
             IF TI_inputs(id).multiline AND NOT ctrlHeld THEN
-                ' Go to start of current line
-                DIM homeRow    AS INTEGER
-                homeRow = TI__cursor_row%(id)
+                ' Start of the LOGICAL line — soft wraps do not stop Home, only
+                ' a newline does. Ctrl+Home (the ELSE branch) goes to the very
+                ' start of the box.
                 DIM homeTarget AS INTEGER
-                homeTarget = TI__line_start%(id, homeRow)
+                homeTarget = TI__para_start%(t, cp)
                 IF shiftHeld THEN
                     TI__extend_selection id, cp, homeTarget
                 ELSE
@@ -673,11 +673,11 @@ FUNCTION TI_process_key% (k AS LONG)
         ' ----- End -----
         CASE 20224
             IF TI_inputs(id).multiline AND NOT ctrlHeld THEN
-                ' Go to end of current line
-                DIM endRow    AS INTEGER
-                endRow = TI__cursor_row%(id)
+                ' End of the LOGICAL line — a wrapped paragraph runs to its very
+                ' end, stopping only at a newline. Ctrl+End (the ELSE branch)
+                ' goes to the end of the box.
                 DIM endTarget AS INTEGER
-                endTarget = TI__line_end%(id, endRow)
+                endTarget = TI__para_end%(t, cp)
                 IF shiftHeld THEN
                     TI__extend_selection id, cp, endTarget
                 ELSE
@@ -714,6 +714,11 @@ FUNCTION TI_process_key% (k AS LONG)
                     END IF
                     cp = upTarget
                     IF TI_inputs(id).desiredCol < 0 THEN TI_inputs(id).desiredCol = upCol
+                ELSEIF shiftHeld THEN
+                    ' Mirror of the Down case: on the first row, extend the
+                    ' selection to the very start rather than doing nothing.
+                    TI__extend_selection id, cp, 0
+                    cp = 0
                 END IF
             END IF
 
@@ -737,6 +742,13 @@ FUNCTION TI_process_key% (k AS LONG)
                     END IF
                     cp = dnTarget
                     IF TI_inputs(id).desiredCol < 0 THEN TI_inputs(id).desiredCol = dnCol
+                ELSEIF shiftHeld THEN
+                    ' Already on the last row. Down had nothing to move to, so
+                    ' a shift-selection could never reach the final line's text
+                    ' — it stopped at whatever column the caret held. Extend to
+                    ' the end of the text instead, as every other editor does.
+                    TI__extend_selection id, cp, LEN(t)
+                    cp = LEN(t)
                 END IF
             END IF
 
@@ -1096,19 +1108,61 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 ' TI__word_left% — Find word boundary to the left
 ' --------------------------------------------------------------------------
+''
+' TRUE when ch is a word separator.
+'
+' One definition for all three word operations — Ctrl+Left, Ctrl+Right and
+' double-click. They used to disagree: double-click already treated newlines
+' and punctuation as boundaries, but the Ctrl+arrow pair knew only space, "/"
+' and "\". A word jump therefore ran straight through a line break, so
+' Ctrl+Shift+Left from the end of the last line selected back across the
+' newline into the previous line's final word.
+'
+FUNCTION TI__is_word_sep% (ch AS STRING)
+    TI__is_word_sep% = TRUE
+    IF ch$ = " " OR ch$ = CHR$(10) OR ch$ = CHR$(13) OR ch$ = CHR$(9) THEN EXIT FUNCTION
+    IF ch$ = "/" OR ch$ = "\" OR ch$ = "." OR ch$ = "," OR ch$ = ";" OR ch$ = ":" THEN EXIT FUNCTION
+    IF ch$ = "(" OR ch$ = ")" OR ch$ = "[" OR ch$ = "]" OR ch$ = "{" OR ch$ = "}" THEN EXIT FUNCTION
+    IF ch$ = CHR$(34) OR ch$ = "'" THEN EXIT FUNCTION
+    TI__is_word_sep% = FALSE
+END FUNCTION
+
+''
+' TRUE when ch separates words but is NOT a line break.
+'
+' Used by the "skip trailing separators" phase so a jump can cross spaces to
+' reach the previous word, but stops dead at a newline — which is what keeps a
+' single Ctrl+Left inside the current line.
+'
+FUNCTION TI__is_inline_sep% (ch AS STRING)
+    TI__is_inline_sep% = FALSE
+    IF ch$ = CHR$(10) OR ch$ = CHR$(13) THEN EXIT FUNCTION
+    TI__is_inline_sep% = TI__is_word_sep%(ch$)
+END FUNCTION
+
 FUNCTION TI__word_left% (t AS STRING, curPos AS INTEGER)
     DIM p AS INTEGER
     p = curPos
-    ' Skip whitespace
+
+    ' Sitting directly on a line break: step over exactly one so a second press
+    ' moves to the previous line rather than stalling.
+    IF p > 0 THEN
+        IF MID$(t, p, 1) = CHR$(10) OR MID$(t, p, 1) = CHR$(13) THEN p = p - 1
+    END IF
+
+    ' Skip separators back to the end of the previous word — but never past a
+    ' line break, so the jump stays on this line.
     DO WHILE p > 0
-        IF MID$(t, p, 1) <> " " THEN EXIT DO
+        IF NOT TI__is_inline_sep%(MID$(t, p, 1)) THEN EXIT DO
         p = p - 1
     LOOP
-    ' Skip word characters
+
+    ' Skip the word itself; a newline ends it.
     DO WHILE p > 0
-        IF MID$(t, p, 1) = " " OR MID$(t, p, 1) = "/" OR MID$(t, p, 1) = "\" THEN EXIT DO
+        IF TI__is_word_sep%(MID$(t, p, 1)) THEN EXIT DO
         p = p - 1
     LOOP
+
     TI__word_left% = p
 END FUNCTION
 
@@ -1120,20 +1174,28 @@ FUNCTION TI__word_right% (t AS STRING, curPos AS INTEGER)
     DIM tl AS INTEGER
     p  = curPos
     tl = LEN(t)
-    ' Skip current word chars
+    ' Skip the current word; a newline ends it.
     DO WHILE p < tl
-        DIM c  AS STRING
+        DIM c AS STRING
         c = MID$(t, p + 1, 1)
-        IF c = " " OR c = "/" OR c = "\" THEN EXIT DO
+        IF TI__is_word_sep%(c$) THEN EXIT DO
         p = p + 1
     LOOP
-    ' Skip whitespace/separators
+
+    ' Skip trailing separators to reach the next word, stopping at a line break
+    ' so one press stays on this line (mirror of TI__word_left%).
     DO WHILE p < tl
         DIM c2 AS STRING
         c2 = MID$(t, p + 1, 1)
-        IF c2 <> " " AND c2 <> "/" AND c2 <> "\" THEN EXIT DO
+        IF NOT TI__is_inline_sep%(c2$) THEN EXIT DO
         p = p + 1
     LOOP
+
+    ' Parked on the line break: step over exactly one so a second press advances.
+    IF p < tl THEN
+        IF MID$(t, p + 1, 1) = CHR$(10) OR MID$(t, p + 1, 1) = CHR$(13) THEN p = p + 1
+    END IF
+
     TI__word_right% = p
 END FUNCTION
 
@@ -1327,7 +1389,58 @@ FUNCTION TI__cursor_row% (id AS INTEGER)
     FOR i = 1 TO TI_VL_COUNT
         IF cp >= TI_VL_START(i) THEN r = i - 1 ELSE EXIT FOR
     NEXT i
+
     TI__cursor_row% = r
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' TI__para_start% — Offset of the start of the LOGICAL line containing pos
+'
+' Logical, not visual: soft wraps are ignored, so a paragraph spanning several
+' wrapped rows has one start. Home means "beginning of what I typed as a line",
+' which is only bounded by a newline.
+' --------------------------------------------------------------------------
+FUNCTION TI__para_start% (t AS STRING, atPos AS INTEGER)
+    DIM j AS INTEGER
+    DIM p AS INTEGER
+
+    p = atPos
+    IF p < 0 THEN p = 0
+    IF p > LEN(t) THEN p = LEN(t)
+
+    FOR j = p - 1 TO 0 STEP -1
+        IF MID$(t, j + 1, 1) = CHR$(10) THEN
+            TI__para_start% = j + 1
+            EXIT FUNCTION
+        END IF
+    NEXT j
+
+    TI__para_start% = 0
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' TI__para_end% — Offset of the end of the LOGICAL line containing pos
+'
+' Stops before the newline that terminates the line, or at end of text. Because
+' that offset is never a soft-wrap boundary, End has no caret-affinity problem:
+' the target is unambiguous.
+' --------------------------------------------------------------------------
+FUNCTION TI__para_end% (t AS STRING, atPos AS INTEGER)
+    DIM j AS INTEGER
+    DIM p AS INTEGER
+
+    p = atPos
+    IF p < 0 THEN p = 0
+    IF p > LEN(t) THEN p = LEN(t)
+
+    FOR j = p TO LEN(t) - 1
+        IF MID$(t, j + 1, 1) = CHR$(10) THEN
+            TI__para_end% = j
+            EXIT FUNCTION
+        END IF
+    NEXT j
+
+    TI__para_end% = LEN(t)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -1335,13 +1448,12 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION TI__cursor_col% (id AS INTEGER)
     TI__build_vlines id
-    DIM cp AS INTEGER, i AS INTEGER, st AS INTEGER
-    cp = TI_inputs(id).cursorPos
-    st = 0
-    FOR i = 1 TO TI_VL_COUNT
-        IF cp >= TI_VL_START(i) THEN st = TI_VL_START(i) ELSE EXIT FOR
-    NEXT i
-    TI__cursor_col% = cp - st
+    ' Derived from TI__cursor_row% rather than repeating the scan, so the two
+    ' cannot disagree about which row a caret on a soft break belongs to —
+    ' a mismatch would draw the caret at the right column of the wrong line.
+    DIM r AS INTEGER
+    r = TI__cursor_row%(id)
+    TI__cursor_col% = TI_inputs(id).cursorPos - TI__line_start%(id, r)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
