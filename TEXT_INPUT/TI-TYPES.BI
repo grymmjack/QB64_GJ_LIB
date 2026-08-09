@@ -95,6 +95,21 @@ TYPE TI_INPUT_OBJ
     wordWrap   AS INTEGER        ' TRUE = soft-wrap lines to widget width (multiline)
     desiredCol AS INTEGER        ' Remembered column for Up/Down navigation
 
+    ' Proportional font support (multiline).
+    '
+    ' FALSE (default) keeps the original fixed-pitch layout: every glyph is
+    ' placed at column * fontW. That is correct only for monospace fonts — a
+    ' proportional face renders visibly gapped, because narrow glyphs still get
+    ' a full cell (Tiny5 at size 8: 'i' is 2px of ink in a 6px cell, and a word
+    ' measures 48px fixed-pitch versus 32px natural).
+    '
+    ' TRUE measures with _PRINTWIDTH instead, so wrap, caret, selection and
+    ' hit-testing all agree with what is actually drawn. Requires
+    ' theme.fontHandle to be a real handle: measurement happens outside the
+    ' render path too (wrapping, mouse hits), where the caller's _FONT is not
+    ' guaranteed to be this widget's.
+    proportional AS INTEGER      ' TRUE = measure text instead of assuming a fixed pitch
+
     ' Display state
     focused     AS INTEGER       ' TRUE if this input has focus
     readOnly    AS INTEGER       ' TRUE if read-only

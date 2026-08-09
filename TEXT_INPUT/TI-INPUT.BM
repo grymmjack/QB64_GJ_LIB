@@ -35,6 +35,129 @@ FUNCTION TI__eff_fontW% (id AS INTEGER)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
+' TI__px_width% — Pixel width of the first n characters of s$
+'
+' Fixed-pitch widgets keep the original n * fontW answer, so nothing changes
+' for existing monospace consumers. Proportional widgets measure with
+' _PRINTWIDTH under their own font, selecting it first because callers such as
+' wrapping and mouse hit-testing run outside the render path, where the active
+' _FONT belongs to whoever is drawing at the time.
+' --------------------------------------------------------------------------
+FUNCTION TI__px_width% (id AS INTEGER, s AS STRING, n AS INTEGER)
+    DIM cnt AS INTEGER
+    DIM res AS INTEGER
+    DIM oldF AS LONG
+
+    cnt% = n%
+    IF cnt% < 0 THEN cnt% = 0
+    IF cnt% > LEN(s$) THEN cnt% = LEN(s$)
+
+    IF id% < 1 OR id% > TI_MAX_INPUTS THEN
+        TI__px_width% = cnt% * TI_fontW
+        EXIT FUNCTION
+    END IF
+
+    IF NOT TI_inputs(id%).proportional THEN
+        TI__px_width% = cnt% * TI__eff_fontW%(id%)
+        EXIT FUNCTION
+    END IF
+
+    IF cnt% = 0 THEN
+        TI__px_width% = 0
+        EXIT FUNCTION
+    END IF
+
+    res% = 0
+    IF TI_inputs(id%).theme.fontHandle > 0 THEN
+        oldF& = _FONT
+        _FONT TI_inputs(id%).theme.fontHandle
+        res% = _PRINTWIDTH(LEFT$(s$, cnt%))
+        IF oldF& > 0 THEN _FONT oldF&
+    ELSE
+        res% = _PRINTWIDTH(LEFT$(s$, cnt%))
+    END IF
+
+    TI__px_width% = res%
+END FUNCTION
+
+
+' --------------------------------------------------------------------------
+' TI__fit_chars% — Most characters of s$ whose rendered width fits in px
+'
+' Used by word wrap. Returns at least 1 for a non-empty string so a single
+' glyph wider than the widget still advances and the wrap loop terminates.
+' --------------------------------------------------------------------------
+FUNCTION TI__fit_chars% (id AS INTEGER, s AS STRING, px AS INTEGER)
+    DIM i   AS INTEGER
+    DIM res AS INTEGER
+
+    IF LEN(s$) = 0 THEN
+        TI__fit_chars% = 0
+        EXIT FUNCTION
+    END IF
+
+    res% = 0
+    FOR i% = 1 TO LEN(s$)
+        IF TI__px_width%(id%, s$, i%) > px% THEN EXIT FOR
+        res% = i%
+    NEXT i%
+
+    IF res% < 1 THEN res% = 1
+    TI__fit_chars% = res%
+END FUNCTION
+
+
+' --------------------------------------------------------------------------
+' TI__col_at_px% — Character index nearest to px pixels into s$
+'
+' Inverse of TI__px_width%. Walks prefixes and picks the caret slot whose edge
+' is closest to px, so clicking the right half of a glyph lands after it — the
+' behaviour the fixed-pitch path got for free from integer division.
+' --------------------------------------------------------------------------
+FUNCTION TI__col_at_px% (id AS INTEGER, s AS STRING, px AS INTEGER)
+    DIM i     AS INTEGER
+    DIM wPrev AS INTEGER
+    DIM wCur  AS INTEGER
+    DIM res   AS INTEGER
+    DIM fw    AS INTEGER
+
+    IF id% < 1 OR id% > TI_MAX_INPUTS THEN
+        fw% = TI_fontW : IF fw% < 1 THEN fw% = 8
+        TI__col_at_px% = px% \ fw%
+        EXIT FUNCTION
+    END IF
+
+    IF NOT TI_inputs(id%).proportional THEN
+        fw% = TI__eff_fontW%(id%) : IF fw% < 1 THEN fw% = 8
+        TI__col_at_px% = px% \ fw%
+        EXIT FUNCTION
+    END IF
+
+    IF px% <= 0 THEN
+        TI__col_at_px% = 0
+        EXIT FUNCTION
+    END IF
+
+    res%   = LEN(s$)
+    wPrev% = 0
+    FOR i% = 1 TO LEN(s$)
+        wCur% = TI__px_width%(id%, s$, i%)
+        IF px% < wPrev% + (wCur% - wPrev%) \ 2 + 1 THEN
+            res% = i% - 1
+            EXIT FOR
+        END IF
+        IF px% <= wCur% THEN
+            res% = i%
+            EXIT FOR
+        END IF
+        wPrev% = wCur%
+    NEXT i%
+
+    TI__col_at_px% = res%
+END FUNCTION
+
+
+' --------------------------------------------------------------------------
 ' TI__eff_fontH% — Effective font height for an instance (per-instance or shared)
 ' --------------------------------------------------------------------------
 FUNCTION TI__eff_fontH% (id AS INTEGER)
@@ -241,8 +364,15 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
 
         DIM relMX    AS INTEGER
         relMX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
+        ' Measure against the clicked row's own text so the caret lands where
+        ' the glyphs actually are. Fixed-pitch widgets still get relMX \ fontW.
         DIM clickCol AS INTEGER
-        clickCol = relMX \ TI__eff_fontW%(hitId)
+        DIM rowS     AS INTEGER, rowE AS INTEGER
+        DIM rowStr   AS STRING
+        rowS   = TI__line_start%(hitId, clickRow)
+        rowE   = TI__line_end%(hitId, clickRow)
+        rowStr = MID$(LEFT$(TI_inputs(hitId).text, TI_inputs(hitId).textLen), rowS + 1, rowE - rowS)
+        clickCol = TI__col_at_px%(hitId, rowStr, relMX)
         IF clickCol < 0 THEN clickCol = 0
 
         cp                          = TI__pos_from_row_col%(hitId, clickRow, clickCol)
@@ -251,7 +381,7 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM relX    AS INTEGER
         relX = px - TI_inputs(hitId).x - TI_SCROLL_PADDING + TI_inputs(hitId).scrollX
         DIM charPos AS INTEGER
-        charPos = relX \ TI__eff_fontW%(hitId)
+        charPos = TI__col_at_px%(hitId, LEFT$(TI_inputs(hitId).text, TI_inputs(hitId).textLen), relX)
         IF charPos < 0 THEN charPos = 0
         IF charPos > TI_inputs(hitId).textLen THEN charPos = TI_inputs(hitId).textLen
         cp = charPos
@@ -1087,15 +1217,23 @@ SUB TI__build_vlines (id AS INTEGER)
     t  = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
     tl = LEN(t)
 
-    ' Column budget — 0 disables soft wrapping
-    DIM cols AS INTEGER
-    cols = 0
+    ' Column budget — 0 disables soft wrapping.
+    ' wrapPx > 0 selects the proportional path, where the budget is a pixel
+    ' width measured per segment rather than a fixed character count.
+    DIM cols   AS INTEGER
+    DIM wrapPx AS INTEGER
+    cols   = 0
+    wrapPx = 0
     IF TI_inputs(id).multiline AND TI_inputs(id).wordWrap THEN
         DIM fw AS INTEGER
         fw = TI__eff_fontW%(id)
         IF fw < 1 THEN fw = 8
         cols = (TI_inputs(id).w - TI_SCROLL_PADDING * 2) \ fw
         IF cols < 1 THEN cols = 1
+        IF TI_inputs(id).proportional THEN
+            wrapPx = TI_inputs(id).w - TI_SCROLL_PADDING * 2
+            IF wrapPx < 1 THEN wrapPx = 1
+        END IF
     END IF
 
     DIM vpos AS INTEGER
@@ -1116,18 +1254,28 @@ SUB TI__build_vlines (id AS INTEGER)
             DIM segLen AS INTEGER
             segLen = he - segStart
 
-            IF cols > 0 AND segLen > cols THEN
+            ' How many characters fit on this visual line. Fixed-pitch reuses
+            ' the constant column budget; proportional measures this particular
+            ' segment, because how much fits depends on which glyphs they are.
+            DIM fitN AS INTEGER
+            fitN = cols
+            IF wrapPx > 0 THEN
+                fitN = TI__fit_chars%(id, MID$(t, segStart + 1, he - segStart), wrapPx)
+                IF fitN < 1 THEN fitN = 1
+            END IF
+
+            IF fitN > 0 AND segLen > fitN THEN
                 ' Break after the last space within the budget; a word longer
                 ' than the whole line is split hard so it cannot loop forever
                 DIM brk AS INTEGER, k AS INTEGER
                 brk = 0
-                FOR k = cols TO 1 STEP -1
+                FOR k = fitN TO 1 STEP -1
                     IF MID$(t, segStart + k, 1) = " " THEN
                         brk = k
                         EXIT FOR
                     END IF
                 NEXT k
-                IF brk < 1 THEN brk = cols
+                IF brk < 1 THEN brk = fitN
                 segLen = brk
             END IF
 
