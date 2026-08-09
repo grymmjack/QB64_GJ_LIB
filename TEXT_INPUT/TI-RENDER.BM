@@ -279,9 +279,9 @@ SUB TI__render_multiline (id AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, w AS INTE
 
         lineBegin = TI_VL_START(vIdx)
         DIM lineEnd AS INTEGER
-        lineEnd   = lineBegin + TI_VL_LEN(vIdx)
-        lineRow   = vIdx - 1
-        lineStr   = MID$(t, lineBegin + 1, TI_VL_LEN(vIdx))
+        lineEnd = lineBegin + TI_VL_LEN(vIdx)
+        lineRow = vIdx - 1
+        lineStr = MID$(t, lineBegin + 1, TI_VL_LEN(vIdx))
 
         ' Only draw if within visible area
         DIM rowPxY AS INTEGER

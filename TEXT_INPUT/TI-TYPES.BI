@@ -175,6 +175,6 @@ DIM SHARED TI_undoLastType(1 TO TI_MAX_INPUTS) AS INTEGER ' Action type of last 
 ' Visual lines are CONTIGUOUS: a soft break happens after a space, so
 ' start(n+1) = start(n) + len(n). Only a hard newline consumes an extra char.
 CONST TI_MAX_VLINES = 1024
-DIM SHARED TI_VL_START(1 TO TI_MAX_VLINES) AS INTEGER ' 0-based offset of line start
-DIM SHARED TI_VL_LEN(1 TO TI_MAX_VLINES) AS INTEGER   ' length, excluding any newline
-DIM SHARED TI_VL_COUNT AS INTEGER                     ' visual lines currently in the table
+DIM SHARED TI_VL_START(1 TO TI_MAX_VLINES) AS INTEGER     ' 0-based offset of line start
+DIM SHARED TI_VL_LEN(1 TO TI_MAX_VLINES) AS INTEGER       ' length, excluding any newline
+DIM SHARED TI_VL_COUNT AS INTEGER                         ' visual lines currently in the table

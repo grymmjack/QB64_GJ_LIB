@@ -44,8 +44,8 @@ END FUNCTION
 ' _FONT belongs to whoever is drawing at the time.
 ' --------------------------------------------------------------------------
 FUNCTION TI__px_width% (id AS INTEGER, s AS STRING, n AS INTEGER)
-    DIM cnt AS INTEGER
-    DIM res AS INTEGER
+    DIM cnt  AS INTEGER
+    DIM res  AS INTEGER
     DIM oldF AS LONG
 
     cnt% = n%
@@ -122,13 +122,13 @@ FUNCTION TI__col_at_px% (id AS INTEGER, s AS STRING, px AS INTEGER)
     DIM fw    AS INTEGER
 
     IF id% < 1 OR id% > TI_MAX_INPUTS THEN
-        fw% = TI_fontW : IF fw% < 1 THEN fw% = 8
+        fw%            = TI_fontW : IF fw% < 1 THEN fw% = 8
         TI__col_at_px% = px% \ fw%
         EXIT FUNCTION
     END IF
 
     IF NOT TI_inputs(id%).proportional THEN
-        fw% = TI__eff_fontW%(id%) : IF fw% < 1 THEN fw% = 8
+        fw%            = TI__eff_fontW%(id%) : IF fw% < 1 THEN fw% = 8
         TI__col_at_px% = px% \ fw%
         EXIT FUNCTION
     END IF
@@ -369,9 +369,9 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
         DIM clickCol AS INTEGER
         DIM rowS     AS INTEGER, rowE AS INTEGER
         DIM rowStr   AS STRING
-        rowS   = TI__line_start%(hitId, clickRow)
-        rowE   = TI__line_end%(hitId, clickRow)
-        rowStr = MID$(LEFT$(TI_inputs(hitId).text, TI_inputs(hitId).textLen), rowS + 1, rowE - rowS)
+        rowS     = TI__line_start%(hitId, clickRow)
+        rowE     = TI__line_end%(hitId, clickRow)
+        rowStr   = MID$(LEFT$(TI_inputs(hitId).text, TI_inputs(hitId).textLen), rowS + 1, rowE - rowS)
         clickCol = TI__col_at_px%(hitId, rowStr, relMX)
         IF clickCol < 0 THEN clickCol = 0
 
@@ -1342,7 +1342,7 @@ SUB TI__build_vlines (id AS INTEGER)
             END IF
 
             IF TI_VL_COUNT < TI_MAX_VLINES THEN
-                TI_VL_COUNT              = TI_VL_COUNT + 1
+                TI_VL_COUNT = TI_VL_COUNT + 1
                 TI_VL_START(TI_VL_COUNT) = segStart
                 TI_VL_LEN(TI_VL_COUNT)   = segLen
             END IF
@@ -1352,13 +1352,13 @@ SUB TI__build_vlines (id AS INTEGER)
         LOOP
 
         IF he >= tl THEN EXIT DO
-        vpos = he + 1                    ' step over the newline
+        vpos = he + 1 ' step over the newline
 
         ' Text ending in a newline still has an empty final line
         IF vpos > tl THEN EXIT DO
         IF vpos = tl THEN
             IF TI_VL_COUNT < TI_MAX_VLINES THEN
-                TI_VL_COUNT              = TI_VL_COUNT + 1
+                TI_VL_COUNT = TI_VL_COUNT + 1
                 TI_VL_START(TI_VL_COUNT) = vpos
                 TI_VL_LEN(TI_VL_COUNT)   = 0
             END IF
@@ -1368,7 +1368,7 @@ SUB TI__build_vlines (id AS INTEGER)
 
     ' Empty buffer is still one (empty) line
     IF TI_VL_COUNT = 0 THEN
-        TI_VL_COUNT   = 1
+        TI_VL_COUNT    = 1
         TI_VL_START(1) = 0
         TI_VL_LEN(1)   = 0
     END IF
@@ -1452,7 +1452,7 @@ FUNCTION TI__cursor_col% (id AS INTEGER)
     ' cannot disagree about which row a caret on a soft break belongs to —
     ' a mismatch would draw the caret at the right column of the wrong line.
     DIM r AS INTEGER
-    r = TI__cursor_row%(id)
+    r               = TI__cursor_row%(id)
     TI__cursor_col% = TI_inputs(id).cursorPos - TI__line_start%(id, r)
 END FUNCTION
 
