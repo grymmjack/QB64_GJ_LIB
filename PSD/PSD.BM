@@ -604,6 +604,15 @@ FUNCTION PSD_get_layer_image& (filename AS STRING, layer_index AS INTEGER)
         EXIT FUNCTION
     END IF
 
+    ' BUG-65: reject adversarial/huge layer dims BEFORE allocating. layW*layH in a LONG overflows
+    ' beyond ~46340² → a NEGATIVE STRING$ length (Illegal function call crash); even a non-overflowing
+    ' huge layer would OOM the four STRING$ channel buffers. Cap to a sane maximum.
+    IF layW& > 16384 OR layH& > 16384 THEN
+        _LOGWARN "PSD: Layer" + STR$(layer_index%) + " dimensions exceed 16384px, skipping"
+        PSD_get_layer_image& = 0
+        EXIT FUNCTION
+    END IF
+
     DIM pixelCount AS LONG
     pixelCount& = layW& * layH&
 
