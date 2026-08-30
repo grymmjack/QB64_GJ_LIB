@@ -518,8 +518,12 @@ FUNCTION TI_process_key% (k AS LONG)
     shiftHeld = (_KEYDOWN(100304) OR _KEYDOWN(100303)) ' Left/Right Shift
 
     ' Normalize: on Linux/SDL2, _KEYHIT may return the letter code instead of
-    ' the ASCII control code when Ctrl is held (e.g. 97 instead of 1 for Ctrl+A)
-    IF ctrlHeld AND k >= 65 AND k <= 122 THEN
+    ' the ASCII control code when Ctrl is held (e.g. 97 instead of 1 for Ctrl+A).
+    ' BUG-43: gate on LETTERS ONLY (A-Z, a-z). The old range 65-122 also swept up
+    ' the six punctuation chars between the alphabets (91-96: [ \ ] ^ _ `), turning
+    ' Ctrl+[ into 27 (ESC → closed the field) and Ctrl+` into 32 (SPACE inserted),
+    ' and silently eating \ ] ^ _ typed via AltGr (RightCtrl+RightAlt reads as Ctrl).
+    IF ctrlHeld AND ((k >= 65 AND k <= 90) OR (k >= 97 AND k <= 122)) THEN
         k = ASC(UCASE$(CHR$(k))) - 64 ' A→1, C→3, V→22, X→24
     END IF
 
