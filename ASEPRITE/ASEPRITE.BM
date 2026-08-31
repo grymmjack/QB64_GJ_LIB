@@ -755,19 +755,26 @@ FUNCTION load_compressed_pixel_data% (file_handle AS INTEGER, target_image AS LO
     load_compressed_pixel_data% = 0 ' Default to failure
     
     ' Calculate bytes per pixel and expected decompressed size
+    ' BUG-69: width/height are _UNSIGNED INTEGER (max 65535), so width*height*4 can
+    ' reach ~1.7e10 and OVERFLOW the signed 32-bit LONG expected_size — a corrupt or
+    ' hostile .aseprite could wrap it negative / bogus, then drive a huge STRING$()
+    ' alloc below. Compute in 64-bit and reject any cel whose size can't fit a LONG.
+    DIM esz64 AS _INTEGER64 : esz64 = width
     SELECT CASE color_depth_bpp
         CASE 32 ' RGBA: 4 bytes per pixel
             bytes_per_pixel = 4
-            expected_size   = width * height * 4
+            esz64 = esz64 * height * 4
         CASE 16 ' Grayscale: 2 bytes per pixel
             bytes_per_pixel = 2
-            expected_size   = width * height * 2
+            esz64 = esz64 * height * 2
         CASE 8  ' Indexed: 1 byte per pixel
             bytes_per_pixel = 1
-            expected_size   = width * height
+            esz64 = esz64 * height
         CASE ELSE
             EXIT FUNCTION ' Unsupported color depth
     END SELECT
+    IF esz64 <= 0 OR esz64 > 2147483647 THEN EXIT FUNCTION ' BUG-69: overflow / adversarial cel size
+    expected_size = esz64
     
     ' Calculate compressed data size
     ' chunk_size includes the 6-byte chunk header (DWORD size + WORD type).
@@ -901,19 +908,26 @@ FUNCTION load_compressed_pixel_data_for_layer% (file_handle AS INTEGER, target_i
     load_compressed_pixel_data_for_layer% = 0 ' Default to failure
     
     ' Calculate bytes per pixel and expected decompressed size
+    ' BUG-69: width/height are _UNSIGNED INTEGER (max 65535), so width*height*4 can
+    ' reach ~1.7e10 and OVERFLOW the signed 32-bit LONG expected_size — a corrupt or
+    ' hostile .aseprite could wrap it negative / bogus, then drive a huge STRING$()
+    ' alloc below. Compute in 64-bit and reject any cel whose size can't fit a LONG.
+    DIM esz64 AS _INTEGER64 : esz64 = width
     SELECT CASE color_depth_bpp
         CASE 32 ' RGBA: 4 bytes per pixel
             bytes_per_pixel = 4
-            expected_size   = width * height * 4
+            esz64 = esz64 * height * 4
         CASE 16 ' Grayscale: 2 bytes per pixel
             bytes_per_pixel = 2
-            expected_size   = width * height * 2
+            esz64 = esz64 * height * 2
         CASE 8  ' Indexed: 1 byte per pixel
             bytes_per_pixel = 1
-            expected_size   = width * height
+            esz64 = esz64 * height
         CASE ELSE
             EXIT FUNCTION ' Unsupported color depth
     END SELECT
+    IF esz64 <= 0 OR esz64 > 2147483647 THEN EXIT FUNCTION ' BUG-69: overflow / adversarial cel size
+    expected_size = esz64
     
     ' Calculate compressed data size (chunk_size includes the 6-byte chunk header)
     data_size = chunk_size - 26 ' 6 (chunk hdr) + 20 (CEL fields + w/h)
