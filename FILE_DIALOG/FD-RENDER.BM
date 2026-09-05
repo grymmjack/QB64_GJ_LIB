@@ -557,6 +557,35 @@ END SUB
 ' --------------------------------------------------------------------------
 ' FD_RENDER_column_headers — Sortable, resizable column headers
 ' --------------------------------------------------------------------------
+' Compute the four effective column widths (Name, Type, Size, Date) so they ALL fit
+' within contentW. Name (col 0) auto-expands to absorb slack; when space is tight the
+' three fixed columns are scaled down proportionally (each kept above a small floor) so
+' the Date column is NEVER dropped off the right edge. Wide layouts (e.g. the modal
+' file dialog) are unaffected: Name simply takes the extra room. Used by both the
+' header and the detail rows so they stay aligned.
+SUB FD_col_widths (contentW AS INTEGER, w0 AS INTEGER, w1 AS INTEGER, w2 AS INTEGER, w3 AS INTEGER)
+    w1 = FD_columns(1).width
+    w2 = FD_columns(2).width
+    w3 = FD_columns(3).width
+    DIM nameMin AS INTEGER : nameMin = FD_columns(0).minWidth
+    w0 = contentW - (w1 + w2 + w3)
+    IF w0 >= nameMin THEN EXIT SUB      ' Name absorbs the slack; everything fits
+
+    ' Tight: pin Name at its minimum, then fit the fixed columns into what remains.
+    w0 = nameMin
+    DIM avail AS INTEGER : avail = contentW - w0
+    DIM fixed AS INTEGER : fixed = w1 + w2 + w3
+    IF avail < 1 THEN avail = 1
+    IF fixed <= avail THEN EXIT SUB     ' they already fit alongside the min-width Name
+
+    DIM colMin AS INTEGER : colMin = 34 ' keep every column at least this readable
+    DIM f      AS SINGLE  : f = avail / fixed
+    w1 = INT(w1 * f) : IF w1 < colMin THEN w1 = colMin
+    w2 = INT(w2 * f) : IF w2 < colMin THEN w2 = colMin
+    w3 = avail - w1 - w2                ' Date takes the remainder so nothing is dropped
+    IF w3 < colMin THEN w3 = colMin
+END SUB
+
 SUB FD_RENDER_column_headers
     DIM x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER
     x1 = FD_STATE.contentX
@@ -573,10 +602,12 @@ SUB FD_RENDER_column_headers
     ' Background
     LINE (x1, y1)-(x1 + w - 1, y1 + chH - 1), FD_CLR_COL_HEADER_BG~&, BF
 
-    ' Auto-expand column 0 (Name) to fill whatever space cols 1-3 don't use
-    DIM col0AutoW AS INTEGER
-    col0AutoW = w - FD_columns(1).width - FD_columns(2).width - FD_columns(3).width
-    IF col0AutoW < FD_columns(0).minWidth THEN col0AutoW = FD_columns(0).minWidth
+    ' Fit all four columns into the content width (Name auto-expands; fixed columns
+    ' scale down when tight so Date is never dropped).
+    DIM hw0 AS INTEGER, hw1 AS INTEGER, hw2 AS INTEGER, hw3 AS INTEGER
+    FD_col_widths w, hw0, hw1, hw2, hw3
+    DIM colWidths(0 TO 3) AS INTEGER
+    colWidths(0) = hw0 : colWidths(1) = hw1 : colWidths(2) = hw2 : colWidths(3) = hw3
 
     DIM cx AS INTEGER
     DIM i  AS INTEGER
@@ -584,12 +615,8 @@ SUB FD_RENDER_column_headers
 
     FOR i = 0 TO FD_MAX_COLUMNS - 1
         DIM colW AS INTEGER
-        IF i = 0 THEN colW = col0AutoW ELSE colW = FD_columns(i).width
+        colW = colWidths(i)
         IF colW <= 0 THEN _CONTINUE
-
-        ' Don't draw past content area
-        IF cx + colW > x1 + w THEN colW = x1 + w - cx
-        IF colW <= 0 THEN EXIT FOR
 
         ' Header text
         DIM headerText AS STRING
@@ -724,14 +751,9 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
         DIM cx AS INTEGER
         cx = x1
 
-        ' Column 0: Name (with icon) — auto-expand to fill space not used by fixed cols
-        DIM col1W AS INTEGER, col2W AS INTEGER, col3W AS INTEGER
-        col1W = FD_columns(1).width
-        col2W = FD_columns(2).width
-        col3W = FD_columns(3).width
-        DIM col0W AS INTEGER
-        col0W = contentW - col1W - col2W - col3W
-        IF col0W < FD_columns(0).minWidth THEN col0W = FD_columns(0).minWidth
+        ' Column 0: Name (with icon) — fit all columns so Date is never dropped
+        DIM col0W AS INTEGER, col1W AS INTEGER, col2W AS INTEGER, col3W AS INTEGER
+        FD_col_widths contentW, col0W, col1W, col2W, col3W
         FD_RENDER_file_icon cx + FD_PADDING, drawY + (rh - iconSpan) \ 2, FD_entries(entryIdx)
 
         DIM fn           AS STRING
@@ -961,13 +983,16 @@ SUB FD_RENDER_preview
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
         FD_print_scaled x1 + FD_PADDING, infoY, LTRIM$(STR$(pw)) + " X " + LTRIM$(STR$(ph)), pvfs
 
-        ' File size if selected
+        ' File size + modified date if selected
         IF FD_STATE.selectedIndex >= 0 AND FD_STATE.selectedIndex < FD_STATE.visibleCount THEN
             DIM selIdx   AS INTEGER
             selIdx = FD_filtered(FD_STATE.selectedIndex)
             DIM sizeInfo AS STRING
+            DIM lineH    AS INTEGER : lineH% = FD_text_height%(pvfs) + 2
             sizeInfo = FD_FS_format_size$(FD_entries(selIdx).fileSize)
-            FD_print_scaled x1 + FD_PADDING, infoY + FD_text_height%(pvfs) + 2, sizeInfo, pvfs
+            FD_print_scaled x1 + FD_PADDING, infoY + lineH%, sizeInfo, pvfs
+            ' Modified date on the next line
+            FD_print_scaled x1 + FD_PADDING, infoY + lineH% * 2, FD_FS_format_date$(FD_entries(selIdx).modifiedTime), pvfs
         END IF
     ELSE
         ' No preview available — show placeholder icon + text
