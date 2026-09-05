@@ -1666,7 +1666,7 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     DIM chunks_found    AS INTEGER
     DIM frame_num       AS INTEGER
     DIM chunk_num       AS INTEGER
-    DIM num_chunks      AS LONG ' BUG-68: was INTEGER — frame_header.new_chunks is _UNSIGNED LONG; >32767 overflowed → mis-parse
+    DIM num_chunks      AS LONG               ' BUG-68: was INTEGER — frame_header.new_chunks is _UNSIGNED LONG; >32767 overflowed → mis-parse
     DIM cel_width       AS _UNSIGNED INTEGER
     DIM cel_height      AS _UNSIGNED INTEGER
     DIM chunk_start_pos AS LONG
