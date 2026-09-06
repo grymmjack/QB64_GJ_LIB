@@ -549,6 +549,18 @@ SUB FD_LAYOUT_calculate
     IF FD_columns(1).minWidth < minTypeW THEN FD_columns(1).minWidth = minTypeW
     IF FD_columns(2).minWidth < minSizeW THEN FD_columns(2).minWidth = minSizeW
     IF FD_columns(3).minWidth < minDateW THEN FD_columns(3).minWidth = minDateW
+
+    ' Name column floor must scale with the CONTENT font too. Its init value (120px)
+    ' is a scale-1 constant; while the three fixed columns above scale their floors up
+    ' with the header font, Name stayed 120px and got crushed to ~2-4 chars at larger
+    ' scales (the list pane's slack goes to Name only when it clears this floor, so a
+    ' too-small floor lets the scaled fixed columns starve it). Guarantee at least
+    ' minNameChars visible characters using the SAME geometry the row renderer uses to
+    ' fit the name (col0W - FD_PADDING*2 - iconSpan - 4) \ (fontW*cfs).
+    DIM minNameChars AS INTEGER : minNameChars = 12
+    DIM minNameW     AS INTEGER
+    minNameW = minNameChars * (FD_CFG.fontW * cfs) + FD_PADDING * 2 + FD_ICON_SIZE * isc + 4
+    IF FD_columns(0).minWidth < minNameW THEN FD_columns(0).minWidth = minNameW
     IF FD_columns(1).width < FD_columns(1).minWidth THEN FD_columns(1).width = FD_columns(1).minWidth
     IF FD_columns(2).width < FD_columns(2).minWidth THEN FD_columns(2).width = FD_columns(2).minWidth
     IF FD_columns(3).width < FD_columns(3).minWidth THEN FD_columns(3).width = FD_columns(3).minWidth
