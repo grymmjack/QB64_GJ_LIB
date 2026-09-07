@@ -1,0 +1,441 @@
+$INCLUDEONCE
+
+' ============================================================================
+' ACP-CORE.BM — Implementation for QB64_GJ_ADV_COLOR_PICKER (Phase 1, HSV)
+'
+' Public API:
+'   ACP_init color~&, nativeSize%    ' create the widget
+'   ACP_set_rgb color~&              ' sync widget to an external color
+'   ACP_get_rgb&                     ' current color as _UNSIGNED LONG
+'   ACP_render_all                   ' draw widget into ACP_STATE.imgHandle
+'   ACP_blit destX%, destY%          ' upscale the buffer to _DEST
+'   ACP_input_mouse nx%, ny%, b1%    ' feed widget-native mouse; returns via .changed
+'   ACP_cleanup                      ' free images
+'
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+' --------------------------------------------------------------------------
+' ACP_init — Allocate buffers and lay out geometry for a square widget.
+' nativeSize is the widget's native width/height in pixels (before upscale).
+' --------------------------------------------------------------------------
+SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
+    ACP_cleanup
+
+    DIM sz AS INTEGER : sz% = nativeSize%
+    IF sz% < 120 THEN sz% = 120
+    ACP_STATE.w% = sz%
+    ACP_STATE.h% = sz%
+    ACP_STATE.scale% = 1
+
+    ' Geometry: fit the ring inside the widget with ACP_PADDING margin.
+    ACP_STATE.cx! = sz% / 2.0
+    ACP_STATE.cy! = sz% / 2.0
+    ACP_STATE.ringRo! = sz% / 2.0 - ACP_PADDING
+    ACP_STATE.ringRi! = ACP_STATE.ringRo! - ACP_RING_THICK
+    ACP_STATE.triR! = ACP_STATE.ringRi! - ACP_TRI_INSET
+
+    ACP_layout_triangle
+
+    ' Buffers
+    ACP_STATE.imgHandle& = _NEWIMAGE(sz%, sz%, 32)
+    ACP_STATE.ringImage& = _NEWIMAGE(sz%, sz%, 32)
+    ACP_STATE.triImage& = _NEWIMAGE(sz%, sz%, 32)
+
+    ACP_build_ring
+
+    ACP_STATE.dragging% = ACP_DRAG_NONE
+    ACP_STATE.oldMouseB1% = 0
+
+    ACP_set_rgb initialColor~&      ' sets hue/sat/val + triDirty
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_layout_triangle — Compute the three vertex positions.
+' A = pure hue (top), B = white (lower-left), C = black (lower-right).
+' Math angles 90/210/330 deg, screen Y flipped (screenY = cy - r*sin).
+' --------------------------------------------------------------------------
+SUB ACP_layout_triangle
+    DIM d2r AS SINGLE : d2r! = 3.14159265 / 180.0
+    ACP_STATE.triAx! = ACP_STATE.cx! + ACP_STATE.triR! * COS(90.0 * d2r!)
+    ACP_STATE.triAy! = ACP_STATE.cy! - ACP_STATE.triR! * SIN(90.0 * d2r!)
+    ACP_STATE.triBx! = ACP_STATE.cx! + ACP_STATE.triR! * COS(210.0 * d2r!)
+    ACP_STATE.triBy! = ACP_STATE.cy! - ACP_STATE.triR! * SIN(210.0 * d2r!)
+    ACP_STATE.triCx! = ACP_STATE.cx! + ACP_STATE.triR! * COS(330.0 * d2r!)
+    ACP_STATE.triCy! = ACP_STATE.cy! - ACP_STATE.triR! * SIN(330.0 * d2r!)
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_cleanup — Free all images.
+' --------------------------------------------------------------------------
+SUB ACP_cleanup
+    IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
+    IF ACP_STATE.ringImage& < -1 THEN _FREEIMAGE ACP_STATE.ringImage&
+    IF ACP_STATE.triImage& < -1 THEN _FREEIMAGE ACP_STATE.triImage&
+    ACP_STATE.imgHandle& = 0
+    ACP_STATE.ringImage& = 0
+    ACP_STATE.triImage& = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_build_ring — Render the hue ring (built once; independent of hue).
+' Hue 0 (red) at +X (3 o'clock), increasing clockwise (screen Y down).
+' --------------------------------------------------------------------------
+SUB ACP_build_ring
+    IF ACP_STATE.ringImage& >= -1 THEN EXIT SUB
+    DIM oldDest AS LONG : oldDest& = _DEST
+    _DEST ACP_STATE.ringImage&
+    CLS , _RGBA32(0, 0, 0, 0)
+
+    DIM px AS INTEGER, py AS INTEGER
+    DIM dx AS SINGLE, dy AS SINGLE, dist AS SINGLE
+    DIM ang AS SINGLE, hueDeg AS SINGLE
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    DIM ro AS SINGLE, ri AS SINGLE
+    ro! = ACP_STATE.ringRo! : ri! = ACP_STATE.ringRi!
+
+    DIM y0 AS INTEGER, y1 AS INTEGER, x0 AS INTEGER, x1 AS INTEGER
+    y0% = INT(ACP_STATE.cy! - ro! - 1) : y1% = INT(ACP_STATE.cy! + ro! + 1)
+    x0% = INT(ACP_STATE.cx! - ro! - 1) : x1% = INT(ACP_STATE.cx! + ro! + 1)
+    IF y0% < 0 THEN y0% = 0
+    IF x0% < 0 THEN x0% = 0
+    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+    IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
+
+    FOR py% = y0% TO y1%
+        FOR px% = x0% TO x1%
+            dx! = px% - ACP_STATE.cx!
+            dy! = py% - ACP_STATE.cy!
+            dist! = SQR(dx! * dx! + dy! * dy!)
+            IF dist! >= ri! AND dist! <= ro! THEN
+                ang! = _ATAN2(dy!, dx!) * 180.0 / 3.14159265
+                IF ang! < 0.0 THEN ang! = ang! + 360.0
+                hueDeg! = ang!
+                ACP_hsv_to_rgb hueDeg!, 1.0, 1.0, r%, g%, b%
+                PSET (px%, py%), _RGB32(r%, g%, b%)
+            END IF
+        NEXT px%
+    NEXT py%
+
+    _DEST oldDest&
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_build_triangle — Render the SV triangle for the current hue.
+' Each pixel's barycentric weights map to (S,V); color = hsv(hue,S,V).
+' --------------------------------------------------------------------------
+SUB ACP_build_triangle
+    IF ACP_STATE.triImage& >= -1 THEN EXIT SUB
+    DIM oldDest AS LONG : oldDest& = _DEST
+    _DEST ACP_STATE.triImage&
+    CLS , _RGBA32(0, 0, 0, 0)
+
+    DIM Ax AS SINGLE, Ay AS SINGLE, Bx AS SINGLE, By AS SINGLE, Cx AS SINGLE, Cy AS SINGLE
+    Ax! = ACP_STATE.triAx! : Ay! = ACP_STATE.triAy!
+    Bx! = ACP_STATE.triBx! : By! = ACP_STATE.triBy!
+    Cx! = ACP_STATE.triCx! : Cy! = ACP_STATE.triCy!
+
+    DIM det AS SINGLE
+    det! = (By! - Cy!) * (Ax! - Cx!) + (Cx! - Bx!) * (Ay! - Cy!)
+    IF ABS(det!) < 0.0001 THEN _DEST oldDest& : EXIT SUB
+
+    DIM x0 AS INTEGER, x1 AS INTEGER, y0 AS INTEGER, y1 AS INTEGER
+    x0% = INT(ACP_min3(Ax!, Bx!, Cx!)) : x1% = INT(ACP_max3(Ax!, Bx!, Cx!)) + 1
+    y0% = INT(ACP_min3(Ay!, By!, Cy!)) : y1% = INT(ACP_max3(Ay!, By!, Cy!)) + 1
+    IF x0% < 0 THEN x0% = 0
+    IF y0% < 0 THEN y0% = 0
+    IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
+    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+
+    DIM px AS INTEGER, py AS INTEGER
+    DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
+    DIM sv AS SINGLE, vv AS SINGLE
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    DIM eps AS SINGLE : eps! = -0.001
+
+    FOR py% = y0% TO y1%
+        FOR px% = x0% TO x1%
+            wa! = ((By! - Cy!) * (px% - Cx!) + (Cx! - Bx!) * (py% - Cy!)) / det!
+            wb! = ((Cy! - Ay!) * (px% - Cx!) + (Ax! - Cx!) * (py% - Cy!)) / det!
+            wc! = 1.0 - wa! - wb!
+            IF wa! >= eps! AND wb! >= eps! AND wc! >= eps! THEN
+                vv! = wa! + wb!                       ' V = weight(hue) + weight(white)
+                IF vv! <= 0.0 THEN
+                    sv! = 0.0
+                ELSE
+                    sv! = wa! / vv!                   ' S = weight(hue) / V
+                END IF
+                IF sv! < 0.0 THEN sv! = 0.0
+                IF sv! > 1.0 THEN sv! = 1.0
+                IF vv! < 0.0 THEN vv! = 0.0
+                IF vv! > 1.0 THEN vv! = 1.0
+                ACP_hsv_to_rgb ACP_STATE.hue!, sv!, vv!, r%, g%, b%
+                PSET (px%, py%), _RGB32(r%, g%, b%)
+            END IF
+        NEXT px%
+    NEXT py%
+
+    _DEST oldDest&
+    ACP_STATE.triDirty% = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_render_all — Composite ring + triangle + markers into imgHandle.
+' --------------------------------------------------------------------------
+SUB ACP_render_all
+    IF ACP_STATE.imgHandle& >= -1 THEN EXIT SUB
+    IF ACP_STATE.triDirty% THEN ACP_build_triangle
+
+    DIM oldDest AS LONG : oldDest& = _DEST
+    _DEST ACP_STATE.imgHandle&
+    CLS , _RGB32(30, 30, 34)
+
+    _PUTIMAGE (0, 0), ACP_STATE.ringImage&
+    _PUTIMAGE (0, 0), ACP_STATE.triImage&
+
+    ' Triangle outline
+    LINE (ACP_STATE.triAx!, ACP_STATE.triAy!)-(ACP_STATE.triBx!, ACP_STATE.triBy!), _RGB32(0, 0, 0)
+    LINE (ACP_STATE.triBx!, ACP_STATE.triBy!)-(ACP_STATE.triCx!, ACP_STATE.triCy!), _RGB32(0, 0, 0)
+    LINE (ACP_STATE.triCx!, ACP_STATE.triCy!)-(ACP_STATE.triAx!, ACP_STATE.triAy!), _RGB32(0, 0, 0)
+
+    ' Ring hue marker (on ring midline)
+    DIM rmid AS SINGLE : rmid! = (ACP_STATE.ringRo! + ACP_STATE.ringRi!) / 2.0
+    DIM hr AS SINGLE : hr! = ACP_STATE.hue! * 3.14159265 / 180.0
+    DIM mrx AS INTEGER, mry AS INTEGER
+    mrx% = INT(ACP_STATE.cx! + rmid! * COS(hr!))
+    mry% = INT(ACP_STATE.cy! + rmid! * SIN(hr!))
+    CIRCLE (mrx%, mry%), 6, _RGB32(0, 0, 0)
+    CIRCLE (mrx%, mry%), 5, _RGB32(255, 255, 255)
+
+    ' Triangle SV marker: weights (S*V, V*(1-S), 1-V) -> point
+    DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
+    wa! = ACP_STATE.sat! * ACP_STATE.val!
+    wb! = ACP_STATE.val! * (1.0 - ACP_STATE.sat!)
+    wc! = 1.0 - ACP_STATE.val!
+    DIM mtx AS INTEGER, mty AS INTEGER
+    mtx% = INT(wa! * ACP_STATE.triAx! + wb! * ACP_STATE.triBx! + wc! * ACP_STATE.triCx!)
+    mty% = INT(wa! * ACP_STATE.triAy! + wb! * ACP_STATE.triBy! + wc! * ACP_STATE.triCy!)
+    CIRCLE (mtx%, mty%), 5, _RGB32(0, 0, 0)
+    CIRCLE (mtx%, mty%), 4, _RGB32(255, 255, 255)
+
+    _DEST oldDest&
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_blit — Upscale the native buffer to _DEST at (destX,destY).
+' --------------------------------------------------------------------------
+SUB ACP_blit (destX AS INTEGER, destY AS INTEGER)
+    IF ACP_STATE.imgHandle& >= -1 THEN EXIT SUB
+    DIM sc AS INTEGER : sc% = ACP_STATE.scale%
+    IF sc% < 1 THEN sc% = 1
+    IF sc% = 1 THEN
+        _PUTIMAGE (destX%, destY%), ACP_STATE.imgHandle&
+    ELSE
+        _PUTIMAGE (destX%, destY%)-(destX% + ACP_STATE.w% * sc% - 1, destY% + ACP_STATE.h% * sc% - 1), ACP_STATE.imgHandle&
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_input_mouse — Feed widget-native mouse coords + button state.
+' Sets ACP_STATE.changed = TRUE when the color changed this call.
+' --------------------------------------------------------------------------
+SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
+    ACP_STATE.changed% = 0
+    ACP_STATE.mouseX% = nx% : ACP_STATE.mouseY% = ny%
+    ACP_STATE.oldMouseB1% = ACP_STATE.mouseB1%
+    ACP_STATE.mouseB1% = b1%
+
+    DIM pressed AS INTEGER : pressed% = (b1% <> 0 AND ACP_STATE.oldMouseB1% = 0)
+    DIM released AS INTEGER : released% = (b1% = 0 AND ACP_STATE.oldMouseB1% <> 0)
+
+    IF released% THEN ACP_STATE.dragging% = ACP_DRAG_NONE
+
+    DIM dx AS SINGLE, dy AS SINGLE, dist AS SINGLE
+    dx! = nx% - ACP_STATE.cx! : dy! = ny% - ACP_STATE.cy!
+    dist! = SQR(dx! * dx! + dy! * dy!)
+
+    IF pressed% THEN
+        IF dist! >= ACP_STATE.ringRi! AND dist! <= ACP_STATE.ringRo! THEN
+            ACP_STATE.dragging% = ACP_DRAG_RING
+        ELSEIF ACP_point_in_triangle%(nx%, ny%) THEN
+            ACP_STATE.dragging% = ACP_DRAG_TRIANGLE
+        END IF
+    END IF
+
+    IF b1% <> 0 THEN
+        SELECT CASE ACP_STATE.dragging%
+            CASE ACP_DRAG_RING     : ACP_pick_ring nx%, ny%
+            CASE ACP_DRAG_TRIANGLE : ACP_pick_triangle nx%, ny%
+        END SELECT
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_pick_ring — Set hue from the angle of (nx,ny) about the center.
+' --------------------------------------------------------------------------
+SUB ACP_pick_ring (nx AS INTEGER, ny AS INTEGER)
+    DIM ang AS SINGLE
+    ang! = _ATAN2(ny% - ACP_STATE.cy!, nx% - ACP_STATE.cx!) * 180.0 / 3.14159265
+    IF ang! < 0.0 THEN ang! = ang! + 360.0
+    ACP_STATE.hue! = ang!
+    ACP_STATE.triDirty% = -1
+    ACP_sync_rgb_from_hsv
+    ACP_STATE.changed% = -1
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_pick_triangle — Clamp (nx,ny) into the triangle, derive S,V.
+' --------------------------------------------------------------------------
+SUB ACP_pick_triangle (nx AS INTEGER, ny AS INTEGER)
+    DIM Ax AS SINGLE, Ay AS SINGLE, Bx AS SINGLE, By AS SINGLE, Cx AS SINGLE, Cy AS SINGLE
+    Ax! = ACP_STATE.triAx! : Ay! = ACP_STATE.triAy!
+    Bx! = ACP_STATE.triBx! : By! = ACP_STATE.triBy!
+    Cx! = ACP_STATE.triCx! : Cy! = ACP_STATE.triCy!
+
+    DIM det AS SINGLE
+    det! = (By! - Cy!) * (Ax! - Cx!) + (Cx! - Bx!) * (Ay! - Cy!)
+    IF ABS(det!) < 0.0001 THEN EXIT SUB
+
+    DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
+    wa! = ((By! - Cy!) * (nx% - Cx!) + (Cx! - Bx!) * (ny% - Cy!)) / det!
+    wb! = ((Cy! - Ay!) * (nx% - Cx!) + (Ax! - Cx!) * (ny% - Cy!)) / det!
+    wc! = 1.0 - wa! - wb!
+
+    ' Clamp to the triangle by flooring negative weights and renormalising.
+    IF wa! < 0.0 THEN wa! = 0.0
+    IF wb! < 0.0 THEN wb! = 0.0
+    IF wc! < 0.0 THEN wc! = 0.0
+    DIM ws AS SINGLE : ws! = wa! + wb! + wc!
+    IF ws! <= 0.0 THEN EXIT SUB
+    wa! = wa! / ws! : wb! = wb! / ws! : wc! = wc! / ws!
+
+    DIM vv AS SINGLE, sv AS SINGLE
+    vv! = wa! + wb!
+    IF vv! <= 0.0 THEN sv! = 0.0 ELSE sv! = wa! / vv!
+    IF sv! < 0.0 THEN sv! = 0.0
+    IF sv! > 1.0 THEN sv! = 1.0
+    IF vv! < 0.0 THEN vv! = 0.0
+    IF vv! > 1.0 THEN vv! = 1.0
+
+    ACP_STATE.sat! = sv!
+    ACP_STATE.val! = vv!
+    ACP_sync_rgb_from_hsv
+    ACP_STATE.changed% = -1
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_point_in_triangle% — TRUE if (nx,ny) is inside the SV triangle.
+' --------------------------------------------------------------------------
+FUNCTION ACP_point_in_triangle% (nx AS INTEGER, ny AS INTEGER)
+    DIM Ax AS SINGLE, Ay AS SINGLE, Bx AS SINGLE, By AS SINGLE, Cx AS SINGLE, Cy AS SINGLE
+    Ax! = ACP_STATE.triAx! : Ay! = ACP_STATE.triAy!
+    Bx! = ACP_STATE.triBx! : By! = ACP_STATE.triBy!
+    Cx! = ACP_STATE.triCx! : Cy! = ACP_STATE.triCy!
+    DIM det AS SINGLE
+    det! = (By! - Cy!) * (Ax! - Cx!) + (Cx! - Bx!) * (Ay! - Cy!)
+    IF ABS(det!) < 0.0001 THEN ACP_point_in_triangle% = 0 : EXIT FUNCTION
+    DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
+    wa! = ((By! - Cy!) * (nx% - Cx!) + (Cx! - Bx!) * (ny% - Cy!)) / det!
+    wb! = ((Cy! - Ay!) * (nx% - Cx!) + (Ax! - Cx!) * (ny% - Cy!)) / det!
+    wc! = 1.0 - wa! - wb!
+    IF wa! >= 0.0 AND wb! >= 0.0 AND wc! >= 0.0 THEN
+        ACP_point_in_triangle% = -1
+    ELSE
+        ACP_point_in_triangle% = 0
+    END IF
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' Color sync helpers
+' --------------------------------------------------------------------------
+SUB ACP_sync_rgb_from_hsv
+    ACP_hsv_to_rgb ACP_STATE.hue!, ACP_STATE.sat!, ACP_STATE.val!, ACP_STATE.cR%, ACP_STATE.cG%, ACP_STATE.cB%
+END SUB
+
+SUB ACP_set_rgb (col AS _UNSIGNED LONG)
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    r% = _RED32(col~&) : g% = _GREEN32(col~&) : b% = _BLUE32(col~&)
+    ACP_rgb_to_hsv r%, g%, b%, ACP_STATE.hue!, ACP_STATE.sat!, ACP_STATE.val!
+    ACP_STATE.cR% = r% : ACP_STATE.cG% = g% : ACP_STATE.cB% = b%
+    ACP_STATE.triDirty% = -1
+END SUB
+
+FUNCTION ACP_get_rgb~& ()
+    ACP_get_rgb~& = _RGB32(ACP_STATE.cR%, ACP_STATE.cG%, ACP_STATE.cB%)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' Small numeric helpers
+' --------------------------------------------------------------------------
+FUNCTION ACP_min3! (a AS SINGLE, b AS SINGLE, c AS SINGLE)
+    DIM m AS SINGLE : m! = a!
+    IF b! < m! THEN m! = b!
+    IF c! < m! THEN m! = c!
+    ACP_min3! = m!
+END FUNCTION
+
+FUNCTION ACP_max3! (a AS SINGLE, b AS SINGLE, c AS SINGLE)
+    DIM m AS SINGLE : m! = a!
+    IF b! > m! THEN m! = b!
+    IF c! > m! THEN m! = c!
+    ACP_max3! = m!
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' HSV <-> RGB (self-contained; mirrors the COLOR_PICKER conversions)
+' --------------------------------------------------------------------------
+SUB ACP_hsv_to_rgb (h AS SINGLE, s AS SINGLE, v AS SINGLE, r AS INTEGER, g AS INTEGER, b AS INTEGER)
+    IF s! <= 0.0 THEN
+        r% = INT(v! * 255) : g% = r% : b% = r%
+        EXIT SUB
+    END IF
+    DIM hh AS SINGLE, ff AS SINGLE, p AS SINGLE, q AS SINGLE, t AS SINGLE
+    DIM ii AS INTEGER
+    hh! = h!
+    IF hh! >= 360.0 THEN hh! = 0.0
+    IF hh! < 0.0 THEN hh! = 0.0
+    hh! = hh! / 60.0
+    ii% = INT(hh!)
+    ff! = hh! - CSNG(ii%)
+    p! = v! * (1.0 - s!)
+    q! = v! * (1.0 - (s! * ff!))
+    t! = v! * (1.0 - (s! * (1.0 - ff!)))
+    SELECT CASE ii%
+        CASE 0 : r% = INT(v! * 255) : g% = INT(t! * 255) : b% = INT(p! * 255)
+        CASE 1 : r% = INT(q! * 255) : g% = INT(v! * 255) : b% = INT(p! * 255)
+        CASE 2 : r% = INT(p! * 255) : g% = INT(v! * 255) : b% = INT(t! * 255)
+        CASE 3 : r% = INT(p! * 255) : g% = INT(q! * 255) : b% = INT(v! * 255)
+        CASE 4 : r% = INT(t! * 255) : g% = INT(p! * 255) : b% = INT(v! * 255)
+        CASE ELSE : r% = INT(v! * 255) : g% = INT(p! * 255) : b% = INT(q! * 255)
+    END SELECT
+    IF r% < 0 THEN r% = 0
+    IF r% > 255 THEN r% = 255
+    IF g% < 0 THEN g% = 0
+    IF g% > 255 THEN g% = 255
+    IF b% < 0 THEN b% = 0
+    IF b% > 255 THEN b% = 255
+END SUB
+
+SUB ACP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS SINGLE, v AS SINGLE)
+    DIM rf AS SINGLE, gf AS SINGLE, bf AS SINGLE
+    rf! = CSNG(r%) / 255.0 : gf! = CSNG(g%) / 255.0 : bf! = CSNG(b%) / 255.0
+    DIM cMax AS SINGLE, cMin AS SINGLE, delta AS SINGLE
+    cMax! = rf! : IF gf! > cMax! THEN cMax! = gf!
+    IF bf! > cMax! THEN cMax! = bf!
+    cMin! = rf! : IF gf! < cMin! THEN cMin! = gf!
+    IF bf! < cMin! THEN cMin! = bf!
+    delta! = cMax! - cMin!
+    v! = cMax!
+    IF cMax! <= 0.0 THEN s! = 0.0 : h! = 0.0 : EXIT SUB
+    s! = delta! / cMax!
+    IF delta! < 0.00001 THEN h! = 0.0 : EXIT SUB
+    IF rf! >= cMax! THEN
+        h! = (gf! - bf!) / delta!
+    ELSEIF gf! >= cMax! THEN
+        h! = 2.0 + (bf! - rf!) / delta!
+    ELSE
+        h! = 4.0 + (rf! - gf!) / delta!
+    END IF
+    h! = h! * 60.0
+    IF h! < 0.0 THEN h! = h! + 360.0
+END SUB
