@@ -1,0 +1,7 @@
+$INCLUDEONCE
+
+' ============================================================================
+' ADV-COLOR-PICKER.BM — Implementation leader for QB64_GJ_ADV_COLOR_PICKER
+' ============================================================================
+
+'$INCLUDE:'ACP-CORE.BM'
