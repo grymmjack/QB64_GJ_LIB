@@ -29,11 +29,26 @@ CONST ACP_PADDING      = 8    ' Padding around the wheel inside the widget
 ' 1 = saturation, 2 = hue), symmetric around the current color (centre patch =
 ' current). The wheel occupies a w x w square on top; the shade rows sit in the
 ' extra (h - w) height below it.
-CONST ACP_SHADE_ROWS    = 3   ' number of shade rows
-CONST ACP_SHADE_PATCHES = 9   ' patches per row (odd -> a true centre patch)
-CONST ACP_SHADE_PATCH_H = 13  ' patch height (native px)
-CONST ACP_SHADE_GAP     = 3   ' gap between rows / side margin (native px)
-CONST ACP_SHADE_AREA_H  = ACP_SHADE_ROWS * (ACP_SHADE_PATCH_H + ACP_SHADE_GAP) + ACP_SHADE_GAP
+CONST ACP_SHADE_ROWS      = 3   ' default line count (Basic set)
+CONST ACP_SHADE_MAX_LINES = 12  ' hard cap on shade lines
+CONST ACP_SHADE_PATCHES   = 9   ' default patches per row (odd -> a true centre patch)
+CONST ACP_SHADE_PATCH_H   = 13  ' patch height (native px)
+CONST ACP_SHADE_GAP       = 3   ' gap between rows / side margin (native px)
+
+' Per-line config (Krita model): each line spreads the current color across the
+' row by delta (c*delta, c in [-1,+1]) and offsets the whole line by shift.
+' Hue in degrees; saturation/value in 0..1. Host populates these + shadeLineCount.
+DIM SHARED ACP_shadeDH(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' delta hue (deg)
+DIM SHARED ACP_shadeDS(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' delta saturation
+DIM SHARED ACP_shadeDV(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' delta value
+DIM SHARED ACP_shadeSH(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' shift hue (deg)
+DIM SHARED ACP_shadeSS(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' shift saturation
+DIM SHARED ACP_shadeSV(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' shift value
+
+' Color history: a strip of recent colors below the shades (newest at index 0).
+CONST ACP_HISTORY_MAX = 16    ' history slots (one row)
+CONST ACP_HISTORY_H   = 13    ' history strip height (native px)
+DIM SHARED ACP_history(0 TO ACP_HISTORY_MAX - 1) AS _UNSIGNED LONG
 
 TYPE ACP_STATE_OBJ
     ' --- Color (canonical HSV) ---
@@ -82,6 +97,25 @@ TYPE ACP_STATE_OBJ
     mouseY     AS INTEGER
     mouseB1    AS INTEGER
     oldMouseB1 AS INTEGER
+
+    ' --- Shade selector config (host-tunable; defaults set in ACP_init) ---
+    shadeLineCount AS INTEGER      ' number of active shade lines (1..ACP_SHADE_MAX_LINES)
+    shadePatches AS INTEGER        ' patches per row
+    shadeSpreadV AS SINGLE         ' (legacy convenience; line params drive rendering)
+    shadeSpreadS AS SINGLE
+    shadeSpreadH AS SINGLE
+
+    ' --- Quantize to steps (0 = off): snaps triangle S/V and ring hue to N
+    '     discrete steps, and renders them banded so the steps are visible. ---
+    quantizeSteps AS INTEGER
+
+    ' --- Background the wheel + shades are drawn onto (host-set; default set in
+    '     ACP_init). Krita's "custom selector background" for theme-matched work. ---
+    bgColor AS _UNSIGNED LONG
+
+    ' --- Color history strip ---
+    historyShow  AS INTEGER        ' TRUE = show the recent-colors strip
+    historyCount AS INTEGER        ' number of valid history entries (0..ACP_HISTORY_MAX)
 END TYPE
 
 DIM SHARED ACP_STATE AS ACP_STATE_OBJ
