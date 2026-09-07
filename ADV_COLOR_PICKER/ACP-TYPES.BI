@@ -24,6 +24,17 @@ CONST ACP_RING_THICK   = 24   ' Ring thickness (outer - inner)
 CONST ACP_TRI_INSET    = 10   ' Gap between ring inner edge and triangle circumcircle
 CONST ACP_PADDING      = 8    ' Padding around the wheel inside the widget
 
+' --- Shade selector: rows of patches below the wheel -------------------------
+' Each row spreads the current color along one HSV axis (row 0 = value,
+' 1 = saturation, 2 = hue), symmetric around the current color (centre patch =
+' current). The wheel occupies a w x w square on top; the shade rows sit in the
+' extra (h - w) height below it.
+CONST ACP_SHADE_ROWS    = 3   ' number of shade rows
+CONST ACP_SHADE_PATCHES = 9   ' patches per row (odd -> a true centre patch)
+CONST ACP_SHADE_PATCH_H = 13  ' patch height (native px)
+CONST ACP_SHADE_GAP     = 3   ' gap between rows / side margin (native px)
+CONST ACP_SHADE_AREA_H  = ACP_SHADE_ROWS * (ACP_SHADE_PATCH_H + ACP_SHADE_GAP) + ACP_SHADE_GAP
+
 TYPE ACP_STATE_OBJ
     ' --- Color (canonical HSV) ---
     hue AS SINGLE                  ' 0..360

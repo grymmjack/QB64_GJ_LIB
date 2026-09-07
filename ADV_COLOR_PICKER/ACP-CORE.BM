@@ -25,7 +25,7 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     DIM sz AS INTEGER : sz% = nativeSize%
     IF sz% < 120 THEN sz% = 120
     ACP_STATE.w% = sz%
-    ACP_STATE.h% = sz%
+    ACP_STATE.h% = sz% + ACP_SHADE_AREA_H     ' wheel is a sz x sz square; shade rows below
     ACP_STATE.scale% = 1
 
     ' Geometry: fit the ring inside the widget with ACP_PADDING margin.
@@ -38,9 +38,9 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     ACP_layout_triangle
 
     ' Buffers
-    ACP_STATE.imgHandle& = _NEWIMAGE(sz%, sz%, 32)
-    ACP_STATE.ringImage& = _NEWIMAGE(sz%, sz%, 32)
-    ACP_STATE.triImage& = _NEWIMAGE(sz%, sz%, 32)
+    ACP_STATE.imgHandle& = _NEWIMAGE(sz%, ACP_STATE.h%, 32)   ' full widget (wheel + shades)
+    ACP_STATE.ringImage& = _NEWIMAGE(sz%, sz%, 32)            ' wheel square
+    ACP_STATE.triImage& = _NEWIMAGE(sz%, sz%, 32)             ' wheel square
 
     ACP_build_ring
 
@@ -99,7 +99,7 @@ SUB ACP_build_ring
     x0% = INT(ACP_STATE.cx! - ro! - 1) : x1% = INT(ACP_STATE.cx! + ro! + 1)
     IF y0% < 0 THEN y0% = 0
     IF x0% < 0 THEN x0% = 0
-    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+    IF y1% > ACP_STATE.w% - 1 THEN y1% = ACP_STATE.w% - 1
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
 
     FOR py% = y0% TO y1%
@@ -145,7 +145,7 @@ SUB ACP_build_triangle
     IF x0% < 0 THEN x0% = 0
     IF y0% < 0 THEN y0% = 0
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
-    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+    IF y1% > ACP_STATE.w% - 1 THEN y1% = ACP_STATE.w% - 1
 
     DIM px AS INTEGER, py AS INTEGER
     DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
@@ -218,6 +218,8 @@ SUB ACP_render_all
     CIRCLE (mtx%, mty%), 5, _RGB32(0, 0, 0)
     CIRCLE (mtx%, mty%), 4, _RGB32(255, 255, 255)
 
+    ACP_render_shades   ' shade rows below the wheel (into imgHandle)
+
     _DEST oldDest&
 END SUB
 
@@ -259,6 +261,14 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
             ACP_STATE.dragging% = ACP_DRAG_RING
         ELSEIF ACP_point_in_triangle%(nx%, ny%) THEN
             ACP_STATE.dragging% = ACP_DRAG_TRIANGLE
+        ELSE
+            ' Shade patch? Single click sets the current color to that shade
+            ' (no drag) — the wheel + shades then recompute around it.
+            DIM shRow AS INTEGER, shPatch AS INTEGER
+            IF ACP_shade_hit%(nx%, ny%, shRow%, shPatch%) THEN
+                ACP_set_rgb ACP_shade_color~&(shRow%, shPatch%)
+                ACP_STATE.changed% = -1
+            END IF
         END IF
     END IF
 
@@ -439,3 +449,89 @@ SUB ACP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS 
     h! = h! * 60.0
     IF h! < 0.0 THEN h! = h! + 360.0
 END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_patch_rect — Native rect of shade patch (row 0..ROWS-1,
+' patch 0..PATCHES-1). The wheel is a w x w square; shades sit below it.
+' x1/y1/x2/y2 returned by reference.
+' --------------------------------------------------------------------------
+SUB ACP_shade_patch_rect (row AS INTEGER, patch AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
+    DIM shadeTop AS INTEGER : shadeTop% = ACP_STATE.w% + ACP_SHADE_GAP
+    DIM usableW  AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
+    DIM patchW   AS INTEGER : patchW% = usableW% \ ACP_SHADE_PATCHES
+    IF patchW% < 1 THEN patchW% = 1
+    y1% = shadeTop% + row% * (ACP_SHADE_PATCH_H + ACP_SHADE_GAP)
+    y2% = y1% + ACP_SHADE_PATCH_H - 1
+    x1% = ACP_SHADE_GAP + patch% * patchW%
+    IF patch% = ACP_SHADE_PATCHES - 1 THEN
+        x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1
+    ELSE
+        x2% = x1% + patchW% - 1
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_color~& — Color of a shade patch. Row 0 spreads VALUE, row 1
+' SATURATION, row 2 HUE, symmetric around the current color (centre = current).
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_color~& (row AS INTEGER, patch AS INTEGER)
+    DIM t AS SINGLE
+    IF ACP_SHADE_PATCHES <= 1 THEN
+        t! = 0.0
+    ELSE
+        t! = (CSNG(patch%) / CSNG(ACP_SHADE_PATCHES - 1)) * 2.0 - 1.0
+    END IF
+    DIM h AS SINGLE, s AS SINGLE, v AS SINGLE
+    h! = ACP_STATE.hue! : s! = ACP_STATE.sat! : v! = ACP_STATE.val!
+    SELECT CASE row%
+        CASE 0 : v! = v! + t! * 0.5
+        CASE 1 : s! = s! + t! * 0.5
+        CASE 2 : h! = h! + t! * 60.0
+    END SELECT
+    IF v! < 0.0 THEN v! = 0.0
+    IF v! > 1.0 THEN v! = 1.0
+    IF s! < 0.0 THEN s! = 0.0
+    IF s! > 1.0 THEN s! = 1.0
+    IF h! < 0.0 THEN h! = h! + 360.0
+    IF h! >= 360.0 THEN h! = h! - 360.0
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    ACP_hsv_to_rgb h!, s!, v!, r%, g%, b%
+    ACP_shade_color~& = _RGB32(r%, g%, b%)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_render_shades — Draw the shade rows into the current _DEST (imgHandle).
+' Centre patch of each row is outlined to mark the current color.
+' --------------------------------------------------------------------------
+SUB ACP_render_shades ()
+    DIM row AS INTEGER, patch AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    DIM centreIdx AS INTEGER : centreIdx% = (ACP_SHADE_PATCHES - 1) \ 2
+    FOR row% = 0 TO ACP_SHADE_ROWS - 1
+        FOR patch% = 0 TO ACP_SHADE_PATCHES - 1
+            ACP_shade_patch_rect row%, patch%, x1%, y1%, x2%, y2%
+            LINE (x1%, y1%)-(x2%, y2%), ACP_shade_color~&(row%, patch%), BF
+            IF patch% = centreIdx% THEN LINE (x1%, y1%)-(x2%, y2%), _RGB32(255, 255, 255), B
+        NEXT patch%
+    NEXT row%
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_hit% — If (nx,ny) is over a shade patch, set row/patch (by ref)
+' and return TRUE.
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_hit% (nx AS INTEGER, ny AS INTEGER, row AS INTEGER, patch AS INTEGER)
+    ACP_shade_hit% = 0
+    DIM rr AS INTEGER, pp AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    FOR rr% = 0 TO ACP_SHADE_ROWS - 1
+        FOR pp% = 0 TO ACP_SHADE_PATCHES - 1
+            ACP_shade_patch_rect rr%, pp%, x1%, y1%, x2%, y2%
+            IF nx% >= x1% AND nx% <= x2% AND ny% >= y1% AND ny% <= y2% THEN
+                row% = rr% : patch% = pp%
+                ACP_shade_hit% = -1
+                EXIT FUNCTION
+            END IF
+        NEXT pp%
+    NEXT rr%
+END FUNCTION
