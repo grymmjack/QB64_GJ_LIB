@@ -17,6 +17,7 @@ $INCLUDEONCE
 CONST ACP_DRAG_NONE     = 0
 CONST ACP_DRAG_RING     = 1   ' Picking hue from the ring
 CONST ACP_DRAG_TRIANGLE = 2   ' Picking saturation + value in the triangle
+CONST ACP_DRAG_NEIGHBOR = 3   ' Dragging a hue-neighbor range marker on the ring
 
 ' --- Default geometry (native pixels, before upscale) ------------------------
 CONST ACP_RING_OUTER   = 150  ' Ring outer radius
@@ -34,6 +35,7 @@ CONST ACP_SHADE_MAX_LINES = 12  ' hard cap on shade lines
 CONST ACP_SHADE_PATCHES   = 9   ' default patches per row (odd -> a true centre patch)
 CONST ACP_SHADE_PATCH_H   = 13  ' patch height (native px)
 CONST ACP_SHADE_GAP       = 3   ' gap between rows / side margin (native px)
+CONST ACP_SHADE_ROW_LABEL_H = 15 ' per-row label height (text + padding above the patches, native px)
 
 ' Per-line config (Krita model): each line spreads the current color across the
 ' row by delta (c*delta, c in [-1,+1]) and offsets the whole line by shift.
@@ -46,8 +48,9 @@ DIM SHARED ACP_shadeSS(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' shift saturati
 DIM SHARED ACP_shadeSV(0 TO ACP_SHADE_MAX_LINES - 1) AS SINGLE  ' shift value
 
 ' Color history: a strip of recent colors below the shades (newest at index 0).
-CONST ACP_HISTORY_MAX = 16    ' history slots (one row)
-CONST ACP_HISTORY_H   = 13    ' history strip height (native px)
+CONST ACP_HISTORY_MAX     = 16 ' history slots (one row)
+CONST ACP_HISTORY_H       = 13 ' history strip height (native px)
+CONST ACP_HISTORY_LABEL_H = 17 ' "COLOR HISTORY" label + ~8px padding below (native px)
 DIM SHARED ACP_history(0 TO ACP_HISTORY_MAX - 1) AS _UNSIGNED LONG
 
 TYPE ACP_STATE_OBJ
@@ -101,6 +104,9 @@ TYPE ACP_STATE_OBJ
     ' --- Shade selector config (host-tunable; defaults set in ACP_init) ---
     shadeLineCount AS INTEGER      ' number of active shade lines (1..ACP_SHADE_MAX_LINES)
     shadePatches AS INTEGER        ' patches per row
+    shadeLabels  AS INTEGER        ' TRUE = reserve a label row above each shade row
+    shadeCurveExp AS SINGLE        ' patch spread curve exponent (1 = linear; >1 = ends more severe)
+    hueNeighborRange AS SINGLE     ' ± hue range (deg) for the HUE NEIGHBORS row; draggable on the ring
     shadeSpreadV AS SINGLE         ' (legacy convenience; line params drive rendering)
     shadeSpreadS AS SINGLE
     shadeSpreadH AS SINGLE
