@@ -25,29 +25,103 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     DIM sz AS INTEGER : sz% = nativeSize%
     IF sz% < 120 THEN sz% = 120
     ACP_STATE.w% = sz%
-    ACP_STATE.h% = sz%
     ACP_STATE.scale% = 1
 
-    ' Geometry: fit the ring inside the widget with ACP_PADDING margin.
+    ' Shade + misc defaults (line count is needed before the height is computed).
+    ACP_STATE.shadePatches% = ACP_SHADE_PATCHES
+    ACP_STATE.shadeSpreadV! = 0.5
+    ACP_STATE.shadeSpreadS! = 0.5
+    ACP_STATE.shadeSpreadH! = 60.0
+    ACP_STATE.quantizeSteps% = 0
+    ACP_STATE.bgColor~& = _RGB32(30, 30, 34)
+    ACP_STATE.historyShow% = -1                ' TRUE (host may override)
+    ACP_STATE.historyCount% = 0
+    ACP_STATE.shadeLabels% = -1                ' TRUE (host may override)
+    ACP_STATE.shadeCurveExp! = 1.0             ' linear
+    ACP_STATE.hueNeighborRange! = 90.0         ' default hue-neighbors spread (deg)
+    ' Default Basic 3-line set (value / saturation / hue).
+    ACP_STATE.shadeLineCount% = ACP_SHADE_ROWS
+    ACP_set_shade_line 0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0   ' value spread
+    ACP_set_shade_line 1, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0   ' saturation spread
+    ACP_set_shade_line 2, 60.0, 0.0, 0.0, 0.0, 0.0, 0.0  ' hue spread
+
+    ' Widget = wheel (sz x sz) + shade rows + optional history strip.
+    ACP_STATE.h% = sz% + ACP_shade_area_h% + ACP_history_area_h%
+
+    ' Geometry: fit the ring inside the top sz x sz square with ACP_PADDING margin.
     ACP_STATE.cx! = sz% / 2.0
     ACP_STATE.cy! = sz% / 2.0
     ACP_STATE.ringRo! = sz% / 2.0 - ACP_PADDING
     ACP_STATE.ringRi! = ACP_STATE.ringRo! - ACP_RING_THICK
     ACP_STATE.triR! = ACP_STATE.ringRi! - ACP_TRI_INSET
-
     ACP_layout_triangle
 
     ' Buffers
-    ACP_STATE.imgHandle& = _NEWIMAGE(sz%, sz%, 32)
-    ACP_STATE.ringImage& = _NEWIMAGE(sz%, sz%, 32)
-    ACP_STATE.triImage& = _NEWIMAGE(sz%, sz%, 32)
-
+    ACP_STATE.imgHandle& = _NEWIMAGE(sz%, ACP_STATE.h%, 32)   ' full widget (wheel + shades)
+    ACP_STATE.ringImage& = _NEWIMAGE(sz%, sz%, 32)            ' wheel square
+    ACP_STATE.triImage& = _NEWIMAGE(sz%, sz%, 32)             ' wheel square
     ACP_build_ring
 
     ACP_STATE.dragging% = ACP_DRAG_NONE
     ACP_STATE.oldMouseB1% = 0
 
     ACP_set_rgb initialColor~&      ' sets hue/sat/val + triDirty
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_area_h% — Native height of the shade-row area below the wheel.
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_area_h% ()
+    ACP_shade_area_h% = ACP_shade_line_count% * ACP_shade_row_pitch% + ACP_SHADE_GAP
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_shade_row_pitch% — Native vertical pitch of one shade row (label +
+' patch strip + gap), depending on whether per-row labels are shown.
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_row_pitch% ()
+    DIM lh AS INTEGER : lh% = 0
+    IF ACP_STATE.shadeLabels% THEN lh% = ACP_SHADE_ROW_LABEL_H
+    ACP_shade_row_pitch% = lh% + ACP_SHADE_PATCH_H + ACP_SHADE_GAP
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_shade_row_label_y% — Native Y of a row's label (top of the row block).
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_row_label_y% (row AS INTEGER)
+    ACP_shade_row_label_y% = ACP_STATE.w% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_shade_line_count% — Active line count, clamped to [1, MAX_LINES].
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_line_count% ()
+    DIM lc AS INTEGER : lc% = ACP_STATE.shadeLineCount%
+    IF lc% < 1 THEN lc% = ACP_SHADE_ROWS
+    IF lc% > ACP_SHADE_MAX_LINES THEN lc% = ACP_SHADE_MAX_LINES
+    ACP_shade_line_count% = lc%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_set_shade_line — Set a line's delta (spread) + shift (offset) params.
+' Hue in degrees; saturation/value in 0..1.
+' --------------------------------------------------------------------------
+SUB ACP_set_shade_line (idx AS INTEGER, dHue AS SINGLE, dSat AS SINGLE, dVal AS SINGLE, sHue AS SINGLE, sSat AS SINGLE, sVal AS SINGLE)
+    IF idx% < 0 OR idx% >= ACP_SHADE_MAX_LINES THEN EXIT SUB
+    ACP_shadeDH(idx%) = dHue! : ACP_shadeDS(idx%) = dSat! : ACP_shadeDV(idx%) = dVal!
+    ACP_shadeSH(idx%) = sHue! : ACP_shadeSS(idx%) = sSat! : ACP_shadeSV(idx%) = sVal!
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_apply_shade_layout — Recompute widget height from the line count and
+' reallocate imgHandle if it changed. Call after changing shadeLineCount.
+' --------------------------------------------------------------------------
+SUB ACP_apply_shade_layout ()
+    DIM newH AS INTEGER : newH% = ACP_STATE.w% + ACP_shade_area_h% + ACP_history_area_h%
+    IF newH% = ACP_STATE.h% THEN EXIT SUB
+    ACP_STATE.h% = newH%
+    IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
+    ACP_STATE.imgHandle& = _NEWIMAGE(ACP_STATE.w%, ACP_STATE.h%, 32)
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -99,7 +173,7 @@ SUB ACP_build_ring
     x0% = INT(ACP_STATE.cx! - ro! - 1) : x1% = INT(ACP_STATE.cx! + ro! + 1)
     IF y0% < 0 THEN y0% = 0
     IF x0% < 0 THEN x0% = 0
-    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+    IF y1% > ACP_STATE.w% - 1 THEN y1% = ACP_STATE.w% - 1
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
 
     FOR py% = y0% TO y1%
@@ -110,7 +184,7 @@ SUB ACP_build_ring
             IF dist! >= ri! AND dist! <= ro! THEN
                 ang! = _ATAN2(dy!, dx!) * 180.0 / 3.14159265
                 IF ang! < 0.0 THEN ang! = ang! + 360.0
-                hueDeg! = ang!
+                hueDeg! = ACP_quantize_hue!(ang!)
                 ACP_hsv_to_rgb hueDeg!, 1.0, 1.0, r%, g%, b%
                 PSET (px%, py%), _RGB32(r%, g%, b%)
             END IF
@@ -145,7 +219,7 @@ SUB ACP_build_triangle
     IF x0% < 0 THEN x0% = 0
     IF y0% < 0 THEN y0% = 0
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
-    IF y1% > ACP_STATE.h% - 1 THEN y1% = ACP_STATE.h% - 1
+    IF y1% > ACP_STATE.w% - 1 THEN y1% = ACP_STATE.w% - 1
 
     DIM px AS INTEGER, py AS INTEGER
     DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
@@ -169,6 +243,8 @@ SUB ACP_build_triangle
                 IF sv! > 1.0 THEN sv! = 1.0
                 IF vv! < 0.0 THEN vv! = 0.0
                 IF vv! > 1.0 THEN vv! = 1.0
+                sv! = ACP_quantize_unit!(sv!)
+                vv! = ACP_quantize_unit!(vv!)
                 ACP_hsv_to_rgb ACP_STATE.hue!, sv!, vv!, r%, g%, b%
                 PSET (px%, py%), _RGB32(r%, g%, b%)
             END IF
@@ -188,7 +264,7 @@ SUB ACP_render_all
 
     DIM oldDest AS LONG : oldDest& = _DEST
     _DEST ACP_STATE.imgHandle&
-    CLS , _RGB32(30, 30, 34)
+    CLS , ACP_STATE.bgColor~&
 
     _PUTIMAGE (0, 0), ACP_STATE.ringImage&
     _PUTIMAGE (0, 0), ACP_STATE.triImage&
@@ -207,6 +283,13 @@ SUB ACP_render_all
     CIRCLE (mrx%, mry%), 6, _RGB32(0, 0, 0)
     CIRCLE (mrx%, mry%), 5, _RGB32(255, 255, 255)
 
+    ' Hue-neighbor range markers (smaller) at hue +/- range — drag to resize.
+    DIM nlx AS INTEGER, nly AS INTEGER, nrx AS INTEGER, nry AS INTEGER
+    ACP_neighbor_marker_pos -1, nlx%, nly%
+    ACP_neighbor_marker_pos 1, nrx%, nry%
+    CIRCLE (nlx%, nly%), 4, _RGB32(0, 0, 0) : CIRCLE (nlx%, nly%), 3, _RGB32(255, 255, 255)
+    CIRCLE (nrx%, nry%), 4, _RGB32(0, 0, 0) : CIRCLE (nrx%, nry%), 3, _RGB32(255, 255, 255)
+
     ' Triangle SV marker: weights (S*V, V*(1-S), 1-V) -> point
     DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
     wa! = ACP_STATE.sat! * ACP_STATE.val!
@@ -217,6 +300,9 @@ SUB ACP_render_all
     mty% = INT(wa! * ACP_STATE.triAy! + wb! * ACP_STATE.triBy! + wc! * ACP_STATE.triCy!)
     CIRCLE (mtx%, mty%), 5, _RGB32(0, 0, 0)
     CIRCLE (mtx%, mty%), 4, _RGB32(255, 255, 255)
+
+    ACP_render_shades    ' shade rows below the wheel (into imgHandle)
+    ACP_render_history   ' recent-colors strip below the shades
 
     _DEST oldDest&
 END SUB
@@ -256,9 +342,24 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
 
     IF pressed% THEN
         IF dist! >= ACP_STATE.ringRi! AND dist! <= ACP_STATE.ringRo! THEN
-            ACP_STATE.dragging% = ACP_DRAG_RING
+            IF ACP_near_neighbor_marker%(nx%, ny%) THEN
+                ACP_STATE.dragging% = ACP_DRAG_NEIGHBOR
+            ELSE
+                ACP_STATE.dragging% = ACP_DRAG_RING
+            END IF
         ELSEIF ACP_point_in_triangle%(nx%, ny%) THEN
             ACP_STATE.dragging% = ACP_DRAG_TRIANGLE
+        ELSE
+            ' Shade patch / history swatch? Single click sets the current color
+            ' (no drag) — the wheel + shades then recompute around it.
+            DIM shRow AS INTEGER, shPatch AS INTEGER, hIdx AS INTEGER
+            IF ACP_shade_hit%(nx%, ny%, shRow%, shPatch%) THEN
+                ACP_set_rgb ACP_shade_color~&(shRow%, shPatch%)
+                ACP_STATE.changed% = -1
+            ELSEIF ACP_history_hit%(nx%, ny%, hIdx%) THEN
+                ACP_set_rgb ACP_history(hIdx%)
+                ACP_STATE.changed% = -1
+            END IF
         END IF
     END IF
 
@@ -266,6 +367,7 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
         SELECT CASE ACP_STATE.dragging%
             CASE ACP_DRAG_RING     : ACP_pick_ring nx%, ny%
             CASE ACP_DRAG_TRIANGLE : ACP_pick_triangle nx%, ny%
+            CASE ACP_DRAG_NEIGHBOR : ACP_pick_neighbor nx%, ny%
         END SELECT
     END IF
 END SUB
@@ -277,7 +379,7 @@ SUB ACP_pick_ring (nx AS INTEGER, ny AS INTEGER)
     DIM ang AS SINGLE
     ang! = _ATAN2(ny% - ACP_STATE.cy!, nx% - ACP_STATE.cx!) * 180.0 / 3.14159265
     IF ang! < 0.0 THEN ang! = ang! + 360.0
-    ACP_STATE.hue! = ang!
+    ACP_STATE.hue! = ACP_quantize_hue!(ang!)
     ACP_STATE.triDirty% = -1
     ACP_sync_rgb_from_hsv
     ACP_STATE.changed% = -1
@@ -317,8 +419,8 @@ SUB ACP_pick_triangle (nx AS INTEGER, ny AS INTEGER)
     IF vv! < 0.0 THEN vv! = 0.0
     IF vv! > 1.0 THEN vv! = 1.0
 
-    ACP_STATE.sat! = sv!
-    ACP_STATE.val! = vv!
+    ACP_STATE.sat! = ACP_quantize_unit!(sv!)
+    ACP_STATE.val! = ACP_quantize_unit!(vv!)
     ACP_sync_rgb_from_hsv
     ACP_STATE.changed% = -1
 END SUB
@@ -438,4 +540,311 @@ SUB ACP_rgb_to_hsv (r AS INTEGER, g AS INTEGER, b AS INTEGER, h AS SINGLE, s AS 
     END IF
     h! = h! * 60.0
     IF h! < 0.0 THEN h! = h! + 360.0
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_patch_rect — Native rect of shade patch (row 0..ROWS-1,
+' patch 0..PATCHES-1). The wheel is a w x w square; shades sit below it.
+' x1/y1/x2/y2 returned by reference.
+' --------------------------------------------------------------------------
+SUB ACP_shade_patch_rect (row AS INTEGER, patch AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
+    DIM np AS INTEGER : np% = ACP_shade_patch_count%
+    DIM usableW  AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
+    DIM patchW   AS INTEGER : patchW% = usableW% \ np%
+    IF patchW% < 1 THEN patchW% = 1
+    DIM lh AS INTEGER : lh% = 0
+    IF ACP_STATE.shadeLabels% THEN lh% = ACP_SHADE_ROW_LABEL_H
+    y1% = ACP_shade_row_label_y%(row%) + lh%       ' patch strip sits below the label
+    y2% = y1% + ACP_SHADE_PATCH_H - 1
+    x1% = ACP_SHADE_GAP + patch% * patchW%
+    IF patch% = np% - 1 THEN
+        x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1
+    ELSE
+        x2% = x1% + patchW% - 1
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_color~& — Color of a shade patch. Row 0 spreads VALUE, row 1
+' SATURATION, row 2 HUE, symmetric around the current color (centre = current).
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_color~& (row AS INTEGER, patch AS INTEGER)
+    DIM np AS INTEGER : np% = ACP_shade_patch_count%
+    DIM t AS SINGLE
+    IF np% <= 1 THEN
+        t! = 0.0
+    ELSE
+        t! = (CSNG(patch%) / CSNG(np% - 1)) * 2.0 - 1.0
+    END IF
+    ' Spread curve: exponent > 1 makes the ends more severe, the middle gentler
+    ' (c' = sign(c) * |c|^exp).
+    IF ACP_STATE.shadeCurveExp! > 1.0 AND t! <> 0.0 THEN
+        DIM tc AS SINGLE : tc! = ABS(t!) ^ ACP_STATE.shadeCurveExp!
+        IF t! < 0.0 THEN t! = -tc! ELSE t! = tc!
+    END IF
+    DIM ln AS INTEGER : ln% = row%
+    IF ln% < 0 THEN ln% = 0
+    IF ln% >= ACP_SHADE_MAX_LINES THEN ln% = ACP_SHADE_MAX_LINES - 1
+    DIM h AS SINGLE, s AS SINGLE, v AS SINGLE
+    ' Krita model: value = base + c*delta + shift (per HSV axis).
+    h! = ACP_STATE.hue! + t! * ACP_shadeDH(ln%) + ACP_shadeSH(ln%)
+    s! = ACP_STATE.sat! + t! * ACP_shadeDS(ln%) + ACP_shadeSS(ln%)
+    v! = ACP_STATE.val! + t! * ACP_shadeDV(ln%) + ACP_shadeSV(ln%)
+    IF v! < 0.0 THEN v! = 0.0
+    IF v! > 1.0 THEN v! = 1.0
+    IF s! < 0.0 THEN s! = 0.0
+    IF s! > 1.0 THEN s! = 1.0
+    IF h! < 0.0 THEN h! = h! + 360.0
+    IF h! >= 360.0 THEN h! = h! - 360.0
+    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
+    ACP_hsv_to_rgb h!, s!, v!, r%, g%, b%
+    ACP_shade_color~& = _RGB32(r%, g%, b%)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_render_shades — Draw the shade rows into the current _DEST (imgHandle).
+' Centre patch of each row is outlined to mark the current color.
+' --------------------------------------------------------------------------
+SUB ACP_render_shades ()
+    DIM np AS INTEGER : np% = ACP_shade_patch_count%
+    DIM row AS INTEGER, patch AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    DIM centreIdx AS INTEGER : centreIdx% = (np% - 1) \ 2
+    FOR row% = 0 TO ACP_shade_line_count% - 1
+        FOR patch% = 0 TO np% - 1
+            ACP_shade_patch_rect row%, patch%, x1%, y1%, x2%, y2%
+            LINE (x1%, y1%)-(x2%, y2%), ACP_shade_color~&(row%, patch%), BF
+            IF patch% = centreIdx% THEN LINE (x1%, y1%)-(x2%, y2%), _RGB32(255, 255, 255), B
+        NEXT patch%
+    NEXT row%
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_shade_hit% — If (nx,ny) is over a shade patch, set row/patch (by ref)
+' and return TRUE.
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_hit% (nx AS INTEGER, ny AS INTEGER, row AS INTEGER, patch AS INTEGER)
+    ACP_shade_hit% = 0
+    DIM np AS INTEGER : np% = ACP_shade_patch_count%
+    DIM rr AS INTEGER, pp AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    FOR rr% = 0 TO ACP_shade_line_count% - 1
+        FOR pp% = 0 TO np% - 1
+            ACP_shade_patch_rect rr%, pp%, x1%, y1%, x2%, y2%
+            IF nx% >= x1% AND nx% <= x2% AND ny% >= y1% AND ny% <= y2% THEN
+                row% = rr% : patch% = pp%
+                ACP_shade_hit% = -1
+                EXIT FUNCTION
+            END IF
+        NEXT pp%
+    NEXT rr%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_shade_patch_count% — Patches per shade row (host-set, clamped 3..32).
+' --------------------------------------------------------------------------
+FUNCTION ACP_shade_patch_count% ()
+    DIM n AS INTEGER : n% = ACP_STATE.shadePatches%
+    IF n% < 3 THEN n% = ACP_SHADE_PATCHES
+    IF n% > 32 THEN n% = 32
+    ACP_shade_patch_count% = n%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_quantize_unit! — Snap x in [0,1] to N evenly spaced levels (endpoints
+' included). Returns x unchanged when quantize is off (< 2 steps).
+' --------------------------------------------------------------------------
+FUNCTION ACP_quantize_unit! (x AS SINGLE)
+    DIM n AS INTEGER : n% = ACP_STATE.quantizeSteps%
+    IF n% < 2 THEN ACP_quantize_unit! = x! : EXIT FUNCTION
+    DIM q AS SINGLE : q! = INT(x! * (n% - 1) + 0.5) / (n% - 1)
+    IF q! < 0.0 THEN q! = 0.0
+    IF q! > 1.0 THEN q! = 1.0
+    ACP_quantize_unit! = q!
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_quantize_hue! — Snap hue (0..360) to N sectors (circular). Returns the
+' hue unchanged when quantize is off (< 2 steps).
+' --------------------------------------------------------------------------
+FUNCTION ACP_quantize_hue! (h AS SINGLE)
+    DIM n AS INTEGER : n% = ACP_STATE.quantizeSteps%
+    IF n% < 2 THEN ACP_quantize_hue! = h! : EXIT FUNCTION
+    DIM sec AS SINGLE : sec! = 360.0 / n%
+    DIM k AS INTEGER : k% = INT(h! / sec! + 0.5)
+    IF k% >= n% THEN k% = 0
+    ACP_quantize_hue! = k% * sec!
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_set_quantize — Change the quantize step count. Rebuilds the ring (its
+' banding changes) and re-snaps the current color so the markers land on a
+' step. Cheap no-op when the value is unchanged (safe to call every frame).
+' --------------------------------------------------------------------------
+SUB ACP_set_quantize (steps AS INTEGER)
+    IF steps% = ACP_STATE.quantizeSteps% THEN EXIT SUB
+    ACP_STATE.quantizeSteps% = steps%
+    ACP_build_ring
+    ACP_STATE.triDirty% = -1
+    ACP_STATE.hue! = ACP_quantize_hue!(ACP_STATE.hue!)
+    ACP_STATE.sat! = ACP_quantize_unit!(ACP_STATE.sat!)
+    ACP_STATE.val! = ACP_quantize_unit!(ACP_STATE.val!)
+    ACP_sync_rgb_from_hsv
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_history_area_h% — Native height reserved for the color-history strip
+' (0 when hidden).
+' --------------------------------------------------------------------------
+FUNCTION ACP_history_area_h% ()
+    IF ACP_STATE.historyShow% THEN
+        ACP_history_area_h% = ACP_HISTORY_LABEL_H + ACP_HISTORY_H + ACP_SHADE_GAP
+    ELSE
+        ACP_history_area_h% = 0
+    END IF
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_history_top% — Native Y where the history section (label) starts.
+' --------------------------------------------------------------------------
+FUNCTION ACP_history_top% ()
+    ACP_history_top% = ACP_STATE.w% + ACP_shade_area_h%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_over_history% — TRUE if (nx,ny) is within the visible history section.
+' --------------------------------------------------------------------------
+FUNCTION ACP_over_history% (nx AS INTEGER, ny AS INTEGER)
+    ACP_over_history% = 0
+    IF NOT ACP_STATE.historyShow% THEN EXIT FUNCTION
+    DIM top AS INTEGER : top% = ACP_history_top%
+    IF ny% >= top% AND ny% < top% + ACP_history_area_h% AND nx% >= 0 AND nx% < ACP_STATE.w% THEN ACP_over_history% = -1
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_history_clear — Empty the history ring.
+' --------------------------------------------------------------------------
+SUB ACP_history_clear ()
+    ACP_STATE.historyCount% = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_history_push — Add a color to the front of the history ring (dedup:
+' an existing entry is moved to the front rather than duplicated).
+' --------------------------------------------------------------------------
+SUB ACP_history_push (col AS _UNSIGNED LONG)
+    DIM i AS INTEGER, found AS INTEGER : found% = -1
+    FOR i% = 0 TO ACP_STATE.historyCount% - 1
+        IF ACP_history(i%) = col~& THEN found% = i% : EXIT FOR
+    NEXT i%
+    IF found% = 0 THEN EXIT SUB                    ' already newest
+    DIM top AS INTEGER
+    IF found% > 0 THEN
+        top% = found%                              ' shift [0..found-1] down by 1
+    ELSE
+        top% = ACP_STATE.historyCount%             ' new entry
+        IF top% > ACP_HISTORY_MAX - 1 THEN top% = ACP_HISTORY_MAX - 1
+    END IF
+    FOR i% = top% TO 1 STEP -1
+        ACP_history(i%) = ACP_history(i% - 1)
+    NEXT i%
+    ACP_history(0) = col~&
+    IF found% < 0 THEN
+        ACP_STATE.historyCount% = ACP_STATE.historyCount% + 1
+        IF ACP_STATE.historyCount% > ACP_HISTORY_MAX THEN ACP_STATE.historyCount% = ACP_HISTORY_MAX
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_history_patch_rect — Native rect of history slot i (0..ACP_HISTORY_MAX-1).
+' --------------------------------------------------------------------------
+SUB ACP_history_patch_rect (idx AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
+    DIM top AS INTEGER : top% = ACP_STATE.w% + ACP_shade_area_h% + ACP_HISTORY_LABEL_H
+    DIM usableW AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
+    DIM pw AS INTEGER : pw% = usableW% \ ACP_HISTORY_MAX
+    IF pw% < 1 THEN pw% = 1
+    y1% = top% : y2% = top% + ACP_HISTORY_H - 1
+    x1% = ACP_SHADE_GAP + idx% * pw%
+    IF idx% = ACP_HISTORY_MAX - 1 THEN
+        x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1
+    ELSE
+        x2% = x1% + pw% - 1
+    END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_render_history — Draw the recent-colors strip (filled slots colored,
+' empties as background). Into the current _DEST (imgHandle).
+' --------------------------------------------------------------------------
+SUB ACP_render_history ()
+    IF NOT ACP_STATE.historyShow% THEN EXIT SUB
+    DIM i AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    FOR i% = 0 TO ACP_HISTORY_MAX - 1
+        ACP_history_patch_rect i%, x1%, y1%, x2%, y2%
+        IF i% < ACP_STATE.historyCount% THEN
+            LINE (x1%, y1%)-(x2%, y2%), ACP_history(i%), BF
+            LINE (x1%, y1%)-(x2%, y2%), _RGB32(0, 0, 0), B
+        ELSE
+            LINE (x1%, y1%)-(x2%, y2%), ACP_STATE.bgColor~&, BF
+        END IF
+    NEXT i%
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_history_hit% — If (nx,ny) is over a FILLED history slot, set idx and
+' return TRUE.
+' --------------------------------------------------------------------------
+FUNCTION ACP_history_hit% (nx AS INTEGER, ny AS INTEGER, idx AS INTEGER)
+    ACP_history_hit% = 0
+    IF NOT ACP_STATE.historyShow% THEN EXIT FUNCTION
+    DIM i AS INTEGER
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
+    FOR i% = 0 TO ACP_STATE.historyCount% - 1
+        ACP_history_patch_rect i%, x1%, y1%, x2%, y2%
+        IF nx% >= x1% AND nx% <= x2% AND ny% >= y1% AND ny% <= y2% THEN
+            idx% = i% : ACP_history_hit% = -1 : EXIT FUNCTION
+        END IF
+    NEXT i%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_neighbor_marker_pos — Native position of a hue-neighbor marker.
+' side = -1 (counter-clockwise / left) or +1 (clockwise / right).
+' --------------------------------------------------------------------------
+SUB ACP_neighbor_marker_pos (side AS INTEGER, mx AS INTEGER, my AS INTEGER)
+    DIM rmid AS SINGLE : rmid! = (ACP_STATE.ringRo! + ACP_STATE.ringRi!) / 2.0
+    DIM a AS SINGLE : a! = (ACP_STATE.hue! + side% * ACP_STATE.hueNeighborRange!) * 3.14159265 / 180.0
+    mx% = INT(ACP_STATE.cx! + rmid! * COS(a!))
+    my% = INT(ACP_STATE.cy! + rmid! * SIN(a!))
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_near_neighbor_marker% — TRUE if (nx,ny) is on either neighbor marker.
+' --------------------------------------------------------------------------
+FUNCTION ACP_near_neighbor_marker% (nx AS INTEGER, ny AS INTEGER)
+    ACP_near_neighbor_marker% = 0
+    DIM lx AS INTEGER, ly AS INTEGER, rx AS INTEGER, ry AS INTEGER
+    ACP_neighbor_marker_pos -1, lx%, ly%
+    ACP_neighbor_marker_pos 1, rx%, ry%
+    DIM thr AS INTEGER : thr% = 7
+    IF ABS(nx% - lx%) <= thr% AND ABS(ny% - ly%) <= thr% THEN ACP_near_neighbor_marker% = -1 : EXIT FUNCTION
+    IF ABS(nx% - rx%) <= thr% AND ABS(ny% - ry%) <= thr% THEN ACP_near_neighbor_marker% = -1
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_pick_neighbor — Set the hue-neighbor range from the angular distance of
+' (nx,ny) to the current hue (both markers move symmetrically).
+' --------------------------------------------------------------------------
+SUB ACP_pick_neighbor (nx AS INTEGER, ny AS INTEGER)
+    DIM ang AS SINGLE
+    ang! = _ATAN2(ny% - ACP_STATE.cy!, nx% - ACP_STATE.cx!) * 180.0 / 3.14159265
+    IF ang! < 0.0 THEN ang! = ang! + 360.0
+    DIM diff AS SINGLE : diff! = ang! - ACP_STATE.hue!
+    DO WHILE diff! > 180.0 : diff! = diff! - 360.0 : LOOP
+    DO WHILE diff! < -180.0 : diff! = diff! + 360.0 : LOOP
+    DIM rng AS SINGLE : rng! = ABS(diff!)
+    IF rng! < 2.0 THEN rng! = 2.0
+    IF rng! > 180.0 THEN rng! = 180.0
+    ACP_STATE.hueNeighborRange! = rng!
 END SUB
