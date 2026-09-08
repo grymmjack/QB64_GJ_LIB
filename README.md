@@ -17,6 +17,7 @@ in it's current state.
 | [ASEPRITE](ASEPRITE/README.md) | [ASEPRITE](https://www.aseprite.org/) Image Format support | Natively use `.aseprite` files in QB64! |
 | [ARR](ARR/README.md) | ARRay Library | A high level library for working with arrays of all types in QB64 |
 | [BBX](BBX/README.md) | Bounding BoX Library | Reusable bounding box with position, resize, keyboard and mouse control | 
+| [ADV_COLOR_PICKER](ADV_COLOR_PICKER/README.md) | Advanced Color Selector | Krita-style hue **ring** + saturation/value **triangle**, a configurable **shade selector** (delta/shift line-sets, presets, per-row labels, linear/exponential curve), **draggable hue-neighbor** range markers, **quantize-to-steps**, custom background, and a **color-history** strip |
 | [COLOR_PICKER](COLOR_PICKER/README.md) | Color Picker Dialog | Photoshop/Krita-style HSV/RGB/HSL color picker with hex input and posterize mode |
 | [CONSOLE](CONSOLE/README.md) | CONSOLE object with debugging. |
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
