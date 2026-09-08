@@ -10,7 +10,7 @@ Built for [DRAW](https://github.com/grymmjack/DRAW), where it lives in a floatin
 panel, but it has **no DRAW dependencies** — colour maths and rendering are all
 self-contained.
 
-![Advanced Color Selector](../COLOR_PICKER/color-picker-1.png)
+![Advanced Color Selector](ADV_color-picker.png)
 
 ## Features
 
