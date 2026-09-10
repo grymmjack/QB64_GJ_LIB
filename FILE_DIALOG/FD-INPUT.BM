@@ -1997,7 +1997,19 @@ SUB FD_INPUT_confirm
             END IF
         END IF
 
-        resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), fn)
+        ' Honor an absolute path typed into the FILENAME field as-is. Joining it
+        ' onto the browse dir would corrupt it into <curdir>/<abs> — e.g. typing
+        ' /tmp/x.png while browsing /home/me yields /home/me//tmp/x.png, whose
+        ' parent dir does not exist, so the save is then wrongly refused.
+        DIM fnAbs AS INTEGER
+        fnAbs = 0
+        IF LEFT$(fn, 1) = "/" OR LEFT$(fn, 1) = "\" THEN fnAbs = -1
+        IF LEN(fn) >= 3 AND MID$(fn, 2, 1) = ":" THEN fnAbs = -1 ' Windows drive (C:\)
+        IF fnAbs THEN
+            resultPath = fn
+        ELSE
+            resultPath = FD_PLAT_path_join$(RTRIM$(FD_STATE.currentPath), fn)
+        END IF
     ELSE
         ' Open mode
         IF FD_STATE.multiSelect AND FD_STATE.multiSelectCount > 0 THEN
