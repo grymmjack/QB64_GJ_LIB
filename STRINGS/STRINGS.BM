@@ -794,3 +794,62 @@ END FUNCTION
 FUNCTION STR.f$(n##)
     STR.f$ = _TRIM$(STR$(n##))
 END FUNCTION
+
+
+''
+' Word-wrap a string to a maximum number of CHARACTER columns per line (greedy).
+' A word longer than cols% is hard-broken. Visual lines are joined with CHR$(10),
+' so the caller splits on CHR$(10) to render each line. Use for container-aware
+' text (tooltips, message boxes) that should wrap to their own width, not the screen.
+' For proportional fonts, pass cols% = pixel_budget \ average_glyph_width.
+'
+' @param STRING s$ the text to wrap
+' @param INTEGER cols% maximum characters per line (clamped to >= 1)
+' @return STRING the wrapped text, visual lines separated by CHR$(10)
+'
+FUNCTION STR.word_wrap$(s$, cols%)
+    DIM budget AS INTEGER: budget% = cols%
+    IF budget% < 1 THEN budget% = 1
+    DIM acc AS STRING: acc$ = ""
+    DIM cur AS STRING: cur$ = ""
+    DIM src AS STRING: src$ = s$
+    DIM wd AS STRING, tst AS STRING, sp AS INTEGER
+    DO WHILE LEN(src$) > 0
+        sp% = INSTR(src$, " ")
+        IF sp% = 0 THEN
+            wd$ = src$: src$ = ""
+        ELSE
+            wd$ = LEFT$(src$, sp% - 1): src$ = MID$(src$, sp% + 1)
+        END IF
+        IF LEN(wd$) > 0 THEN
+            DO WHILE LEN(wd$) > budget%                 ' hard-break an over-long word
+                IF LEN(cur$) > 0 THEN
+                    IF LEN(acc$) > 0 THEN acc$ = acc$ + CHR$(10)
+                    acc$ = acc$ + cur$: cur$ = ""
+                END IF
+                IF LEN(acc$) > 0 THEN acc$ = acc$ + CHR$(10)
+                acc$ = acc$ + LEFT$(wd$, budget%)
+                wd$ = MID$(wd$, budget% + 1)
+            LOOP
+            IF LEN(cur$) = 0 THEN
+                tst$ = wd$
+            ELSE
+                tst$ = cur$ + " " + wd$
+            END IF
+            IF LEN(tst$) <= budget% THEN
+                cur$ = tst$
+            ELSE
+                IF LEN(cur$) > 0 THEN
+                    IF LEN(acc$) > 0 THEN acc$ = acc$ + CHR$(10)
+                    acc$ = acc$ + cur$
+                END IF
+                cur$ = wd$
+            END IF
+        END IF
+    LOOP
+    IF LEN(cur$) > 0 THEN
+        IF LEN(acc$) > 0 THEN acc$ = acc$ + CHR$(10)
+        acc$ = acc$ + cur$
+    END IF
+    STR.word_wrap$ = acc$
+END FUNCTION

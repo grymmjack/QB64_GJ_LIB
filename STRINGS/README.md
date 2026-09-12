@@ -85,4 +85,4 @@
 - [ ] STR.word_shuffle
 - [ ] STR.wrap
 - [ ] STR.wrap_pair
-- [ ] STR.word_wrap
+- [x] STR.word_wrap

@@ -106,12 +106,66 @@ SUB FD_RENDER_tooltip
     END IF
     IF LEN(tipText) = 0 THEN EXIT SUB
 
-    ' --- Compute size ---
+    ' --- Word-wrap to the DIALOG (its container), not the screen ---------------
+    ' The tooltip is drawn inside the dialog, so long text used to run past the
+    ' right edge and clip. Wrap to the dialog width instead. Fixed-width font, so
+    ' this is character-column wrapping (greedy; a word longer than the budget is
+    ' hard-broken). Kept self-contained -- FILE_DIALOG must not depend on STRINGS.
     DIM tipPad AS INTEGER
     tipPad = 4
-    DIM tipW   AS INTEGER, tipH AS INTEGER
-    tipW = LEN(tipText) * FD_CFG.fontW + tipPad * 2
-    tipH = FD_CFG.fontH + tipPad * 2
+
+    DIM maxCols AS INTEGER
+    IF FD_CFG.fontW <= 0 THEN
+        maxCols = 40
+    ELSE
+        maxCols = (FD_STATE.dialogW - 2 - tipPad * 2) \ FD_CFG.fontW
+    END IF
+    IF maxCols > 90 THEN maxCols = 90            ' readability cap
+    IF maxCols < 8 THEN maxCols = 8
+
+    DIM ttLines(1 TO 40) AS STRING
+    DIM ttN AS INTEGER
+    ttN = 0
+    DIM srcTxt AS STRING, curLn AS STRING, wd AS STRING, tstLn AS STRING, sp AS INTEGER
+    srcTxt = tipText
+    curLn = ""
+    DO WHILE LEN(srcTxt) > 0 AND ttN < 40
+        sp = INSTR(srcTxt, " ")
+        IF sp = 0 THEN
+            wd = srcTxt : srcTxt = ""
+        ELSE
+            wd = LEFT$(srcTxt, sp - 1) : srcTxt = MID$(srcTxt, sp + 1)
+        END IF
+        IF LEN(wd) > 0 THEN
+            DO WHILE LEN(wd) > maxCols AND ttN < 40                ' hard-break long word
+                IF LEN(curLn) > 0 THEN
+                    ttN = ttN + 1 : ttLines(ttN) = curLn : curLn = ""
+                    IF ttN >= 40 THEN EXIT DO
+                END IF
+                ttN = ttN + 1 : ttLines(ttN) = LEFT$(wd, maxCols) : wd = MID$(wd, maxCols + 1)
+            LOOP
+            IF ttN >= 40 THEN EXIT DO
+            IF LEN(curLn) = 0 THEN tstLn = wd ELSE tstLn = curLn + " " + wd
+            IF LEN(tstLn) <= maxCols THEN
+                curLn = tstLn
+            ELSE
+                IF LEN(curLn) > 0 THEN ttN = ttN + 1 : ttLines(ttN) = curLn
+                curLn = wd
+            END IF
+        END IF
+    LOOP
+    IF LEN(curLn) > 0 AND ttN < 40 THEN ttN = ttN + 1 : ttLines(ttN) = curLn
+    IF ttN = 0 THEN EXIT SUB
+
+    ' --- Compute size (widest wrapped line) ---
+    DIM maxLen AS INTEGER, li AS INTEGER
+    maxLen = 0
+    FOR li = 1 TO ttN
+        IF LEN(ttLines(li)) > maxLen THEN maxLen = LEN(ttLines(li))
+    NEXT li
+    DIM tipW AS INTEGER, tipH AS INTEGER
+    tipW = maxLen * FD_CFG.fontW + tipPad * 2
+    tipH = FD_CFG.fontH * ttN + tipPad * 2
 
     ' --- Position: just above the mouse cursor, clamped inside dialog ---
     DIM tx AS INTEGER, ty AS INTEGER
@@ -127,7 +181,12 @@ SUB FD_RENDER_tooltip
     LINE (tx, ty)-(tx + tipW - 1, ty + tipH - 1), FD_CLR_CONTENT_BG, BF
     LINE (tx, ty)-(tx + tipW - 1, ty + tipH - 1), FD_CLR_BORDER_FOCUS, B
 
-    ' --- Draw text ---
+    ' --- Draw text lines ---
     COLOR FD_CLR_TEXT, _RGBA32(0, 0, 0, 0)
-    FD_print_scaled tx + tipPad, ty + tipPad, tipText, 1
+    DIM ly AS INTEGER
+    ly = ty + tipPad
+    FOR li = 1 TO ttN
+        FD_print_scaled tx + tipPad, ly, ttLines(li), 1
+        ly = ly + FD_CFG.fontH
+    NEXT li
 END SUB
