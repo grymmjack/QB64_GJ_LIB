@@ -114,12 +114,17 @@ SUB FD_RENDER_tooltip
     DIM tipPad AS INTEGER
     tipPad = 4
 
+    ' Render at the dialog's content text scale -- passing 1 drew the tooltip at the
+    ' tiny NATIVE font size while the rest of the dialog is scaled up.
+    DIM fs AS INTEGER
+    fs = FD_CFG.contentFontScale
+    IF fs < 1 THEN fs = 1
+    DIM glyphW AS INTEGER
+    glyphW = FD_CFG.fontW * fs
+    IF glyphW < 1 THEN glyphW = 1
+
     DIM maxCols AS INTEGER
-    IF FD_CFG.fontW <= 0 THEN
-        maxCols = 40
-    ELSE
-        maxCols = (FD_STATE.dialogW - 2 - tipPad * 2) \ FD_CFG.fontW
-    END IF
+    maxCols = (FD_STATE.dialogW - 2 - tipPad * 2) \ glyphW
     IF maxCols > 90 THEN maxCols = 90            ' readability cap
     IF maxCols < 8 THEN maxCols = 8
 
@@ -164,8 +169,8 @@ SUB FD_RENDER_tooltip
         IF LEN(ttLines(li)) > maxLen THEN maxLen = LEN(ttLines(li))
     NEXT li
     DIM tipW AS INTEGER, tipH AS INTEGER
-    tipW = maxLen * FD_CFG.fontW + tipPad * 2
-    tipH = FD_CFG.fontH * ttN + tipPad * 2
+    tipW = maxLen * glyphW + tipPad * 2
+    tipH = FD_CFG.fontH * fs * ttN + tipPad * 2
 
     ' --- Position: just above the mouse cursor, clamped inside dialog ---
     DIM tx AS INTEGER, ty AS INTEGER
@@ -186,7 +191,7 @@ SUB FD_RENDER_tooltip
     DIM ly AS INTEGER
     ly = ty + tipPad
     FOR li = 1 TO ttN
-        FD_print_scaled tx + tipPad, ly, ttLines(li), 1
-        ly = ly + FD_CFG.fontH
+        FD_print_scaled tx + tipPad, ly, ttLines(li), fs
+        ly = ly + FD_CFG.fontH * fs
     NEXT li
 END SUB
