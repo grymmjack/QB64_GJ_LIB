@@ -580,8 +580,8 @@ SUB FD_col_widths (contentW AS INTEGER, w0 AS INTEGER, w1 AS INTEGER, w2 AS INTE
 
     DIM colMin AS INTEGER : colMin = 34 ' keep every column at least this readable
     DIM f      AS SINGLE  : f = avail / fixed
-    w1 = INT(w1 * f) : IF w1 < colMin THEN w1 = colMin
-    w2 = INT(w2 * f) : IF w2 < colMin THEN w2 = colMin
+    w1 = INT(w1 * f)      : IF w1 < colMin THEN w1 = colMin
+    w2 = INT(w2 * f)      : IF w2 < colMin THEN w2 = colMin
     w3 = avail - w1 - w2                ' Date takes the remainder so nothing is dropped
     IF w3 < colMin THEN w3 = colMin
 END SUB

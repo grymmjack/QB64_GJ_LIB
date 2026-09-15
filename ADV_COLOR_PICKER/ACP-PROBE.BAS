@@ -15,9 +15,9 @@ CONST TRUE = -1, FALSE = 0
 
 ' Offscreen work-image so PSET/_DEST have a valid graphics context headless.
 DIM SHARED PROBE_FAILS AS INTEGER
-DIM SHARED PROBE_FH AS INTEGER
+DIM SHARED PROBE_FH    AS INTEGER
 PROBE_FAILS% = 0
-PROBE_FH% = FREEFILE
+PROBE_FH%    = FREEFILE
 OPEN "acp-probe-results.txt" FOR OUTPUT AS #PROBE_FH%
 
 DIM dummy AS LONG : dummy& = _NEWIMAGE(8, 8, 32)
@@ -50,23 +50,23 @@ ACP_pick_ring INT(ACP_STATE.cx! - ACP_STATE.ringRi! - 2), INT(ACP_STATE.cy!)
 CHK "ring left => hue~180", NEAR(ACP_STATE.hue!, 180.0, 2.0)
 
 ' --- 3. Triangle vertices => expected S,V ---
-ACP_pick_triangle INT(ACP_STATE.triAx!), INT(ACP_STATE.triAy!)   ' A = pure hue
+ACP_pick_triangle INT(ACP_STATE.triAx!), INT(ACP_STATE.triAy!) ' A = pure hue
 CHK "triA sat~1", NEAR(ACP_STATE.sat!, 1.0, 0.03)
 CHK "triA val~1", NEAR(ACP_STATE.val!, 1.0, 0.03)
 
-ACP_pick_triangle INT(ACP_STATE.triBx!), INT(ACP_STATE.triBy!)   ' B = white
+ACP_pick_triangle INT(ACP_STATE.triBx!), INT(ACP_STATE.triBy!) ' B = white
 CHK "triB sat~0", NEAR(ACP_STATE.sat!, 0.0, 0.05)
 CHK "triB val~1", NEAR(ACP_STATE.val!, 1.0, 0.03)
 
-ACP_pick_triangle INT(ACP_STATE.triCx!), INT(ACP_STATE.triCy!)   ' C = black
+ACP_pick_triangle INT(ACP_STATE.triCx!), INT(ACP_STATE.triCy!) ' C = black
 CHK "triC val~0", NEAR(ACP_STATE.val!, 0.0, 0.05)
 
 ' --- 4. value -> marker -> pick round-trip (the self-consistency guarantee) ---
-DIM hh AS SINGLE, ss AS SINGLE, vv AS SINGLE
-hh! = 200.0 : ss! = 0.60 : vv! = 0.70
-ACP_STATE.hue! = hh! : ACP_STATE.sat! = ss! : ACP_STATE.val! = vv!
+DIM hh  AS SINGLE, ss AS SINGLE, vv AS SINGLE
+hh!            = 200.0 : ss! = 0.60           : vv! = 0.70
+ACP_STATE.hue! = hh!   : ACP_STATE.sat! = ss! : ACP_STATE.val! = vv!
 ' Marker point (same formula as ACP_render_all)
-DIM wa AS SINGLE, wb AS SINGLE, wc AS SINGLE
+DIM wa  AS SINGLE, wb AS SINGLE, wc AS SINGLE
 wa! = ss! * vv! : wb! = vv! * (1.0 - ss!) : wc! = 1.0 - vv!
 DIM mtx AS INTEGER, mty AS INTEGER
 mtx% = INT(wa! * ACP_STATE.triAx! + wb! * ACP_STATE.triBx! + wc! * ACP_STATE.triCx!)

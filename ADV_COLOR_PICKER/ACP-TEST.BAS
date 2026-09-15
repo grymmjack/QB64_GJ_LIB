@@ -38,23 +38,23 @@ WIDGET_SIZE% = 300
 
 ' Quantize cycle: 0 (off) -> 4 -> 6 -> 8 -> 12 -> off
 DIM SHARED QSTEPS(0 TO 4) AS INTEGER
-QSTEPS(0) = 0 : QSTEPS(1) = 4 : QSTEPS(2) = 6 : QSTEPS(3) = 8 : QSTEPS(4) = 12
+QSTEPS(0) = 0       : QSTEPS(1) = 4 : QSTEPS(2) = 6 : QSTEPS(3) = 8 : QSTEPS(4) = 12
 DIM qIdx AS INTEGER : qIdx% = 0
 
 ' Custom-background cycle
 DIM SHARED BGCOL(0 TO 3) AS _UNSIGNED LONG
 BGCOL(0) = _RGB32(30, 30, 34) : BGCOL(1) = _RGB32(0, 0, 0)
 BGCOL(2) = _RGB32(90, 90, 96) : BGCOL(3) = _RGB32(200, 200, 205)
-DIM bgIdx AS INTEGER : bgIdx% = 0
+DIM bgIdx AS INTEGER          : bgIdx% = 0
 
 ACP_init _RGB32(220, 60, 60), WIDGET_SIZE%
 
 ' Configure a full "Krita-like" line-set and its names.
 TEST_setup_lines
 ACP_apply_shade_layout
-ACP_STATE.shadeLabels% = TRUE
-ACP_STATE.shadeCurveExp! = 1.0
-ACP_STATE.historyShow% = TRUE
+ACP_STATE.shadeLabels%      = TRUE
+ACP_STATE.shadeCurveExp!    = 1.0
+ACP_STATE.historyShow%      = TRUE
 ACP_STATE.hueNeighborRange! = 60.0
 
 ' Seed the history with a few colours.
@@ -65,14 +65,14 @@ ACP_history_push _RGB32(50, 120, 230)
 ACP_history_push _RGB32(160, 80, 210)
 
 DIM mx AS INTEGER, my AS INTEGER, mb AS INTEGER
-DIM k AS LONG
+DIM k  AS LONG
 
 DO
     ' --- input ---
     WHILE _MOUSEINPUT : WEND
-    mx% = _MOUSEX : my% = _MOUSEY
+    mx% = _MOUSEX     : my% = _MOUSEY
     mb% = _MOUSEBUTTON(1)
-    ACP_input_mouse mx% - WX%, my% - WY%, mb%    ' widget-native coords (scale = 1)
+    ACP_input_mouse mx% - WX%, my% - WY%, mb% ' widget-native coords (scale = 1)
 
     k& = _KEYHIT
     SELECT CASE k&
@@ -82,7 +82,7 @@ DO
         CASE ASC("c"), ASC("C")
             IF ACP_STATE.shadeCurveExp! > 1.0 THEN ACP_STATE.shadeCurveExp! = 1.0 ELSE ACP_STATE.shadeCurveExp! = 2.5
         CASE ASC("b"), ASC("B")
-            bgIdx% = (bgIdx% + 1) MOD 4
+            bgIdx%              = (bgIdx% + 1) MOD 4
             ACP_STATE.bgColor~& = BGCOL(bgIdx%)
         CASE ASC("l"), ASC("L")
             ACP_STATE.shadeLabels% = NOT ACP_STATE.shadeLabels%
@@ -91,7 +91,7 @@ DO
             ACP_STATE.historyShow% = NOT ACP_STATE.historyShow%
             ACP_apply_shade_layout
         CASE ASC(" ")
-            ACP_history_push ACP_get_rgb~&           ' "commit" the current colour
+            ACP_history_push ACP_get_rgb~& ' "commit" the current colour
     END SELECT
 
     ' --- render ---
@@ -101,7 +101,7 @@ DO
 
     ACP_render_all
     ACP_blit WX%, WY%
-    TEST_draw_labels                                 ' host-drawn shade-row + history labels
+    TEST_draw_labels ' host-drawn shade-row + history labels
     TEST_draw_readout
 
     _DISPLAY
@@ -118,14 +118,14 @@ SUB TEST_setup_lines
     DIM sv AS SINGLE, ss AS SINGLE, sh AS SINGLE, wc AS SINGLE
     sv! = 0.5 : ss! = 0.5 : sh! = 60.0 : wc! = 15.0
     '                 idx   dHue    dSat   dVal   sHue   sSat  sVal
-    ACP_set_shade_line 0,   0.0,    0.0,   sv!,   0.0,   0.0,  0.0   ' value
-    ACP_set_shade_line 1,   0.0,    ss!,   0.0,   0.0,   0.0,  0.0   ' saturation
-    ACP_set_shade_line 2,   sh!,    0.0,   0.0,   0.0,   0.0,  0.0   ' hue
-    ACP_set_shade_line 3,   sh!/2,  0.0,   0.0,   0.0,   0.0,  0.0   ' hue neighbors (draggable via ring)
-    ACP_set_shade_line 4,   0.0,    0.0,   sv!,   wc!,   0.0,  0.0   ' warm
-    ACP_set_shade_line 5,   0.0,    0.0,   sv!,  -wc!,   0.0,  0.0   ' cool
-    ACP_set_shade_line 6,   0.0,   -ss!,   sv!,   0.0,   0.0,  0.0   ' rich shadow
-    ACP_set_shade_line 7,   sh!/3,  0.0,   0.0,   0.0,   0.0,  0.0   ' fine hue
+    ACP_set_shade_line 0,   0.0,    0.0,   sv!,   0.0,   0.0,  0.0 ' value
+    ACP_set_shade_line 1,   0.0,    ss!,   0.0,   0.0,   0.0,  0.0 ' saturation
+    ACP_set_shade_line 2,   sh!,    0.0,   0.0,   0.0,   0.0,  0.0 ' hue
+    ACP_set_shade_line 3,   sh!/2,  0.0,   0.0,   0.0,   0.0,  0.0 ' hue neighbors (draggable via ring)
+    ACP_set_shade_line 4,   0.0,    0.0,   sv!,   wc!,   0.0,  0.0 ' warm
+    ACP_set_shade_line 5,   0.0,    0.0,   sv!,  -wc!,   0.0,  0.0 ' cool
+    ACP_set_shade_line 6,   0.0,   -ss!,   sv!,   0.0,   0.0,  0.0 ' rich shadow
+    ACP_set_shade_line 7,   sh!/3,  0.0,   0.0,   0.0,   0.0,  0.0 ' fine hue
     ACP_STATE.shadeLineCount% = 8
 
     LINE_NAME(0) = "VALUE"       : LINE_NAME(1) = "SATURATION"
@@ -158,7 +158,7 @@ END SUB
 ' TEST_draw_readout — current colour + live settings + key help (right side).
 ' ----------------------------------------------------------------------------
 SUB TEST_draw_readout
-    DIM px AS INTEGER : px% = WX% + WIDGET_SIZE% + 34
+    DIM px  AS INTEGER        : px% = WX% + WIDGET_SIZE% + 34
     DIM col AS _UNSIGNED LONG : col~& = ACP_get_rgb~&
 
     ' Swatch

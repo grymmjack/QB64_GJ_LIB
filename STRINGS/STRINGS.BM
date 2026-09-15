@@ -810,10 +810,10 @@ END FUNCTION
 FUNCTION STR.word_wrap$(s$, cols%)
     DIM budget AS INTEGER: budget% = cols%
     IF budget% < 1 THEN budget% = 1
-    DIM acc AS STRING: acc$ = ""
-    DIM cur AS STRING: cur$ = ""
-    DIM src AS STRING: src$ = s$
-    DIM wd AS STRING, tst AS STRING, sp AS INTEGER
+    DIM acc    AS STRING : acc$ = ""
+    DIM cur    AS STRING : cur$ = ""
+    DIM src    AS STRING : src$ = s$
+    DIM wd     AS STRING, tst AS STRING, sp AS INTEGER
     DO WHILE LEN(src$) > 0
         sp% = INSTR(src$, " ")
         IF sp% = 0 THEN
@@ -822,7 +822,7 @@ FUNCTION STR.word_wrap$(s$, cols%)
             wd$ = LEFT$(src$, sp% - 1): src$ = MID$(src$, sp% + 1)
         END IF
         IF LEN(wd$) > 0 THEN
-            DO WHILE LEN(wd$) > budget%                 ' hard-break an over-long word
+            DO WHILE LEN(wd$) > budget% ' hard-break an over-long word
                 IF LEN(cur$) > 0 THEN
                     IF LEN(acc$) > 0 THEN acc$ = acc$ + CHR$(10)
                     acc$ = acc$ + cur$: cur$ = ""

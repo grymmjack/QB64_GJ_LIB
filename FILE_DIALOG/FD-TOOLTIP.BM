@@ -116,7 +116,7 @@ SUB FD_RENDER_tooltip
 
     ' Render at the dialog's content text scale -- passing 1 drew the tooltip at the
     ' tiny NATIVE font size while the rest of the dialog is scaled up.
-    DIM fs AS INTEGER
+    DIM fs     AS INTEGER
     fs = FD_CFG.contentFontScale
     IF fs < 1 THEN fs = 1
     DIM glyphW AS INTEGER
@@ -129,11 +129,11 @@ SUB FD_RENDER_tooltip
     IF maxCols < 8 THEN maxCols = 8
 
     DIM ttLines(1 TO 40) AS STRING
-    DIM ttN AS INTEGER
+    DIM ttN    AS INTEGER
     ttN = 0
     DIM srcTxt AS STRING, curLn AS STRING, wd AS STRING, tstLn AS STRING, sp AS INTEGER
     srcTxt = tipText
-    curLn = ""
+    curLn  = ""
     DO WHILE LEN(srcTxt) > 0 AND ttN < 40
         sp = INSTR(srcTxt, " ")
         IF sp = 0 THEN
@@ -142,7 +142,7 @@ SUB FD_RENDER_tooltip
             wd = LEFT$(srcTxt, sp - 1) : srcTxt = MID$(srcTxt, sp + 1)
         END IF
         IF LEN(wd) > 0 THEN
-            DO WHILE LEN(wd) > maxCols AND ttN < 40                ' hard-break long word
+            DO WHILE LEN(wd) > maxCols AND ttN < 40 ' hard-break long word
                 IF LEN(curLn) > 0 THEN
                     ttN = ttN + 1 : ttLines(ttN) = curLn : curLn = ""
                     IF ttN >= 40 THEN EXIT DO
@@ -168,7 +168,7 @@ SUB FD_RENDER_tooltip
     FOR li = 1 TO ttN
         IF LEN(ttLines(li)) > maxLen THEN maxLen = LEN(ttLines(li))
     NEXT li
-    DIM tipW AS INTEGER, tipH AS INTEGER
+    DIM tipW   AS INTEGER, tipH AS INTEGER
     tipW = maxLen * glyphW + tipPad * 2
     tipH = FD_CFG.fontH * fs * ttN + tipPad * 2
 
