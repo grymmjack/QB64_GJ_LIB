@@ -1,6 +1,6 @@
 # QB64_GJ_LIB COLOR
 
-Color science for QB64-PE, in two parts:
+Color science for QB64-PE, in three parts:
 
 - **`COLOR-SPACES`** (`CLR_` prefix): conversions between sRGB, linear RGB, CIE XYZ,
   CIELAB / LCh and **OKLab / OKLCh**. Also gamut checks, gamut mapping by chroma
@@ -11,6 +11,9 @@ Color science for QB64-PE, in two parts:
   spin and zoom it, cut it with a lightness slice, and click any visible color to pick
   it. Like the other GJ_LIB widgets, it renders into an offscreen image and reports
   picks through shared state.
+- **`COLOR-PIGMENT`** (`PGM_` prefix): **paint-like pigment mixing** (Kubelka–Munk),
+  a port of [Spectral.js](https://github.com/rvanwijnen/spectral.js). Blue + yellow
+  makes green, as with real paint, instead of the gray you get from mixing light.
 
 Built for [DRAW](https://github.com/grymmjack/DRAW), with no DRAW dependencies.
 
@@ -120,5 +123,31 @@ recomposes the image.
 
 `COLOR-3D-TEST.BAS` is an interactive demo. `COLOR-3D-TEST --shot out.png SPACE VIEW SLICE
 YAW PITCH` writes a single frame to a PNG (use an absolute path).
+
+## COLOR-PIGMENT
+
+```basic
+'$INCLUDE:'COLOR/COLOR.BI'
+g~& = PGM_mix~&(_RGB32(0, 33, 133), _RGB32(252, 211, 0), 0.5)   ' blue + yellow = green
+t~& = PGM_mix_w~&(white~&, 3, red~&, 1)                          ' 3 parts white, 1 part red
+'$INCLUDE:'COLOR/COLOR.BM'
+```
+
+Each color becomes a 38-band reflectance curve (380–750 nm), built from seven base
+spectra (white, cyan, magenta, yellow, red, green, blue). That curve is turned into
+Kubelka–Munk absorption/scattering (K/S). Mixing works like this:
+
+- The K/S curves are averaged, weighted by **weight² × luminance**. Dark pigments are
+  strong tinters, so a little blue goes a long way, as in real paint.
+- The result is converted back to reflectance, then through the CIE observer to XYZ
+  and sRGB.
+- Out-of-gamut results are mapped back with Spectral.js's own OKLCh chroma search.
+- Alpha blends linearly.
+- K/S curves are cached per color (256 slots).
+
+`COLOR-PIGMENT-TEST.BAS` (run from this folder, or pass the path) compares against the
+307 reference mixes made by spectral.js in `COLOR-PIGMENT-REF.txt`; all match exactly. It exits with code 1 on any failure.
+
+Spectral.js is MIT licensed, (c) 2025 Ronald van Wijnen. See `LICENSE-spectral.js.txt`.
 
 (c) 2026 grymmjack — MIT License
