@@ -1,0 +1,152 @@
+$INCLUDEONCE
+
+' ============================================================================
+' PRESSURE_DEVICE.BM — see PRESSURE_DEVICE.BI
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+''
+' Start the pen backend for this program's window. Call after the window
+' exists (after SCREEN). Safe to call again. Returns TRUE when a backend runs;
+' FALSE leaves every reading at mouse defaults (pressure 1).
+'
+FUNCTION PD_init% ()
+    DIM b AS LONG
+    b& = pd_native_init&(_WINDOWHANDLE)
+    PD_init% = (b& <> PD_BACKEND_NONE)
+END FUNCTION
+
+''
+' Collect pending pen events. Call once per frame, before reading values.
+' (Linux reads its events here; Windows and macOS update on their own.)
+'
+SUB PD_poll ()
+    pd_native_poll
+END SUB
+
+''
+' Stop the backend.
+'
+SUB PD_shutdown ()
+    pd_native_shutdown
+END SUB
+
+''
+' Pressure to draw with: the pen's 0..1 pressure when the last pointer event
+' came from a pen, eraser or pressure trackpad; 1 for a mouse or with no
+' backend, so mouse drawing is unchanged.
+'
+FUNCTION PD_pressure! ()
+    IF pd_native_backend& = PD_BACKEND_NONE _ORELSE pd_native_source& = PD_SRC_MOUSE THEN
+        PD_pressure! = 1
+    ELSE
+        PD_pressure! = pd_native_pressure!
+    END IF
+END FUNCTION
+
+''
+' Last reported pen pressure 0..1, whatever the current pointer is.
+'
+FUNCTION PD_raw_pressure! ()
+    PD_raw_pressure! = pd_native_pressure!
+END FUNCTION
+
+''
+' Source of the last pointer event: PD_SRC_MOUSE / _PEN / _ERASER / _TRACKPAD.
+'
+FUNCTION PD_source% ()
+    PD_source% = pd_native_source&
+END FUNCTION
+
+FUNCTION PD_is_pen% ()
+    DIM s AS LONG
+    s& = pd_native_source&
+    PD_is_pen% = (s& = PD_SRC_PEN OR s& = PD_SRC_ERASER)
+END FUNCTION
+
+FUNCTION PD_is_eraser% ()
+    PD_is_eraser% = (pd_native_source& = PD_SRC_ERASER)
+END FUNCTION
+
+''
+' Pen tilt, -1..1 on each axis (0 = upright); 0 when the device has no tilt.
+'
+FUNCTION PD_tilt_x! ()
+    PD_tilt_x! = pd_native_tilt_x!
+END FUNCTION
+
+FUNCTION PD_tilt_y! ()
+    PD_tilt_y! = pd_native_tilt_y!
+END FUNCTION
+
+''
+' TRUE while the pen hovers over or touches the window (where the OS says so).
+'
+FUNCTION PD_in_range% ()
+    PD_in_range% = (pd_native_in_range& <> 0)
+END FUNCTION
+
+''
+' Count of pen events received (diagnostics).
+'
+FUNCTION PD_events& ()
+    PD_events& = pd_native_events&
+END FUNCTION
+
+FUNCTION PD_backend% ()
+    PD_backend% = pd_native_backend&
+END FUNCTION
+
+FUNCTION PD_backend_name$ ()
+    SELECT CASE pd_native_backend&
+        CASE PD_BACKEND_WINDOWS: PD_backend_name$ = "Windows Ink"
+        CASE PD_BACKEND_MACOS:   PD_backend_name$ = "macOS tablet events"
+        CASE PD_BACKEND_XINPUT2: PD_backend_name$ = "XInput2"
+        CASE ELSE:               PD_backend_name$ = "none"
+    END SELECT
+END FUNCTION
+
+FUNCTION PD_source_name$ (src AS INTEGER)
+    SELECT CASE src
+        CASE PD_SRC_PEN:      PD_source_name$ = "pen"
+        CASE PD_SRC_ERASER:   PD_source_name$ = "eraser"
+        CASE PD_SRC_TRACKPAD: PD_source_name$ = "pressure trackpad"
+        CASE ELSE:            PD_source_name$ = "mouse"
+    END SELECT
+END FUNCTION
+
+''
+' What PD_init% did, in words (useful when it returns FALSE).
+'
+FUNCTION PD_status$ ()
+    PD_status$ = PD_native_string$(0)
+END FUNCTION
+
+''
+' Name of the last pen device (Linux reports the driver's name).
+'
+FUNCTION PD_device$ ()
+    PD_device$ = PD_native_string$(1)
+END FUNCTION
+
+FUNCTION PD_native_string$ (which AS LONG)
+    DIM buf AS STRING, n AS LONG, w AS LONG
+    w& = which&
+    buf$ = SPACE$(256)
+    n& = pd_native_text&(w&, buf$, LEN(buf$))
+    IF n& < 0 THEN n& = 0
+    IF n& > LEN(buf$) THEN n& = LEN(buf$)
+    PD_native_string$ = LEFT$(buf$, n&)
+END FUNCTION
+
+''
+' Shape a 0..1 pressure: gamma < 1 makes light touches heavier, > 1 lighter.
+'
+FUNCTION PD_curve! (p AS SINGLE, gamma AS SINGLE)
+    DIM v AS SINGLE, g AS SINGLE
+    v! = p!: g! = gamma!
+    IF v! <= 0 THEN PD_curve! = 0: EXIT FUNCTION
+    IF v! >= 1 THEN PD_curve! = 1: EXIT FUNCTION
+    IF g! <= 0 THEN g! = 1
+    PD_curve! = v! ^ g!
+END FUNCTION
