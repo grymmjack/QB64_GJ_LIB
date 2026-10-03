@@ -71,7 +71,7 @@ code 0 when a backend is running.
 **What has been verified, and where:**
 - **Linux, Wayland (through XWayland):** works with a HUION Inspiroy 2 M. Pressure and pen detection come through, and the mouse is unaffected.
 - **macOS:** works with a HUION Inspiroy 2 M, with Huion's driver installed and its tablet app running.
-- **Windows:** not yet confirmed on hardware.
+- **Windows:** works with a HUION Inspiroy 2 M, with Huion's driver installed and Windows Ink on.
 - **Linux, plain X11:** the backend starts under Xvfb, and the mouse is unaffected.
 - **Linux event parsing:** a C++ unit test feeds simulated Wacom XInput2 events. It checks pressure scaling, tilt, sparse axis data, the eraser, and switching between pen and mouse.
 - **Linux struct layouts:** the hand-declared X11 structs are checked against the system headers.
