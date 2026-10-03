@@ -15,11 +15,11 @@ every platform) and reports what the pen is doing:
 
 A mouse keeps working exactly as before: it reports pressure 1.
 
-![PRESSURE_DEVICE-TEST: live readout, pressure history and pressure-width strokes](pressure-device-test.png)
+![PRESSURE_DEVICE-TEST with a HUION Inspiroy 2 M on Linux (Wayland)](pressure-device-test.png)
 
-*`PRESSURE_DEVICE-TEST --demo` under Xvfb. The strokes and the history graph use
-simulated pressure, because a screenshot machine has no tablet. With a real pen
-the panel also shows the device name, `Source: pen` and a moving pressure bar.*
+*`PRESSURE_DEVICE-TEST` with a HUION Inspiroy 2 M on Linux (Wayland, via
+XWayland). Stroke width follows pen pressure; the graph is the pressure
+history of the last stroke.*
 
 ## Quick start
 
