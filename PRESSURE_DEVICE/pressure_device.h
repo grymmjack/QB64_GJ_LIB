@@ -11,9 +11,13 @@
 //            the Objective-C runtime; tablet-subtype mouse events carry
 //            pressure / tilt, proximity events say pen vs eraser, and Force
 //            Touch trackpads send NSEventTypePressure while clicked.
-//   Linux    XInput2 on a second X connection of our own, selecting XI_Motion
-//            on the window. libX11 / libXi are loaded with dlopen, so there is
-//            no build dependency and no X11 macros leak into the program.
+//   Linux    XInput2 raw motion (XI_RawMotion) on the root window, from a
+//            second X connection of our own. Raw events are delivered to every
+//            client that asks, so they never take events away from the
+//            program; selecting XI_Motion on the program's own window would:
+//            the X server then stops sending core MotionNotify there and the
+//            program loses hover movement. libX11 / libXi are loaded with
+//            dlopen, so there is no build dependency and no X11 macros leak in.
 //            Covers Wayland desktops too: GLFW runs QB64-PE on XWayland.
 //
 // State is written by the backend (on the window thread for Windows / macOS)
@@ -320,8 +324,13 @@ typedef struct {
     double root_x; double root_y; double event_x; double event_y; int flags;
     XIButtonState buttons; XIValuatorState valuators; XIModifierState mods; XIModifierState group;
 } XIDeviceEvent;
+typedef struct {
+    int type; unsigned long serial; Bool send_event; Display *display; int extension; int evtype; Time time;
+    int deviceid; int sourceid; int detail; int flags; XIValuatorState valuators; double *raw_values;
+} XIRawEvent;
 enum { GenericEvent = 35, XI_ButtonPress = 4, XI_ButtonRelease = 5, XI_Motion = 6, XI_Enter = 7, XI_Leave = 8,
-       XI_HierarchyChanged = 11, XIValuatorClass = 2, XIAllDevices = 0, XISlavePointer = 3, XIFloatingSlave = 5 };
+       XI_HierarchyChanged = 11, XI_RawMotion = 17, XIValuatorClass = 2, XIAllDevices = 0, XIMasterPointer = 1,
+       XISlavePointer = 3, XIFloatingSlave = 5 };
 } // namespace pd_x
 
 typedef pd_x::Display *(*pd_fn_XOpenDisplay)(const char *);
@@ -337,6 +346,7 @@ typedef int (*pd_fn_XIQueryVersion)(pd_x::Display *, int *, int *);
 typedef pd_x::XIDeviceInfo *(*pd_fn_XIQueryDevice)(pd_x::Display *, int, int *);
 typedef void (*pd_fn_XIFreeDeviceInfo)(pd_x::XIDeviceInfo *);
 typedef int (*pd_fn_XISelectEvents)(pd_x::Display *, pd_x::Window, pd_x::XIEventMask *, int);
+typedef pd_x::Window (*pd_fn_XDefaultRootWindow)(pd_x::Display *);
 
 static struct {
     void *libX11, *libXi;
@@ -345,6 +355,7 @@ static struct {
     pd_fn_XQueryExtension XQueryExtension; pd_fn_XInternAtom XInternAtom; pd_fn_XFlush XFlush;
     pd_fn_XIQueryVersion XIQueryVersion; pd_fn_XIQueryDevice XIQueryDevice;
     pd_fn_XIFreeDeviceInfo XIFreeDeviceInfo; pd_fn_XISelectEvents XISelectEvents;
+    pd_fn_XDefaultRootWindow XDefaultRootWindow;
     pd_x::Display *dpy; pd_x::Window win; int opcode;
     pd_x::Atom aPressure, aTiltX, aTiltY;
 } pdx;
@@ -353,6 +364,8 @@ static struct {
 typedef struct { int id; int kind; int vp, vtx, vty; double pmin, pmax, txmin, txmax, tymin, tymax; char name[96]; } pd_dev;
 static pd_dev pd_devs[PD_MAX_DEV];
 static int pd_ndevs = 0;
+static int pd_masters[PD_MAX_DEV];   // master pointer ids: their raw events duplicate the slave's
+static int pd_nmasters = 0;
 
 static int pd_icontains(const char *h, const char *n) {
     size_t ln = strlen(n);
@@ -370,10 +383,12 @@ static int pd_icontains(const char *h, const char *n) {
 static void pd_scan_devices(void) {
     int n = 0;
     pd_ndevs = 0;
+    pd_nmasters = 0;
     pd_x::XIDeviceInfo *info = pdx.XIQueryDevice(pdx.dpy, pd_x::XIAllDevices, &n);
     if (!info) return;
     for (int i = 0; i < n && pd_ndevs < PD_MAX_DEV; i++) {
         pd_x::XIDeviceInfo *d = &info[i];
+        if (d->use == pd_x::XIMasterPointer && pd_nmasters < PD_MAX_DEV) pd_masters[pd_nmasters++] = d->deviceid;
         if (d->use != pd_x::XISlavePointer && d->use != pd_x::XIFloatingSlave) continue;
         pd_dev dv; memset(&dv, 0, sizeof(dv));
         dv.id = d->deviceid; dv.vp = dv.vtx = dv.vty = -1;
@@ -419,7 +434,7 @@ static int32_t pd_backend_init(uintptr_t win) {
     PD_DLSYM(libX11, XNextEvent) PD_DLSYM(libX11, XGetEventData) PD_DLSYM(libX11, XFreeEventData)
     PD_DLSYM(libX11, XQueryExtension) PD_DLSYM(libX11, XInternAtom) PD_DLSYM(libX11, XFlush)
     PD_DLSYM(libXi, XIQueryVersion) PD_DLSYM(libXi, XIQueryDevice) PD_DLSYM(libXi, XIFreeDeviceInfo)
-    PD_DLSYM(libXi, XISelectEvents)
+    PD_DLSYM(libXi, XISelectEvents) PD_DLSYM(libX11, XDefaultRootWindow)
     if (!ok) { pd_set_status("libX11 / libXi missing symbols"); return 0; }
     pdx.win = (pd_x::Window)win;
     if (!pdx.win) { pd_set_status("no window handle"); return 0; }
@@ -437,39 +452,38 @@ static int32_t pd_backend_init(uintptr_t win) {
     pdx.aTiltX    = pdx.XInternAtom(pdx.dpy, "Abs Tilt X", 0);
     pdx.aTiltY    = pdx.XInternAtom(pdx.dpy, "Abs Tilt Y", 0);
     pd_scan_devices();
-    // Motion (pressure rides on it) from every device on our window, plus
-    // device hotplug on the root window. Button events are not selected:
-    // XI2 allows only one client per window to select ButtonPress.
-    unsigned char m1[2] = {0, 0}, m2[2] = {0, 0};
-    m1[pd_x::XI_Motion >> 3] |= (unsigned char)(1 << (pd_x::XI_Motion & 7));
-    m1[pd_x::XI_Leave >> 3]  |= (unsigned char)(1 << (pd_x::XI_Leave & 7));
-    m2[pd_x::XI_HierarchyChanged >> 3] |= (unsigned char)(1 << (pd_x::XI_HierarchyChanged & 7));
-    pd_x::XIEventMask em = {pd_x::XIAllDevices, 2, m1};
-    pdx.XISelectEvents(pdx.dpy, pdx.win, &em, 1);
+    // Raw motion (pressure rides on it) from every device, on the root window.
+    // Nothing is selected on the program's own window: an XI2 motion selection
+    // there would take core motion events away from it (see the header).
+    unsigned char m1[3] = {0, 0, 0};
+    m1[pd_x::XI_RawMotion >> 3] |= (unsigned char)(1 << (pd_x::XI_RawMotion & 7));
+    m1[pd_x::XI_HierarchyChanged >> 3] |= (unsigned char)(1 << (pd_x::XI_HierarchyChanged & 7)); // hotplug
+    pd_x::XIEventMask em = {pd_x::XIAllDevices, 3, m1};
+    pdx.XISelectEvents(pdx.dpy, pdx.XDefaultRootWindow(pdx.dpy), &em, 1);
     pdx.XFlush(pdx.dpy);
     char s[256];
     if (pd_ndevs > 0) snprintf(s, sizeof(s), "XInput2: %d tablet tool(s), first: %s", pd_ndevs, pd_devs[0].name);
     else snprintf(s, sizeof(s), "XInput2 ready; no tablet found yet (plug one in and it is picked up)");
     pd_set_status(s);
-    (void)m2;
     return 1;
 }
 
 static void pd_backend_poll(void) {
     if (!pdx.dpy) return;
-    static int rescanTicks = 0;
     while (pdx.XPending(pdx.dpy) > 0) {
         pd_x::XEvent e;
         pdx.XNextEvent(pdx.dpy, &e);
         if (e.type != pd_x::GenericEvent || e.xcookie.extension != pdx.opcode) continue;
         if (!pdx.XGetEventData(pdx.dpy, &e.xcookie)) continue;
-        if (e.xcookie.evtype == pd_x::XI_Motion) {
-            pd_x::XIDeviceEvent *de = (pd_x::XIDeviceEvent *)e.xcookie.data;
-            if (de->deviceid == de->sourceid) {          // slave copy: valuators are the tool's own
+        if (e.xcookie.evtype == pd_x::XI_RawMotion) {
+            // Raw events carry the device in deviceid (their sourceid is always
+            // 0, an X server bug). Skip the master pointer's duplicate copies.
+            pd_x::XIRawEvent *de = (pd_x::XIRawEvent *)e.xcookie.data;
+            int isMaster = 0;
+            for (int i = 0; i < pd_nmasters; i++) if (pd_masters[i] == de->deviceid) { isMaster = 1; break; }
+            if (!isMaster) {
                 int k = -1;
-                for (int i = 0; i < pd_ndevs; i++) if (pd_devs[i].id == de->sourceid) { k = i; break; }
-                if (k < 0 && rescanTicks <= 0) { pd_scan_devices(); rescanTicks = 60;
-                    for (int i = 0; i < pd_ndevs; i++) if (pd_devs[i].id == de->sourceid) { k = i; break; } }
+                for (int i = 0; i < pd_ndevs; i++) if (pd_devs[i].id == de->deviceid) { k = i; break; }
                 if (k >= 0) {
                     pd_dev *d = &pd_devs[k];
                     int f;
@@ -487,12 +501,11 @@ static void pd_backend_poll(void) {
                     pd_source = 0;                       // mouse, touchpad, ...
                 }
             }
-        } else if (e.xcookie.evtype == pd_x::XI_Leave) {
-            pd_in_range = 0;
+        } else if (e.xcookie.evtype == pd_x::XI_HierarchyChanged) {
+            pd_scan_devices();                           // a tablet was plugged in or removed
         }
         pdx.XFreeEventData(pdx.dpy, &e.xcookie);
     }
-    if (rescanTicks > 0) rescanTicks--;
 }
 static void pd_backend_shutdown(void) {
     if (pdx.dpy) pdx.XCloseDisplay(pdx.dpy);
