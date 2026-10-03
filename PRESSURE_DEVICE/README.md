@@ -69,7 +69,7 @@ erases. `--selftest` starts the backend, prints its status, and exits with
 code 0 when a backend is running.
 
 **What has been verified, and where:**
-- **Linux, Wayland (through XWayland):** works with a HUION Inspiroy 2 M. Pressure and pen detection come through, and the mouse is unaffected.
+- **Linux, Wayland (through XWayland):** works with a HUION Inspiroy 2 M, both with the system's own tablet support and with Huion's Linux driver. Pressure and pen detection come through, and the mouse is unaffected.
 - **macOS:** works with a HUION Inspiroy 2 M, with Huion's driver installed and its tablet app running.
 - **Windows:** works with a HUION Inspiroy 2 M, with Huion's driver installed and Windows Ink on.
 - **Linux, plain X11:** the backend starts under Xvfb, and the mouse is unaffected.
