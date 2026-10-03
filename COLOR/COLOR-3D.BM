@@ -1,0 +1,681 @@
+$INCLUDEONCE
+
+' ============================================================================
+' COLOR-3D.BM — Rotatable 3D color-space picker widget (prefix C3D_)
+' See COLOR-3D.BI for the overview and usage.
+' ============================================================================
+
+' ----------------------------------------------------------------------------
+' Lifecycle
+' ----------------------------------------------------------------------------
+
+''
+' Create the widget. nativeW is the widget width in native pixels (>= 160);
+' the 3D viewport is square (nativeW x nativeW) and the controls + readouts
+' sit below it, so C3D_STATE.h is derived.
+'
+SUB C3D_init (initialColor AS _UNSIGNED LONG, nativeW AS INTEGER)
+    DIM s AS C3D_STATE_OBJ
+    C3D_cleanup
+    C3D_STATE = s
+
+    C3D_STATE.w = nativeW
+    IF C3D_STATE.w < 160 THEN C3D_STATE.w = 160
+    C3D_STATE.vh = C3D_STATE.w
+    C3D_STATE.rowY1 = C3D_STATE.vh + C3D_GAP
+    C3D_STATE.rowY2 = C3D_STATE.rowY1 + C3D_ROW_H + 2
+    C3D_STATE.sliderY = C3D_STATE.rowY2 + C3D_ROW_H + 2
+    C3D_STATE.readY = C3D_STATE.sliderY + C3D_SLIDER_H + C3D_GAP + 1
+    C3D_STATE.h = C3D_STATE.readY + C3D_READOUTS * C3D_LINE_H + C3D_GAP
+
+    C3D_STATE.spaceId = C3D_SPACE_OKLAB
+    C3D_STATE.viewMode = C3D_VIEW_SOLID
+    C3D_STATE.sliceOn = 0
+    C3D_STATE.slice = 0.6
+    C3D_STATE.yaw = 35
+    C3D_STATE.pitch = 25
+    C3D_STATE.zoom = 1
+    C3D_STATE.gridN = C3D_GRID_DEFAULT
+    C3D_STATE.cloudN = C3D_CLOUD_DEFAULT
+    C3D_STATE.cur = initialColor OR &HFF000000~&
+
+    C3D_STATE.bgColor = _RGB32(32, 32, 36)
+    C3D_STATE.textColor = _RGB32(220, 220, 220)
+    C3D_STATE.dimColor = _RGB32(120, 120, 128)
+    C3D_STATE.btnColor = _RGB32(56, 56, 62)
+    C3D_STATE.btnOnColor = _RGB32(70, 110, 170)
+    C3D_STATE.edgeColor = _RGB32(90, 90, 96)
+
+    C3D_STATE.imgHandle = _NEWIMAGE(C3D_STATE.w, C3D_STATE.h, 32)
+    _FONT 8, C3D_STATE.imgHandle
+    REDIM C3D_cbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS _UNSIGNED LONG
+    REDIM C3D_pbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS _UNSIGNED LONG
+    REDIM C3D_zbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS SINGLE
+    C3D_STATE.dirty = -1
+END SUB
+
+SUB C3D_cleanup
+    IF C3D_STATE.imgHandle < -1 THEN _FREEIMAGE C3D_STATE.imgHandle
+    C3D_STATE.imgHandle = 0
+END SUB
+
+' ----------------------------------------------------------------------------
+' Host API
+' ----------------------------------------------------------------------------
+
+SUB C3D_set_rgb (col AS _UNSIGNED LONG)
+    C3D_STATE.cur = col OR &HFF000000~&
+END SUB
+
+FUNCTION C3D_get_rgb~& ()
+    C3D_get_rgb~& = C3D_STATE.cur
+END FUNCTION
+
+SUB C3D_set_space (spaceId AS INTEGER)
+    IF spaceId < 0 _ORELSE spaceId >= C3D_SPACE_COUNT THEN EXIT SUB
+    C3D_STATE.spaceId = spaceId
+    C3D_STATE.dirty = -1
+END SUB
+
+SUB C3D_set_view (viewMode AS INTEGER)
+    C3D_STATE.viewMode = viewMode
+    C3D_STATE.dirty = -1
+END SUB
+
+SUB C3D_set_slice (sliceOn AS INTEGER, slice01 AS SINGLE)
+    C3D_STATE.sliceOn = sliceOn
+    C3D_STATE.slice = slice01
+    IF C3D_STATE.slice < 0 THEN C3D_STATE.slice = 0
+    IF C3D_STATE.slice > 1 THEN C3D_STATE.slice = 1
+    C3D_STATE.dirty = -1
+END SUB
+
+SUB C3D_set_rotation (yawDeg AS SINGLE, pitchDeg AS SINGLE, zoom AS SINGLE)
+    C3D_STATE.yaw = yawDeg
+    C3D_STATE.pitch = pitchDeg
+    IF C3D_STATE.pitch > 89 THEN C3D_STATE.pitch = 89
+    IF C3D_STATE.pitch < -89 THEN C3D_STATE.pitch = -89
+    C3D_STATE.zoom = zoom
+    IF C3D_STATE.zoom < 0.4 THEN C3D_STATE.zoom = 0.4
+    IF C3D_STATE.zoom > 3 THEN C3D_STATE.zoom = 3
+    C3D_STATE.dirty = -1
+END SUB
+
+FUNCTION C3D_space_name$ (spaceId AS INTEGER)
+    SELECT CASE spaceId
+        CASE C3D_SPACE_OKLAB: C3D_space_name$ = "OKLAB"
+        CASE C3D_SPACE_LAB: C3D_space_name$ = "LAB"
+        CASE C3D_SPACE_XYZ: C3D_space_name$ = "XYZ"
+        CASE ELSE: C3D_space_name$ = "RGB"
+    END SELECT
+END FUNCTION
+
+FUNCTION C3D_over_viewport% (nx AS INTEGER, ny AS INTEGER)
+    IF nx >= 0 _ANDALSO nx < C3D_STATE.w _ANDALSO ny >= 0 _ANDALSO ny < C3D_STATE.vh THEN C3D_over_viewport% = -1
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' Space mapping. Every space maps an sRGB color (gamma-encoded 0..1) to a
+' 3D point with the space's lightness axis vertical (+y up) and the solid
+' centred on the origin at one uniform scale per space, so shapes are true to
+' the space (OKLab's "tilted droplet", the CIELAB blob, XYZ's slanted
+' parallelepiped, the RGB cube standing on its black-white diagonal).
+' light = the space's own lightness 0..1 (OKLab L, CIELAB L/100, XYZ Y,
+' RGB mean) — what the slice cuts on.
+' ----------------------------------------------------------------------------
+
+CONST C3D_K_OKLAB = 1.15
+CONST C3D_K_LAB   = 170
+CONST C3D_K_XYZ   = 0.8
+CONST C3D_K_RGB   = 0.6
+
+SUB C3D_rgb_to_pos (r AS SINGLE, g AS SINGLE, b AS SINGLE, px AS SINGLE, py AS SINGLE, pz AS SINGLE, light AS SINGLE)
+    DIM AS SINGLE lr, lg, lb, cl, ca, cb, x, y, z
+    SELECT CASE C3D_STATE.spaceId
+        CASE C3D_SPACE_OKLAB
+            lr = CLR_srgb_to_linear#(r): lg = CLR_srgb_to_linear#(g): lb = CLR_srgb_to_linear#(b)
+            CLR_linear_to_oklab lr, lg, lb, cl, ca, cb
+            px = ca * C3D_K_OKLAB: py = (cl - 0.5) * C3D_K_OKLAB: pz = -cb * C3D_K_OKLAB
+            light = cl
+        CASE C3D_SPACE_LAB
+            lr = CLR_srgb_to_linear#(r): lg = CLR_srgb_to_linear#(g): lb = CLR_srgb_to_linear#(b)
+            CLR_linear_to_xyz lr, lg, lb, x, y, z
+            CLR_xyz_to_lab x, y, z, cl, ca, cb
+            px = ca / C3D_K_LAB: py = (cl - 50) / C3D_K_LAB: pz = -cb / C3D_K_LAB
+            light = cl / 100
+        CASE C3D_SPACE_XYZ
+            lr = CLR_srgb_to_linear#(r): lg = CLR_srgb_to_linear#(g): lb = CLR_srgb_to_linear#(b)
+            CLR_linear_to_xyz lr, lg, lb, x, y, z
+            px = (x - 0.475) * C3D_K_XYZ: py = (y - 0.5) * C3D_K_XYZ: pz = (z - 0.545) * C3D_K_XYZ
+            light = y
+        CASE ELSE ' RGB cube on its black-white diagonal
+            px = (r - g) * 0.70710678 * C3D_K_RGB
+            py = ((r + g + b) / 3 - 0.5) * 1.7320508 * C3D_K_RGB
+            pz = (r + g - 2 * b) * 0.40824829 * C3D_K_RGB
+            light = (r + g + b) / 3
+    END SELECT
+END SUB
+
+''
+' Inverse of C3D_rgb_to_pos: a 3D point -> sRGB gamma-encoded 0..1 (not clamped;
+' outside 0..1 means outside the gamut).
+'
+SUB C3D_pos_to_rgb (px AS SINGLE, py AS SINGLE, pz AS SINGLE, r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    DIM AS SINGLE lr, lg, lb, x, y, z, m, rg, xx, zz
+    SELECT CASE C3D_STATE.spaceId
+        CASE C3D_SPACE_OKLAB
+            CLR_oklab_to_linear py / C3D_K_OKLAB + 0.5, px / C3D_K_OKLAB, -pz / C3D_K_OKLAB, lr, lg, lb
+        CASE C3D_SPACE_LAB
+            CLR_lab_to_xyz py * C3D_K_LAB + 50, px * C3D_K_LAB, -pz * C3D_K_LAB, x, y, z
+            CLR_xyz_to_linear x, y, z, lr, lg, lb
+        CASE C3D_SPACE_XYZ
+            CLR_xyz_to_linear px / C3D_K_XYZ + 0.475, py / C3D_K_XYZ + 0.5, pz / C3D_K_XYZ + 0.545, lr, lg, lb
+        CASE ELSE
+            xx = px / C3D_K_RGB: zz = pz / C3D_K_RGB
+            m = py / (1.7320508 * C3D_K_RGB) + 0.5
+            b = m - zz * 0.81649658                            ' sqrt(6)/3
+            rg = 3 * m - b
+            r = (rg + xx * 1.41421356) / 2
+            g = (rg - xx * 1.41421356) / 2
+            EXIT SUB
+    END SELECT
+    r = CLR_linear_to_srgb#(lr): g = CLR_linear_to_srgb#(lg): b = CLR_linear_to_srgb#(lb)
+END SUB
+
+''
+' Height (y) of the slice plane for the current space.
+'
+FUNCTION C3D_slice_y! ()
+    DIM s AS SINGLE
+    s = C3D_STATE.slice
+    SELECT CASE C3D_STATE.spaceId
+        CASE C3D_SPACE_OKLAB: C3D_slice_y! = (s - 0.5) * C3D_K_OKLAB
+        CASE C3D_SPACE_LAB: C3D_slice_y! = (s * 100 - 50) / C3D_K_LAB
+        CASE C3D_SPACE_XYZ: C3D_slice_y! = (s - 0.5) * C3D_K_XYZ
+        CASE ELSE: C3D_slice_y! = (s - 0.5) * 1.7320508 * C3D_K_RGB
+    END SELECT
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' Projection (orthographic). Yaw spins about the vertical lightness axis,
+' pitch tilts the top toward the viewer. Depth: larger = nearer.
+' ----------------------------------------------------------------------------
+
+SUB C3D_begin_projection
+    C3D_cyaw = COS(C3D_STATE.yaw * _PI / 180): C3D_syaw = SIN(C3D_STATE.yaw * _PI / 180)
+    C3D_cpit = COS(C3D_STATE.pitch * _PI / 180): C3D_spit = SIN(C3D_STATE.pitch * _PI / 180)
+    C3D_scr = C3D_STATE.vh * 0.62 * C3D_STATE.zoom
+    C3D_ccx = C3D_STATE.w / 2: C3D_ccy = C3D_STATE.vh / 2
+END SUB
+
+SUB C3D_project (px AS SINGLE, py AS SINGLE, pz AS SINGLE, sx AS SINGLE, sy AS SINGLE, sz AS SINGLE)
+    DIM AS SINGLE x1, z1, y2
+    x1 = px * C3D_cyaw + pz * C3D_syaw
+    z1 = -px * C3D_syaw + pz * C3D_cyaw
+    y2 = py * C3D_cpit - z1 * C3D_spit
+    sz = py * C3D_spit + z1 * C3D_cpit
+    sx = C3D_ccx + x1 * C3D_scr
+    sy = C3D_ccy - y2 * C3D_scr
+END SUB
+
+' ----------------------------------------------------------------------------
+' Raster
+' ----------------------------------------------------------------------------
+
+''
+' Re-rasterize the 3D viewport into C3D_cbuf / C3D_pbuf / C3D_zbuf.
+'
+SUB C3D_raster
+    DIM AS LONG i, n
+    n = C3D_STATE.w * C3D_STATE.vh
+    FOR i = 0 TO n - 1
+        C3D_cbuf(i) = C3D_STATE.bgColor
+        C3D_pbuf(i) = 0
+        C3D_zbuf(i) = -1E+30
+    NEXT i
+    C3D_begin_projection
+    IF C3D_STATE.viewMode = C3D_VIEW_CLOUD THEN C3D_raster_cloud ELSE C3D_raster_surface
+    IF C3D_STATE.sliceOn THEN C3D_raster_cap
+    C3D_raster_edges
+    C3D_STATE.dirty = 0
+END SUB
+
+''
+' One cube face corner -> RGB. Faces: 0 r=0, 1 r=1, 2 g=0, 3 g=1, 4 b=0, 5 b=1.
+'
+SUB C3D_face_rgb (face AS INTEGER, u AS SINGLE, v AS SINGLE, r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    SELECT CASE face
+        CASE 0: r = 0: g = u: b = v
+        CASE 1: r = 1: g = u: b = v
+        CASE 2: g = 0: r = u: b = v
+        CASE 3: g = 1: r = u: b = v
+        CASE 4: b = 0: r = u: g = v
+        CASE ELSE: b = 1: r = u: g = v
+    END SELECT
+END SUB
+
+''
+' The gamut boundary = the six faces of the sRGB cube, mapped into the space.
+'
+SUB C3D_raster_surface
+    DIM AS INTEGER f, i, j, nn, stride
+    DIM AS LONG base0, k
+    DIM AS SINGLE r, g, b, px, py, pz, lt
+    nn = C3D_STATE.gridN
+    stride = nn + 1
+    REDIM C3D_vsx(0 TO 6 * stride * stride - 1) AS SINGLE, C3D_vsy(0 TO 6 * stride * stride - 1) AS SINGLE, C3D_vsz(0 TO 6 * stride * stride - 1) AS SINGLE
+    REDIM C3D_vr(0 TO 6 * stride * stride - 1) AS SINGLE, C3D_vg(0 TO 6 * stride * stride - 1) AS SINGLE, C3D_vb(0 TO 6 * stride * stride - 1) AS SINGLE, C3D_vl(0 TO 6 * stride * stride - 1) AS SINGLE
+    FOR f = 0 TO 5
+        FOR j = 0 TO nn
+            FOR i = 0 TO nn
+                k = (f * stride + j) * stride + i
+                C3D_face_rgb f, i / nn, j / nn, r, g, b
+                C3D_rgb_to_pos r, g, b, px, py, pz, lt
+                C3D_project px, py, pz, C3D_vsx(k), C3D_vsy(k), C3D_vsz(k)
+                C3D_vr(k) = r: C3D_vg(k) = g: C3D_vb(k) = b: C3D_vl(k) = lt
+            NEXT i
+        NEXT j
+    NEXT f
+    FOR f = 0 TO 5
+        FOR j = 0 TO nn - 1
+            FOR i = 0 TO nn - 1
+                base0 = (f * stride + j) * stride + i
+                C3D_tri base0, base0 + 1, base0 + stride + 1
+                C3D_tri base0, base0 + stride + 1, base0 + stride
+            NEXT i
+        NEXT j
+    NEXT f
+END SUB
+
+''
+' Z-buffered, attribute-interpolated triangle (indices into the C3D_v* arrays).
+'
+SUB C3D_tri (i0 AS LONG, i1 AS LONG, i2 AS LONG)
+    DIM AS SINGLE x0, y0, x1, y1, x2, y2, area, inv, w0, w1, w2, fx, fy, z, lt, cutL
+    DIM AS LONG minX, maxX, minY, maxY, px, py, idx, vw
+    DIM AS INTEGER cut
+    x0 = C3D_vsx(i0): y0 = C3D_vsy(i0)
+    x1 = C3D_vsx(i1): y1 = C3D_vsy(i1)
+    x2 = C3D_vsx(i2): y2 = C3D_vsy(i2)
+    area = (x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)
+    IF ABS(area) < 0.000001 THEN EXIT SUB
+    inv = 1 / area
+    minX = INT(x0): IF x1 < minX THEN minX = INT(x1)
+    IF x2 < minX THEN minX = INT(x2)
+    maxX = INT(x0) + 1: IF x1 + 1 > maxX THEN maxX = INT(x1) + 1
+    IF x2 + 1 > maxX THEN maxX = INT(x2) + 1
+    minY = INT(y0): IF y1 < minY THEN minY = INT(y1)
+    IF y2 < minY THEN minY = INT(y2)
+    maxY = INT(y0) + 1: IF y1 + 1 > maxY THEN maxY = INT(y1) + 1
+    IF y2 + 1 > maxY THEN maxY = INT(y2) + 1
+    vw = C3D_STATE.w
+    IF minX < 0 THEN minX = 0
+    IF minY < 0 THEN minY = 0
+    IF maxX > vw - 1 THEN maxX = vw - 1
+    IF maxY > C3D_STATE.vh - 1 THEN maxY = C3D_STATE.vh - 1
+    cut = C3D_STATE.sliceOn: cutL = C3D_STATE.slice
+    FOR py = minY TO maxY
+        fy = py + 0.5
+        FOR px = minX TO maxX
+            fx = px + 0.5
+            w0 = ((x2 - x1) * (fy - y1) - (y2 - y1) * (fx - x1)) * inv
+            IF w0 < -0.0001 THEN _CONTINUE
+            w1 = ((x0 - x2) * (fy - y2) - (y0 - y2) * (fx - x2)) * inv
+            IF w1 < -0.0001 THEN _CONTINUE
+            w2 = 1 - w0 - w1
+            IF w2 < -0.0001 THEN _CONTINUE
+            IF cut THEN
+                lt = w0 * C3D_vl(i0) + w1 * C3D_vl(i1) + w2 * C3D_vl(i2)
+                IF lt > cutL THEN _CONTINUE
+            END IF
+            z = w0 * C3D_vsz(i0) + w1 * C3D_vsz(i1) + w2 * C3D_vsz(i2)
+            idx = py * vw + px
+            IF z > C3D_zbuf(idx) THEN
+                C3D_zbuf(idx) = z
+                C3D_pbuf(idx) = _RGB32(CLR_unit_to_byte%(w0 * C3D_vr(i0) + w1 * C3D_vr(i1) + w2 * C3D_vr(i2)), CLR_unit_to_byte%(w0 * C3D_vg(i0) + w1 * C3D_vg(i1) + w2 * C3D_vg(i2)), CLR_unit_to_byte%(w0 * C3D_vb(i0) + w1 * C3D_vb(i1) + w2 * C3D_vb(i2)))
+                C3D_cbuf(idx) = C3D_pbuf(idx)
+            END IF
+        NEXT px
+    NEXT py
+END SUB
+
+''
+' Point cloud: an even grid of sRGB colors through the whole volume.
+'
+SUB C3D_raster_cloud
+    DIM AS INTEGER ir, ig, ib, nn, ps, dx, dy
+    DIM AS SINGLE r, g, b, px, py, pz, lt, sx, sy, sz
+    DIM AS LONG x0, y0, idx, xx, yy
+    DIM col AS _UNSIGNED LONG
+    nn = C3D_STATE.cloudN - 1
+    IF nn < 1 THEN nn = 1
+    ps = INT(C3D_scr / (nn * 5)) + 1                           ' small dots: gaps keep it a cloud
+    IF ps < 2 THEN ps = 2
+    FOR ir = 0 TO nn
+        FOR ig = 0 TO nn
+            FOR ib = 0 TO nn
+                r = ir / nn: g = ig / nn: b = ib / nn
+                C3D_rgb_to_pos r, g, b, px, py, pz, lt
+                IF C3D_STATE.sliceOn _ANDALSO lt > C3D_STATE.slice THEN _CONTINUE
+                C3D_project px, py, pz, sx, sy, sz
+                col = _RGB32(ir * 255 \ nn, ig * 255 \ nn, ib * 255 \ nn)
+                x0 = INT(sx - ps / 2): y0 = INT(sy - ps / 2)
+                FOR dy = 0 TO ps - 1
+                    yy = y0 + dy
+                    IF yy < 0 _ORELSE yy >= C3D_STATE.vh THEN _CONTINUE
+                    FOR dx = 0 TO ps - 1
+                        xx = x0 + dx
+                        IF xx < 0 _ORELSE xx >= C3D_STATE.w THEN _CONTINUE
+                        idx = yy * C3D_STATE.w + xx
+                        IF sz > C3D_zbuf(idx) THEN
+                            C3D_zbuf(idx) = sz: C3D_pbuf(idx) = col: C3D_cbuf(idx) = col
+                        END IF
+                    NEXT dx
+                NEXT dy
+            NEXT ib
+        NEXT ig
+    NEXT ir
+END SUB
+
+''
+' The cut face: every in-gamut color on the slice plane, solved per pixel
+' (unproject the pixel onto the plane, convert back to RGB, keep it if it is
+' inside the gamut) — exact edges, every color at that lightness pickable.
+'
+SUB C3D_raster_cap
+    DIM AS LONG px, py, idx
+    DIM AS SINGLE ys, x1, y2, z2, z1, wx, wz, r, g, b, e
+    IF ABS(C3D_spit) < 0.03 THEN EXIT SUB                      ' plane seen edge-on
+    ys = C3D_slice_y!
+    e = 0.0005
+    FOR py = 0 TO C3D_STATE.vh - 1
+        y2 = (C3D_ccy - (py + 0.5)) / C3D_scr
+        z2 = (ys - y2 * C3D_cpit) / C3D_spit
+        z1 = -y2 * C3D_spit + z2 * C3D_cpit
+        FOR px = 0 TO C3D_STATE.w - 1
+            x1 = ((px + 0.5) - C3D_ccx) / C3D_scr
+            wx = x1 * C3D_cyaw - z1 * C3D_syaw
+            wz = x1 * C3D_syaw + z1 * C3D_cyaw
+            C3D_pos_to_rgb wx, ys, wz, r, g, b
+            IF r < -e _ORELSE r > 1 + e _ORELSE g < -e _ORELSE g > 1 + e _ORELSE b < -e _ORELSE b > 1 + e THEN _CONTINUE
+            idx = py * C3D_STATE.w + px
+            IF z2 >= C3D_zbuf(idx) - 0.002 THEN
+                C3D_zbuf(idx) = z2
+                C3D_pbuf(idx) = _RGB32(CLR_unit_to_byte%(r), CLR_unit_to_byte%(g), CLR_unit_to_byte%(b))
+                C3D_cbuf(idx) = C3D_pbuf(idx)
+            END IF
+        NEXT px
+    NEXT py
+END SUB
+
+''
+' The 12 edges of the RGB cube (the gamut's warm/cool ridges), depth-tested,
+' drawn into the display buffer only (never pickable).
+'
+SUB C3D_raster_edges
+    DIM AS INTEGER e, s, segs
+    DIM AS SINGLE r, g, b, px, py, pz, lt, sx, sy, sz, t
+    DIM AS SINGLE ar(0 TO 7), ag(0 TO 7), ab(0 TO 7)
+    DIM AS INTEGER ea(0 TO 11), eb(0 TO 11)
+    DIM AS LONG idx, xx, yy
+    FOR s = 0 TO 7
+        ar(s) = s AND 1: ag(s) = (s \ 2) AND 1: ab(s) = (s \ 4) AND 1
+    NEXT s
+    ' corner pairs differing in exactly one bit
+    e = 0
+    FOR s = 0 TO 7
+        IF (s AND 1) = 0 THEN ea(e) = s: eb(e) = s OR 1: e = e + 1
+        IF (s AND 2) = 0 THEN ea(e) = s: eb(e) = s OR 2: e = e + 1
+        IF (s AND 4) = 0 THEN ea(e) = s: eb(e) = s OR 4: e = e + 1
+    NEXT s
+    segs = INT(C3D_scr * 1.5)
+    IF segs < 32 THEN segs = 32
+    FOR e = 0 TO 11
+        FOR s = 0 TO segs
+            t = s / segs
+            r = ar(ea(e)) + (ar(eb(e)) - ar(ea(e))) * t
+            g = ag(ea(e)) + (ag(eb(e)) - ag(ea(e))) * t
+            b = ab(ea(e)) + (ab(eb(e)) - ab(ea(e))) * t
+            C3D_rgb_to_pos r, g, b, px, py, pz, lt
+            IF C3D_STATE.sliceOn _ANDALSO lt > C3D_STATE.slice THEN _CONTINUE
+            C3D_project px, py, pz, sx, sy, sz
+            xx = INT(sx): yy = INT(sy)
+            IF xx < 0 _ORELSE yy < 0 _ORELSE xx >= C3D_STATE.w _ORELSE yy >= C3D_STATE.vh THEN _CONTINUE
+            idx = yy * C3D_STATE.w + xx
+            IF sz >= C3D_zbuf(idx) - 0.01 THEN C3D_cbuf(idx) = C3D_STATE.edgeColor
+        NEXT s
+    NEXT e
+END SUB
+
+' ----------------------------------------------------------------------------
+' Compose
+' ----------------------------------------------------------------------------
+
+''
+' Draw the widget into C3D_STATE.imgHandle (re-rasterizes the 3D view only
+' when the view changed).
+'
+SUB C3D_render
+    DIM oldDest AS LONG
+    DIM AS _MEM mImg, mBuf
+    DIM AS SINGLE r, g, b, px, py, pz, lt, sx, sy, sz
+    DIM AS INTEGER mx, my, i, bw, x1
+    DIM shown AS _UNSIGNED LONG
+    DIM lbl AS STRING
+    IF C3D_STATE.imgHandle >= -1 THEN EXIT SUB
+    IF C3D_STATE.dirty THEN C3D_raster
+
+    mImg = _MEMIMAGE(C3D_STATE.imgHandle)
+    mBuf = _MEM(C3D_cbuf())
+    _MEMCOPY mBuf, mBuf.OFFSET, C3D_STATE.w * C3D_STATE.vh * 4 TO mImg, mImg.OFFSET
+    _MEMFREE mBuf
+    _MEMFREE mImg
+
+    oldDest = _DEST
+    _DEST C3D_STATE.imgHandle
+    _PRINTMODE _KEEPBACKGROUND
+    LINE (0, C3D_STATE.vh)-(C3D_STATE.w - 1, C3D_STATE.h - 1), C3D_STATE.bgColor, BF
+
+    ' marker on the current color
+    r = _RED32(C3D_STATE.cur) / 255: g = _GREEN32(C3D_STATE.cur) / 255: b = _BLUE32(C3D_STATE.cur) / 255
+    C3D_begin_projection
+    C3D_rgb_to_pos r, g, b, px, py, pz, lt
+    C3D_project px, py, pz, sx, sy, sz
+    mx = INT(sx): my = INT(sy)
+    IF mx >= 0 _ANDALSO my >= 0 _ANDALSO mx < C3D_STATE.w _ANDALSO my < C3D_STATE.vh THEN
+        IF sz >= C3D_zbuf(CLNG(my) * C3D_STATE.w + mx) - 0.02 THEN
+            LINE (mx - 4, my - 4)-(mx + 4, my + 4), _RGB32(0, 0, 0), B
+            LINE (mx - 3, my - 3)-(mx + 3, my + 3), _RGB32(255, 255, 255), B
+        ELSE                                                   ' behind the solid (or cut away): dim, dotted
+            LINE (mx - 3, my - 3)-(mx + 3, my + 3), C3D_STATE.dimColor, B, &HAAAA
+        END IF
+    END IF
+
+    ' viewport labels
+    COLOR C3D_STATE.textColor
+    _PRINTSTRING (3, 3), C3D_space_name$(C3D_STATE.spaceId)
+    COLOR C3D_STATE.dimColor
+    _PRINTSTRING (3, C3D_STATE.vh - 10), "R-DRAG SPIN  WHEEL ZOOM"
+
+    ' space buttons
+    bw = C3D_STATE.w \ C3D_SPACE_COUNT
+    FOR i = 0 TO C3D_SPACE_COUNT - 1
+        x1 = i * bw
+        C3D_button x1, C3D_STATE.rowY1, bw - 1, C3D_space_name$(i), i = C3D_STATE.spaceId
+    NEXT i
+    ' view buttons
+    bw = C3D_STATE.w \ 3
+    C3D_button 0, C3D_STATE.rowY2, bw - 1, "SOLID", C3D_STATE.viewMode = C3D_VIEW_SOLID
+    C3D_button bw, C3D_STATE.rowY2, bw - 1, "CLOUD", C3D_STATE.viewMode = C3D_VIEW_CLOUD
+    C3D_button bw * 2, C3D_STATE.rowY2, C3D_STATE.w - bw * 2 - 1, "SLICE " + C3D_fmt$(C3D_STATE.slice, 2, 0), C3D_STATE.sliceOn
+
+    ' slice slider
+    DIM AS INTEGER sx1, sx2, ty, tx
+    sx1 = C3D_GAP + 2: sx2 = C3D_STATE.w - C3D_GAP - 3
+    ty = C3D_STATE.sliderY + C3D_SLIDER_H \ 2
+    LINE (sx1, ty - 1)-(sx2, ty + 1), C3D_STATE.btnColor, BF
+    tx = sx1 + INT((sx2 - sx1) * C3D_STATE.slice + 0.5)
+    IF C3D_STATE.sliceOn THEN
+        LINE (sx1, ty - 1)-(tx, ty + 1), C3D_STATE.btnOnColor, BF
+        LINE (tx - 2, C3D_STATE.sliderY)-(tx + 2, C3D_STATE.sliderY + C3D_SLIDER_H - 1), C3D_STATE.textColor, BF
+    ELSE
+        LINE (tx - 2, C3D_STATE.sliderY)-(tx + 2, C3D_STATE.sliderY + C3D_SLIDER_H - 1), C3D_STATE.dimColor, BF
+    END IF
+
+    ' readouts (hovered color while over the solid, else the current color)
+    IF C3D_STATE.hoverOn THEN shown = C3D_STATE.hover ELSE shown = C3D_STATE.cur
+    C3D_draw_readouts shown
+
+    _DEST oldDest
+END SUB
+
+SUB C3D_button (x AS INTEGER, y AS INTEGER, bw AS INTEGER, label AS STRING, isOn AS INTEGER)
+    DIM c AS _UNSIGNED LONG
+    IF isOn THEN c = C3D_STATE.btnOnColor ELSE c = C3D_STATE.btnColor
+    LINE (x, y)-(x + bw - 1, y + C3D_ROW_H - 1), c, BF
+    COLOR C3D_STATE.textColor
+    _PRINTSTRING (x + (bw - LEN(label) * 8) \ 2, y + (C3D_ROW_H - 8) \ 2), label
+END SUB
+
+SUB C3D_draw_readouts (col AS _UNSIGNED LONG)
+    DIM AS SINGLE l, a, b, c, h, x, y, z
+    DIM AS INTEGER ty, swW
+    DIM hx AS STRING
+    ty = C3D_STATE.readY
+    swW = 14
+    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * C3D_LINE_H - 3), col, BF
+    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * C3D_LINE_H - 3), C3D_STATE.dimColor, B
+    COLOR C3D_STATE.textColor
+    hx = RIGHT$("000000" + HEX$(col AND &HFFFFFF), 6)
+    _PRINTSTRING (C3D_GAP, ty), "#" + hx + " " + _TRIM$(STR$(_RED32(col))) + "," + _TRIM$(STR$(_GREEN32(col))) + "," + _TRIM$(STR$(_BLUE32(col)))
+    CLR_rgb32_to_oklab col, l, a, b
+    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H), "OKLAB " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(a, 3, -1) + " " + C3D_fmt$(b, 3, -1)
+    CLR_lab_to_lch l, a, b, l, c, h
+    IF c < 0.0005 THEN                                        ' achromatic: hue is undefined
+        _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 2), "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " -"
+    ELSE
+        _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 2), "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " " + C3D_fmt$(h, 0, 0)
+    END IF
+    CLR_rgb32_to_lab col, l, a, b
+    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 3), "LAB " + C3D_fmt$(l, 1, 0) + " " + C3D_fmt$(a, 1, -1) + " " + C3D_fmt$(b, 1, -1)
+    CLR_rgb32_to_xyz col, x, y, z
+    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 4), "XYZ " + C3D_fmt$(x, 3, 0) + " " + C3D_fmt$(y, 3, 0) + " " + C3D_fmt$(z, 3, 0)
+END SUB
+
+''
+' Compact number: decimals places, no leading zero (".628"), optional +/- sign.
+'
+FUNCTION C3D_fmt$ (v AS SINGLE, decimals AS INTEGER, signed AS INTEGER)
+    DIM AS LONG p, n, ip, fp
+    DIM s AS STRING
+    p = 10 ^ decimals
+    n = INT(ABS(v) * p + 0.5)                                  ' integer math: no float noise
+    ip = n \ p: fp = n MOD p
+    IF ip > 0 _ORELSE decimals = 0 THEN s = _TRIM$(STR$(ip))
+    IF decimals > 0 THEN s = s + "." + RIGHT$(STRING$(decimals, "0") + _TRIM$(STR$(fp)), decimals)
+    IF v < 0 _ANDALSO n <> 0 THEN
+        s = "-" + s
+    ELSEIF signed THEN
+        s = "+" + s
+    END IF
+    C3D_fmt$ = s
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' Input
+' ----------------------------------------------------------------------------
+
+''
+' Feed one frame of mouse input in widget-native coordinates.
+'   b1 = left button, b2 = right (or middle) button, wheel = scroll ticks
+'   (negative = up / zoom in).
+' Left-click/drag ON the solid picks colors; left-drag on empty space or
+' right-drag anywhere spins the view; the wheel zooms. Sets
+' C3D_STATE.changed for one poll after a pick.
+'
+SUB C3D_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER, b2 AS INTEGER, wheel AS INTEGER)
+    DIM AS INTEGER m1, m2, press1, press2, inView, i
+    DIM idx AS LONG
+    DIM pc AS _UNSIGNED LONG
+    C3D_STATE.changed = 0
+    m1 = (b1 <> 0): m2 = (b2 <> 0)
+    press1 = m1 _ANDALSO (C3D_STATE.oldB1 = 0)
+    press2 = m2 _ANDALSO (C3D_STATE.oldB2 = 0)
+    inView = C3D_over_viewport%(nx, ny)
+
+    pc = 0
+    IF inView THEN
+        idx = CLNG(ny) * C3D_STATE.w + nx
+        pc = C3D_pbuf(idx)
+    END IF
+    C3D_STATE.hoverOn = (pc <> 0)
+    C3D_STATE.hover = pc
+
+    IF inView _ANDALSO wheel <> 0 THEN
+        C3D_set_rotation C3D_STATE.yaw, C3D_STATE.pitch, C3D_STATE.zoom * 1.12 ^ (-wheel)
+    END IF
+
+    SELECT CASE C3D_STATE.dragging
+        CASE C3D_DRAG_NONE
+            IF press1 THEN
+                IF inView THEN
+                    IF pc <> 0 THEN
+                        C3D_STATE.dragging = C3D_DRAG_PICK
+                        C3D_pick pc
+                    ELSE
+                        C3D_begin_rotate nx, ny
+                    END IF
+                ELSEIF ny >= C3D_STATE.rowY1 _ANDALSO ny < C3D_STATE.rowY1 + C3D_ROW_H THEN
+                    i = nx \ (C3D_STATE.w \ C3D_SPACE_COUNT)
+                    IF i >= C3D_SPACE_COUNT THEN i = C3D_SPACE_COUNT - 1
+                    IF i >= 0 THEN C3D_set_space i
+                ELSEIF ny >= C3D_STATE.rowY2 _ANDALSO ny < C3D_STATE.rowY2 + C3D_ROW_H THEN
+                    i = nx \ (C3D_STATE.w \ 3)
+                    SELECT CASE i
+                        CASE 0: C3D_set_view C3D_VIEW_SOLID
+                        CASE 1: C3D_set_view C3D_VIEW_CLOUD
+                        CASE IS >= 2: C3D_set_slice NOT C3D_STATE.sliceOn, C3D_STATE.slice
+                    END SELECT
+                ELSEIF ny >= C3D_STATE.sliderY _ANDALSO ny < C3D_STATE.sliderY + C3D_SLIDER_H THEN
+                    C3D_STATE.dragging = C3D_DRAG_SLIDER
+                    C3D_slider_to nx
+                END IF
+            ELSEIF press2 _ANDALSO inView THEN
+                C3D_begin_rotate nx, ny
+            END IF
+        CASE C3D_DRAG_ROTATE
+            IF m1 _ORELSE m2 THEN
+                C3D_set_rotation C3D_STATE.dragYaw + (nx - C3D_STATE.dragX) * 0.6, C3D_STATE.dragPitch + (ny - C3D_STATE.dragY) * 0.6, C3D_STATE.zoom
+            ELSE
+                C3D_STATE.dragging = C3D_DRAG_NONE
+            END IF
+        CASE C3D_DRAG_PICK
+            IF m1 THEN
+                IF pc <> 0 _ANDALSO pc <> C3D_STATE.cur THEN C3D_pick pc
+            ELSE
+                C3D_STATE.dragging = C3D_DRAG_NONE
+            END IF
+        CASE C3D_DRAG_SLIDER
+            IF m1 THEN C3D_slider_to nx ELSE C3D_STATE.dragging = C3D_DRAG_NONE
+    END SELECT
+
+    C3D_STATE.oldB1 = m1
+    C3D_STATE.oldB2 = m2
+END SUB
+
+SUB C3D_pick (col AS _UNSIGNED LONG)
+    C3D_STATE.cur = col OR &HFF000000~&
+    C3D_STATE.changed = -1
+END SUB
+
+SUB C3D_begin_rotate (nx AS INTEGER, ny AS INTEGER)
+    C3D_STATE.dragging = C3D_DRAG_ROTATE
+    C3D_STATE.dragX = nx: C3D_STATE.dragY = ny
+    C3D_STATE.dragYaw = C3D_STATE.yaw: C3D_STATE.dragPitch = C3D_STATE.pitch
+END SUB
+
+SUB C3D_slider_to (nx AS INTEGER)
+    DIM AS INTEGER sx1, sx2
+    sx1 = C3D_GAP + 2: sx2 = C3D_STATE.w - C3D_GAP - 3
+    C3D_set_slice -1, (nx - sx1) / (sx2 - sx1)
+END SUB

@@ -1,0 +1,372 @@
+$INCLUDEONCE
+
+' ============================================================================
+' COLOR-SPACES.BM — Color space math implementation (prefix CLR_)
+' See COLOR-SPACES.BI for conventions and units.
+' ============================================================================
+
+''
+' Real cube root (also for negative numbers; QB64's ^ rejects a negative base
+' with a fractional exponent).
+'
+FUNCTION CLR_cbrt# (x AS DOUBLE)
+    IF x > 0 THEN
+        CLR_cbrt# = x ^ (1# / 3#)
+    ELSEIF x < 0 THEN
+        CLR_cbrt# = -((-x) ^ (1# / 3#))
+    ELSE
+        CLR_cbrt# = 0
+    END IF
+END FUNCTION
+
+''
+' sRGB transfer function: gamma-encoded 0..1 -> linear 0..1.
+'
+FUNCTION CLR_srgb_to_linear# (c AS DOUBLE)
+    IF c <= 0.04045# THEN
+        CLR_srgb_to_linear# = c / 12.92#
+    ELSE
+        CLR_srgb_to_linear# = ((c + 0.055#) / 1.055#) ^ 2.4#
+    END IF
+END FUNCTION
+
+''
+' Inverse sRGB transfer function: linear 0..1 -> gamma-encoded 0..1.
+' Negative input is mirrored so out-of-gamut values stay continuous.
+'
+FUNCTION CLR_linear_to_srgb# (c AS DOUBLE)
+    IF c < 0 THEN
+        CLR_linear_to_srgb# = -CLR_linear_to_srgb#(-c)
+    ELSEIF c <= 0.0031308# THEN
+        CLR_linear_to_srgb# = c * 12.92#
+    ELSE
+        CLR_linear_to_srgb# = 1.055# * c ^ (1# / 2.4#) - 0.055#
+    END IF
+END FUNCTION
+
+''
+' 32-bit color -> linear RGB 0..1.
+'
+SUB CLR_rgb32_to_linear (col AS _UNSIGNED LONG, r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    DIM c AS _UNSIGNED LONG
+    c = col
+    r = CLR_srgb_to_linear#(_RED32(c) / 255#)
+    g = CLR_srgb_to_linear#(_GREEN32(c) / 255#)
+    b = CLR_srgb_to_linear#(_BLUE32(c) / 255#)
+END SUB
+
+''
+' Linear RGB 0..1 -> opaque 32-bit color (channels clamped, rounded).
+'
+FUNCTION CLR_linear_to_rgb32~& (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    CLR_linear_to_rgb32~& = _RGB32(CLR_unit_to_byte%(CLR_linear_to_srgb#(r)), CLR_unit_to_byte%(CLR_linear_to_srgb#(g)), CLR_unit_to_byte%(CLR_linear_to_srgb#(b)))
+END FUNCTION
+
+''
+' Gamma-encoded 0..1 -> 0..255 (clamped, rounded).
+'
+FUNCTION CLR_unit_to_byte% (v AS DOUBLE)
+    DIM n AS LONG
+    n = INT(v * 255# + 0.5#)
+    IF n < 0 THEN n = 0
+    IF n > 255 THEN n = 255
+    CLR_unit_to_byte% = n
+END FUNCTION
+
+''
+' TRUE when linear RGB lies inside the sRGB gamut (with CLR_GAMUT_EPS slack).
+'
+FUNCTION CLR_linear_in_gamut% (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    IF r < -CLR_GAMUT_EPS _ORELSE r > 1 + CLR_GAMUT_EPS THEN EXIT FUNCTION
+    IF g < -CLR_GAMUT_EPS _ORELSE g > 1 + CLR_GAMUT_EPS THEN EXIT FUNCTION
+    IF b < -CLR_GAMUT_EPS _ORELSE b > 1 + CLR_GAMUT_EPS THEN EXIT FUNCTION
+    CLR_linear_in_gamut% = -1
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' CIE XYZ (D65, Y = 1 for white)
+' ----------------------------------------------------------------------------
+
+SUB CLR_linear_to_xyz (r AS SINGLE, g AS SINGLE, b AS SINGLE, x AS SINGLE, y AS SINGLE, z AS SINGLE)
+    DIM AS DOUBLE lr, lg, lb
+    lr = r: lg = g: lb = b
+    x = 0.4124564# * lr + 0.3575761# * lg + 0.1804375# * lb
+    y = 0.2126729# * lr + 0.7151522# * lg + 0.0721750# * lb
+    z = 0.0193339# * lr + 0.1191920# * lg + 0.9503041# * lb
+END SUB
+
+SUB CLR_xyz_to_linear (x AS SINGLE, y AS SINGLE, z AS SINGLE, r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    DIM AS DOUBLE cx, cy, cz
+    cx = x: cy = y: cz = z
+    r = 3.2404542# * cx - 1.5371385# * cy - 0.4985314# * cz
+    g = -0.969266# * cx + 1.8760108# * cy + 0.041556# * cz
+    b = 0.0556434# * cx - 0.2040259# * cy + 1.0572252# * cz
+END SUB
+
+' ----------------------------------------------------------------------------
+' CIELAB (D65)
+' ----------------------------------------------------------------------------
+
+FUNCTION CLR_lab_f# (t AS DOUBLE)
+    ' delta = 6/29; delta^3 = 216/24389
+    IF t > 216# / 24389# THEN
+        CLR_lab_f# = CLR_cbrt#(t)
+    ELSE
+        CLR_lab_f# = t * (841# / 108#) + 4# / 29#
+    END IF
+END FUNCTION
+
+FUNCTION CLR_lab_finv# (t AS DOUBLE)
+    IF t > 6# / 29# THEN
+        CLR_lab_finv# = t * t * t
+    ELSE
+        CLR_lab_finv# = (t - 4# / 29#) * (108# / 841#)
+    END IF
+END FUNCTION
+
+SUB CLR_xyz_to_lab (x AS SINGLE, y AS SINGLE, z AS SINGLE, labL AS SINGLE, labA AS SINGLE, labB AS SINGLE)
+    DIM AS DOUBLE fx, fy, fz
+    fx = CLR_lab_f#(x / CLR_D65_X)
+    fy = CLR_lab_f#(y / CLR_D65_Y)
+    fz = CLR_lab_f#(z / CLR_D65_Z)
+    labL = 116# * fy - 16#
+    labA = 500# * (fx - fy)
+    labB = 200# * (fy - fz)
+END SUB
+
+SUB CLR_lab_to_xyz (labL AS SINGLE, labA AS SINGLE, labB AS SINGLE, x AS SINGLE, y AS SINGLE, z AS SINGLE)
+    DIM AS DOUBLE fx, fy, fz
+    fy = (labL + 16#) / 116#
+    fx = fy + labA / 500#
+    fz = fy - labB / 200#
+    x = CLR_D65_X * CLR_lab_finv#(fx)
+    y = CLR_D65_Y * CLR_lab_finv#(fy)
+    z = CLR_D65_Z * CLR_lab_finv#(fz)
+END SUB
+
+' ----------------------------------------------------------------------------
+' OKLab (Björn Ottosson, 2020) — from/to linear sRGB
+' ----------------------------------------------------------------------------
+
+SUB CLR_linear_to_oklab (r AS SINGLE, g AS SINGLE, b AS SINGLE, okL AS SINGLE, okA AS SINGLE, okB AS SINGLE)
+    DIM AS DOUBLE lr, lg, lb, l, m, s
+    lr = r: lg = g: lb = b
+    l = CLR_cbrt#(0.4122214708# * lr + 0.5363325363# * lg + 0.0514459929# * lb)
+    m = CLR_cbrt#(0.2119034982# * lr + 0.6806995451# * lg + 0.1073969566# * lb)
+    s = CLR_cbrt#(0.0883024619# * lr + 0.2817188376# * lg + 0.6299787005# * lb)
+    okL = 0.2104542553# * l + 0.793617785# * m - 0.0040720468# * s
+    okA = 1.9779984951# * l - 2.428592205# * m + 0.4505937099# * s
+    okB = 0.0259040371# * l + 0.7827717662# * m - 0.808675766# * s
+END SUB
+
+SUB CLR_oklab_to_linear (okL AS SINGLE, okA AS SINGLE, okB AS SINGLE, r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    DIM AS DOUBLE cl, ca, cb, l, m, s
+    cl = okL: ca = okA: cb = okB
+    l = cl + 0.3963377774# * ca + 0.2158037573# * cb
+    m = cl - 0.1055613458# * ca - 0.0638541728# * cb
+    s = cl - 0.0894841775# * ca - 1.291485548# * cb
+    l = l * l * l: m = m * m * m: s = s * s * s
+    r = 4.0767416621# * l - 3.3077115913# * m + 0.2309699292# * s
+    g = -1.2684380046# * l + 2.6097574011# * m - 0.3413193965# * s
+    b = -0.0041960863# * l - 0.7034186147# * m + 1.707614701# * s
+END SUB
+
+' ----------------------------------------------------------------------------
+' Polar form (LCh) of any Lab-like space; hue in degrees 0..360
+' ----------------------------------------------------------------------------
+
+SUB CLR_lab_to_lch (inL AS SINGLE, inA AS SINGLE, inB AS SINGLE, outL AS SINGLE, outC AS SINGLE, outH AS SINGLE)
+    DIM AS DOUBLE l, a, b, hd
+    l = inL: a = inA: b = inB
+    outL = l
+    outC = SQR(a * a + b * b)
+    IF a = 0 _ANDALSO b = 0 THEN
+        hd = 0
+    ELSE
+        hd = _ATAN2(b, a) * 180# / _PI
+        IF hd < 0 THEN hd = hd + 360#
+    END IF
+    outH = hd
+END SUB
+
+SUB CLR_lch_to_lab (inL AS SINGLE, inC AS SINGLE, inH AS SINGLE, outL AS SINGLE, outA AS SINGLE, outB AS SINGLE)
+    DIM AS DOUBLE l, c, hr
+    l = inL: c = inC: hr = inH * _PI / 180#
+    outL = l
+    outA = c * COS(hr)
+    outB = c * SIN(hr)
+END SUB
+
+' ----------------------------------------------------------------------------
+' Convenience: 32-bit color -> each space
+' ----------------------------------------------------------------------------
+
+SUB CLR_rgb32_to_xyz (col AS _UNSIGNED LONG, x AS SINGLE, y AS SINGLE, z AS SINGLE)
+    DIM AS SINGLE r, g, b
+    CLR_rgb32_to_linear col, r, g, b
+    CLR_linear_to_xyz r, g, b, x, y, z
+END SUB
+
+SUB CLR_rgb32_to_lab (col AS _UNSIGNED LONG, labL AS SINGLE, labA AS SINGLE, labB AS SINGLE)
+    DIM AS SINGLE x, y, z
+    CLR_rgb32_to_xyz col, x, y, z
+    CLR_xyz_to_lab x, y, z, labL, labA, labB
+END SUB
+
+SUB CLR_rgb32_to_oklab (col AS _UNSIGNED LONG, okL AS SINGLE, okA AS SINGLE, okB AS SINGLE)
+    DIM AS SINGLE r, g, b
+    CLR_rgb32_to_linear col, r, g, b
+    CLR_linear_to_oklab r, g, b, okL, okA, okB
+END SUB
+
+SUB CLR_rgb32_to_oklch (col AS _UNSIGNED LONG, okL AS SINGLE, okC AS SINGLE, okH AS SINGLE)
+    DIM AS SINGLE l, a, b
+    CLR_rgb32_to_oklab col, l, a, b
+    CLR_lab_to_lch l, a, b, okL, okC, okH
+END SUB
+
+' ----------------------------------------------------------------------------
+' Back to 32-bit color, gamut-mapped
+' ----------------------------------------------------------------------------
+
+''
+' OKLCh -> opaque 32-bit color. Out-of-gamut colors keep their lightness and
+' hue and lose chroma (binary search) until they fit sRGB — the standard
+' "chroma reduction" gamut map, which avoids the hue shifts of plain clipping.
+'
+FUNCTION CLR_oklch_to_rgb32~& (okL AS SINGLE, okC AS SINGLE, okH AS SINGLE)
+    DIM AS SINGLE l, c, h, a, b, r, g, bl, lo, hi, mid
+    DIM i AS INTEGER
+    l = okL: c = okC: h = okH
+    IF l <= 0 THEN CLR_oklch_to_rgb32~& = _RGB32(0, 0, 0): EXIT FUNCTION
+    IF l >= 1 THEN CLR_oklch_to_rgb32~& = _RGB32(255, 255, 255): EXIT FUNCTION
+    IF c < 0 THEN c = 0
+    CLR_lch_to_lab l, c, h, l, a, b
+    CLR_oklab_to_linear l, a, b, r, g, bl
+    IF NOT CLR_linear_in_gamut%(r, g, bl) THEN
+        lo = 0: hi = c
+        FOR i = 1 TO 20
+            mid = (lo + hi) / 2
+            CLR_lch_to_lab l, mid, h, l, a, b
+            CLR_oklab_to_linear l, a, b, r, g, bl
+            IF CLR_linear_in_gamut%(r, g, bl) THEN lo = mid ELSE hi = mid
+        NEXT i
+        CLR_lch_to_lab l, lo, h, l, a, b
+        CLR_oklab_to_linear l, a, b, r, g, bl
+    END IF
+    CLR_oklch_to_rgb32~& = CLR_linear_to_rgb32~&(r, g, bl)
+END FUNCTION
+
+FUNCTION CLR_oklab_to_rgb32~& (okL AS SINGLE, okA AS SINGLE, okB AS SINGLE)
+    DIM AS SINGLE l, c, h
+    CLR_lab_to_lch okL, okA, okB, l, c, h
+    CLR_oklab_to_rgb32~& = CLR_oklch_to_rgb32~&(l, c, h)
+END FUNCTION
+
+''
+' CIELAB -> opaque 32-bit color, chroma-reduced into gamut like the OKLCh map.
+'
+FUNCTION CLR_lab_to_rgb32~& (labL AS SINGLE, labA AS SINGLE, labB AS SINGLE)
+    DIM AS SINGLE l, c, h, a, b, x, y, z, r, g, bl, lo, hi, mid
+    DIM i AS INTEGER
+    l = labL
+    IF l <= 0 THEN CLR_lab_to_rgb32~& = _RGB32(0, 0, 0): EXIT FUNCTION
+    IF l >= 100 THEN CLR_lab_to_rgb32~& = _RGB32(255, 255, 255): EXIT FUNCTION
+    CLR_lab_to_lch labL, labA, labB, l, c, h
+    CLR_lch_to_lab l, c, h, l, a, b
+    CLR_lab_to_xyz l, a, b, x, y, z
+    CLR_xyz_to_linear x, y, z, r, g, bl
+    IF NOT CLR_linear_in_gamut%(r, g, bl) THEN
+        lo = 0: hi = c
+        FOR i = 1 TO 20
+            mid = (lo + hi) / 2
+            CLR_lch_to_lab l, mid, h, l, a, b
+            CLR_lab_to_xyz l, a, b, x, y, z
+            CLR_xyz_to_linear x, y, z, r, g, bl
+            IF CLR_linear_in_gamut%(r, g, bl) THEN lo = mid ELSE hi = mid
+        NEXT i
+        CLR_lch_to_lab l, lo, h, l, a, b
+        CLR_lab_to_xyz l, a, b, x, y, z
+        CLR_xyz_to_linear x, y, z, r, g, bl
+    END IF
+    CLR_lab_to_rgb32~& = CLR_linear_to_rgb32~&(r, g, bl)
+END FUNCTION
+
+''
+' XYZ -> opaque 32-bit color (channels clipped; XYZ has no perceptual hue to keep).
+'
+FUNCTION CLR_xyz_to_rgb32~& (x AS SINGLE, y AS SINGLE, z AS SINGLE)
+    DIM AS SINGLE r, g, b
+    CLR_xyz_to_linear x, y, z, r, g, b
+    CLR_xyz_to_rgb32~& = CLR_linear_to_rgb32~&(r, g, b)
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' Blending
+' ----------------------------------------------------------------------------
+
+''
+' Perceptual blend: interpolate in OKLab (t = 0 -> c1, 1 -> c2). Avoids the
+' muddy/dark middle of sRGB blends (e.g. red -> green). Alpha blends linearly.
+'
+FUNCTION CLR_mix_oklab~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, t AS SINGLE)
+    DIM AS SINGLE u, l1, a1, b1, l2, a2, b2
+    DIM AS _UNSIGNED LONG k, ca, cb
+    ca = c1: cb = c2
+    u = t
+    IF u < 0 THEN u = 0
+    IF u > 1 THEN u = 1
+    CLR_rgb32_to_oklab ca, l1, a1, b1
+    CLR_rgb32_to_oklab cb, l2, a2, b2
+    k = CLR_oklab_to_rgb32~&(l1 + (l2 - l1) * u, a1 + (a2 - a1) * u, b1 + (b2 - b1) * u)
+    CLR_mix_oklab~& = _RGBA32(_RED32(k), _GREEN32(k), _BLUE32(k), INT(_ALPHA32(ca) + (_ALPHA32(cb) - _ALPHA32(ca)) * u + 0.5))
+END FUNCTION
+
+''
+' Physically-linear blend: interpolate linear-light RGB (how two lights add).
+'
+FUNCTION CLR_mix_linear~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, t AS SINGLE)
+    DIM AS SINGLE u, r1, g1, b1, r2, g2, b2
+    DIM AS _UNSIGNED LONG k, ca, cb
+    ca = c1: cb = c2
+    u = t
+    IF u < 0 THEN u = 0
+    IF u > 1 THEN u = 1
+    CLR_rgb32_to_linear ca, r1, g1, b1
+    CLR_rgb32_to_linear cb, r2, g2, b2
+    k = CLR_linear_to_rgb32~&(r1 + (r2 - r1) * u, g1 + (g2 - g1) * u, b1 + (b2 - b1) * u)
+    CLR_mix_linear~& = _RGBA32(_RED32(k), _GREEN32(k), _BLUE32(k), INT(_ALPHA32(ca) + (_ALPHA32(cb) - _ALPHA32(ca)) * u + 0.5))
+END FUNCTION
+
+' ----------------------------------------------------------------------------
+' OKLCh ramps
+' ----------------------------------------------------------------------------
+
+''
+' Fill ramp~&(0 TO count-1) with a perceptually even dark -> light ramp of the
+' base color's hue: OKLab lightness steps evenly from lMin to lMax.
+'
+'   hueShift   degrees added at the light end and subtracted at the dark end
+'              (positive = warm highlights / cool shadows for most hues).
+'   chromaEnd  0..1 chroma kept at the two ends relative to the base (1 = flat,
+'              0.3 = ends fade toward gray, the usual pixel-art ramp look).
+'
+' Every entry is gamut-mapped into sRGB. count < 1 does nothing.
+'
+SUB CLR_oklch_ramp (baseCol AS _UNSIGNED LONG, rampCount AS INTEGER, lMin AS SINGLE, lMax AS SINGLE, hueShift AS SINGLE, chromaEnd AS SINGLE, ramp() AS _UNSIGNED LONG)
+    DIM AS SINGLE bl, bc, bh, u, d, l, c, h
+    DIM AS INTEGER i, n
+    n = rampCount
+    IF n < 1 THEN EXIT SUB
+    CLR_rgb32_to_oklch baseCol, bl, bc, bh
+    FOR i = 0 TO n - 1
+        IF n = 1 THEN u = 0.5 ELSE u = i / (n - 1)
+        d = ABS(u * 2 - 1)                                     ' 0 at the middle, 1 at both ends
+        l = lMin + (lMax - lMin) * u
+        c = bc * (1 - (1 - chromaEnd) * d)
+        h = bh + hueShift * (u * 2 - 1)
+        IF h < 0 THEN h = h + 360
+        IF h >= 360 THEN h = h - 360
+        ramp(LBOUND(ramp) + i) = CLR_oklch_to_rgb32~&(l, c, h)
+    NEXT i
+END SUB
