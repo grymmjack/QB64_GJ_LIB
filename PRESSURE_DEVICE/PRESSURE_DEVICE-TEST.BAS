@@ -7,6 +7,8 @@
 '   PRESSURE_DEVICE-TEST              interactive
 '   PRESSURE_DEVICE-TEST --selftest   start the backend, print its status to the
 '                                     console and exit (0 = backend running)
+'   PRESSURE_DEVICE-TEST --demo       pre-draw strokes with SIMULATED pressure
+'                                     (for documentation screenshots; labelled)
 '
 ' (c) 2026 grymmjack — MIT License
 ' ============================================================================
@@ -23,6 +25,7 @@ DIM hist(0 TO HIST_N - 1) AS SINGLE, histSrc(0 TO HIST_N - 1) AS INTEGER, histPo
 DIM ok AS INTEGER, frames AS LONG, k AS LONG
 DIM mx AS INTEGER, my AS INTEGER, b1 AS INTEGER, lastX AS INTEGER, lastY AS INTEGER, wasDown AS INTEGER
 DIM p AS SINGLE, src AS INTEGER, col AS _UNSIGNED LONG, rad AS SINGLE, lastRad AS SINGLE
+DIM demo AS INTEGER
 
 SCREEN _NEWIMAGE(WIN_W, WIN_H, 32)
 _TITLE "PRESSURE_DEVICE test"
@@ -41,6 +44,11 @@ IF INSTR(LCASE$(COMMAND$), "--selftest") THEN
     PRINT "source:  "; PD_source_name$(PD_source%); "  pressure:"; PD_pressure!; "  events:"; PD_events&
     PD_shutdown
     IF ok THEN SYSTEM 0 ELSE SYSTEM 1
+END IF
+
+IF INSTR(LCASE$(COMMAND$), "--demo") THEN
+    demo = -1
+    DemoStrokes hist(), histSrc(), histPos
 END IF
 
 DO
@@ -62,7 +70,7 @@ DO
             wasDown = 0
         END IF
     LOOP
-    hist(histPos) = PD_raw_pressure!: histSrc(histPos) = PD_source%: histPos = (histPos + 1) MOD HIST_N
+    IF NOT demo THEN hist(histPos) = PD_raw_pressure!: histSrc(histPos) = PD_source%: histPos = (histPos + 1) MOD HIST_N
 
     k = _KEYHIT
     IF k = 27 THEN EXIT DO
@@ -71,6 +79,7 @@ DO
     ' --- compose
     CLS , _RGB32(28, 30, 36)
     _PUTIMAGE (0, PANEL_H), canvas
+    IF demo THEN COLOR _RGB32(150, 110, 20), _RGBA32(0, 0, 0, 0): _PRINTSTRING (12, PANEL_H + 8), "--demo: these strokes use simulated pressure (history graph too)"
     COLOR _RGB32(235, 236, 240), _RGBA32(0, 0, 0, 0)
     _PRINTSTRING (12, 10), "Backend: " + PD_backend_name$ + "    Device: " + PD_device$
     _PRINTSTRING (12, 28), "Status:  " + LEFT$(PD_status$, 110)
@@ -109,6 +118,30 @@ SUB DrawHistory (h() AS SINGLE, hs() AS INTEGER, pos0 AS LONG, x0 AS INTEGER, y0
         py = yv
     NEXT
     _PRINTSTRING (x0 + 4, y0 + 2), "pressure history"
+END SUB
+
+' --demo: three strokes whose pressure rises and falls like a real pen stroke,
+' drawn with the same width / color rules as the pen, plus a matching history.
+SUB DemoStrokes (h() AS SINGLE, hs() AS INTEGER, hp AS LONG)
+    DIM s AS INTEGER, i AS INTEGER, n AS INTEGER, t AS SINGLE, pr AS SINGLE
+    DIM x AS SINGLE, y AS SINGLE, r AS SINGLE, lx AS SINGLE, ly AS SINGLE, lr AS SINGLE
+    DIM c AS _UNSIGNED LONG
+    n = 160
+    FOR s = 0 TO 2
+        FOR i = 0 TO n
+            t = i / n
+            pr = SIN(t * 3.14159) ^ (0.6 + s * 0.5)           ' light -> heavy -> light
+            x = 80 + t * 820
+            y = 110 + s * 150 + SIN(t * 6.283 + s) * 40
+            r = 0.5 + pr * 14
+            c = _RGB32(30 + (1 - pr) * 120, 50 + (1 - pr) * 110, 150 + (1 - pr) * 70)
+            IF i > 0 THEN Stroke lx, ly, lr, x, y, r, c ELSE Disc x, y, r, c
+            lx = x: ly = y: lr = r
+            IF s = 0 AND i MOD 2 = 0 THEN
+                h(hp) = pr: hs(hp) = PD_SRC_PEN: hp = (hp + 1) MOD HIST_N
+            END IF
+        NEXT
+    NEXT
 END SUB
 
 SUB Disc (cx AS SINGLE, cy AS SINGLE, r AS SINGLE, c AS _UNSIGNED LONG)

@@ -499,6 +499,7 @@ static void pd_backend_poll(void) {
                     pd_set_device(d->name);
                 } else {
                     pd_source = 0;                       // mouse, touchpad, ...
+                    pd_in_range = 0;                     // (raw events have no leave: another device moving means the pen is away)
                 }
             }
         } else if (e.xcookie.evtype == pd_x::XI_HierarchyChanged) {

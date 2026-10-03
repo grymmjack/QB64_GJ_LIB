@@ -29,7 +29,7 @@ in it's current state.
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
 | [MSG_BOX](MSG_BOX/README.md) | Message Box Dialog | Modal message boxes with OK/Cancel/Yes/No buttons, icons, and input mode |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
-| [PRESSURE_DEVICE](PRESSURE_DEVICE/README.md) | Pen pressure | **Pen / tablet pressure**, tilt and eraser on Windows (Windows Ink), macOS (tablet events + Force Touch trackpad) and Linux (XInput2), by hooking the native window; falls back to mouse = full pressure |
+| [PRESSURE_DEVICE](PRESSURE_DEVICE/README.md) | Pen pressure | **Pen / tablet pressure**, tilt and eraser for QB64-PE on Windows (Windows Ink), macOS (tablet events + Force Touch trackpad) and Linux (XInput2, X11 and Wayland) by hooking the native window; a mouse reads as full pressure. Test program, example, unit test; confirmed on all three OSes with a HUION Inspiroy 2 M |
 | [PSD](PSD/README.md) | Adds PSD Photoshop file support to QB64 | 8-bit Only |
 | [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
