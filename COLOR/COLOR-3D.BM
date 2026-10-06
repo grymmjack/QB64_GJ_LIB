@@ -541,11 +541,13 @@ SUB C3D_render
     C3D_project px, py, pz, sx, sy, sz
     mx = INT(sx): my = INT(sy)
     IF mx >= 0 _ANDALSO my >= 0 _ANDALSO mx < C3D_STATE.w _ANDALSO my < C3D_STATE.vh THEN
-        IF sz >= C3D_zbuf(CLNG(my) * C3D_STATE.w + mx) - 0.02 THEN
-            LINE (mx - 4, my - 4)-(mx + 4, my + 4), _RGB32(0, 0, 0), B
-            LINE (mx - 3, my - 3)-(mx + 3, my + 3), _RGB32(255, 255, 255), B
+        IF sz >= C3D_zbuf(CLNG(my) * C3D_STATE.w + mx) - 0.02 THEN ' same ring as the CP / ACP pickers
+            CIRCLE (mx, my), 5, _RGB32(0, 0, 0)
+            CIRCLE (mx, my), 4, _RGB32(255, 255, 255)
         ELSE                                                   ' behind the solid (or cut away): dim, dotted
-            LINE (mx - 3, my - 3)-(mx + 3, my + 3), C3D_STATE.dimColor, B, &HAAAA
+            FOR i = 0 TO 7
+                PSET (mx + CINT(4 * COS(i * 0.785398)), my + CINT(4 * SIN(i * 0.785398))), C3D_STATE.dimColor
+            NEXT i
         END IF
     END IF
 
