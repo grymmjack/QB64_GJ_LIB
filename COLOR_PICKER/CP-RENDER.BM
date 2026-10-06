@@ -101,8 +101,15 @@ SUB CP_RENDER_title_bar
     IF CP_STATE.hoverButton = -2 THEN
         LINE (bx, 0)-(CP_STATE.dialogW - 1, CP_THEME.titleBarH% - 1), CP_THEME.closeHoverBg~&, BF
     END IF
-    COLOR CP_THEME.closeFg~&, _RGBA32(0, 0, 0, 0)
-    _UPRINTSTRING (bx + (CP_THEME.titleBarH% - CP_STATE.fontW) \ 2, (CP_THEME.titleBarH% - CP_STATE.fontH) \ 2 + 1), "X"
+    ' Drawn cross (two diagonals), arm grows with the title bar: crisp at any
+    ' font size, unlike a font "X" glyph.
+    DIM cx AS INTEGER, cy AS INTEGER, arm AS INTEGER
+    cx = bx + CP_THEME.titleBarH% \ 2
+    cy = CP_THEME.titleBarH% \ 2
+    arm = CP_THEME.titleBarH% \ 6
+    IF arm < 2 THEN arm = 2
+    LINE (cx - arm, cy - arm)-(cx + arm, cy + arm), CP_THEME.closeFg~&
+    LINE (cx - arm, cy + arm)-(cx + arm, cy - arm), CP_THEME.closeFg~&
 END SUB
 
 ' --------------------------------------------------------------------------
