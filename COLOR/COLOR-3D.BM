@@ -22,11 +22,12 @@ SUB C3D_init (initialColor AS _UNSIGNED LONG, nativeW AS INTEGER)
     C3D_STATE.w = nativeW
     IF C3D_STATE.w < 160 THEN C3D_STATE.w = 160
     C3D_STATE.vh = C3D_STATE.w
-    C3D_STATE.rowY1 = C3D_STATE.vh + C3D_GAP
-    C3D_STATE.rowY2 = C3D_STATE.rowY1 + C3D_ROW_H + 2
-    C3D_STATE.sliderY = C3D_STATE.rowY2 + C3D_ROW_H + 2
-    C3D_STATE.readY = C3D_STATE.sliderY + C3D_SLIDER_H + C3D_GAP + 1
-    C3D_STATE.h = C3D_STATE.readY + C3D_READOUTS * C3D_LINE_H + C3D_GAP
+    C3D_STATE.rowH = C3D_ROW_H
+    C3D_STATE.sliderH = C3D_SLIDER_H
+    C3D_STATE.lineH = C3D_LINE_H
+    C3D_STATE.fontH = 8
+    C3D_STATE.hoverBtn = -1
+    C3D_layout
 
     C3D_STATE.spaceId = C3D_SPACE_OKLAB
     C3D_STATE.viewMode = C3D_VIEW_SOLID
@@ -45,6 +46,13 @@ SUB C3D_init (initialColor AS _UNSIGNED LONG, nativeW AS INTEGER)
     C3D_STATE.btnColor = _RGB32(56, 56, 62)
     C3D_STATE.btnOnColor = _RGB32(70, 110, 170)
     C3D_STATE.edgeColor = _RGB32(90, 90, 96)
+    C3D_STATE.btnHoverColor = _RGB32(68, 68, 76)
+    C3D_STATE.btnTextColor = C3D_STATE.textColor
+    C3D_STATE.btnOnTextColor = _RGB32(255, 255, 255)
+    C3D_STATE.sliderBgColor = _RGB32(22, 22, 26)
+    C3D_STATE.sliderEdgeColor = C3D_STATE.edgeColor
+    C3D_STATE.sliderFillColor = C3D_STATE.btnOnColor
+    C3D_STATE.thumbColor = _RGB32(235, 235, 235)
 
     C3D_STATE.imgHandle = _NEWIMAGE(C3D_STATE.w, C3D_STATE.h, 32)
     _FONT 8, C3D_STATE.imgHandle
@@ -57,6 +65,56 @@ END SUB
 SUB C3D_cleanup
     IF C3D_STATE.imgHandle < -1 THEN _FREEIMAGE C3D_STATE.imgHandle
     C3D_STATE.imgHandle = 0
+END SUB
+
+''
+' Row positions and total height from the current row/slider/line heights.
+'
+SUB C3D_layout
+    C3D_STATE.rowY1 = C3D_STATE.vh + C3D_GAP
+    C3D_STATE.rowY2 = C3D_STATE.rowY1 + C3D_STATE.rowH + 2
+    C3D_STATE.sliderY = C3D_STATE.rowY2 + C3D_STATE.rowH + 2
+    C3D_STATE.readY = C3D_STATE.sliderY + C3D_STATE.sliderH + C3D_GAP + 1
+    C3D_STATE.h = C3D_STATE.readY + C3D_READOUTS * C3D_STATE.lineH + C3D_GAP
+END SUB
+
+''
+' Draw all text with a host font (e.g. a TTF loaded with _LOADFONT); the
+' button rows, slider and readout lines resize to fit it, so C3D_STATE.h
+' (and the image) can change -- re-read it after this call. 0 restores the
+' built-in 8x8 font and the default layout. The host owns the font handle.
+'
+SUB C3D_set_font (fontHandle AS LONG)
+    DIM oldDest AS LONG, fh AS INTEGER
+    IF C3D_STATE.imgHandle >= -1 THEN EXIT SUB
+    oldDest = _DEST
+    _DEST C3D_STATE.imgHandle
+    IF fontHandle > 0 THEN _FONT fontHandle ELSE _FONT 8
+    fh = _FONTHEIGHT
+    _DEST oldDest
+    IF fontHandle > 0 THEN C3D_STATE.font = fontHandle ELSE C3D_STATE.font = 0
+
+    IF C3D_STATE.font = 0 THEN
+        C3D_STATE.rowH = C3D_ROW_H
+        C3D_STATE.sliderH = C3D_SLIDER_H
+        C3D_STATE.lineH = C3D_LINE_H
+        C3D_STATE.fontH = 8
+    ELSE
+        C3D_STATE.fontH = fh
+        C3D_STATE.rowH = fh + 4
+        C3D_STATE.sliderH = fh
+        C3D_STATE.lineH = fh + 2
+    END IF
+    C3D_layout
+
+    ' Resize the composed image to the new height (the 3D buffers are w x vh
+    ' and do not change).
+    IF _HEIGHT(C3D_STATE.imgHandle) <> C3D_STATE.h THEN
+        _FREEIMAGE C3D_STATE.imgHandle
+        C3D_STATE.imgHandle = _NEWIMAGE(C3D_STATE.w, C3D_STATE.h, 32)
+        IF C3D_STATE.font > 0 THEN _FONT C3D_STATE.font, C3D_STATE.imgHandle ELSE _FONT 8, C3D_STATE.imgHandle
+    END IF
+    C3D_STATE.dirty = -1
 END SUB
 
 ' ----------------------------------------------------------------------------
@@ -492,35 +550,38 @@ SUB C3D_render
     END IF
 
     ' viewport labels
-    COLOR C3D_STATE.textColor
-    _PRINTSTRING (3, 3), C3D_space_name$(C3D_STATE.spaceId)
-    COLOR C3D_STATE.dimColor
-    _PRINTSTRING (3, C3D_STATE.vh - 10), "R-DRAG SPIN  WHEEL ZOOM"
+    C3D_text 3, 3, C3D_space_name$(C3D_STATE.spaceId), C3D_STATE.textColor
+    C3D_text 3, C3D_STATE.vh - C3D_STATE.fontH - 2, "R-DRAG SPIN  WHEEL ZOOM", C3D_STATE.dimColor
 
     ' space buttons
     bw = C3D_STATE.w \ C3D_SPACE_COUNT
     FOR i = 0 TO C3D_SPACE_COUNT - 1
         x1 = i * bw
-        C3D_button x1, C3D_STATE.rowY1, bw - 1, C3D_space_name$(i), i = C3D_STATE.spaceId
+        C3D_button x1, C3D_STATE.rowY1, bw - 1, C3D_space_name$(i), i = C3D_STATE.spaceId, C3D_STATE.hoverBtn = i
     NEXT i
     ' view buttons
     bw = C3D_STATE.w \ 3
-    C3D_button 0, C3D_STATE.rowY2, bw - 1, "SOLID", C3D_STATE.viewMode = C3D_VIEW_SOLID
-    C3D_button bw, C3D_STATE.rowY2, bw - 1, "CLOUD", C3D_STATE.viewMode = C3D_VIEW_CLOUD
-    C3D_button bw * 2, C3D_STATE.rowY2, C3D_STATE.w - bw * 2 - 1, "SLICE " + C3D_fmt$(C3D_STATE.slice, 2, 0), C3D_STATE.sliceOn
+    C3D_button 0, C3D_STATE.rowY2, bw - 1, "SOLID", C3D_STATE.viewMode = C3D_VIEW_SOLID, C3D_STATE.hoverBtn = 10
+    C3D_button bw, C3D_STATE.rowY2, bw - 1, "CLOUD", C3D_STATE.viewMode = C3D_VIEW_CLOUD, C3D_STATE.hoverBtn = 11
+    C3D_button bw * 2, C3D_STATE.rowY2, C3D_STATE.w - bw * 2 - 1, "SLICE " + C3D_fmt$(C3D_STATE.slice, 2, 0), C3D_STATE.sliceOn, C3D_STATE.hoverBtn = 12
 
-    ' slice slider
-    DIM AS INTEGER sx1, sx2, ty, tx
-    sx1 = C3D_GAP + 2: sx2 = C3D_STATE.w - C3D_GAP - 3
-    ty = C3D_STATE.sliderY + C3D_SLIDER_H \ 2
-    LINE (sx1, ty - 1)-(sx2, ty + 1), C3D_STATE.btnColor, BF
-    tx = sx1 + INT((sx2 - sx1) * C3D_STATE.slice + 0.5)
+    ' slice slider: bordered well, filled up to the cut, bright thumb (dim fill
+    ' and thumb while the slice is off)
+    DIM AS INTEGER sx1, sx2, sy1, sy2, tx
+    DIM fillC AS _UNSIGNED LONG, thumbC AS _UNSIGNED LONG
+    sx1 = C3D_GAP: sx2 = C3D_STATE.w - C3D_GAP - 1
+    sy1 = C3D_STATE.sliderY: sy2 = C3D_STATE.sliderY + C3D_STATE.sliderH - 1
     IF C3D_STATE.sliceOn THEN
-        LINE (sx1, ty - 1)-(tx, ty + 1), C3D_STATE.btnOnColor, BF
-        LINE (tx - 2, C3D_STATE.sliderY)-(tx + 2, C3D_STATE.sliderY + C3D_SLIDER_H - 1), C3D_STATE.textColor, BF
+        fillC = C3D_STATE.sliderFillColor: thumbC = C3D_STATE.thumbColor
     ELSE
-        LINE (tx - 2, C3D_STATE.sliderY)-(tx + 2, C3D_STATE.sliderY + C3D_SLIDER_H - 1), C3D_STATE.dimColor, BF
+        fillC = C3D_STATE.dimColor: thumbC = C3D_STATE.dimColor
     END IF
+    LINE (sx1, sy1)-(sx2, sy2), C3D_STATE.sliderBgColor, BF
+    LINE (sx1, sy1)-(sx2, sy2), C3D_STATE.sliderEdgeColor, B
+    tx = sx1 + 1 + INT((sx2 - sx1 - 2) * C3D_STATE.slice + 0.5)
+    IF tx > sx1 + 1 THEN LINE (sx1 + 1, sy1 + 1)-(tx, sy2 - 1), fillC, BF
+    IF tx > sx2 - 1 THEN tx = sx2 - 1
+    LINE (tx - 1, sy1)-(tx + 1, sy2), thumbC, BF
 
     ' readouts (hovered color while over the solid, else the current color)
     IF C3D_STATE.hoverOn THEN shown = C3D_STATE.hover ELSE shown = C3D_STATE.cur
@@ -529,37 +590,54 @@ SUB C3D_render
     _DEST oldDest
 END SUB
 
-SUB C3D_button (x AS INTEGER, y AS INTEGER, bw AS INTEGER, label AS STRING, isOn AS INTEGER)
-    DIM c AS _UNSIGNED LONG
-    IF isOn THEN c = C3D_STATE.btnOnColor ELSE c = C3D_STATE.btnColor
-    LINE (x, y)-(x + bw - 1, y + C3D_ROW_H - 1), c, BF
-    COLOR C3D_STATE.textColor
-    _PRINTSTRING (x + (bw - LEN(label) * 8) \ 2, y + (C3D_ROW_H - 8) \ 2), label
+''
+' Text in the widget font (host TTF via _UPRINTSTRING, else the built-in 8x8).
+'
+SUB C3D_text (x AS INTEGER, y AS INTEGER, txt AS STRING, clr AS _UNSIGNED LONG)
+    COLOR clr, _RGBA32(0, 0, 0, 0)
+    IF C3D_STATE.font > 0 THEN _UPRINTSTRING (x, y), txt ELSE _PRINTSTRING (x, y), txt
+END SUB
+
+FUNCTION C3D_text_w% (txt AS STRING)
+    IF C3D_STATE.font > 0 THEN C3D_text_w% = _UPRINTWIDTH(txt) ELSE C3D_text_w% = LEN(txt) * 8
+END FUNCTION
+
+SUB C3D_button (x AS INTEGER, y AS INTEGER, bw AS INTEGER, label AS STRING, isOn AS INTEGER, isHover AS INTEGER)
+    DIM c AS _UNSIGNED LONG, t AS _UNSIGNED LONG
+    IF isOn THEN
+        c = C3D_STATE.btnOnColor: t = C3D_STATE.btnOnTextColor
+    ELSEIF isHover THEN
+        c = C3D_STATE.btnHoverColor: t = C3D_STATE.btnOnTextColor
+    ELSE
+        c = C3D_STATE.btnColor: t = C3D_STATE.btnTextColor
+    END IF
+    LINE (x, y)-(x + bw - 1, y + C3D_STATE.rowH - 1), c, BF
+    C3D_text x + (bw - C3D_text_w%(label)) \ 2, y + (C3D_STATE.rowH - C3D_STATE.fontH) \ 2, label, t
 END SUB
 
 SUB C3D_draw_readouts (col AS _UNSIGNED LONG)
     DIM AS SINGLE l, a, b, c, h, x, y, z
-    DIM AS INTEGER ty, swW
+    DIM AS INTEGER ty, swW, lh
     DIM hx AS STRING
     ty = C3D_STATE.readY
+    lh = C3D_STATE.lineH
     swW = 14
-    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * C3D_LINE_H - 3), col, BF
-    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * C3D_LINE_H - 3), C3D_STATE.dimColor, B
-    COLOR C3D_STATE.textColor
+    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * lh - 3), col, BF
+    LINE (C3D_STATE.w - swW - C3D_GAP, ty)-(C3D_STATE.w - C3D_GAP - 1, ty + C3D_READOUTS * lh - 3), C3D_STATE.dimColor, B
     hx = RIGHT$("000000" + HEX$(col AND &HFFFFFF), 6)
-    _PRINTSTRING (C3D_GAP, ty), "#" + hx + " " + _TRIM$(STR$(_RED32(col))) + "," + _TRIM$(STR$(_GREEN32(col))) + "," + _TRIM$(STR$(_BLUE32(col)))
+    C3D_text C3D_GAP, ty, "#" + hx + " " + _TRIM$(STR$(_RED32(col))) + "," + _TRIM$(STR$(_GREEN32(col))) + "," + _TRIM$(STR$(_BLUE32(col))), C3D_STATE.textColor
     CLR_rgb32_to_oklab col, l, a, b
-    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H), "OKLAB " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(a, 3, -1) + " " + C3D_fmt$(b, 3, -1)
+    C3D_text C3D_GAP, ty + lh, "OKLAB " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(a, 3, -1) + " " + C3D_fmt$(b, 3, -1), C3D_STATE.textColor
     CLR_lab_to_lch l, a, b, l, c, h
     IF c < 0.0005 THEN                                        ' achromatic: hue is undefined
-        _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 2), "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " -"
+        C3D_text C3D_GAP, ty + lh * 2, "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " -", C3D_STATE.textColor
     ELSE
-        _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 2), "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " " + C3D_fmt$(h, 0, 0)
+        C3D_text C3D_GAP, ty + lh * 2, "OKLCH " + C3D_fmt$(l, 3, 0) + " " + C3D_fmt$(c, 3, 0) + " " + C3D_fmt$(h, 0, 0), C3D_STATE.textColor
     END IF
     CLR_rgb32_to_lab col, l, a, b
-    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 3), "LAB " + C3D_fmt$(l, 1, 0) + " " + C3D_fmt$(a, 1, -1) + " " + C3D_fmt$(b, 1, -1)
+    C3D_text C3D_GAP, ty + lh * 3, "LAB " + C3D_fmt$(l, 1, 0) + " " + C3D_fmt$(a, 1, -1) + " " + C3D_fmt$(b, 1, -1), C3D_STATE.textColor
     CLR_rgb32_to_xyz col, x, y, z
-    _PRINTSTRING (C3D_GAP, ty + C3D_LINE_H * 4), "XYZ " + C3D_fmt$(x, 3, 0) + " " + C3D_fmt$(y, 3, 0) + " " + C3D_fmt$(z, 3, 0)
+    C3D_text C3D_GAP, ty + lh * 4, "XYZ " + C3D_fmt$(x, 3, 0) + " " + C3D_fmt$(y, 3, 0) + " " + C3D_fmt$(z, 3, 0), C3D_STATE.textColor
 END SUB
 
 ''
@@ -610,6 +688,7 @@ SUB C3D_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER, b2 AS INTEGER,
     END IF
     C3D_STATE.hoverOn = (pc <> 0)
     C3D_STATE.hover = pc
+    C3D_STATE.hoverBtn = C3D_button_at%(nx, ny)
 
     IF inView _ANDALSO wheel <> 0 THEN
         C3D_set_rotation C3D_STATE.yaw, C3D_STATE.pitch, C3D_STATE.zoom * 1.12 ^ (-wheel)
@@ -625,18 +704,18 @@ SUB C3D_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER, b2 AS INTEGER,
                     ELSE
                         C3D_begin_rotate nx, ny
                     END IF
-                ELSEIF ny >= C3D_STATE.rowY1 _ANDALSO ny < C3D_STATE.rowY1 + C3D_ROW_H THEN
+                ELSEIF ny >= C3D_STATE.rowY1 _ANDALSO ny < C3D_STATE.rowY1 + C3D_STATE.rowH THEN
                     i = nx \ (C3D_STATE.w \ C3D_SPACE_COUNT)
                     IF i >= C3D_SPACE_COUNT THEN i = C3D_SPACE_COUNT - 1
                     IF i >= 0 THEN C3D_set_space i
-                ELSEIF ny >= C3D_STATE.rowY2 _ANDALSO ny < C3D_STATE.rowY2 + C3D_ROW_H THEN
+                ELSEIF ny >= C3D_STATE.rowY2 _ANDALSO ny < C3D_STATE.rowY2 + C3D_STATE.rowH THEN
                     i = nx \ (C3D_STATE.w \ 3)
                     SELECT CASE i
                         CASE 0: C3D_set_view C3D_VIEW_SOLID
                         CASE 1: C3D_set_view C3D_VIEW_CLOUD
                         CASE IS >= 2: C3D_set_slice NOT C3D_STATE.sliceOn, C3D_STATE.slice
                     END SELECT
-                ELSEIF ny >= C3D_STATE.sliderY _ANDALSO ny < C3D_STATE.sliderY + C3D_SLIDER_H THEN
+                ELSEIF ny >= C3D_STATE.sliderY _ANDALSO ny < C3D_STATE.sliderY + C3D_STATE.sliderH THEN
                     C3D_STATE.dragging = C3D_DRAG_SLIDER
                     C3D_slider_to nx
                 END IF
@@ -676,6 +755,25 @@ END SUB
 
 SUB C3D_slider_to (nx AS INTEGER)
     DIM AS INTEGER sx1, sx2
-    sx1 = C3D_GAP + 2: sx2 = C3D_STATE.w - C3D_GAP - 3
+    sx1 = C3D_GAP + 1: sx2 = C3D_STATE.w - C3D_GAP - 2         ' inside the slider well
     C3D_set_slice -1, (nx - sx1) / (sx2 - sx1)
 END SUB
+
+''
+' Button under a widget-native point: 0..3 = space buttons, 10..12 = SOLID /
+' CLOUD / SLICE, -1 = none. Used for the hover highlight.
+'
+FUNCTION C3D_button_at% (nx AS INTEGER, ny AS INTEGER)
+    DIM i AS INTEGER
+    C3D_button_at% = -1
+    IF nx < 0 _ORELSE nx >= C3D_STATE.w THEN EXIT FUNCTION
+    IF ny >= C3D_STATE.rowY1 _ANDALSO ny < C3D_STATE.rowY1 + C3D_STATE.rowH THEN
+        i = nx \ (C3D_STATE.w \ C3D_SPACE_COUNT)
+        IF i >= C3D_SPACE_COUNT THEN i = C3D_SPACE_COUNT - 1
+        C3D_button_at% = i
+    ELSEIF ny >= C3D_STATE.rowY2 _ANDALSO ny < C3D_STATE.rowY2 + C3D_STATE.rowH THEN
+        i = nx \ (C3D_STATE.w \ 3)
+        IF i > 2 THEN i = 2
+        C3D_button_at% = 10 + i
+    END IF
+END FUNCTION
