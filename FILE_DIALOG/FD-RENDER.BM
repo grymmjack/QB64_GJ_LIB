@@ -244,9 +244,23 @@ SUB FD_RENDER_title_bar
     ' Close button [X]
     DIM bx AS INTEGER
     bx = FD_STATE.dialogW - FD_STATE.titleBarH
-    LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), _RGB32(180, 30, 30), BF
-    COLOR _RGB32(255, 255, 255), _RGBA32(0, 0, 0, 0)
-    FD_print_scaled bx + (FD_STATE.titleBarH - 8 * tfs) \ 2, y1 + (FD_STATE.titleBarH - FD_text_height%(tfs)) \ 2 + 1, "X", tfs
+    IF FD_CFG.flatClose THEN
+        ' a drawn cross (as COLOR_PICKER's), a hover background, no block
+        DIM cx AS INTEGER, cy AS INTEGER, arm AS INTEGER
+        IF FD_STATE.mouseX >= bx _ANDALSO FD_STATE.mouseX < FD_STATE.dialogW _ANDALSO FD_STATE.mouseY >= y1 _ANDALSO FD_STATE.mouseY < y1 + FD_STATE.titleBarH THEN
+            LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), FD_CFG.closeHoverBg, BF
+        END IF
+        cx = bx + FD_STATE.titleBarH \ 2
+        cy = y1 + FD_STATE.titleBarH \ 2
+        arm = FD_STATE.titleBarH \ 6
+        IF arm < 2 THEN arm = 2
+        LINE (cx - arm, cy - arm)-(cx + arm, cy + arm), FD_CFG.closeFg
+        LINE (cx - arm, cy + arm)-(cx + arm, cy - arm), FD_CFG.closeFg
+    ELSE
+        LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), _RGB32(180, 30, 30), BF
+        COLOR _RGB32(255, 255, 255), _RGBA32(0, 0, 0, 0)
+        FD_print_scaled bx + (FD_STATE.titleBarH - 8 * tfs) \ 2, y1 + (FD_STATE.titleBarH - FD_text_height%(tfs)) \ 2 + 1, "X", tfs
+    END IF
 END SUB
 
 ' --------------------------------------------------------------------------

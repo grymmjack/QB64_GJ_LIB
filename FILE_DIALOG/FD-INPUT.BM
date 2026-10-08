@@ -782,7 +782,7 @@ SUB FD_INPUT_mouse
     ttDyn = ""
     IF my >= 0 AND my < FD_STATE.titleBarH THEN
         ' Title bar — close button
-        IF mx >= FD_STATE.dialogW - FD_STATE.titleBarH THEN ttTarget = FD_TT_TITLE_CLOSE
+        IF mx >= FD_STATE.dialogW - FD_STATE.titleBarH _ANDALSO FD_CFG.flatClose = 0 THEN ttTarget = FD_TT_TITLE_CLOSE
     ELSEIF my >= FD_STATE.titleBarH AND my < FD_STATE.titleBarH + FD_STATE.pathBarH THEN
         ' Path bar — up / mkdir / path field
         DIM ttUpW    AS INTEGER
