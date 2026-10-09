@@ -179,6 +179,16 @@ x = 155: y = 3
 LAY_place x, y, 40, 40, 155, 3, 0, 0, 300, 200, 8
 CHECK x = 150 _ANDALSO y = 0, "butts against a neighbour's side and the top edge"
 
+x = -20: y = 300
+LAY_clamp x, y, 100, 50, 0, 10, 400, 200
+CHECK x = 0 _ANDALSO y = 150, "LAY_clamp moves a window back inside, only as far as needed"
+x = 50: y = 50
+LAY_clamp x, y, 500, 300, 0, 10, 400, 200
+CHECK x = 0 _ANDALSO y = 10, "LAY_clamp: too big pins the top-left edge to the area"
+x = 30: y = 40
+LAY_clamp x, y, 100, 50, 0, 10, 400, 200
+CHECK x = 30 _ANDALSO y = 40, "LAY_clamp leaves a window that fits where it is"
+
 ' --- reset ------------------------------------------------------------------------------
 LAY_reset
 CHECK LAY_NITEMS = 0 _ANDALSO LAY_NLINES = 0, "reset empties the pools"

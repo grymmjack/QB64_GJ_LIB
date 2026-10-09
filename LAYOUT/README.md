@@ -43,6 +43,9 @@ A tree is solved one level at a time by the caller, outer level first. A box who
 | `LAY_ITEMS(i&).at / .size / .dropped` | Results |
 | `LAY_overflow&(l&)` | px still over after every drop (0 = fits) |
 | `LAY_min_total&(l&)` / `LAY_basis_total&(l&)` | What the line needs at its minimums / bases |
+| `LAY_clamp x&, y&, w&, h&, minX&, minY&, maxX&, maxY&` | Keep a rectangle inside an area |
+| `LAY_obst_clear` / `LAY_obst_add x&, y&, w&, h&` / `LAY_free%(...)` | Obstacles for `LAY_place` |
+| `LAY_place x&, y&, w&, h&, prevX&, prevY&, minX&, minY&, maxX&, maxY&, snap&` | Snap + nearest free spot |
 
 ```basic
 '$INCLUDE:'QB64_GJ_LIB/LAYOUT/LAYOUT.BI'
@@ -57,6 +60,8 @@ PRINT LAY_ITEMS(a).size; LAY_ITEMS(b).size   ' 24 176 (a froze at its minimum)
 ```
 
 ### Floating windows
+
+`LAY_clamp` keeps a rectangle inside an area, moving it only as far as needed. An axis it's too big for pins its left/top edge.
 
 `LAY_place` finds a spot for a floating rectangle inside an area among other rectangles. It snaps to edges, then takes the nearest spot clear of the others. Failing that, it takes the nearest spot inside the area. A rectangle too big for an axis keeps its top-left edge inside.
 

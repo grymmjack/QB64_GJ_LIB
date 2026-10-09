@@ -375,6 +375,22 @@ END FUNCTION
 
 
 ''
+' Keep a w x h rectangle at (x, y) inside the area (minX..maxX, minY..maxY,
+' exclusive max): moved in only as far as needed; an axis it is too big for
+' pins its left / top edge to the area (its title bar stays reachable). x / y
+' are updated in place. No snapping, no obstacles - see LAY_place for that.
+SUB LAY_clamp (x AS LONG, y AS LONG, w AS LONG, h AS LONG, minX AS LONG, minY AS LONG, maxX AS LONG, maxY AS LONG)
+    DIM px AS LONG, py AS LONG
+    px = x: py = y
+    IF px + w > maxX THEN px = maxX - w
+    IF px < minX THEN px = minX
+    IF py + h > maxY THEN py = maxY - h
+    IF py < minY THEN py = minY
+    x = px: y = py
+END SUB
+
+
+''
 ' Settle a w x h rectangle wanted at (x, y) - x / y are updated in place:
 '   1. Snap: each axis pulls to the nearest edge within snapPx - the area's
 '      edges, butting against an obstacle's side / top / bottom, or lining up
