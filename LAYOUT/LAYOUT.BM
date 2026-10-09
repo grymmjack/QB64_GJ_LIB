@@ -1,0 +1,449 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S LAYOUT LIB - implementation. See LAYOUT.BI.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$INCLUDEONCE
+
+
+''
+' Forget every line and item (start of a layout pass). Pools keep their size.
+SUB LAY_reset ()
+    DIM i AS LONG
+    FOR i = 1 TO LAY_NITEMS: LAY_ITEMS(i).lineId = 0: NEXT i
+    FOR i = 1 TO LAY_NLINES: LAY_LINES(i).used = 0: NEXT i
+    LAY_NITEMS = 0: LAY_NLINES = 0
+END SUB
+
+
+''
+' A new line of `avail` px, `gap` px between neighbours. Returns its id.
+FUNCTION LAY_line_new& (avail AS LONG, gap AS LONG)
+    LAY_NLINES = LAY_NLINES + 1
+    IF LAY_NLINES > UBOUND(LAY_LINES) THEN REDIM _PRESERVE LAY_LINES(1 TO UBOUND(LAY_LINES) * 2) AS LAY_LINE
+    LAY_LINES(LAY_NLINES).used = -1
+    LAY_LINES(LAY_NLINES).avail = avail
+    LAY_LINES(LAY_NLINES).gap = gap
+    LAY_LINES(LAY_NLINES).mode = LAY_MODE_FLEX
+    LAY_LINES(LAY_NLINES).overflow = 0
+    LAY_LINES(LAY_NLINES).extent = 0
+    LAY_line_new& = LAY_NLINES
+END FUNCTION
+
+
+''
+' Solve mode of line l (LAY_MODE_FLEX by default).
+SUB LAY_mode (l AS LONG, m AS INTEGER)
+    LAY_LINES(l).mode = m
+END SUB
+
+
+''
+' The available length of line l (change it and solve again).
+SUB LAY_set_avail (l AS LONG, avail AS LONG)
+    LAY_LINES(l).avail = avail
+END SUB
+
+
+''
+' Add an item to line l (items keep the order they are added in). maxSize 0 =
+' no limit (a max below the min is raised to it). Returns its id.
+FUNCTION LAY_add& (l AS LONG, minSize AS LONG, basis AS LONG, maxSize AS LONG, grow AS DOUBLE, shrink AS DOUBLE)
+    LAY_NITEMS = LAY_NITEMS + 1
+    IF LAY_NITEMS > UBOUND(LAY_ITEMS) THEN REDIM _PRESERVE LAY_ITEMS(1 TO UBOUND(LAY_ITEMS) * 2) AS LAY_ITEM
+    DIM i AS LONG: i = LAY_NITEMS
+    LAY_ITEMS(i).lineId = l
+    LAY_ITEMS(i).minSize = _MAX(0, minSize)
+    LAY_ITEMS(i).maxSize = _MAX(0, maxSize)
+    LAY_ITEMS(i).basis = _MAX(0, basis) ' shared from as given (CSS flex base size); min / max apply after
+    IF LAY_ITEMS(i).maxSize > 0 _ANDALSO LAY_ITEMS(i).maxSize < LAY_ITEMS(i).minSize THEN LAY_ITEMS(i).maxSize = LAY_ITEMS(i).minSize
+    LAY_ITEMS(i).grow = _MAX(0, grow)
+    LAY_ITEMS(i).shrink = _MAX(0, shrink)
+    LAY_ITEMS(i).lead = 0
+    LAY_ITEMS(i).dropRank = 0
+    LAY_ITEMS(i).dropSize = 0
+    LAY_ITEMS(i).at = 0
+    LAY_ITEMS(i).size = LAY_ITEMS(i).basis
+    LAY_ITEMS(i).dropped = 0
+    LAY_ITEMS(i).frozen = 0
+    LAY_ITEMS(i).manual = 0
+    LAY_add& = i
+END FUNCTION
+
+
+''
+' A fixed item: min = basis = max = size, no grow / shrink.
+FUNCTION LAY_add_fixed& (l AS LONG, size AS LONG)
+    LAY_add_fixed& = LAY_add&(l, size, size, size, 0, 0)
+END FUNCTION
+
+
+''
+' px before item i (on top of the line's gap); -1 = it overlaps the previous
+' item by one pixel (two bordered boxes sharing their frame row).
+SUB LAY_lead (i AS LONG, px AS LONG)
+    LAY_ITEMS(i).lead = px
+END SUB
+
+
+''
+' When the line cannot fit even at every minimum, item i collapses to
+' dropSize - the highest rank first (ties: the later item first). rank 0 =
+' never dropped.
+SUB LAY_drop (i AS LONG, rank AS INTEGER, dropSize AS LONG)
+    LAY_ITEMS(i).dropRank = rank
+    LAY_ITEMS(i).dropSize = _MAX(0, dropSize)
+END SUB
+
+
+''
+' Collapse (or restore) item i by hand - for a caller whose drop order depends
+' on the outcome of each drop (decide, drop, solve again).
+SUB LAY_set_dropped (i AS LONG, dropSize AS LONG, onOff AS INTEGER)
+    LAY_ITEMS(i).manual = (onOff <> 0)
+    LAY_ITEMS(i).dropped = (onOff <> 0)
+    IF onOff THEN LAY_ITEMS(i).dropSize = _MAX(0, dropSize)
+END SUB
+
+
+''
+' Sum of what line l needs before any sizes: every lead + the gaps.
+FUNCTION LAY_leads& (l AS LONG)
+    DIM i AS LONG, n AS LONG, t AS LONG
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            IF n > 0 THEN t = t + LAY_LINES(l).gap
+            t = t + LAY_ITEMS(i).lead
+            n = n + 1
+        END IF
+    NEXT i
+    LAY_leads& = t
+END FUNCTION
+
+
+''
+' The smallest line l can be: leads + gaps + every minimum (dropped items at
+' their drop size). What its container must give it.
+FUNCTION LAY_min_total& (l AS LONG)
+    DIM i AS LONG, t AS LONG
+    t = LAY_leads&(l)
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            IF LAY_ITEMS(i).dropped THEN t = t + LAY_ITEMS(i).dropSize ELSE t = t + LAY_ITEMS(i).minSize
+        END IF
+    NEXT i
+    LAY_min_total& = t
+END FUNCTION
+
+
+''
+' Line l at every basis: leads + gaps + bases (dropped items at their drop size).
+FUNCTION LAY_basis_total& (l AS LONG)
+    DIM i AS LONG, t AS LONG
+    t = LAY_leads&(l)
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            IF LAY_ITEMS(i).dropped THEN t = t + LAY_ITEMS(i).dropSize ELSE t = t + LAY_ITEMS(i).basis
+        END IF
+    NEXT i
+    LAY_basis_total& = t
+END FUNCTION
+
+
+''
+' px line l is still over its length after the last solve (0 = it fits).
+FUNCTION LAY_overflow& (l AS LONG)
+    LAY_overflow& = LAY_LINES(l).overflow
+END FUNCTION
+
+
+''
+' Solve line l: drops first (only while the minimums cannot fit), then sizes,
+' then positions.
+'
+' Sizes (LAY_MODE_FLEX), CSS flexbox's "resolve flexible lengths" in whole px:
+'   room = avail - leads - bases. room >= 0: growers share it by grow;
+'   room < 0: shrinkers give it back by shrink x basis. The last grower /
+'   shrinker takes the rounding remainder. Then clamp to min / max; if
+'   anything was clamped, freeze it (all min violators when the clamps added
+'   size, all max violators when they took it, all of them when even) and
+'   share again among the rest - until nothing moves.
+' LAY_MODE_LEGACY_MIN: one share, no clamps (min only decides drops) - the
+'   caller applies its own rules.
+SUB LAY_solve (l AS LONG)
+    DIM i AS LONG, best AS LONG, bestRank AS INTEGER, guard AS LONG
+    ' --- forget earlier rank drops (manual ones stay) ---
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).manual = 0 THEN LAY_ITEMS(i).dropped = 0
+    NEXT i
+    ' --- drops: the highest rank (later on a tie) while the minimums overflow ---
+    DO
+        IF LAY_min_total&(l) <= LAY_LINES(l).avail THEN EXIT DO
+        best = 0: bestRank = 0
+        FOR i = 1 TO LAY_NITEMS
+            IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).dropped = 0 _ANDALSO LAY_ITEMS(i).dropRank > 0 THEN
+                IF LAY_ITEMS(i).dropRank >= bestRank THEN bestRank = LAY_ITEMS(i).dropRank: best = i
+            END IF
+        NEXT i
+        IF best = 0 THEN EXIT DO
+        LAY_ITEMS(best).dropped = -1
+    LOOP
+
+    ' --- sizes ---
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            LAY_ITEMS(i).frozen = LAY_ITEMS(i).dropped
+            IF LAY_ITEMS(i).dropped THEN LAY_ITEMS(i).size = LAY_ITEMS(i).dropSize ELSE LAY_ITEMS(i).size = LAY_ITEMS(i).basis
+        END IF
+    NEXT i
+    DO
+        guard = guard + 1
+        LAY_share l
+        IF LAY_LINES(l).mode = LAY_MODE_LEGACY_MIN THEN EXIT DO
+        IF LAY_clamp_freeze%(l) = 0 THEN EXIT DO
+        IF guard > LAY_NITEMS + 1 THEN EXIT DO ' each pass freezes at least one item
+    LOOP
+
+    ' --- positions ---
+    DIM p AS LONG, n AS LONG
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            IF n > 0 THEN p = p + LAY_LINES(l).gap
+            p = p + LAY_ITEMS(i).lead
+            LAY_ITEMS(i).at = p
+            p = p + LAY_ITEMS(i).size
+            n = n + 1
+        END IF
+    NEXT i
+    LAY_LINES(l).extent = p
+    LAY_LINES(l).overflow = _MAX(0, p - LAY_LINES(l).avail)
+END SUB
+
+
+''
+' (LAY_solve) Share the room space of line l among its unfrozen items, from
+' their bases. Frozen items keep their size.
+SUB LAY_share (l AS LONG)
+    DIM i AS LONG, room AS LONG, wsum AS DOUBLE, w AS DOUBLE, last AS LONG, given AS LONG, part AS LONG
+    room = LAY_LINES(l).avail - LAY_leads&(l)
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l THEN
+            IF LAY_ITEMS(i).frozen THEN room = room - LAY_ITEMS(i).size ELSE room = room - LAY_ITEMS(i).basis
+        END IF
+    NEXT i
+    ' weights: grow (room >= 0) or shrink x basis (room < 0)
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).frozen = 0 THEN
+            LAY_ITEMS(i).size = LAY_ITEMS(i).basis
+            w = LAY_weight#(i, room)
+            IF w > 0 THEN wsum = wsum + w: last = i
+        END IF
+    NEXT i
+    IF wsum <= 0 _ORELSE room = 0 THEN EXIT SUB
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).frozen = 0 THEN
+            w = LAY_weight#(i, room)
+            IF w > 0 THEN
+                IF i = last THEN
+                    part = room - given ' the last one takes the rounding
+                ELSE
+                    part = FIX(CDBL(room) * w / wsum)
+                    given = given + part
+                END IF
+                LAY_ITEMS(i).size = LAY_ITEMS(i).basis + part
+            END IF
+        END IF
+    NEXT i
+END SUB
+
+
+''
+' (LAY_share) Item i's weight for a share of `room`.
+FUNCTION LAY_weight# (i AS LONG, room AS LONG)
+    IF room >= 0 THEN
+        LAY_weight# = LAY_ITEMS(i).grow
+    ELSE
+        LAY_weight# = LAY_ITEMS(i).shrink * LAY_ITEMS(i).basis
+    END IF
+END FUNCTION
+
+
+''
+' (LAY_solve) Clamp line l's unfrozen items to min / max and freeze the
+' violators (CSS: min violators when the clamps added size overall, max
+' violators when they took size, all of them when it evens out). Returns
+' TRUE when anything was frozen (share again).
+FUNCTION LAY_clamp_freeze% (l AS LONG)
+    DIM i AS LONG, total AS LONG, c AS LONG, froze AS INTEGER
+    DIM want AS LONG
+    REDIM clampedTo(1 TO LAY_NITEMS) AS LONG
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).frozen = 0 THEN
+            c = LAY_ITEMS(i).size
+            IF c < LAY_ITEMS(i).minSize THEN c = LAY_ITEMS(i).minSize
+            IF LAY_ITEMS(i).maxSize > 0 _ANDALSO c > LAY_ITEMS(i).maxSize THEN c = LAY_ITEMS(i).maxSize
+            clampedTo(i) = c
+            total = total + (c - LAY_ITEMS(i).size)
+        END IF
+    NEXT i
+    FOR i = 1 TO LAY_NITEMS
+        IF LAY_ITEMS(i).lineId = l _ANDALSO LAY_ITEMS(i).frozen = 0 THEN
+            want = 0
+            IF total > 0 THEN
+                want = (clampedTo(i) > LAY_ITEMS(i).size)
+            ELSEIF total < 0 THEN
+                want = (clampedTo(i) < LAY_ITEMS(i).size)
+            ELSE
+                want = (clampedTo(i) <> LAY_ITEMS(i).size)
+            END IF
+            IF want THEN
+                LAY_ITEMS(i).size = clampedTo(i)
+                LAY_ITEMS(i).frozen = -1
+                froze = -1
+            END IF
+        END IF
+    NEXT i
+    LAY_clamp_freeze% = froze
+END FUNCTION
+
+
+' =============================================================================
+' LAY_place - a floating rectangle among obstacles (other floating windows)
+' inside an area (minX..maxX, minY..maxY, exclusive max).
+' =============================================================================
+
+''
+' Forget the obstacles.
+SUB LAY_obst_clear ()
+    LAY_NOBST = 0
+END SUB
+
+
+''
+' Add an obstacle rectangle (ignored when empty).
+SUB LAY_obst_add (x AS LONG, y AS LONG, w AS LONG, h AS LONG)
+    IF w <= 0 _ORELSE h <= 0 THEN EXIT SUB
+    LAY_NOBST = LAY_NOBST + 1
+    IF LAY_NOBST > UBOUND(LAY_OBST) THEN REDIM _PRESERVE LAY_OBST(1 TO UBOUND(LAY_OBST) * 2) AS LAY_RECT
+    LAY_OBST(LAY_NOBST).x = x: LAY_OBST(LAY_NOBST).y = y
+    LAY_OBST(LAY_NOBST).w = w: LAY_OBST(LAY_NOBST).h = h
+END SUB
+
+
+''
+' TRUE when (x, y, w, h) overlaps no obstacle and sits inside the area (an
+' axis the rectangle is too big for is not checked).
+FUNCTION LAY_free% (x AS LONG, y AS LONG, w AS LONG, h AS LONG, minX AS LONG, minY AS LONG, maxX AS LONG, maxY AS LONG)
+    DIM i AS LONG
+    IF w <= maxX - minX THEN
+        IF x < minX _ORELSE x + w > maxX THEN EXIT FUNCTION
+    END IF
+    IF h <= maxY - minY THEN
+        IF y < minY _ORELSE y + h > maxY THEN EXIT FUNCTION
+    END IF
+    FOR i = 1 TO LAY_NOBST
+        IF x < LAY_OBST(i).x + LAY_OBST(i).w _ANDALSO x + w > LAY_OBST(i).x _ANDALSO y < LAY_OBST(i).y + LAY_OBST(i).h _ANDALSO y + h > LAY_OBST(i).y THEN EXIT FUNCTION
+    NEXT i
+    LAY_free% = -1
+END FUNCTION
+
+
+''
+' (LAY_place) Keep cand as the best snap target when within snapPx of atPos
+' and closer than the best so far.
+SUB LAY_snap_try (atPos AS LONG, cand AS LONG, best AS LONG, bestD AS LONG, snapPx AS LONG)
+    DIM d AS LONG: d = ABS(cand - atPos)
+    IF d <= snapPx _ANDALSO d < bestD THEN best = cand: bestD = d
+END SUB
+
+
+''
+' (LAY_place) A rectangle too big for an axis keeps its near edge in the area.
+FUNCTION LAY_keep_in& (v AS LONG, size AS LONG, lo AS LONG, hi AS LONG)
+    LAY_keep_in& = v
+    IF size > hi - lo _ANDALSO v < lo THEN LAY_keep_in& = lo
+END FUNCTION
+
+
+''
+' Settle a w x h rectangle wanted at (x, y) - x / y are updated in place:
+'   1. Snap: each axis pulls to the nearest edge within snapPx - the area's
+'      edges, butting against an obstacle's side / top / bottom, or lining up
+'      with its edges.
+'   2. A rectangle too big for an axis keeps its left / top edge in the area.
+'   3. If that spot is not free, the nearest free spot whose edges touch an
+'      obstacle or the area (a dragged window slides along what it bumps);
+'      else (prevX, prevY) when free; else the nearest spot inside the area
+'      (over an obstacle - never outside the area).
+SUB LAY_place (x AS LONG, y AS LONG, w AS LONG, h AS LONG, prevX AS LONG, prevY AS LONG, minX AS LONG, minY AS LONG, maxX AS LONG, maxY AS LONG, snapPx AS LONG)
+    ' locals first: callers may pass their own shared fields (by reference)
+    DIM px AS LONG, py AS LONG, pw AS LONG, ph AS LONG, ox0 AS LONG, oy0 AS LONG
+    DIM ax0 AS LONG, ay0 AS LONG, ax1 AS LONG, ay1 AS LONG, sn AS LONG
+    px = x: py = y: pw = w: ph = h: ox0 = prevX: oy0 = prevY
+    ax0 = minX: ay0 = minY: ax1 = maxX: ay1 = maxY: sn = snapPx
+    IF pw <= 0 _ORELSE ph <= 0 THEN EXIT SUB
+
+    DIM i AS LONG, ox AS LONG, oy AS LONG, ow AS LONG, oh AS LONG
+    DIM sx AS LONG, sy AS LONG, dX AS LONG, dY AS LONG
+    sx = px: sy = py: dX = sn + 1: dY = sn + 1
+    LAY_snap_try px, ax0, sx, dX, sn
+    LAY_snap_try px, ax1 - pw, sx, dX, sn
+    LAY_snap_try py, ay0, sy, dY, sn
+    LAY_snap_try py, ay1 - ph, sy, dY, sn
+    FOR i = 1 TO LAY_NOBST
+        ox = LAY_OBST(i).x: oy = LAY_OBST(i).y: ow = LAY_OBST(i).w: oh = LAY_OBST(i).h
+        ' side by side: rows overlap (or nearly) -> butt left / right edges
+        IF py < oy + oh + sn _ANDALSO py + ph > oy - sn THEN
+            LAY_snap_try px, ox - pw, sx, dX, sn
+            LAY_snap_try px, ox + ow, sx, dX, sn
+        END IF
+        ' stacked: columns overlap (or nearly) -> butt top / bottom edges
+        IF px < ox + ow + sn _ANDALSO px + pw > ox - sn THEN
+            LAY_snap_try py, oy - ph, sy, dY, sn
+            LAY_snap_try py, oy + oh, sy, dY, sn
+        END IF
+        ' edge alignment, wherever it is
+        LAY_snap_try px, ox, sx, dX, sn
+        LAY_snap_try px, ox + ow - pw, sx, dX, sn
+        LAY_snap_try py, oy, sy, dY, sn
+        LAY_snap_try py, oy + oh - ph, sy, dY, sn
+    NEXT i
+    sx = LAY_keep_in&(sx, pw, ax0, ax1)
+    sy = LAY_keep_in&(sy, ph, ay0, ay1)
+    IF LAY_free%(sx, sy, pw, ph, ax0, ay0, ax1, ay1) THEN x = sx: y = sy: EXIT SUB
+
+    ' nearest free spot: the snapped spot + every obstacle / area edge, every combination
+    DIM nx AS LONG, ny AS LONG
+    REDIM cx(0 TO 2 + LAY_NOBST * 2) AS LONG, cy(0 TO 2 + LAY_NOBST * 2) AS LONG
+    cx(0) = sx: cx(1) = ax0: cx(2) = ax1 - pw: nx = 3
+    cy(0) = sy: cy(1) = ay0: cy(2) = ay1 - ph: ny = 3
+    FOR i = 1 TO LAY_NOBST
+        cx(nx) = LAY_OBST(i).x - pw: cx(nx + 1) = LAY_OBST(i).x + LAY_OBST(i).w: nx = nx + 2
+        cy(ny) = LAY_OBST(i).y - ph: cy(ny + 1) = LAY_OBST(i).y + LAY_OBST(i).h: ny = ny + 2
+    NEXT i
+    DIM a AS LONG, b AS LONG, found AS INTEGER, d AS _INTEGER64, bestD AS _INTEGER64, bx AS LONG, by AS LONG
+    FOR a = 0 TO nx - 1: cx(a) = LAY_keep_in&(cx(a), pw, ax0, ax1): NEXT a
+    FOR b = 0 TO ny - 1: cy(b) = LAY_keep_in&(cy(b), ph, ay0, ay1): NEXT b
+    FOR a = 0 TO nx - 1
+        FOR b = 0 TO ny - 1
+            d = CLNG(cx(a) - sx) * CLNG(cx(a) - sx) + CLNG(cy(b) - sy) * CLNG(cy(b) - sy)
+            IF found = 0 _ORELSE d < bestD THEN
+                IF LAY_free%(cx(a), cy(b), pw, ph, ax0, ay0, ax1, ay1) THEN
+                    bx = cx(a): by = cy(b): bestD = d: found = -1
+                END IF
+            END IF
+        NEXT b
+    NEXT a
+
+    IF found THEN
+        x = bx: y = by
+    ELSEIF LAY_free%(ox0, oy0, pw, ph, ax0, ay0, ax1, ay1) THEN
+        x = ox0: y = oy0
+    ELSE
+        ' nowhere clear of the obstacles: at least inside the area
+        IF pw <= ax1 - ax0 THEN bx = _MAX(ax0, _MIN(sx, ax1 - pw)) ELSE bx = ax0
+        IF ph <= ay1 - ay0 THEN by = _MAX(ay0, _MIN(sy, ay1 - ph)) ELSE by = ay0
+        x = bx: y = by
+    END IF
+END SUB

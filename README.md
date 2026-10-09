@@ -26,6 +26,7 @@ in it's current state.
 | [FILE_DIALOG](FILE_DIALOG/README.md) | File Dialog | Full-featured Open/Save/Folder dialog with list, details, and thumbnail views |
 | [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
 | [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
+| [LAYOUT](LAYOUT/README.md) | Layout solver | **Flexbox-style** rows / columns: min / preferred / max sizes, grow / shrink with min-max freezing, overflow drop order, shared frame rows; plus `LAY_place` for floating windows among obstacles. Pure integer math, headless unit test |
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
 | [MSG_BOX](MSG_BOX/README.md) | Message Box Dialog | Modal message boxes with OK/Cancel/Yes/No buttons, icons, and input mode |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
