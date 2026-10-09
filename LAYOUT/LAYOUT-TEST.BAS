@@ -107,6 +107,13 @@ LAY_set_dropped a, 0, -1
 LAY_solve l
 CHECK LAY_ITEMS(a).dropped _ANDALSO LAY_ITEMS(a).size = 0 _ANDALSO LAY_ITEMS(b).size = 300, "a manual drop stays through a solve"
 
+LAY_reset
+l = LAY_line_new&(70, 0)
+a = LAY_add_fixed&(l, 50)
+b = LAY_add&(l, 40, 0, 0, 1, 0): LAY_lead b, -1: LAY_drop b, 1, 16
+LAY_solve l
+CHECK LAY_ITEMS(b).dropped _ANDALSO LAY_ITEMS(b).at = 50 _ANDALSO LAY_ITEMS(b).size = 16, "a dropped item no longer shares a frame row (at 50, not 49)"
+
 ' --- legacy mode (pixel parity for an existing layout) -------------------------------
 LAY_reset
 l = LAY_line_new&(200, 0)

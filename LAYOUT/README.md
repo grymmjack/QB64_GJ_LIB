@@ -11,7 +11,7 @@ Built for [DRAW](https://github.com/grymmjack/DRAW)'s docks, where every panel d
 | --- | --- |
 | **line** | A row or column of items solved against an available length (`LAY_line_new&`) |
 | **item** | One box: `minSize`, `basis` (preferred), `maxSize` (0 = none), `grow`, `shrink` |
-| **lead** | px before an item, on top of the line's gap. `-1` overlaps the previous item by a pixel (two bordered boxes sharing a frame row) |
+| **lead** | px before an item, on top of the line's gap. `-1` overlaps the previous item by a pixel (two bordered boxes sharing a frame row); ignored while the item is dropped (a collapsed box has no frame to share) |
 | **drop** | When even every minimum can't fit, items collapse to their `dropSize`, the highest `dropRank` first (a title strip, or 0 = hidden) |
 
 ### How a line is solved

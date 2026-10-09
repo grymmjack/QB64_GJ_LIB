@@ -88,6 +88,14 @@ END SUB
 
 
 ''
+' Item i's lead as solved: a dropped (collapsed / hidden) item has no frame to
+' share, so a negative lead is ignored while it is dropped.
+FUNCTION LAY_lead_of& (i AS LONG)
+    IF LAY_ITEMS(i).dropped _ANDALSO LAY_ITEMS(i).lead < 0 THEN LAY_lead_of& = 0 ELSE LAY_lead_of& = LAY_ITEMS(i).lead
+END FUNCTION
+
+
+''
 ' When the line cannot fit even at every minimum, item i collapses to
 ' dropSize - the highest rank first (ties: the later item first). rank 0 =
 ' never dropped.
@@ -114,7 +122,7 @@ FUNCTION LAY_leads& (l AS LONG)
     FOR i = 1 TO LAY_NITEMS
         IF LAY_ITEMS(i).lineId = l THEN
             IF n > 0 THEN t = t + LAY_LINES(l).gap
-            t = t + LAY_ITEMS(i).lead
+            t = t + LAY_lead_of&(i)
             n = n + 1
         END IF
     NEXT i
@@ -210,7 +218,7 @@ SUB LAY_solve (l AS LONG)
     FOR i = 1 TO LAY_NITEMS
         IF LAY_ITEMS(i).lineId = l THEN
             IF n > 0 THEN p = p + LAY_LINES(l).gap
-            p = p + LAY_ITEMS(i).lead
+            p = p + LAY_lead_of&(i)
             LAY_ITEMS(i).at = p
             p = p + LAY_ITEMS(i).size
             n = n + 1
