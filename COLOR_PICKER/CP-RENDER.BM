@@ -104,7 +104,9 @@ SUB CP_RENDER_title_bar
     ' Drawn cross (two diagonals), arm grows with the title bar: crisp at any
     ' font size, unlike a font "X" glyph.
     DIM cx AS INTEGER, cy AS INTEGER, arm AS INTEGER
-    cx = bx + CP_THEME.titleBarH% \ 2
+    ' centered on what shows of the box: the outer border (drawn last) covers
+    ' its top row and right column
+    cx = bx + (CP_THEME.titleBarH% - 1) \ 2
     cy = CP_THEME.titleBarH% \ 2
     arm = CP_THEME.titleBarH% \ 6
     IF arm < 2 THEN arm = 2

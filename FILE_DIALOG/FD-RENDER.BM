@@ -250,7 +250,9 @@ SUB FD_RENDER_title_bar
         IF FD_STATE.mouseX >= bx _ANDALSO FD_STATE.mouseX < FD_STATE.dialogW _ANDALSO FD_STATE.mouseY >= y1 _ANDALSO FD_STATE.mouseY < y1 + FD_STATE.titleBarH THEN
             LINE (bx, y1)-(FD_STATE.dialogW - 1, y1 + FD_STATE.titleBarH - 1), FD_CFG.closeHoverBg, BF
         END IF
-        cx = bx + FD_STATE.titleBarH \ 2
+        ' centered on what shows of the box: the outer border (drawn last)
+        ' covers its top row and right column
+        cx = bx + (FD_STATE.titleBarH - 1) \ 2
         cy = y1 + FD_STATE.titleBarH \ 2
         arm = FD_STATE.titleBarH \ 6
         IF arm < 2 THEN arm = 2
