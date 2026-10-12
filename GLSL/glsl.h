@@ -34,6 +34,108 @@ static int32_t glsl_native_window_size(int32_t want_height) {
     return want_height ? h : w;
 }
 
+// ---- the stream: vertex data the card reads straight from its memory ------
+// Drawing from arrays in our own memory (_glVertexPointer pointing at a
+// QB64 array) makes Mesa's threaded driver copy them on EVERY draw call, into
+// a queue that, full, waits for the screen's refresh. So vertex data can go
+// through the stream instead: one big buffer in graphics memory, mapped once
+// and kept mapped (persistent mapping, OpenGL 4.4). glsl_native_stream_put
+// copies an array into the next free part of it and returns where it went
+// (an offset); with the stream bound, OpenGL's pointer calls take that offset
+// instead of an address. It's used round and round (a "ring"): at 64 MB, many
+// frames pass before a part is written again, long after the card has read it.
+// Without glBufferStorage, stream_put returns the array's own address and
+// stream_bind does nothing, so the same code still draws (the slow way).
+#define GLSL_STREAM_BYTES ((size_t)64 << 20)
+static GLuint glsl_stream_buf = 0;
+static unsigned char *glsl_stream_ptr = NULL;
+static size_t glsl_stream_at = 0;
+static int32_t glsl_stream_ok = -1;
+static int32_t glsl_stream_init(void) {
+    if (glsl_stream_ok >= 0) return glsl_stream_ok;
+    glsl_stream_ok = 0;
+    if (glBufferStorage == NULL || glMapBufferRange == NULL || glGenBuffers == NULL) return 0;
+    GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+    glGenBuffers(1, &glsl_stream_buf);
+    glBindBuffer(GL_ARRAY_BUFFER, glsl_stream_buf);
+    glBufferStorage(GL_ARRAY_BUFFER, GLSL_STREAM_BYTES, NULL, flags);
+    glsl_stream_ptr = (unsigned char *)glMapBufferRange(GL_ARRAY_BUFFER, 0, GLSL_STREAM_BYTES, flags);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (!glsl_stream_ptr) { glDeleteBuffers(1, &glsl_stream_buf); glsl_stream_buf = 0; return 0; }
+    glsl_stream_ok = 1;
+    return 1;
+}
+static int32_t glsl_native_stream_supported(void) { return glsl_stream_init() ? -1 : 0; }
+static uintptr_t glsl_native_stream_put(uintptr_t src, int32_t bytes) {
+    if (!glsl_stream_init() || bytes <= 0) return src;
+    size_t n = ((size_t)bytes + 63) & ~(size_t)63;
+    if (n > GLSL_STREAM_BYTES) return src;
+    if (glsl_stream_at + n > GLSL_STREAM_BYTES) glsl_stream_at = 0;
+    size_t at = glsl_stream_at;
+    memcpy(glsl_stream_ptr + at, (const void *)src, (size_t)bytes);
+    glsl_stream_at += n;
+    return (uintptr_t)at;
+}
+// Bind the stream for vertex arrays and index lists (on), or unbind it (off)
+// - unbind before SUB _GL ends: QB64-PE's own drawing uses plain arrays.
+static void glsl_native_stream_bind(int32_t on) {
+    if (!glsl_stream_init()) return;
+    GLuint b = on ? glsl_stream_buf : 0;
+    glBindBuffer(GL_ARRAY_BUFFER, b);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, b);
+}
+
+// Copy w x h pixels (format/type, bpp bytes each) into the bound texture,
+// without stalling: through the stream, as a "pixel buffer" the card reads
+// on its own time. (Handing glTexSubImage2D a pointer into our memory makes
+// Mesa's threaded driver stop and copy it right there.)
+static void glsl_upload_sub(uintptr_t pixels, int32_t w, int32_t h, GLenum format, GLenum type, int32_t bpp) {
+    size_t bytes = (size_t)w * (size_t)h * (size_t)bpp;
+    if (glsl_stream_init() && bytes <= GLSL_STREAM_BYTES / 4) {
+        uintptr_t at = glsl_native_stream_put(pixels, (int32_t)bytes);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_stream_buf);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, type, (const void *)at);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    } else {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, type, (const void *)pixels);
+    }
+}
+
+// ---- data textures and static buffers ---------------------------------------
+// A data texture holds numbers, not colours: four floats a pixel (RGBA32F),
+// read exactly (nearest pixel) - a table a shader can look things up in.
+static uint32_t glsl_native_data_texture_new(int32_t w, int32_t h) {
+    GLuint t = 0;
+    glGenTextures(1, &t);
+    glBindTexture(GL_TEXTURE_2D, t);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return t;
+}
+// New contents (w x h x 4 floats from data) for data texture tex. Leaves it
+// bound on the current texture unit.
+static void glsl_native_data_texture_update(uint32_t tex, int32_t w, int32_t h, uintptr_t data) {
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glsl_upload_sub(data, w, h, GL_RGBA, GL_FLOAT, 16);
+}
+// A buffer of vertex data in graphics memory, filled once from data (bytes
+// long) - for things that don't change, like a level's walls. Making it
+// copies the data (once, so a pause then is fine).
+static uint32_t glsl_native_buffer_new(uintptr_t data, int32_t bytes) {
+    GLuint b = 0;
+    glGenBuffers(1, &b);
+    glBindBuffer(GL_ARRAY_BUFFER, b);
+    glBufferData(GL_ARRAY_BUFFER, bytes, (const void *)data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return b;
+}
+static void glsl_native_buffer_bind(uint32_t b) { glBindBuffer(GL_ARRAY_BUFFER, b); }
+static void glsl_native_buffer_delete(uint32_t b) { if (b) { GLuint x = b; glDeleteBuffers(1, &x); } }
+
 static void glsl_set_error(const char *what, const char *log) {
     strncpy(glsl_error_text, what, sizeof(glsl_error_text) - 1);
     glsl_error_text[sizeof(glsl_error_text) - 1] = 0;
@@ -107,7 +209,32 @@ static int32_t glsl_native_error(char *buf, int32_t len) {
     return (int32_t)strlen(buf);
 }
 
-static void glsl_native_use(uint32_t program) { glUseProgram(program); }
+// The program in use, and the last value each of its uniforms was set to:
+// setting a uniform to the value it already has is skipped, so a program
+// can set everything every frame without flooding the driver with commands.
+// (If you set uniforms with your own glUniform calls, set them all this way.)
+static uint32_t glsl_cur_prog = 0;
+#define GLSL_UVALS 2048
+typedef struct { uint32_t prog; int32_t loc; float v[4]; int32_t used; } glsl_uval_t;
+static glsl_uval_t glsl_uvals[GLSL_UVALS];
+static int32_t glsl_uval_same(int32_t loc, float a, float b, float c, float d) {
+    if (loc < 0) return 1; // (the shader doesn't use it)
+    uint32_t h = (glsl_cur_prog * 2654435761u + (uint32_t)loc * 40503u) % GLSL_UVALS;
+    for (int32_t k = 0; k < GLSL_UVALS; k++) {
+        glsl_uval_t *e = &glsl_uvals[(h + k) % GLSL_UVALS];
+        if (!e->used) { e->used = 1; e->prog = glsl_cur_prog; e->loc = loc; e->v[0] = a; e->v[1] = b; e->v[2] = c; e->v[3] = d; return 0; }
+        if (e->prog == glsl_cur_prog && e->loc == loc) {
+            if (e->v[0] == a && e->v[1] == b && e->v[2] == c && e->v[3] == d) return 1;
+            e->v[0] = a; e->v[1] = b; e->v[2] = c; e->v[3] = d;
+            return 0;
+        }
+    }
+    return 0; // (table full: just set it)
+}
+static void glsl_uval_forget(uint32_t program) {
+    for (int32_t k = 0; k < GLSL_UVALS; k++) if (glsl_uvals[k].used && glsl_uvals[k].prog == program) glsl_uvals[k].prog = 0xFFFFFFFFu;
+}
+static void glsl_native_use(uint32_t program) { glUseProgram(program); glsl_cur_prog = program; }
 
 // Uniform locations, remembered after the first look-up: glGetUniformLocation
 // is a question, and on Mesa drivers a question can make the program wait
@@ -133,12 +260,12 @@ static void glsl_ucache_forget(uint32_t program) { // (a deleted program's numbe
     for (i = 0; i < glsl_ucache_n; i++) if (glsl_ucache[i].program != program) glsl_ucache[j++] = glsl_ucache[i];
     glsl_ucache_n = j;
 }
-static void glsl_native_delete(uint32_t program) { if (program) { glsl_ucache_forget(program); glDeleteProgram(program); } }
-static void glsl_native_set1f(int32_t loc, float x) { glUniform1f(loc, x); }
-static void glsl_native_set2f(int32_t loc, float x, float y) { glUniform2f(loc, x, y); }
-static void glsl_native_set3f(int32_t loc, float x, float y, float z) { glUniform3f(loc, x, y, z); }
-static void glsl_native_set4f(int32_t loc, float x, float y, float z, float w) { glUniform4f(loc, x, y, z, w); }
-static void glsl_native_set1i(int32_t loc, int32_t i) { glUniform1i(loc, i); }
+static void glsl_native_delete(uint32_t program) { if (program) { glsl_ucache_forget(program); glsl_uval_forget(program); glDeleteProgram(program); } }
+static void glsl_native_set1f(int32_t loc, float x) { if (!glsl_uval_same(loc, x, 0, 0, 0)) glUniform1f(loc, x); }
+static void glsl_native_set2f(int32_t loc, float x, float y) { if (!glsl_uval_same(loc, x, y, 0, 0)) glUniform2f(loc, x, y); }
+static void glsl_native_set3f(int32_t loc, float x, float y, float z) { if (!glsl_uval_same(loc, x, y, z, 0)) glUniform3f(loc, x, y, z); }
+static void glsl_native_set4f(int32_t loc, float x, float y, float z, float w) { if (!glsl_uval_same(loc, x, y, z, w)) glUniform4f(loc, x, y, z, w); }
+static void glsl_native_set1i(int32_t loc, int32_t i) { if (!glsl_uval_same(loc, (float)i, 0.5f, 0, 0)) glUniform1i(loc, i); }
 
 static int32_t glsl_native_attrib(uint32_t program, const char *name) { return glGetAttribLocation(program, name); }
 
@@ -273,55 +400,6 @@ static void glsl_native_fullscreen(int32_t flip_v) {
 // The program copies its finished screen into a buffer just before _DISPLAY
 // (GLSL_filter_capture, in BASIC); here, inside SUB _GL, it goes into a
 // texture and is drawn over the whole window through a shader.
-// Copy w x h BGRA pixels into the bound texture without stalling.
-//
-// Handing glTexSubImage2D a pointer into our memory makes Mesa's threaded
-// driver stop and wait (it can't keep the pointer for later) - every frame,
-// that's a few frames a second. So the pixels go through a "pixel buffer":
-// graphics-card memory we map once and keep mapped (persistent mapping,
-// OpenGL 4.4), cut into 3 slices used in turn. Each frame we memcpy into the
-// next slice, and glTexSubImage2D reads it from there, all on the card's
-// own time. Without glBufferStorage, it falls back to the plain upload.
-#define GLSL_PBO_SLICES 3
-static GLuint glsl_pbo = 0;
-static unsigned char *glsl_pbo_ptr = NULL;
-static size_t glsl_pbo_slice = 0;
-static int32_t glsl_pbo_next = 0;
-static void glsl_upload_pixels(uintptr_t pixels, int32_t w, int32_t h) {
-    size_t need = (size_t)w * (size_t)h * 4;
-    if (glBufferStorage == NULL || glMapBufferRange == NULL || glGenBuffers == NULL) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)pixels);
-        return;
-    }
-    if (!glsl_pbo || need != glsl_pbo_slice) {
-        GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        if (glsl_pbo) {
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
-            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-            glDeleteBuffers(1, &glsl_pbo);
-        }
-        glGenBuffers(1, &glsl_pbo);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
-        glBufferStorage(GL_PIXEL_UNPACK_BUFFER, need * GLSL_PBO_SLICES, NULL, flags);
-        glsl_pbo_ptr = (unsigned char *)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, need * GLSL_PBO_SLICES, flags);
-        glsl_pbo_slice = need;
-        if (!glsl_pbo_ptr) { // couldn't map: plain uploads from now on
-            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-            glDeleteBuffers(1, &glsl_pbo); glsl_pbo = 0;
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)pixels);
-            return;
-        }
-    } else {
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
-    }
-    size_t at = glsl_pbo_slice * (size_t)glsl_pbo_next;
-    memcpy(glsl_pbo_ptr + at, (const void *)pixels, need);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)at);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    glsl_pbo_next = (glsl_pbo_next + 1) % GLSL_PBO_SLICES;
-}
-
 // The texture is made once (and again only if the screen changes size) and
 // then refilled in place with glTexSubImage2D: re-making it every frame can
 // stall the driver.
@@ -341,6 +419,6 @@ static void glsl_native_filter_upload(uintptr_t pixels, int32_t w, int32_t h, in
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
         glsl_filter_w = w; glsl_filter_h = h;
     }
-    glsl_upload_pixels(pixels, w, h);
+    glsl_upload_sub(pixels, w, h, GL_BGRA, GL_UNSIGNED_BYTE, 4);
 }
 static uint32_t glsl_native_filter_texture(void) { return glsl_filter_tex; }

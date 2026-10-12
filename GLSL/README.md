@@ -52,11 +52,17 @@ END SUB
   every frame (`_glTexImage2D` with pixels). Mesa's threaded drivers wait for
   the screen's next refresh to answer or copy, which can cost you all but a
   few frames a second. The library does this for you: uniform look-ups are
-  cached, and screen uploads go through a persistent pixel buffer. For the
+  cached, uniforms set to the value they already have are skipped, and all
+  per-frame data (vertex arrays, texture updates, the screen filter) goes
+  through one persistent "stream" buffer the card reads on its own time. For the
   window's size, use `GLSL_window_width&` / `GLSL_window_height&` (from GLFW,
   no OpenGL question) instead of `_glGetIntegerv _GL_VIEWPORT`.
-- **Draw in batches.** Thousands of `_glVertex3f` calls a frame can stall the
-  same way. Put corners in arrays and draw them with `_glDrawArrays`.
+- **Draw in batches, and keep what doesn't move on the card.** Thousands of
+  `_glVertex3f` calls a frame can stall the same way. Put corners in arrays,
+  send them through the stream (`GLSL_stream_put%&`), and draw with
+  `_glDrawArrays`/`_glDrawElements`. Geometry that never changes belongs in a
+  static buffer (`GLSL_buffer_new~&`), built once; per-frame data a shader
+  needs (lights, say) fits in a data texture (`GLSL_data_texture_new~&`).
 
 ## API
 
@@ -84,6 +90,13 @@ END SUB
 | `GLSL_target_smooth id&, smooth%` | Read it smoothly, or as square pixels (retro scaling). |
 | `GLSL_target_delete id&` | Frees it. |
 | `GLSL_fullscreen flipV%` | One rectangle over everything, texture coordinates 0..1: how you run a full-screen shader. |
+| **Streaming and static data** | |
+| `GLSL_stream_put%&(dataAt, bytes&)` | Copies an array into the stream; returns the offset to give `_glVertexPointer`, `GLSL_attrib_array`, `_glDrawElements`... |
+| `GLSL_stream_bind on%` | Bind the stream before those calls; unbind (`0`) after, always before `SUB _GL` ends. |
+| `GLSL_stream_supported%` | FALSE on drivers without persistent buffers: `GLSL_stream_put%&` then returns your array's own address, so the same code still works. |
+| `GLSL_buffer_new~&(dataAt, bytes&)` | A static vertex buffer, filled once. `GLSL_buffer_bind b~&` (0 unbinds), `GLSL_buffer_delete`. |
+| `GLSL_data_texture_new~&(w&, h&)` | A texture of four SINGLEs a pixel (RGBA32F, nearest): a table for shaders. |
+| `GLSL_data_texture_update tex~&, w&, h&, dataAt` | New contents, through the stream. |
 | **The window** | |
 | `GLSL_window_width& / GLSL_window_height&` | The window's size in pixels, straight from GLFW. |
 | `GLSL_viewport_screen` | Sets the viewport to where QB64-PE shows the screen (letterboxed in `_SQUAREPIXELS` full screen). |
@@ -136,7 +149,9 @@ the frame rate). Write your own filter the same way: a fragment shader with
 ## Example: NEON-CASTER
 
 NEON-CASTER (in grymmjack's qb64 repo, `qb64/GAMES/neon-caster.bas`, chapter
-24) uses everything here. Its world shader does bump mapping, specular
+24) uses everything here. Its level is one static buffer built when the level
+loads, lit per pixel from per-frame data textures, so drawing costs the same
+however much is on screen. Its world shader does bump mapping, specular
 highlights, self-lit neon, animated textures and moving point lights, with
 tangents, light directions and light masks fed through `GLSL_attrib_array`.
 The world is drawn into a render target (twice: mirrored first, for wet

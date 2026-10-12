@@ -273,6 +273,79 @@ SUB GLSL_viewport_screen
 END SUB
 
 
+' ---- the stream -------------------------------------------------------------
+
+''
+' TRUE when vertex data can go through the stream (OpenGL 4.4 persistent
+' buffers); FALSE means GLSL_stream_put%& hands back your own array's address
+' and drawing still works, just without the protection against stalls.
+'
+FUNCTION GLSL_stream_supported% ()
+    GLSL_stream_supported% = (glsl_native_stream_supported& <> 0)
+END FUNCTION
+
+
+''
+' Copy bytes& from dataAt (e.g. _OFFSET(myArray(0))) into the stream, and
+' return where it went: pass that to _glVertexPointer, _glColorPointer,
+' GLSL_attrib_array, _glDrawElements... while the stream is bound.
+'
+FUNCTION GLSL_stream_put%& (dataAt AS _OFFSET, bytes&)
+    GLSL_stream_put%& = glsl_native_stream_put%&(dataAt, bytes&)
+END FUNCTION
+
+
+''
+' Bind the stream (TRUE) before setting pointers and drawing, and unbind it
+' (FALSE) after - always before SUB _GL ends.
+'
+SUB GLSL_stream_bind (onOff%)
+    glsl_native_stream_bind onOff% <> 0
+END SUB
+
+
+' ---- data textures and static buffers -----------------------------------------
+
+''
+' A data texture: w& x h& pixels of four SINGLEs each (RGBA32F), read exactly
+' (nearest pixel, no smoothing) - a table of numbers a shader looks things up
+' in with texture2D. Fill it with GLSL_data_texture_update.
+'
+FUNCTION GLSL_data_texture_new~& (w&, h&)
+    GLSL_data_texture_new~& = glsl_native_data_texture_new~&(w&, h&)
+END FUNCTION
+
+
+''
+' New contents for data texture tex~&: w& x h& x 4 SINGLEs from dataAt (row
+' by row, e.g. _OFFSET(myTable(0))). Sent through the stream - no stall.
+' Leaves the texture bound on the current unit.
+'
+SUB GLSL_data_texture_update (tex~&, w&, h&, dataAt AS _OFFSET)
+    glsl_native_data_texture_update tex~&, w&, h&, dataAt
+END SUB
+
+
+''
+' A buffer of vertex data in graphics memory, filled once with bytes& from
+' dataAt - for things that don't change. Bind it (GLSL_buffer_bind) and give
+' the pointer calls offsets into it (0 = its start); unbind (0) afterwards.
+'
+FUNCTION GLSL_buffer_new~& (dataAt AS _OFFSET, bytes&)
+    GLSL_buffer_new~& = glsl_native_buffer_new~&(dataAt, bytes&)
+END FUNCTION
+
+
+SUB GLSL_buffer_bind (buf~&)
+    glsl_native_buffer_bind buf~&
+END SUB
+
+
+SUB GLSL_buffer_delete (buf~&)
+    glsl_native_buffer_delete buf~&
+END SUB
+
+
 ' ---- the screen filter ------------------------------------------------------
 
 ''

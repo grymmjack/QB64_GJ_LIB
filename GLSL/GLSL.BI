@@ -40,6 +40,15 @@ $INCLUDEONCE
 '   SUB _GL: GLSL_filter_draw crtProg~&    ' (crtProg~& = GLSL_program~&(
 '                                          '  GLSL_filter_vertex$, GLSL_crt$))
 '
+' THE STREAM sends vertex data without stalling Mesa's threaded drivers
+' (drawing straight from QB64 arrays makes them copy the arrays at every
+' draw call). Per batch:
+'   GLSL_stream_bind -1
+'   _glVertexPointer 3, _GL_FLOAT, 0, GLSL_stream_put%&(_OFFSET(v(0)), n * 12)
+'   ... other arrays the same way, then draw (_glDrawArrays / _glDrawElements
+'   with GLSL_stream_put%& of the index list as its last argument) ...
+'   GLSL_stream_bind 0
+'
 ' Hex OpenGL constants need a & suffix in QB64: &H8B31 is an INTEGER (and
 ' negative), &H8B31& the number OpenGL means.
 '
@@ -76,6 +85,14 @@ DECLARE LIBRARY "glsl"
     SUB glsl_native_filter_upload (BYVAL pixels AS _OFFSET, BYVAL w AS LONG, BYVAL h AS LONG, BYVAL smooth AS LONG)
     FUNCTION glsl_native_filter_texture~& ()
     FUNCTION glsl_native_window_size& (BYVAL wantHeight AS LONG)
+    FUNCTION glsl_native_data_texture_new~& (BYVAL w AS LONG, BYVAL h AS LONG)
+    SUB glsl_native_data_texture_update (BYVAL tex AS _UNSIGNED LONG, BYVAL w AS LONG, BYVAL h AS LONG, BYVAL dataAt AS _OFFSET)
+    FUNCTION glsl_native_buffer_new~& (BYVAL dataAt AS _OFFSET, BYVAL bytes AS LONG)
+    SUB glsl_native_buffer_bind (BYVAL buf AS _UNSIGNED LONG)
+    SUB glsl_native_buffer_delete (BYVAL buf AS _UNSIGNED LONG)
+    FUNCTION glsl_native_stream_supported& ()
+    FUNCTION glsl_native_stream_put%& (BYVAL src AS _OFFSET, BYVAL bytes AS LONG)
+    SUB glsl_native_stream_bind (BYVAL onOff AS LONG)
 END DECLARE
 
 ' The screen filter's copy of the program's screen (GLSL_filter_capture)
