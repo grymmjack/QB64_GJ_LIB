@@ -1,0 +1,157 @@
+$INCLUDEONCE
+
+' ============================================================================
+' GLSL.BM — see GLSL.BI
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+''
+' TRUE when the driver has shaders (OpenGL 2.0 or newer). Call inside SUB _GL.
+'
+FUNCTION GLSL_supported% ()
+    GLSL_supported% = (glsl_native_supported& <> 0)
+END FUNCTION
+
+
+''
+' The driver's GLSL version, e.g. "4.60". Call inside SUB _GL.
+'
+FUNCTION GLSL_version$ ()
+    DIM buf AS STRING, n AS LONG
+    buf$ = SPACE$(64)
+    n& = glsl_native_version&(buf$, LEN(buf$))
+    GLSL_version$ = LEFT$(buf$, n&)
+END FUNCTION
+
+
+''
+' Compile a vertex shader and a fragment shader and link them into a
+' program. Returns the program, or 0 if either failed (GLSL_error$ says why,
+' with line numbers from the driver's compiler).
+'
+' @param STRING vertexSrc$ the vertex shader's GLSL source
+' @param STRING fragmentSrc$ the fragment shader's GLSL source
+' @return _UNSIGNED LONG the program, 0 on failure
+'
+FUNCTION GLSL_program~& (vertexSrc$, fragmentSrc$)
+    GLSL_program~& = glsl_native_program~&(vertexSrc$ + CHR$(0), fragmentSrc$ + CHR$(0))
+END FUNCTION
+
+
+''
+' Why the last GLSL_program~& failed ("" if it didn't).
+'
+FUNCTION GLSL_error$ ()
+    DIM buf AS STRING, n AS LONG
+    buf$ = SPACE$(4096)
+    n& = glsl_native_error&(buf$, LEN(buf$))
+    GLSL_error$ = LEFT$(buf$, n&)
+END FUNCTION
+
+
+''
+' Draw with program from now on; 0 goes back to OpenGL's fixed function
+' (what plain _gl... drawing uses). Switch back to 0 before SUB _GL ends.
+'
+SUB GLSL_use (prog~&)
+    glsl_native_use prog~&
+END SUB
+
+
+SUB GLSL_delete (prog~&)
+    glsl_native_delete prog~&
+END SUB
+
+
+''
+' Where uniform name$ lives in program (-1 if the shader doesn't use it).
+' Look it up once and keep it, then set it with GLSL_set_... - faster than
+' the by-name GLSL_uniform_... routines when you set it every frame.
+'
+FUNCTION GLSL_uniform& (prog~&, uname$)
+    GLSL_uniform& = glsl_native_uniform&(prog~&, uname$ + CHR$(0))
+END FUNCTION
+
+
+' Set a uniform of the program in use, by location (GLSL_uniform&)
+SUB GLSL_set_1f (location&, x!)
+    glsl_native_set1f location&, x!
+END SUB
+
+SUB GLSL_set_2f (location&, x!, y!)
+    glsl_native_set2f location&, x!, y!
+END SUB
+
+SUB GLSL_set_3f (location&, x!, y!, z!)
+    glsl_native_set3f location&, x!, y!, z!
+END SUB
+
+SUB GLSL_set_4f (location&, x!, y!, z!, w!)
+    glsl_native_set4f location&, x!, y!, z!, w!
+END SUB
+
+SUB GLSL_set_1i (location&, i&)
+    glsl_native_set1i location&, i&
+END SUB
+
+
+' Set a uniform by name. The program must be the one in use (GLSL_use).
+SUB GLSL_uniform_1f (prog~&, uname$, x!)
+    glsl_native_set1f GLSL_uniform&(prog~&, uname$), x!
+END SUB
+
+SUB GLSL_uniform_2f (prog~&, uname$, x!, y!)
+    glsl_native_set2f GLSL_uniform&(prog~&, uname$), x!, y!
+END SUB
+
+SUB GLSL_uniform_3f (prog~&, uname$, x!, y!, z!)
+    glsl_native_set3f GLSL_uniform&(prog~&, uname$), x!, y!, z!
+END SUB
+
+SUB GLSL_uniform_4f (prog~&, uname$, x!, y!, z!, w!)
+    glsl_native_set4f GLSL_uniform&(prog~&, uname$), x!, y!, z!, w!
+END SUB
+
+''
+' Integer uniform by name - also how a sampler2D is told its texture unit.
+'
+SUB GLSL_uniform_1i (prog~&, uname$, i&)
+    glsl_native_set1i GLSL_uniform&(prog~&, uname$), i&
+END SUB
+
+
+''
+' Where attribute name$ lives in program (-1 if the shader doesn't use it).
+'
+FUNCTION GLSL_attrib& (prog~&, aname$)
+    GLSL_attrib& = glsl_native_attrib&(prog~&, aname$ + CHR$(0))
+END FUNCTION
+
+
+''
+' Feed attribute location& from an array of SINGLEs, size& (1-4) per vertex,
+' starting at dataAt (e.g. _OFFSET(myArray(0))), and switch it on. It's read
+' when you draw (_glDrawArrays), so keep the array until then.
+'
+SUB GLSL_attrib_array (location&, size&, dataAt AS _OFFSET)
+    glsl_native_attrib_array location&, size&, dataAt
+END SUB
+
+
+''
+' Switch attribute location&'s array off again (do it before drawing without the
+' shader that uses it).
+'
+SUB GLSL_attrib_off (location&)
+    glsl_native_attrib_off location&
+END SUB
+
+
+''
+' Choose texture unit unit& (0, 1, 2...) for the next _glBindTexture. A
+' shader's sampler2D reads the unit set with GLSL_uniform_1i. Choose unit 0
+' again when done - QB64-PE's own drawing uses it.
+'
+SUB GLSL_texture_unit (unit&)
+    glsl_native_texture_unit unit&
+END SUB
