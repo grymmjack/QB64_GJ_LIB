@@ -1,0 +1,355 @@
+$INCLUDEONCE
+' ============================================================================
+' STEAM.BM — see STEAM.BI
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+
+
+' ---- setup: call these before STEAM_init% ----------------------------------
+
+''
+' Always use the mock backend: Steam is not tried. Setting the environment
+' variable GJ_STEAM_MOCK=1 does the same without a rebuild.
+'
+SUB STEAM_use_mock ()
+    steam_native_force_mock 1
+END SUB
+
+
+''
+' Whether STEAM_init% falls back to the mock when Steam can't start (default
+' TRUE). Turn it off to have STEAM_init% return FALSE instead.
+'
+SUB STEAM_mock_fallback (onoff AS INTEGER)
+    steam_native_mock_fallback ABS(onoff% <> 0)
+END SUB
+
+
+''
+' Save file for the mock backend: read by STEAM_init%, written by STEAM_store%
+' and STEAM_reset_all%. Without one, mock values last until STEAM_shutdown.
+'
+SUB STEAM_mock_file (path AS STRING)
+    steam_native_mock_file path$ + CHR$(0)
+END SUB
+
+
+''
+' Define an achievement for the mock backend. Use the same API name, title and
+' description as in the Steamworks admin. The mock is strict like Steam:
+' unlocking a name that was never defined fails.
+'
+SUB STEAM_mock_achievement (api AS STRING, title AS STRING, desc AS STRING, hidden AS INTEGER)
+    steam_native_mock_def_ach api$ + CHR$(0), title$ + CHR$(0), desc$ + CHR$(0), ABS(hidden% <> 0)
+END SUB
+
+
+''
+' Define an INT stat for the mock backend.
+'
+SUB STEAM_mock_stat (api AS STRING)
+    steam_native_mock_def_stat api$ + CHR$(0), 0
+END SUB
+
+
+''
+' Define a FLOAT stat for the mock backend.
+'
+SUB STEAM_mock_stat_float (api AS STRING)
+    steam_native_mock_def_stat api$ + CHR$(0), 1
+END SUB
+
+
+''
+' Load steam_api from this path instead of searching for it (the program's
+' folder, then the current folder, then the OS library path).
+'
+SUB STEAM_library_path (path AS STRING)
+    steam_native_set_lib path$ + CHR$(0)
+END SUB
+
+
+
+' ---- lifecycle --------------------------------------------------------------
+
+''
+' For release builds, call first thing: TRUE when the game was started outside
+' Steam and Steam is now relaunching it, so quit at once (SYSTEM). FALSE when
+' started by Steam, when steam_appid.txt is next to the program, or when there
+' is no Steam library.
+'
+' @param app_id& your game's Steam App ID
+'
+FUNCTION STEAM_restart_if_necessary% (app_id AS LONG)
+    DIM id AS _UNSIGNED LONG
+    id~& = app_id&
+    STEAM_restart_if_necessary% = (steam_native_restart&(id~&) <> 0)
+END FUNCTION
+
+
+''
+' Start Steam (or the mock). TRUE when a backend started; STEAM_backend% says
+' which and STEAM_status$ says why. Safe to call again.
+'
+' @param app_id& your game's Steam App ID (480 is Valve's Spacewar test app).
+'                Sets SteamAppId for this process unless Steam already did; a
+'                steam_appid.txt next to the program works too.
+'
+FUNCTION STEAM_init% (app_id AS LONG)
+    DIM id AS _UNSIGNED LONG
+    id~& = app_id&
+    STEAM_init% = (steam_native_init&(id~&) <> STEAM_BACKEND_NONE)
+END FUNCTION
+
+
+''
+' Call once per frame: lets Steam deliver its events (overlay, stats sync).
+'
+SUB STEAM_update ()
+    steam_native_update
+END SUB
+
+
+''
+' Stop Steam. Changes not sent with STEAM_store% are lost.
+'
+SUB STEAM_shutdown ()
+    steam_native_shutdown
+END SUB
+
+
+
+' ---- achievements -----------------------------------------------------------
+
+''
+' Unlock an achievement by its API name. TRUE on success. Steam shows its
+' pop-up when the change is sent with STEAM_store%.
+'
+FUNCTION STEAM_unlock% (api AS STRING)
+    STEAM_unlock% = (steam_native_ach_set&(api$ + CHR$(0)) <> 0)
+END FUNCTION
+
+
+''
+' TRUE when the achievement is unlocked (FALSE when locked or unknown).
+'
+FUNCTION STEAM_is_unlocked% (api AS STRING)
+    STEAM_is_unlocked% = (steam_native_ach_get&(api$ + CHR$(0)) = 1)
+END FUNCTION
+
+
+''
+' TRUE when the API name exists (in Steamworks, or defined for the mock).
+'
+FUNCTION STEAM_achievement_exists% (api AS STRING)
+    STEAM_achievement_exists% = (steam_native_ach_get&(api$ + CHR$(0)) >= 0)
+END FUNCTION
+
+
+''
+' Lock an achievement again (for testing). Send with STEAM_store%.
+'
+FUNCTION STEAM_clear% (api AS STRING)
+    STEAM_clear% = (steam_native_ach_clear&(api$ + CHR$(0)) <> 0)
+END FUNCTION
+
+
+''
+' Show Steam's progress pop-up ("3 / 10"). It does not unlock: call
+' STEAM_unlock% when cur& reaches goal&. FALSE when already unlocked.
+'
+FUNCTION STEAM_progress% (api AS STRING, cur AS LONG, goal AS LONG)
+    DIM c AS _UNSIGNED LONG, m AS _UNSIGNED LONG
+    IF cur& < 0 OR goal& <= 0 THEN STEAM_progress% = 0: EXIT FUNCTION
+    c~& = cur&: m~& = goal&
+    STEAM_progress% = (steam_native_ach_progress&(api$ + CHR$(0), c~&, m~&) <> 0)
+END FUNCTION
+
+
+''
+' Number of achievements the game has. With Steamworks this can read 0 for
+' the first frames while Steam syncs; keep calling STEAM_update.
+'
+FUNCTION STEAM_achievement_count& ()
+    STEAM_achievement_count& = steam_native_ach_count&
+END FUNCTION
+
+
+''
+' API name of achievement i& (0 .. STEAM_achievement_count& - 1).
+'
+FUNCTION STEAM_achievement_api$ (i AS LONG)
+    DIM buf AS STRING, n AS LONG, k AS LONG
+    k& = i&
+    buf$ = SPACE$(256)
+    n& = steam_native_ach_api&(k&, buf$, LEN(buf$))
+    STEAM_achievement_api$ = LEFT$(buf$, STEAM_clamp_len&(n&, LEN(buf$)))
+END FUNCTION
+
+
+''
+' Display title of an achievement, in the player's language.
+'
+FUNCTION STEAM_achievement_title$ (api AS STRING)
+    STEAM_achievement_title$ = STEAM_achievement_attr$(api$, "name")
+END FUNCTION
+
+
+''
+' Description of an achievement, in the player's language.
+'
+FUNCTION STEAM_achievement_desc$ (api AS STRING)
+    STEAM_achievement_desc$ = STEAM_achievement_attr$(api$, "desc")
+END FUNCTION
+
+
+''
+' TRUE for a hidden (secret) achievement.
+'
+FUNCTION STEAM_achievement_hidden% (api AS STRING)
+    STEAM_achievement_hidden% = (STEAM_achievement_attr$(api$, "hidden") = "1")
+END FUNCTION
+
+
+''
+' Raw display attribute: "name", "desc" or "hidden".
+'
+FUNCTION STEAM_achievement_attr$ (api AS STRING, akey AS STRING)
+    DIM buf AS STRING, n AS LONG
+    buf$ = SPACE$(1024)
+    n& = steam_native_ach_attr&(api$ + CHR$(0), akey$ + CHR$(0), buf$, LEN(buf$))
+    STEAM_achievement_attr$ = LEFT$(buf$, STEAM_clamp_len&(n&, LEN(buf$)))
+END FUNCTION
+
+
+
+' ---- stats ------------------------------------------------------------------
+
+''
+' Value of an INT stat (0 when unknown, or a FLOAT stat).
+'
+FUNCTION STEAM_stat_int& (api AS STRING)
+    DIM v AS LONG, ok AS LONG
+    ok& = steam_native_stat_get_int&(api$ + CHR$(0), v&)
+    STEAM_stat_int& = v&
+END FUNCTION
+
+
+''
+' Value of a FLOAT stat (0 when unknown, or an INT stat).
+'
+FUNCTION STEAM_stat_float! (api AS STRING)
+    DIM v AS SINGLE, ok AS LONG
+    ok& = steam_native_stat_get_float&(api$ + CHR$(0), v!)
+    STEAM_stat_float! = v!
+END FUNCTION
+
+
+''
+' Set an INT stat. TRUE on success. Send with STEAM_store%.
+'
+FUNCTION STEAM_set_stat_int% (api AS STRING, value AS LONG)
+    DIM v AS LONG
+    v& = value&
+    STEAM_set_stat_int% = (steam_native_stat_set_int&(api$ + CHR$(0), v&) <> 0)
+END FUNCTION
+
+
+''
+' Set a FLOAT stat. TRUE on success. Send with STEAM_store%.
+'
+FUNCTION STEAM_set_stat_float% (api AS STRING, value AS SINGLE)
+    DIM v AS SINGLE
+    v! = value!
+    STEAM_set_stat_float% = (steam_native_stat_set_float&(api$ + CHR$(0), v!) <> 0)
+END FUNCTION
+
+
+''
+' Send changed stats and achievements to Steam; Steam then shows any unlock
+' pop-ups. Call after a batch of changes (end of a level), not every frame.
+' With the mock, writes the save file.
+'
+FUNCTION STEAM_store% ()
+    STEAM_store% = (steam_native_store& <> 0)
+END FUNCTION
+
+
+''
+' Reset every stat for this player, and every achievement too when
+' with_achievements% is TRUE. Stored right away. For testing.
+'
+FUNCTION STEAM_reset_all% (with_achievements AS INTEGER)
+    STEAM_reset_all% = (steam_native_reset_all&(ABS(with_achievements% <> 0)) <> 0)
+END FUNCTION
+
+
+
+' ---- info -------------------------------------------------------------------
+
+FUNCTION STEAM_backend% ()
+    STEAM_backend% = steam_native_backend&
+END FUNCTION
+
+
+FUNCTION STEAM_backend_name$ ()
+    SELECT CASE steam_native_backend&
+        CASE STEAM_BACKEND_STEAMWORKS: STEAM_backend_name$ = "Steamworks"
+        CASE STEAM_BACKEND_MOCK:       STEAM_backend_name$ = "mock"
+        CASE ELSE:                     STEAM_backend_name$ = "none"
+    END SELECT
+END FUNCTION
+
+
+''
+' TRUE when the real Steam backend is running (not the mock).
+'
+FUNCTION STEAM_is_steam% ()
+    STEAM_is_steam% = (steam_native_backend& = STEAM_BACKEND_STEAMWORKS)
+END FUNCTION
+
+
+''
+' What STEAM_init% did, in words (why Steam didn't start, for example).
+'
+FUNCTION STEAM_status$ ()
+    DIM buf AS STRING, n AS LONG
+    buf$ = SPACE$(1200)
+    n& = steam_native_status&(buf$, LEN(buf$))
+    STEAM_status$ = LEFT$(buf$, STEAM_clamp_len&(n&, LEN(buf$)))
+END FUNCTION
+
+
+''
+' The App ID in use (from Steam when it runs), 0 before STEAM_init%.
+'
+FUNCTION STEAM_app_id& ()
+    STEAM_app_id& = steam_native_app_id~&
+END FUNCTION
+
+
+''
+' The player's Steam name ("Mock Player" with the mock).
+'
+FUNCTION STEAM_player_name$ ()
+    DIM buf AS STRING, n AS LONG
+    buf$ = SPACE$(256)
+    n& = steam_native_player&(buf$, LEN(buf$))
+    STEAM_player_name$ = LEFT$(buf$, STEAM_clamp_len&(n&, LEN(buf$)))
+END FUNCTION
+
+
+''
+' TRUE when the Steam client is running (needs the Steam library).
+'
+FUNCTION STEAM_running% ()
+    STEAM_running% = (steam_native_running& <> 0)
+END FUNCTION
+
+
+FUNCTION STEAM_clamp_len& (n AS LONG, buflen AS LONG)
+    IF n& < 0 THEN STEAM_clamp_len& = 0: EXIT FUNCTION
+    IF n& > buflen& THEN STEAM_clamp_len& = buflen&: EXIT FUNCTION
+    STEAM_clamp_len& = n&
+END FUNCTION
