@@ -72,24 +72,110 @@ Any SDK from 1.5x onward works: the library tries both the current and the
 older entry points (`SteamAPI_InitFlat`, then `SteamAPI_InitSafe`) and
 interface versions (UserStats v013 / v012 / v011).
 
-## Testing with Steam before you have an App ID
+## End-to-end testing
 
-Valve's **Spacewar** app (App ID **480**) is free to test with, and already
+The unit test and the mock show the library code is right. Only a real
+Steam client shows that achievements reach Steam. There are two levels.
+
+![STEAM-TEST --e2e](steam-e2e.png)
+
+*`STEAM-TEST --e2e --yes`, here run against the stand-in library from the
+unit test. With real Steam, the player is your Steam name and you answer the
+questions yourself.*
+
+### `STEAM-TEST` options
+
+| Run | Does |
+|---|---|
+| `STEAM-TEST` | Interactive: lists achievements and stats. U unlocks, C clears, S stores, R resets. |
+| `STEAM-TEST --selftest` | Prints what the library reports to the console. With the mock, it also checks a save-file round trip. |
+| `STEAM-TEST --e2e` | Guided check against real Steam (see below). Exit code 0 when nothing failed. |
+| `--app <id>` | App ID. Default 480. |
+| `--ach <name>` / `--stat <name>` | The achievement and INT stat `--e2e` tests. The defaults are the first achievement, and `NumGames` for app 480 (any other app has no default stat, so the stat step is skipped). |
+| `--yes` | `--e2e` answers its own questions with yes. Use it for unattended runs. |
+| `--mock` | Use the mock backend. |
+| `--restart-check` | Calls `STEAM_restart_if_necessary%` first. Use it to test the relaunch (Level 2). |
+
+`--e2e` runs in the game window, because the Steam overlay draws its pop-ups
+there. It does these steps:
+
+1. Starts Steam. The mock is not allowed here, so if Steam doesn't start, the
+   check fails at once and shows why.
+2. Waits for the achievements to arrive, then checks the App ID, the player
+   name, and that the Steam client is running.
+3. Clears the test achievement, unlocks it again, and asks whether Steam's
+   pop-up appeared.
+4. Shows a progress pop-up on another locked achievement.
+5. Adds 1 to the stat and reads it back.
+6. Asks you to confirm the unlock on your Steam profile, which shows it reached
+   Steam's servers.
+7. **Puts everything back the way it was.**
+
+Every step prints PASS, FAIL or SKIP to the window and to the console.
+
+### Level 1: Spacewar (App ID 480), free
+
+Valve's **Spacewar** app is free for every developer to test with. It already
 has achievements (`ACH_WIN_ONE_GAME`, `ACH_WIN_100_GAMES`,
 `ACH_TRAVEL_FAR_ACCUM`, `ACH_TRAVEL_FAR_SINGLE`) and stats (`NumGames`,
 `NumWins`, `NumLosses`, `FeetTraveled`, `MaxFeetTraveled`).
 
 1. Compile `STEAM-TEST.BAS`.
-2. Put the Steam library file next to the program, and a text file named
-   `steam_appid.txt` that contains just `480`.
+2. Next to the program, put the Steam library file for your OS, and a text
+   file named `steam_appid.txt` that contains just `480`.
 3. Start the Steam client and log in.
-4. Run `STEAM-TEST`. The backend should read **Steamworks** and your Steam
-   name should show. Press U then S to unlock and store. Steam shows its
-   pop-up, and the achievement appears on your Spacewar profile page. R
-   resets everything again.
+4. Run `STEAM-TEST --e2e` and answer its questions. The unlock appears under
+   Spacewar on your profile until the last step removes it again.
 
-`STEAM-TEST --selftest` prints the same information to the console. If the
-backend reads **mock**, the status line says why Steam didn't start.
+This covers all of the library's real-Steam code: loading the library, init,
+achievements, stats, storing, the overlay pop-ups and the server sync.
+
+It can't cover these, which need your own App ID:
+
+- your own achievement names and icons,
+- installing and launching the game from your Steam library,
+- the relaunch through Steam,
+- uploading builds.
+
+### Level 2: your own App ID
+
+This tests the whole path a player takes. The game never has to be released:
+an unreleased app stays visible only to your Steamworks team and to the
+testers you give keys to.
+
+1. **Join Steamworks** at [partner.steamgames.com](https://partner.steamgames.com/).
+   You can sign up as an individual and use a name like *grymmjack* as the
+   developer and publisher name on the store. Valve still needs your legal
+   name, identity check, tax form and bank details.
+2. **Pay the Steam Direct fee** (US$100 per app) to get an App ID. Valve only
+   pays it back once the game earns US$1,000, so for a test-only app it is a
+   cost. One App ID can be your test bed now and your real game later. The
+   waiting period after paying only delays a public release, not testing.
+3. **Define a few achievements and an INT stat** in *App Admin → Stats &
+   Achievements*, with icons. **Publish** them.
+4. **Set up SteamPipe**: one depot per OS, a private beta branch (for example
+   `testing`), and launch options that run `STEAM-TEST` with these arguments:
+   `--e2e --app <your id> --ach <name> --stat <name>`. Publish. The steps are
+   in [steampipe/README.md](steampipe/README.md).
+5. **Upload** `STEAM-TEST`, compiled on each OS. Don't ship a
+   `steam_appid.txt`.
+
+   ```sh
+   cd STEAM/steampipe
+   ./steam-build.sh --win ../STEAM-TEST.exe --linux ../STEAM-TEST --desc "e2e"
+   ```
+
+6. **Install it from Steam.** In the Steam client, open the game's
+   *Properties → Betas*, pick your branch, install, and press *Play*. The
+   `--e2e` check runs, now with your own achievements and the overlay that
+   Steam injects at launch.
+7. **Check the relaunch.** Run the installed program directly, from its
+   install folder, with `--restart-check`. It should quit, and Steam should
+   start it again with the launch options. This is what a player gets when
+   they start the game outside Steam.
+8. **Optionally, check other machines**: a Steam Deck or another Linux
+   machine (the Steam Linux Runtime), and testers with keys from *Request
+   Steam Product Keys*.
 
 ## API
 
@@ -241,11 +327,11 @@ for changes.
      `Contents/Frameworks/` of an `.app` bundle. Sign and notarize the app so
      Gatekeeper lets it run.
 6. **Upload with SteamPipe.** Create depots for each OS in *App Admin →
-   SteamPipe*, then upload with `steamcmd` from the SDK's
-   `tools/ContentBuilder`. For example:
-   `steamcmd +login <builder account> +run_app_build ../scripts/app_build_<appid>.vdf +quit`.
-   On Windows you can use the SteamPipe GUI instead. Set the build live on a
-   branch (*SteamPipe → Builds*), first on a private beta branch for testing.
+   SteamPipe*, then run [`steampipe/steam-build.sh`](steampipe/README.md).
+   It stages the program, the Steam library and your data for each OS,
+   writes the build script, and runs `steamcmd`. It also refuses to ship a
+   `steam_appid.txt`. The upload goes live on a private beta branch; set the
+   default branch live on the Steamworks site when you're ready.
 7. **Store page and review.** Fill in the store page and publish it as
    *Coming Soon*. Valve requires it to be visible for a while before launch.
    Submit the store page and the build for Valve's review, then pick a release
@@ -257,6 +343,6 @@ for changes.
 - [ ] App ID in `STEAM_init%` and `STEAM_restart_if_necessary%`
 - [ ] The right `steam_api` file for each OS next to the executable
 - [ ] No `steam_appid.txt` and no mock save file in the shipped build
-- [ ] Tested from a Steam beta branch: unlocks show the pop-up and appear on
-      your profile
+- [ ] Tested from a Steam beta branch: `STEAM-TEST --e2e` (or your game)
+      passes, and `--restart-check` relaunches through Steam
 - [ ] `STEAM_store%` after progress, and `STEAM_shutdown` on exit

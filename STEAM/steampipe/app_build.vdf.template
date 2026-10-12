@@ -1,0 +1,22 @@
+// ============================================================================
+// app_build.vdf.template — SteamPipe app build for steam-build.sh.
+//
+// steam-build.sh replaces the @NAME@ placeholders and writes the result to
+// output/app_build_<appid>.vdf. Edit this file to change what every build
+// does (for example, add "FileExclusion" lines to a depot block).
+// Format: https://partner.steamgames.com/doc/sdk/uploading
+// ============================================================================
+"AppBuild"
+{
+	"AppID" "@APP_ID@"
+	"Desc" "@DESC@"
+	"ContentRoot" "@CONTENT_ROOT@"
+	"BuildOutput" "@BUILD_OUTPUT@"
+	"Preview" "@PREVIEW@"
+	@SET_LIVE@
+
+	"Depots"
+	{
+@DEPOTS@
+	}
+}
