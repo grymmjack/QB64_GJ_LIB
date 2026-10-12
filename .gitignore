@@ -16,3 +16,13 @@ internal/temp/
 internal/c/parts/core/temp/
 # PRESSURE_DEVICE XInput2 test build output
 PRESSURE_DEVICE/pdtest
+# STEAM native test build output, local Steam files, mock save files
+STEAM/steamtest
+STEAM/libfake_steam_api*.so
+STEAM/steam-*-mock.txt
+STEAM/steamtest-mock.txt
+steam_appid.txt
+libsteam_api.so
+libsteam_api.dylib
+steam_api.dll
+steam_api64.dll
