@@ -14,3 +14,5 @@ qb64pe-logs/
 # QB64PE temporary files
 internal/temp/
 internal/c/parts/core/temp/
+# PRESSURE_DEVICE XInput2 test build output
+PRESSURE_DEVICE/pdtest
