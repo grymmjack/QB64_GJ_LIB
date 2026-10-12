@@ -17,6 +17,7 @@ $INCLUDEONCE
 ' Usage (the COLOR.BI / COLOR.BM leaders pull in COLOR-SPACES too):
 '   '$INCLUDE:'path/to/COLOR/COLOR.BI'
 '   C3D_init initialColor~&, 240          ' native width; height is derived
+'   C3D_set_font myFont&                  ' optional: host font (layout follows it)
 '   DO
 '       C3D_input_mouse nx%, ny%, b1%, b2%, wheel%   ' widget-native coords
 '       IF C3D_STATE.changed THEN myColor~& = C3D_get_rgb~&
@@ -48,7 +49,7 @@ CONST C3D_DRAG_ROTATE = 1                                      ' spinning the vi
 CONST C3D_DRAG_PICK   = 2                                      ' picking colors off the solid
 CONST C3D_DRAG_SLIDER = 3                                      ' dragging the slice slider
 
-' --- Layout (native pixels) --------------------------------------------------
+' --- Layout (native pixels; defaults for the built-in 8x8 font, see C3D_set_font)
 CONST C3D_ROW_H    = 13                                        ' button row height
 CONST C3D_SLIDER_H = 11                                        ' slice slider row height
 CONST C3D_LINE_H   = 10                                        ' readout line height
@@ -68,6 +69,11 @@ TYPE C3D_STATE_OBJ
     rowY2  AS INTEGER           ' view buttons row top
     sliderY AS INTEGER          ' slice slider top
     readY  AS INTEGER           ' first readout line top
+    rowH    AS INTEGER          ' button row height (C3D_ROW_H or font-derived)
+    sliderH AS INTEGER          ' slice slider height (C3D_SLIDER_H or font-derived)
+    lineH   AS INTEGER          ' readout line height (C3D_LINE_H or font-derived)
+    fontH   AS INTEGER          ' text height used to centre labels
+    font    AS LONG             ' host font handle (0 = built-in 8x8)
 
     ' --- View ---
     spaceId  AS INTEGER         ' C3D_SPACE_*
@@ -84,6 +90,7 @@ TYPE C3D_STATE_OBJ
     cur      AS _UNSIGNED LONG  ' current color (marker); set by C3D_set_rgb / picks
     hover    AS _UNSIGNED LONG  ' color under the mouse (valid when hoverOn)
     hoverOn  AS INTEGER
+    hoverBtn AS INTEGER         ' button under the mouse: 0..3 space, 10..12 view, -1 none
     changed  AS INTEGER         ' TRUE for one poll after a pick
 
     ' --- Theme (host-settable; defaults in C3D_init) ---
@@ -93,6 +100,13 @@ TYPE C3D_STATE_OBJ
     btnColor    AS _UNSIGNED LONG
     btnOnColor  AS _UNSIGNED LONG
     edgeColor   AS _UNSIGNED LONG
+    btnHoverColor   AS _UNSIGNED LONG ' button under the mouse
+    btnTextColor    AS _UNSIGNED LONG ' label on an idle button
+    btnOnTextColor  AS _UNSIGNED LONG ' label on a selected button
+    sliderBgColor   AS _UNSIGNED LONG ' slice slider well
+    sliderEdgeColor AS _UNSIGNED LONG ' slice slider well border
+    sliderFillColor AS _UNSIGNED LONG ' slice slider filled portion
+    thumbColor      AS _UNSIGNED LONG ' slice slider thumb
 
     ' --- Buffers ---
     imgHandle AS LONG           ' composed widget image (w x h)

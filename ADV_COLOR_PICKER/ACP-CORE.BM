@@ -154,6 +154,10 @@ END SUB
 ' --------------------------------------------------------------------------
 ' ACP_build_ring — Render the hue ring (built once; independent of hue).
 ' Hue 0 (red) at +X (3 o'clock), increasing clockwise (screen Y down).
+' A pixel belongs to the ring when its CENTER (px + 0.5, py + 0.5) lies in
+' the annulus. Measuring from the pixel's corner with an integer center and
+' radius let one lone pixel through at each of the four compass extremes
+' (its neighbours fall just outside), leaving 1px ticks on the outer edge.
 ' --------------------------------------------------------------------------
 SUB ACP_build_ring
     IF ACP_STATE.ringImage& >= -1 THEN EXIT SUB
@@ -178,8 +182,8 @@ SUB ACP_build_ring
 
     FOR py% = y0% TO y1%
         FOR px% = x0% TO x1%
-            dx!   = px% - ACP_STATE.cx!
-            dy!   = py% - ACP_STATE.cy!
+            dx!   = px% + 0.5 - ACP_STATE.cx!
+            dy!   = py% + 0.5 - ACP_STATE.cy!
             dist! = SQR(dx! * dx! + dy! * dy!)
             IF dist! >= ri! AND dist! <= ro! THEN
                 ang! = _ATAN2(dy!, dx!) * 180.0 / 3.14159265
@@ -336,8 +340,8 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
 
     IF released% THEN ACP_STATE.dragging% = ACP_DRAG_NONE
 
-    DIM dx AS SINGLE, dy AS SINGLE, dist AS SINGLE
-    dx!   = nx% - ACP_STATE.cx! : dy! = ny% - ACP_STATE.cy!
+    DIM dx AS SINGLE, dy AS SINGLE, dist AS SINGLE         ' pixel center, as ACP_build_ring
+    dx!   = nx% + 0.5 - ACP_STATE.cx! : dy! = ny% + 0.5 - ACP_STATE.cy!
     dist! = SQR(dx! * dx! + dy! * dy!)
 
     IF pressed% THEN
@@ -377,7 +381,7 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB ACP_pick_ring (nx AS INTEGER, ny AS INTEGER)
     DIM ang AS SINGLE
-    ang! = _ATAN2(ny% - ACP_STATE.cy!, nx% - ACP_STATE.cx!) * 180.0 / 3.14159265
+    ang! = _ATAN2(ny% + 0.5 - ACP_STATE.cy!, nx% + 0.5 - ACP_STATE.cx!) * 180.0 / 3.14159265
     IF ang! < 0.0 THEN ang! = ang! + 360.0
     ACP_STATE.hue!      = ACP_quantize_hue!(ang!)
     ACP_STATE.triDirty% = -1
@@ -838,7 +842,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 SUB ACP_pick_neighbor (nx AS INTEGER, ny AS INTEGER)
     DIM ang  AS SINGLE
-    ang! = _ATAN2(ny% - ACP_STATE.cy!, nx% - ACP_STATE.cx!) * 180.0 / 3.14159265
+    ang! = _ATAN2(ny% + 0.5 - ACP_STATE.cy!, nx% + 0.5 - ACP_STATE.cx!) * 180.0 / 3.14159265
     IF ang! < 0.0 THEN ang! = ang! + 360.0
     DIM diff AS SINGLE      : diff! = ang! - ACP_STATE.hue!
     DO WHILE diff! > 180.0  : diff! = diff! - 360.0 : LOOP

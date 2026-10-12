@@ -136,6 +136,9 @@ TYPE FD_CONFIG_OBJ
     sortField     AS INTEGER    ' FD_SORT_* constant
     sortAscending AS INTEGER    ' TRUE = A-Z / smallest-first / oldest-first
     showHidden    AS INTEGER    ' TRUE = show hidden files
+    flatClose     AS INTEGER    ' TRUE = title close button as a drawn cross (closeFg; closeHoverBg on hover), no tooltip - for a host whose other windows look like that
+    closeFg       AS _UNSIGNED LONG
+    closeHoverBg  AS _UNSIGNED LONG
     thumbSize     AS INTEGER    ' Thumbnail pixel size (32, 48, 64, 96, 128)
 
     ' Dialog geometry

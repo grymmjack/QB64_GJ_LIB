@@ -104,8 +104,12 @@ C3D_cleanup
 
 **Host API:** `C3D_set_rgb` (syncs the marker to your current color), `C3D_get_rgb~&`,
 `C3D_set_space`, `C3D_set_view`, `C3D_set_slice`, `C3D_set_rotation`,
-`C3D_over_viewport%`, and theme colors in `C3D_STATE` (`bgColor`, `textColor`,
-`dimColor`, `btnColor`, `btnOnColor`, `edgeColor`).
+`C3D_over_viewport%`, `C3D_set_font` (draw all text in a host font such as a
+`_LOADFONT` TTF; the button rows, slider and readouts resize to fit it, so re-read
+`C3D_STATE.h` afterwards — `0` restores the built-in 8x8), and theme colors in
+`C3D_STATE` (`bgColor`, `textColor`, `dimColor`, `btnColor`, `btnOnColor`,
+`btnHoverColor`, `btnTextColor`, `btnOnTextColor`, `sliderBgColor`,
+`sliderEdgeColor`, `sliderFillColor`, `thumbColor`, `edgeColor`).
 
 **How it works**
 
