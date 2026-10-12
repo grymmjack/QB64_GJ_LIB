@@ -1,0 +1,36 @@
+# ============================================================================
+# steampipe.cfg — settings for steam-build.sh. Copy this file to
+# steampipe.cfg (gitignored: it names your builder account) and fill it in.
+# It is read by bash, so no spaces around "=".
+# ============================================================================
+
+# Your App ID, from Steamworks.
+APP_ID=1234560
+
+# Depot IDs, from App Admin -> SteamPipe -> Depots. One depot per OS; leave
+# an OS empty if you don't ship it.
+DEPOT_WIN=1234561
+DEPOT_LINUX=1234562
+DEPOT_MAC=1234563
+
+# Branch the upload is set live on. Use a private beta branch (create it in
+# App Admin -> SteamPipe -> Builds). Steamworks only lets a build script set
+# a beta branch live; set the default branch live on the Steamworks site.
+# Leave empty to only upload.
+BRANCH=testing
+
+# The unpacked Steamworks SDK folder: the one with redistributable_bin/ and
+# tools/ in it.
+SDK_DIR="$HOME/steamworks_sdk/sdk"
+
+# The Steam account that uploads. Valve suggests a separate account with only
+# the "Edit App Metadata" and "Publish App Changes To Steam" permissions.
+# steamcmd asks for its password (and Steam Guard code) the first time.
+BUILDER_ACCOUNT=my_builder_account
+
+# steamcmd to use. Empty: the one in the SDK's tools/ContentBuilder for this
+# OS, or else steamcmd on the PATH.
+STEAMCMD=
+
+# Files that must never ship. The build stops if one is staged.
+FORBIDDEN="steam_appid.txt steam-*-mock.txt"

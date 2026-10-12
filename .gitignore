@@ -26,3 +26,7 @@ libsteam_api.so
 libsteam_api.dylib
 steam_api.dll
 steam_api64.dll
+# STEAM SteamPipe kit: your settings and its staging / output folders
+STEAM/steampipe/steampipe.cfg
+STEAM/steampipe/content/
+STEAM/steampipe/output/
