@@ -24,6 +24,7 @@ in it's current state.
 | [DICT](DICT/README.md) | Dictionary object (sorta) | Custom type and support for arrays using `.key` and `.val` |
 | [DUMP](DUMP/README.md) | Debugging library | Like PHPs `print_r` (kind of) |
 | [FILE_DIALOG](FILE_DIALOG/README.md) | File Dialog | Full-featured Open/Save/Folder dialog with list, details, and thumbnail views |
+| [GLSL](GLSL/README.md) | GLSL shaders | Vertex + fragment shaders, uniforms, attributes and texture units from `SUB _GL` - plus a Shadertoy-style runner for your own `.frag` files |
 | [INPUT](INPUT/README.md) | Input library | For lightbar menus, text boxes, etc. |
 | [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
