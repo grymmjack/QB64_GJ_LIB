@@ -47,9 +47,16 @@ END SUB
   versions work when the driver has them (`GLSL_version$`).
 - **Hex constants need a `&` suffix.** `&H8B31` is a 16-bit INTEGER in QB64,
   and negative; `&H8B31&` is the number OpenGL means.
-- **Don't ask OpenGL questions every frame** (`_glGet...`, `_glIsTexture`).
-  Mesa's drivers wait for the screen's next refresh to answer, which can
-  halve your frame rate.
+- **Don't ask OpenGL questions every frame** (`_glGet...`, `_glIsTexture`,
+  `glGetUniformLocation`), and don't hand it pointers into your own memory
+  every frame (`_glTexImage2D` with pixels). Mesa's threaded drivers wait for
+  the screen's next refresh to answer or copy, which can cost you all but a
+  few frames a second. The library does this for you: uniform look-ups are
+  cached, and screen uploads go through a persistent pixel buffer. For the
+  window's size, use `GLSL_window_width&` / `GLSL_window_height&` (from GLFW,
+  no OpenGL question) instead of `_glGetIntegerv _GL_VIEWPORT`.
+- **Draw in batches.** Thousands of `_glVertex3f` calls a frame can stall the
+  same way. Put corners in arrays and draw them with `_glDrawArrays`.
 
 ## API
 
@@ -68,6 +75,23 @@ END SUB
 | `GLSL_attrib_array location&, size&, _OFFSET(array(0))` | Feeds an attribute from a SINGLE array, `size&` (1-4) per vertex, and switches it on. Read at the next draw. |
 | `GLSL_attrib_off location&` | Switches an attribute array off. |
 | `GLSL_texture_unit unit&` | Picks the texture unit for the next `_glBindTexture`. Pick 0 again afterwards. |
+| **Render targets** | |
+| `GLSL_targets_supported%` | TRUE when the driver can draw into textures (framebuffer objects). |
+| `GLSL_target_new&(w&, h&, withDepth%)` | A texture to draw into, with a depth buffer for 3D. Returns its number (1-32), 0 on failure. |
+| `GLSL_target_use id&` | Draw into it from now on; 0 = the window. Set the viewport yourself. |
+| `GLSL_target_texture~&(id&)` | Its texture, for `_glBindTexture` (v runs upwards). |
+| `GLSL_target_width& / _height&(id&)`, `GLSL_target_resize id&, w&, h&` | Its size; resize (no-op at the same size). |
+| `GLSL_target_smooth id&, smooth%` | Read it smoothly, or as square pixels (retro scaling). |
+| `GLSL_target_delete id&` | Frees it. |
+| `GLSL_fullscreen flipV%` | One rectangle over everything, texture coordinates 0..1: how you run a full-screen shader. |
+| **The window** | |
+| `GLSL_window_width& / GLSL_window_height&` | The window's size in pixels, straight from GLFW. |
+| `GLSL_viewport_screen` | Sets the viewport to where QB64-PE shows the screen (letterboxed in `_SQUAREPIXELS` full screen). |
+| **The screen filter** | |
+| `GLSL_filter_capture` | (Main program, just before `_DISPLAY`.) Copies the screen for `SUB _GL`. |
+| `GLSL_filter_draw prog~&, smooth%` | (In `SUB _GL`.) Draws the copy over the window through `prog~&` (0 = as it is). The shader gets `screen`, `screenSize`, `outputSize`, `time`. |
+| `GLSL_filter_texture~&(smooth%)` | (In `SUB _GL`.) Sends the copy to the card and returns its texture, e.g. to lay a HUD over a 3D view. Its colours are premultiplied: blend with `_GL_ONE, _GL_ONE_MINUS_SRC_ALPHA`. |
+| `GLSL_filter_vertex$`, `GLSL_crt$` | A vertex shader for full-screen effects, and a ready-made CRT filter (curved glass, scanlines, shadow mask, glow). |
 
 ## Test program: run your own shaders
 
@@ -86,19 +110,44 @@ with your file's line numbers, and **ESC** quits. With no file it runs a
 built-in demo. `--selftest [file]` compiles, prints the result to the console
 and exits 0 if it worked.
 
+## Any QB64 program through a shader: the screen filter
+
+```basic
+SCREEN _NEWIMAGE(640, 480, 32)
+_DISPLAYORDER _GLRENDER                 ' only what SUB _GL draws
+DO
+    _LIMIT 60
+    ' ... draw exactly as before: PRINT, LINE, CIRCLE, _PUTIMAGE ...
+    GLSL_filter_capture                 ' then copy it for SUB _GL
+    _DISPLAY
+LOOP
+
+SUB _GL
+    STATIC crt AS _UNSIGNED LONG
+    IF crt = 0 THEN crt = GLSL_program~&(GLSL_filter_vertex$, GLSL_crt$)
+    GLSL_filter_draw crt, -1             ' the screen, through the CRT
+END SUB
+```
+
+`GLSL-FILTER-TEST.BAS` shows it working (F toggles the filter, and it shows
+the frame rate). Write your own filter the same way: a fragment shader with
+`uniform sampler2D screen; varying vec2 uv;`.
+
 ## Example: NEON-CASTER
 
 NEON-CASTER (in grymmjack's qb64 repo, `qb64/GAMES/neon-caster.bas`, chapter
-24) uses this library for bump mapping: one world shader reads each
-texture's brightness as height, tilts the surface normal by its slope, lights
-it from each cell's lights, and adds specular highlights. Its vertex data is
-batched in arrays and drawn with `_glDrawArrays`, with tangents and light
-directions fed through `GLSL_attrib_array`.
+24) uses everything here. Its world shader does bump mapping, specular
+highlights, self-lit neon, animated textures and moving point lights, with
+tangents, light directions and light masks fed through `GLSL_attrib_array`.
+The world is drawn into a render target (twice: mirrored first, for wet
+floors), then bloomed, shimmered, scanlined or CRT-curved by post-processing
+shaders, with the game's HUD laid over it from `GLSL_filter_texture~&`.
 
 ## How it works
 
-`glsl.h` holds small C wrappers around the OpenGL 2.0 calls
-(`glCreateShader`, `glUniform*`, `glVertexAttribPointer`, `glActiveTexture`...),
+`glsl.h` holds small C wrappers around the newer OpenGL calls
+(`glCreateShader`, `glUniform*`, `glVertexAttribPointer`, `glActiveTexture`,
+framebuffer objects, persistent pixel buffers...),
 using the function pointers QB64-PE's glad loader already filled in. The
 wrappers take plain types QB64 can declare, so `GLSL.BI` is an ordinary
 `DECLARE LIBRARY`. (Declaring the GL functions directly from QB64 doesn't

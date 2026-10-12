@@ -79,7 +79,7 @@ DO
     END IF
     _DISPLAY
 
-    IF selftest AND frames > 20 THEN
+    IF selftest AND frames > 180 THEN
         _DEST _CONSOLE
         IF compiled THEN PRINT "GLSL "; glslVersion; ": shader compiled and ran OK" ELSE PRINT "GLSL "; glslVersion; ": "; status
         IF compiled THEN SYSTEM 0 ELSE SYSTEM 1

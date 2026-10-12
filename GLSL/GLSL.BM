@@ -155,3 +155,225 @@ END SUB
 SUB GLSL_texture_unit (unit&)
     glsl_native_texture_unit unit&
 END SUB
+
+
+' ---- render targets ---------------------------------------------------------
+
+''
+' TRUE when the driver can draw into textures (framebuffer objects).
+'
+FUNCTION GLSL_targets_supported% ()
+    GLSL_targets_supported% = (glsl_native_targets_supported& <> 0)
+END FUNCTION
+
+
+''
+' A new render target w& x h& pixels, with a depth buffer if withDepth% (for
+' drawing 3D into it). Returns its number, or 0 (GLSL_error$ says why).
+'
+FUNCTION GLSL_target_new& (w&, h&, withDepth%)
+    GLSL_target_new& = glsl_native_target_new&(w&, h&, withDepth% <> 0)
+END FUNCTION
+
+
+''
+' Draw into target id& from now on; 0 = the window. Set the viewport to the
+' target's size yourself, and choose 0 again before SUB _GL ends.
+'
+SUB GLSL_target_use (id&)
+    glsl_native_target_use id&
+END SUB
+
+
+''
+' The OpenGL texture holding target id&'s picture, for _glBindTexture.
+' (Its v runs upwards: row 0 is the bottom.)
+'
+FUNCTION GLSL_target_texture~& (id&)
+    GLSL_target_texture~& = glsl_native_target_texture~&(id&)
+END FUNCTION
+
+
+FUNCTION GLSL_target_width& (id&)
+    GLSL_target_width& = glsl_native_target_width&(id&)
+END FUNCTION
+
+
+FUNCTION GLSL_target_height& (id&)
+    GLSL_target_height& = glsl_native_target_height&(id&)
+END FUNCTION
+
+
+''
+' Resize target id& (its picture is lost; nothing happens at the same size).
+'
+SUB GLSL_target_resize (id&, w&, h&)
+    glsl_native_target_resize id&, w&, h&
+END SUB
+
+
+''
+' Read target id& smoothly (TRUE, the default) or as square pixels (FALSE).
+'
+SUB GLSL_target_smooth (id&, smooth%)
+    glsl_native_target_smooth id&, smooth% <> 0
+END SUB
+
+
+SUB GLSL_target_delete (id&)
+    glsl_native_target_delete id&
+END SUB
+
+
+''
+' Draw one rectangle over everything, texture coordinates 0..1 (v = 0 at the
+' bottom; flipV% = TRUE for pictures stored top row first). Matrices are
+' left as they were. The way to run a full-screen shader.
+'
+SUB GLSL_fullscreen (flipV%)
+    glsl_native_fullscreen flipV% <> 0
+END SUB
+
+
+' ---- the window ---------------------------------------------------------------
+
+''
+' The window's size in pixels (its OpenGL framebuffer), straight from GLFW -
+' cheap, and right after full-screen changes. Call inside SUB _GL.
+'
+FUNCTION GLSL_window_width& ()
+    GLSL_window_width& = glsl_native_window_size&(0)
+END FUNCTION
+
+
+FUNCTION GLSL_window_height& ()
+    GLSL_window_height& = glsl_native_window_size&(-1)
+END FUNCTION
+
+
+''
+' Set OpenGL's viewport to the part of the window QB64-PE shows the screen
+' in: all of it - or, in _SQUAREPIXELS full screen, the letterboxed middle.
+' QB64-PE leaves the viewport as it was last set, so set it before drawing.
+'
+SUB GLSL_viewport_screen
+    DIM ww AS LONG, wh AS LONG, sw AS LONG, sh AS LONG, w AS LONG, h AS LONG
+    ww& = GLSL_window_width& : wh& = GLSL_window_height&
+    sw& = _WIDTH(0) : sh& = _HEIGHT(0)
+    IF ww& < 1 OR wh& < 1 OR sw& < 1 OR sh& < 1 THEN EXIT SUB
+    IF _FULLSCREEN = 2 THEN
+        IF ww& * sh& > wh& * sw& THEN
+            w& = wh& * sw& \ sh& : _glViewport (ww& - w&) \ 2, 0, w&, wh&
+        ELSE
+            h& = ww& * sh& \ sw& : _glViewport 0, (wh& - h&) \ 2, ww&, h&
+        END IF
+    ELSE
+        _glViewport 0, 0, ww&, wh&
+    END IF
+END SUB
+
+
+' ---- the screen filter ------------------------------------------------------
+
+''
+' Copy the program's screen for the filter. Call it in the main program,
+' just before _DISPLAY (SUB _GL then draws this copy). Works with any 32-bit
+' SCREEN.
+'
+SUB GLSL_filter_capture
+    DIM src AS _MEM, dst AS _MEM, w AS LONG, h AS LONG
+    w& = _WIDTH(0) : h& = _HEIGHT(0)
+    IF w& <> GLSL_frameW OR h& <> GLSL_frameH THEN
+        REDIM GLSL_frame(0 TO w& * h& - 1) AS _UNSIGNED LONG
+        GLSL_frameW = w& : GLSL_frameH = h&
+    END IF
+    src = _MEMIMAGE(0) : dst = _MEM(GLSL_frame())
+    _MEMCOPY src, src.OFFSET, src.SIZE TO dst, dst.OFFSET
+    _MEMFREE src : _MEMFREE dst
+    GLSL_frameReady = -1
+END SUB
+
+
+''
+' Inside SUB _GL: draw the captured screen over the whole window through
+' program prog~& (0 = as it is). The shader gets the screen as sampler2D
+' "screen" (unit 0), its size as vec2 "screenSize", the window's as vec2
+' "outputSize", and seconds as float "time". smooth% reads the screen
+' smoothly instead of as square pixels.
+'
+SUB GLSL_filter_draw (prog~&, smooth%)
+    DIM tex AS _UNSIGNED LONG
+    tex~& = GLSL_filter_texture~&(smooth%)
+    IF tex~& = 0 THEN EXIT SUB
+    GLSL_viewport_screen
+    _glEnable _GL_TEXTURE_2D
+    _glDisable _GL_DEPTH_TEST : _glDisable _GL_BLEND
+    _glColor4f 1, 1, 1, 1
+    IF prog~& THEN
+        GLSL_use prog~&
+        GLSL_uniform_1i prog~&, "screen", 0
+        GLSL_uniform_2f prog~&, "screenSize", GLSL_frameW, GLSL_frameH
+        GLSL_uniform_2f prog~&, "outputSize", GLSL_frameW, GLSL_frameH
+        GLSL_uniform_1f prog~&, "time", TIMER(.001)
+    END IF
+    GLSL_fullscreen -1
+    IF prog~& THEN GLSL_use 0
+    _glBindTexture _GL_TEXTURE_2D, 0
+    _glDisable _GL_TEXTURE_2D
+END SUB
+
+
+''
+' Inside SUB _GL: send the captured screen to the card and return its
+' texture (0 if nothing has been captured yet), bound and ready - for
+' programs that use it in their own drawing, e.g. as a HUD over a 3D view.
+' Its top row is v = 1 (draw it with GLSL_fullscreen TRUE). The colours are
+' "premultiplied" by alpha - what QB64's blending onto a see-through screen
+' makes - so lay it over a picture with _glBlendFunc _GL_ONE,
+' _GL_ONE_MINUS_SRC_ALPHA.
+'
+FUNCTION GLSL_filter_texture~& (smooth%)
+    IF NOT GLSL_frameReady THEN EXIT FUNCTION
+    glsl_native_filter_upload _OFFSET(GLSL_frame(0)), GLSL_frameW, GLSL_frameH, smooth% <> 0
+    GLSL_filter_texture~& = glsl_native_filter_texture~&
+END FUNCTION
+
+
+''
+' A vertex shader for full-screen effects (filters, post-processing): passes
+' the texture coordinates through as the varying vec2 "uv".
+'
+FUNCTION GLSL_filter_vertex$
+    GLSL_filter_vertex$ = "#version 120" + CHR$(10) + _
+        "varying vec2 uv;" + CHR$(10) + _
+        "void main() { uv = gl_MultiTexCoord0.xy; gl_Position = gl_Vertex; }" + CHR$(10)
+END FUNCTION
+
+
+''
+' A ready-made CRT filter for GLSL_filter_draw: a curved glass screen,
+' scanlines, an RGB shadow mask, a soft glow round bright things, and a
+' darker rim. Pair it with GLSL_filter_vertex$.
+'
+FUNCTION GLSL_crt$
+    DIM s AS STRING, nl AS STRING
+    nl = CHR$(10)
+    s = "#version 120" + nl
+    s = s + "uniform sampler2D screen; uniform vec2 screenSize, outputSize; uniform float time;" + nl
+    s = s + "varying vec2 uv;" + nl
+    s = s + "vec2 curve(vec2 p) { p = p * 2.0 - 1.0; p *= 1.0 + 0.08 * dot(p.yx, p.yx); return p * 0.5 + 0.5; }" + nl
+    s = s + "void main() {" + nl
+    s = s + "    vec2 p = curve(uv);" + nl
+    s = s + "    if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }" + nl
+    s = s + "    vec3 c = texture2D(screen, p).rgb;" + nl
+    s = s + "    vec3 glow = vec3(0.0); vec2 px = 1.0 / screenSize;" + nl
+    s = s + "    for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) glow += texture2D(screen, p + vec2(i, j) * px * 1.5).rgb;" + nl
+    s = s + "    c += glow / 25.0 * 0.35;" + nl
+    s = s + "    float scan = 0.75 + 0.25 * sin(p.y * screenSize.y * 3.14159);  // a dark line every other row" + nl
+    s = s + "    float m = mod(gl_FragCoord.x, 3.0);" + nl
+    s = s + "    vec3 mask = m < 1.0 ? vec3(1.0, 0.75, 0.75) : (m < 2.0 ? vec3(0.75, 1.0, 0.75) : vec3(0.75, 0.75, 1.0));" + nl
+    s = s + "    vec2 e = p * (1.0 - p.yx); float rim = clamp(pow(e.x * e.y * 18.0, 0.25), 0.0, 1.0);" + nl
+    s = s + "    gl_FragColor = vec4(c * scan * mask * rim * 1.25, 1.0);" + nl
+    s = s + "}" + nl
+    GLSL_crt$ = s
+END FUNCTION

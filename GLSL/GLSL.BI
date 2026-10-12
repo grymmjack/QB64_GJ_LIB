@@ -25,6 +25,21 @@ $INCLUDEONCE
 ' it can read the fixed-function inputs (gl_Vertex, gl_Color, gl_Normal,
 ' gl_MultiTexCoord0, gl_ModelViewProjectionMatrix) that _gl... feeds it.
 '
+' RENDER TARGETS draw into a texture instead of the window, for effects
+' that work on the finished picture (bloom, blur, CRT...):
+'   t& = GLSL_target_new&(800, 600, -1)    ' once: a target with depth
+'   GLSL_target_use t& : _glViewport 0, 0, 800, 600 : ...draw the scene...
+'   GLSL_target_use 0                      ' back to the window
+'   _glBindTexture _GL_TEXTURE_2D, GLSL_target_texture~&(t&)
+'   GLSL_use myPostShader : GLSL_fullscreen 0 : GLSL_use 0
+'
+' THE SCREEN FILTER puts any QB64 program's ordinary screen through a
+' shader (a CRT, say) without changing how it draws:
+'   _DISPLAYORDER _GLRENDER                ' hide the plain screen
+'   ... draw as usual ... : GLSL_filter_capture : _DISPLAY
+'   SUB _GL: GLSL_filter_draw crtProg~&    ' (crtProg~& = GLSL_program~&(
+'                                          '  GLSL_filter_vertex$, GLSL_crt$))
+'
 ' Hex OpenGL constants need a & suffix in QB64: &H8B31 is an INTEGER (and
 ' negative), &H8B31& the number OpenGL means.
 '
@@ -48,4 +63,21 @@ DECLARE LIBRARY "glsl"
     SUB glsl_native_attrib_array (BYVAL location AS LONG, BYVAL size AS LONG, BYVAL dataAt AS _OFFSET)
     SUB glsl_native_attrib_off (BYVAL location AS LONG)
     SUB glsl_native_texture_unit (BYVAL unit AS LONG)
+    FUNCTION glsl_native_targets_supported& ()
+    FUNCTION glsl_native_target_new& (BYVAL w AS LONG, BYVAL h AS LONG, BYVAL withDepth AS LONG)
+    SUB glsl_native_target_use (BYVAL id AS LONG)
+    FUNCTION glsl_native_target_texture~& (BYVAL id AS LONG)
+    FUNCTION glsl_native_target_width& (BYVAL id AS LONG)
+    FUNCTION glsl_native_target_height& (BYVAL id AS LONG)
+    SUB glsl_native_target_resize (BYVAL id AS LONG, BYVAL w AS LONG, BYVAL h AS LONG)
+    SUB glsl_native_target_smooth (BYVAL id AS LONG, BYVAL smooth AS LONG)
+    SUB glsl_native_target_delete (BYVAL id AS LONG)
+    SUB glsl_native_fullscreen (BYVAL flipV AS LONG)
+    SUB glsl_native_filter_upload (BYVAL pixels AS _OFFSET, BYVAL w AS LONG, BYVAL h AS LONG, BYVAL smooth AS LONG)
+    FUNCTION glsl_native_filter_texture~& ()
+    FUNCTION glsl_native_window_size& (BYVAL wantHeight AS LONG)
 END DECLARE
+
+' The screen filter's copy of the program's screen (GLSL_filter_capture)
+REDIM SHARED GLSL_frame(0) AS _UNSIGNED LONG
+DIM SHARED GLSL_frameW AS LONG, GLSL_frameH AS LONG, GLSL_frameReady AS INTEGER

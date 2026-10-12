@@ -19,6 +19,21 @@
 
 static char glsl_error_text[4096] = "";
 
+// QB64-PE's window comes from GLFW, which is linked into every program; its
+// framebuffer size is the window's real size in pixels - asked without
+// troubling OpenGL (whose questions can stall a frame on Mesa drivers).
+extern "C" {
+struct GLFWwindow;
+GLFWwindow *glfwGetCurrentContext(void);
+void glfwGetFramebufferSize(GLFWwindow *window, int *width, int *height);
+}
+static int32_t glsl_native_window_size(int32_t want_height) {
+    int w = 0, h = 0;
+    GLFWwindow *win = glfwGetCurrentContext();
+    if (win) glfwGetFramebufferSize(win, &w, &h);
+    return want_height ? h : w;
+}
+
 static void glsl_set_error(const char *what, const char *log) {
     strncpy(glsl_error_text, what, sizeof(glsl_error_text) - 1);
     glsl_error_text[sizeof(glsl_error_text) - 1] = 0;
@@ -93,9 +108,32 @@ static int32_t glsl_native_error(char *buf, int32_t len) {
 }
 
 static void glsl_native_use(uint32_t program) { glUseProgram(program); }
-static void glsl_native_delete(uint32_t program) { if (program) glDeleteProgram(program); }
 
-static int32_t glsl_native_uniform(uint32_t program, const char *name) { return glGetUniformLocation(program, name); }
+// Uniform locations, remembered after the first look-up: glGetUniformLocation
+// is a question, and on Mesa drivers a question can make the program wait
+// for the next screen refresh - asked every frame, that's a few frames a
+// second. So each (program, name) is asked once.
+#define GLSL_UCACHE 512
+typedef struct { uint32_t program; int32_t loc; char name[56]; } glsl_ucache_t;
+static glsl_ucache_t glsl_ucache[GLSL_UCACHE];
+static int32_t glsl_ucache_n = 0;
+static int32_t glsl_native_uniform(uint32_t program, const char *name) {
+    int32_t i;
+    for (i = 0; i < glsl_ucache_n; i++)
+        if (glsl_ucache[i].program == program && strcmp(glsl_ucache[i].name, name) == 0) return glsl_ucache[i].loc;
+    int32_t loc = glGetUniformLocation(program, name);
+    if (glsl_ucache_n < GLSL_UCACHE && strlen(name) < sizeof(glsl_ucache[0].name)) {
+        glsl_ucache[glsl_ucache_n].program = program; glsl_ucache[glsl_ucache_n].loc = loc;
+        strcpy(glsl_ucache[glsl_ucache_n].name, name); glsl_ucache_n++;
+    }
+    return loc;
+}
+static void glsl_ucache_forget(uint32_t program) { // (a deleted program's numbers can be reused)
+    int32_t i, j = 0;
+    for (i = 0; i < glsl_ucache_n; i++) if (glsl_ucache[i].program != program) glsl_ucache[j++] = glsl_ucache[i];
+    glsl_ucache_n = j;
+}
+static void glsl_native_delete(uint32_t program) { if (program) { glsl_ucache_forget(program); glDeleteProgram(program); } }
 static void glsl_native_set1f(int32_t loc, float x) { glUniform1f(loc, x); }
 static void glsl_native_set2f(int32_t loc, float x, float y) { glUniform2f(loc, x, y); }
 static void glsl_native_set3f(int32_t loc, float x, float y, float z) { glUniform3f(loc, x, y, z); }
@@ -116,3 +154,193 @@ static void glsl_native_attrib_off(int32_t loc) { if (loc >= 0) glDisableVertexA
 // Choose texture unit n (0, 1, 2...) for the next _glBindTexture - for
 // shaders that read more than one texture (sampler uniforms take the unit).
 static void glsl_native_texture_unit(int32_t n) { glActiveTexture(GL_TEXTURE0 + n); }
+
+// ---- render targets: draw into a texture instead of the window -----------
+// A target is an OpenGL framebuffer object with a colour texture (and,
+// if asked for, a depth buffer), so a whole scene can be drawn into it and
+// then read back by a shader - bloom, blur, CRT effects and so on.
+#define GLSL_MAX_TARGETS 32
+typedef struct { GLuint fbo, tex, depth; int32_t w, h, used, has_depth; } glsl_target_t;
+static glsl_target_t glsl_targets[GLSL_MAX_TARGETS + 1]; // [0] is the window
+
+static int32_t glsl_native_targets_supported(void) {
+    return (glGenFramebuffers != NULL && glBindFramebuffer != NULL && glFramebufferTexture2D != NULL) ? -1 : 0;
+}
+
+static void glsl_target_alloc(glsl_target_t *t) {
+    glBindTexture(GL_TEXTURE_2D, t->tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t->w, t->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (t->has_depth) {
+        glBindRenderbuffer(GL_RENDERBUFFER, t->depth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, t->w, t->h);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
+}
+
+// A new target w x h pixels (with a depth buffer if with_depth). Returns its
+// number (1..32), or 0 if it couldn't be made (glsl_error_text says why).
+static int32_t glsl_native_target_new(int32_t w, int32_t h, int32_t with_depth) {
+    int32_t id;
+    if (!glsl_native_targets_supported()) { glsl_set_error("render targets: ", "no framebuffer objects on this driver"); return 0; }
+    for (id = 1; id <= GLSL_MAX_TARGETS; id++) if (!glsl_targets[id].used) break;
+    if (id > GLSL_MAX_TARGETS) { glsl_set_error("render targets: ", "all 32 in use"); return 0; }
+    glsl_target_t *t = &glsl_targets[id];
+    memset(t, 0, sizeof(*t));
+    t->w = w < 1 ? 1 : w; t->h = h < 1 ? 1 : h; t->has_depth = with_depth ? 1 : 0;
+    glGenTextures(1, &t->tex);
+    glBindTexture(GL_TEXTURE_2D, t->tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (t->has_depth) glGenRenderbuffers(1, &t->depth);
+    glsl_target_alloc(t);
+    glGenFramebuffers(1, &t->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, t->fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t->tex, 0);
+    if (t->has_depth) glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, t->depth);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        glsl_set_error("render targets: ", "framebuffer incomplete");
+        glDeleteFramebuffers(1, &t->fbo); glDeleteTextures(1, &t->tex);
+        if (t->has_depth) glDeleteRenderbuffers(1, &t->depth);
+        return 0;
+    }
+    t->used = 1;
+    return id;
+}
+
+// Draw into target id from now on (0 = the window again). Doesn't change
+// the viewport: set it to the target's size yourself.
+static void glsl_native_target_use(int32_t id) {
+    if (id < 0 || id > GLSL_MAX_TARGETS || (id && !glsl_targets[id].used)) return;
+    glBindFramebuffer(GL_FRAMEBUFFER, id ? glsl_targets[id].fbo : 0);
+}
+
+static uint32_t glsl_native_target_texture(int32_t id) { return (id > 0 && id <= GLSL_MAX_TARGETS && glsl_targets[id].used) ? glsl_targets[id].tex : 0; }
+static int32_t glsl_native_target_width(int32_t id) { return (id > 0 && id <= GLSL_MAX_TARGETS) ? glsl_targets[id].w : 0; }
+static int32_t glsl_native_target_height(int32_t id) { return (id > 0 && id <= GLSL_MAX_TARGETS) ? glsl_targets[id].h : 0; }
+
+// Give target id a new size (its picture is lost). Does nothing if it's that size already.
+static void glsl_native_target_resize(int32_t id, int32_t w, int32_t h) {
+    if (id <= 0 || id > GLSL_MAX_TARGETS || !glsl_targets[id].used) return;
+    glsl_target_t *t = &glsl_targets[id];
+    if (w < 1) w = 1;
+    if (h < 1) h = 1;
+    if (t->w == w && t->h == h) return;
+    t->w = w; t->h = h;
+    glsl_target_alloc(t);
+}
+
+// Read target id's texture smoothly (-1) or as square pixels (0)
+static void glsl_native_target_smooth(int32_t id, int32_t smooth) {
+    if (id <= 0 || id > GLSL_MAX_TARGETS || !glsl_targets[id].used) return;
+    glBindTexture(GL_TEXTURE_2D, glsl_targets[id].tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, smooth ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, smooth ? GL_LINEAR : GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+static void glsl_native_target_delete(int32_t id) {
+    if (id <= 0 || id > GLSL_MAX_TARGETS || !glsl_targets[id].used) return;
+    glsl_target_t *t = &glsl_targets[id];
+    glDeleteFramebuffers(1, &t->fbo); glDeleteTextures(1, &t->tex);
+    if (t->has_depth) glDeleteRenderbuffers(1, &t->depth);
+    memset(t, 0, sizeof(*t));
+}
+
+// Draw one rectangle over the whole of whatever is being drawn into, with
+// texture coordinates 0..1 across and up (v = 0 at the bottom, as render
+// targets store it; flip_v = -1 for a picture stored top row first, like a
+// QB64 image). For full-screen shaders: post-processing, filters.
+static void glsl_native_fullscreen(int32_t flip_v) {
+    float v0 = flip_v ? 1.0f : 0.0f, v1 = flip_v ? 0.0f : 1.0f;
+    glMatrixMode(GL_PROJECTION); glPushMatrix(); glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW); glPushMatrix(); glLoadIdentity();
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, v0); glVertex2f(-1, -1);
+    glTexCoord2f(1, v0); glVertex2f(1, -1);
+    glTexCoord2f(1, v1); glVertex2f(1, 1);
+    glTexCoord2f(0, v1); glVertex2f(-1, 1);
+    glEnd();
+    glMatrixMode(GL_PROJECTION); glPopMatrix();
+    glMatrixMode(GL_MODELVIEW); glPopMatrix();
+}
+
+// ---- screen filter: a QB64 program's ordinary screen, through a shader -----
+// The program copies its finished screen into a buffer just before _DISPLAY
+// (GLSL_filter_capture, in BASIC); here, inside SUB _GL, it goes into a
+// texture and is drawn over the whole window through a shader.
+// Copy w x h BGRA pixels into the bound texture without stalling.
+//
+// Handing glTexSubImage2D a pointer into our memory makes Mesa's threaded
+// driver stop and wait (it can't keep the pointer for later) - every frame,
+// that's a few frames a second. So the pixels go through a "pixel buffer":
+// graphics-card memory we map once and keep mapped (persistent mapping,
+// OpenGL 4.4), cut into 3 slices used in turn. Each frame we memcpy into the
+// next slice, and glTexSubImage2D reads it from there, all on the card's
+// own time. Without glBufferStorage, it falls back to the plain upload.
+#define GLSL_PBO_SLICES 3
+static GLuint glsl_pbo = 0;
+static unsigned char *glsl_pbo_ptr = NULL;
+static size_t glsl_pbo_slice = 0;
+static int32_t glsl_pbo_next = 0;
+static void glsl_upload_pixels(uintptr_t pixels, int32_t w, int32_t h) {
+    size_t need = (size_t)w * (size_t)h * 4;
+    if (glBufferStorage == NULL || glMapBufferRange == NULL || glGenBuffers == NULL) {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)pixels);
+        return;
+    }
+    if (!glsl_pbo || need != glsl_pbo_slice) {
+        GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        if (glsl_pbo) {
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
+            glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+            glDeleteBuffers(1, &glsl_pbo);
+        }
+        glGenBuffers(1, &glsl_pbo);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
+        glBufferStorage(GL_PIXEL_UNPACK_BUFFER, need * GLSL_PBO_SLICES, NULL, flags);
+        glsl_pbo_ptr = (unsigned char *)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, need * GLSL_PBO_SLICES, flags);
+        glsl_pbo_slice = need;
+        if (!glsl_pbo_ptr) { // couldn't map: plain uploads from now on
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+            glDeleteBuffers(1, &glsl_pbo); glsl_pbo = 0;
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)pixels);
+            return;
+        }
+    } else {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glsl_pbo);
+    }
+    size_t at = glsl_pbo_slice * (size_t)glsl_pbo_next;
+    memcpy(glsl_pbo_ptr + at, (const void *)pixels, need);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, (const void *)at);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glsl_pbo_next = (glsl_pbo_next + 1) % GLSL_PBO_SLICES;
+}
+
+// The texture is made once (and again only if the screen changes size) and
+// then refilled in place with glTexSubImage2D: re-making it every frame can
+// stall the driver.
+static GLuint glsl_filter_tex = 0;
+static int32_t glsl_filter_w = 0, glsl_filter_h = 0, glsl_filter_smooth = -2;
+static void glsl_native_filter_upload(uintptr_t pixels, int32_t w, int32_t h, int32_t smooth) {
+    if (!glsl_filter_tex) glGenTextures(1, &glsl_filter_tex);
+    glBindTexture(GL_TEXTURE_2D, glsl_filter_tex);
+    if (smooth != glsl_filter_smooth) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, smooth ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, smooth ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glsl_filter_smooth = smooth;
+    }
+    if (w != glsl_filter_w || h != glsl_filter_h) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+        glsl_filter_w = w; glsl_filter_h = h;
+    }
+    glsl_upload_pixels(pixels, w, h);
+}
+static uint32_t glsl_native_filter_texture(void) { return glsl_filter_tex; }
