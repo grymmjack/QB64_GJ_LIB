@@ -572,23 +572,20 @@ SUB FD_LAYOUT_calculate
     ' Content area height
     FD_STATE.contentH = FD_STATE.dialogH - y - FD_STATE.statusBarH - FD_STATE.buttonBarH
 
-    ' Places pane (left)
+    ' Places | content | preview: one clamp makes the three fit dialogW, so
+    ' they never overlap (the list was forced to 100 px and slid under the
+    ' preview, splitters drawn on top)
+    FD_LAYOUT_clamp_panes
     FD_STATE.placesX = 0
-    IF FD_STATE.placesW < 80 THEN FD_STATE.placesW = 80
-
-    ' Preview pane (right)
-    IF FD_CFG.showPreview THEN
-        IF FD_STATE.previewW < 100 THEN FD_STATE.previewW = 100
+    ' a hidden preview KEEPS its width: toggled back on, the clamp fits it
+    IF FD_CFG.showPreview <> 0 _ANDALSO FD_STATE.previewW > 0 THEN
         FD_STATE.previewX = FD_STATE.dialogW - FD_STATE.previewW
     ELSE
-        FD_STATE.previewW = 0
         FD_STATE.previewX = FD_STATE.dialogW
     END IF
-
-    ' Content pane (center)
     FD_STATE.contentX = FD_STATE.placesW + FD_SPLITTER_W
     FD_STATE.contentW = FD_STATE.previewX - FD_STATE.contentX - FD_SPLITTER_W
-    IF FD_STATE.contentW < 100 THEN FD_STATE.contentW = 100
+    IF FD_STATE.contentW < 0 THEN FD_STATE.contentW = 0 ' only in a dialog narrower than places-min + list-min
 
     ' Recalculate scroll limits
     FD_FS_recalc_scroll
@@ -596,6 +593,47 @@ SUB FD_LAYOUT_calculate
 
     ' Update text input widget positions
     FD__update_text_input_geometry
+END SUB
+
+
+' --------------------------------------------------------------------------
+' FD_LAYOUT_clamp_panes — fit places | list | preview into dialogW. Caps
+' first (places <= 1/3, preview <= 1/2 of the dialog), then the minimums;
+' when short the preview gives width first, then the places, then the
+' preview again below its minimum (to 60); with less room than that it
+' collapses (width 0) for this layout and comes back when there is room.
+' The places and the list never go below their minimums.
+' --------------------------------------------------------------------------
+SUB FD_LAYOUT_clamp_panes
+    DIM navMin AS INTEGER, prevMin AS INTEGER, showPv AS INTEGER
+    DIM over AS INTEGER, take AS INTEGER
+    navMin = FD_STATE.placesMinW: IF navMin < 40 THEN navMin = 80
+    prevMin = FD_STATE.previewMinW: IF prevMin < 40 THEN prevMin = 100
+    showPv = (FD_CFG.showPreview <> 0)
+    IF showPv _ANDALSO FD_STATE.previewW <= 0 THEN FD_STATE.previewW = FD_CFG.previewWidth
+
+    IF FD_STATE.placesW > FD_STATE.dialogW \ 3 THEN FD_STATE.placesW = FD_STATE.dialogW \ 3
+    IF FD_STATE.placesW < navMin THEN FD_STATE.placesW = navMin
+    IF showPv THEN
+        IF FD_STATE.previewW > FD_STATE.dialogW \ 2 THEN FD_STATE.previewW = FD_STATE.dialogW \ 2
+        IF FD_STATE.previewW < prevMin THEN FD_STATE.previewW = prevMin
+    END IF
+
+    ' the side panes get what is left once the list keeps its minimum
+    over = FD_STATE.placesW - (FD_STATE.dialogW - FD_SPLITTER_W * 2 - FD_LIST_MIN_W)
+    IF showPv THEN over = over + FD_STATE.previewW
+    IF over <= 0 THEN EXIT SUB
+    IF showPv THEN ' 1) the preview, down to its minimum
+        take = FD_STATE.previewW - prevMin: IF take > over THEN take = over
+        IF take > 0 THEN FD_STATE.previewW = FD_STATE.previewW - take: over = over - take
+    END IF
+    take = FD_STATE.placesW - navMin: IF take > over THEN take = over ' 2) the places, to theirs
+    IF take > 0 THEN FD_STATE.placesW = FD_STATE.placesW - take: over = over - take
+    IF over > 0 _ANDALSO showPv THEN ' 3) the preview, below its minimum to a usable 60
+        take = FD_STATE.previewW - 60: IF take > over THEN take = over
+        IF take > 0 THEN FD_STATE.previewW = FD_STATE.previewW - take: over = over - take
+        IF over > 0 THEN FD_STATE.previewW = 0 ' 4) no room at all: it collapses
+    END IF
 END SUB
 
 ' --------------------------------------------------------------------------

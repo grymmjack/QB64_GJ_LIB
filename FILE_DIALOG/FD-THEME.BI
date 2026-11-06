@@ -27,6 +27,7 @@ CONST FD_PREVIEW_DEFAULT_W  = 200 ' Default preview pane width
 CONST FD_SCROLLBAR_W        = 12  ' Scrollbar width
 CONST FD_THUMB_DEFAULT_SIZE = 64  ' Default thumbnail size
 CONST FD_SPLITTER_W         = 4   ' Splitter handle width
+CONST FD_LIST_MIN_W         = 100 ' Minimum file list (content) pane width
 CONST FD_PADDING            = 4   ' General padding
 CONST FD_ICON_SIZE          = 16  ' Small file-type icon size
 CONST FD_ICON_TEXT_GAP      = 4   ' Horizontal gap between icon and text label
