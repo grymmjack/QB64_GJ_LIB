@@ -143,13 +143,8 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
             END IF
 
             DIM selX1 AS INTEGER, selX2 AS INTEGER
-            IF useTTF THEN
-                selX1 = textX + _PRINTWIDTH(LEFT$(displayText, s1)) - scrollPx
-                selX2 = textX + _PRINTWIDTH(LEFT$(displayText, s2)) - scrollPx
-            ELSE
-                selX1 = textX + s1 * eFW - scrollPx
-                selX2 = textX + s2 * eFW - scrollPx
-            END IF
+            selX1 = textX + TI__px_width%(id, displayText, s1) - scrollPx
+            selX2 = textX + TI__px_width%(id, displayText, s2) - scrollPx
 
             ' Clamp to visible area
             IF selX1 < textX THEN selX1 = textX
@@ -161,35 +156,27 @@ SUB TI_render (id AS INTEGER, offsetX AS INTEGER, offsetY AS INTEGER)
         END IF
 
         ' --- Draw text ---
+        ' Char by char, and only glyphs that sit wholly inside the box. Nothing
+        ' clips _PRINTSTRING (the BF fill above does not), so a glyph scrolled
+        ' past either edge would land on whatever is beside the box - e.g. the
+        ' Color Mixer's "HEX:" label. Positions come from TI__px_width%, the
+        ' same measure the caret, scroll and mouse hit-testing use.
         COLOR txtClr, _RGBA32(0, 0, 0, 0)
-        IF useTTF THEN
-            ' Proportional: render whole string at scrolled position
-            ' Background clipping is handled by the BF fill drawn before this
-            _PRINTSTRING (textX - scrollPx, singleTextY), displayText
-        ELSE
-            ' Monospace: char by char with bounds check
-            DIM startChar AS INTEGER, endChar AS INTEGER
-            startChar = scrollPx \ eFW
-            IF startChar < 0 THEN startChar = 0
-            endChar = startChar + (visibleW \ eFW) + 2
-            IF endChar > LEN(displayText) THEN endChar = LEN(displayText)
-            FOR ci = startChar TO endChar - 1
-                DIM charX AS INTEGER
-                charX = textX + ci * eFW - scrollPx
-                IF charX >= textX - eFW AND charX < textX + visibleW THEN
-                    _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
-                END IF
-            NEXT ci
-        END IF
+        DIM charX AS INTEGER, nextX AS INTEGER
+        nextX = textX - scrollPx
+        FOR ci = 0 TO LEN(displayText) - 1
+            charX = nextX
+            nextX = textX + TI__px_width%(id, displayText, ci + 1) - scrollPx
+            IF charX >= textX + visibleW THEN EXIT FOR
+            IF charX >= textX _ANDALSO nextX <= textX + visibleW THEN
+                _PRINTSTRING (charX, singleTextY), MID$(displayText, ci + 1, 1)
+            END IF
+        NEXT ci
 
         ' --- Draw cursor ---
         IF TI_inputs(id).focused AND TI_inputs(id).cursorBlink THEN
             DIM curX AS INTEGER
-            IF useTTF THEN
-                curX = textX + _PRINTWIDTH(LEFT$(displayText, TI_inputs(id).cursorPos)) - scrollPx
-            ELSE
-                curX = textX + TI_inputs(id).cursorPos * eFW - scrollPx
-            END IF
+            curX = textX + TI__px_width%(id, displayText, TI_inputs(id).cursorPos) - scrollPx
             IF curX >= x1 AND curX < x1 + w THEN
                 LINE (curX, y1 + 3)-(curX, y1 + h - 4), curClr
             END IF

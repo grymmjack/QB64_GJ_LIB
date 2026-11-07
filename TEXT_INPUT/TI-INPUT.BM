@@ -1242,17 +1242,27 @@ SUB TI__ensure_cursor_visible (id AS INTEGER)
         END IF
     ELSE
         ' --- Single-line: horizontal only ---
+        ' Measure with TI__px_width% (as the renderer and hit-testing do) so a
+        ' proportional font scrolls by its real glyph widths.
         DIM eFW      AS INTEGER
+        DIM slText   AS STRING
+        DIM maxScroll AS INTEGER
         eFW      = TI__eff_fontW%(id)
-        curPixel = TI_inputs(id).cursorPos * eFW
+        slText   = LEFT$(TI_inputs(id).text, TI_inputs(id).textLen)
+        curPixel = TI__px_width%(id, slText, TI_inputs(id).cursorPos)
         visibleW = TI_inputs(id).w - TI_SCROLL_PADDING * 2
 
-        IF curPixel - TI_inputs(id).scrollX > visibleW THEN
+        IF curPixel - TI_inputs(id).scrollX > visibleW - eFW THEN
             TI_inputs(id).scrollX = curPixel - visibleW + eFW
         ELSEIF curPixel < TI_inputs(id).scrollX THEN
             TI_inputs(id).scrollX = curPixel - eFW
-            IF TI_inputs(id).scrollX < 0 THEN TI_inputs(id).scrollX = 0
         END IF
+
+        ' Never scroll past the end of the text: after deleting, the text
+        ' slides back so it fills the box again instead of staying shifted.
+        maxScroll = TI__px_width%(id, slText, TI_inputs(id).textLen) - visibleW + eFW
+        IF TI_inputs(id).scrollX > maxScroll THEN TI_inputs(id).scrollX = maxScroll
+        IF TI_inputs(id).scrollX < 0 THEN TI_inputs(id).scrollX = 0
     END IF
 END SUB
 

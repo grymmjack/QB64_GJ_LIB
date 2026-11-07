@@ -840,6 +840,11 @@ SUB CP_wire_hex_ti_theme
     TI_inputs(CP_STATE.tiHexId).theme.fontHandle = CP_THEME.fontHandle&
     TI_inputs(CP_STATE.tiHexId).theme.fontW      = CP_STATE.fontW
     TI_inputs(CP_STATE.tiHexId).theme.fontH      = CP_STATE.fontH
+    ' A TTF font draws at its real glyph widths: measure the caret, scroll
+    ' and clicks the same way (fixed cells would drift from the glyphs).
+    TI_inputs(CP_STATE.tiHexId).proportional = (CP_THEME.fontHandle& > 0)
+    ' "#RRGGBB" - CP_parse_hex_string takes nothing longer
+    TI_inputs(CP_STATE.tiHexId).maxLen = 7
     ' Wire colors to match dialog theme
     TI_inputs(CP_STATE.tiHexId).theme.bgColor          = CP_THEME.sliderBg~&
     TI_inputs(CP_STATE.tiHexId).theme.focusBgColor     = CP_THEME.bg~&
