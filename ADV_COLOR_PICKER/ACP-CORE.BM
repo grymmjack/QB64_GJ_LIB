@@ -33,6 +33,7 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     ACP_STATE.shadeSpreadS!     = 0.5
     ACP_STATE.shadeSpreadH!     = 60.0
     ACP_STATE.quantizeSteps%    = 0
+    ACP_STATE.quantBar%         = 0                         ' FALSE (host may override)
     ACP_STATE.bgColor~&         = _RGB32(30, 30, 34)
     ACP_STATE.historyShow%      = -1                        ' TRUE (host may override)
     ACP_STATE.historyCount%     = 0
@@ -46,7 +47,7 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     ACP_set_shade_line 2, 60.0, 0.0, 0.0, 0.0, 0.0, 0.0     ' hue spread
 
     ' Widget = wheel (sz x sz) + shade rows + optional history strip.
-    ACP_STATE.h% = sz% + ACP_shade_area_h% + ACP_history_area_h%
+    ACP_STATE.h% = sz% + ACP_quant_area_h% + ACP_shade_area_h% + ACP_history_area_h%
 
     ' Geometry: fit the ring inside the top sz x sz square with ACP_PADDING margin.
     ACP_STATE.cx!     = sz% / 2.0
@@ -66,6 +67,68 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     ACP_STATE.oldMouseB1% = 0
 
     ACP_set_rgb initialColor~&                              ' sets hue/sat/val + triDirty
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_quant_area_h% — Native height of the quantize slider row (one row:
+' the host's label | the track | the host's value) between the wheel and the
+' shade rows; 0 when it is hidden.
+' --------------------------------------------------------------------------
+FUNCTION ACP_quant_area_h% ()
+    ' (the row is tucked into the empty padding under the ring, so the widget
+    '  grows by less than the row: a docked picker must still fit small windows)
+    IF ACP_STATE.quantBar% THEN ACP_quant_area_h% = ACP_QUANT_ROW_H - ACP_QUANT_TUCK + 1
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_quant_row_y% — Native Y of the slider row's top (ACP_QUANT_ROW_H tall;
+' the host centres its label and value text in it).
+' --------------------------------------------------------------------------
+FUNCTION ACP_quant_row_y% ()
+    ACP_quant_row_y% = ACP_STATE.w% - ACP_QUANT_TUCK
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_quant_track_rect — Native rect of the quantize slider track (between
+' the host's quantInsetL / quantInsetR).
+' --------------------------------------------------------------------------
+SUB ACP_quant_track_rect (x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
+    x1% = ACP_SHADE_GAP + ACP_STATE.quantInsetL%
+    x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1 - ACP_STATE.quantInsetR%
+    IF x2% < x1% + 8 THEN x2% = x1% + 8
+    y1% = ACP_quant_row_y% + 1
+    y2% = y1% + ACP_QUANT_ROW_H - 3
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_quant_from_x% — Slider position -> steps (0 = off; 1 is no step, so the
+' first notch past off is 2).
+' --------------------------------------------------------------------------
+FUNCTION ACP_quant_from_x% (nx AS INTEGER)
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER, v AS INTEGER
+    ACP_quant_track_rect x1%, y1%, x2%, y2%
+    IF x2% <= x1% THEN EXIT FUNCTION
+    v% = INT(CSNG(nx% - x1%) * ACP_QUANT_MAX / CSNG(x2% - x1%) + 0.5)
+    IF v% < 2 THEN v% = 0
+    IF v% > ACP_QUANT_MAX THEN v% = ACP_QUANT_MAX
+    ACP_quant_from_x% = v%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_render_quant — Draw the quantize slider (track, fill, thumb) into _DEST.
+' --------------------------------------------------------------------------
+SUB ACP_render_quant ()
+    IF ACP_STATE.quantBar% = 0 THEN EXIT SUB
+    DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER, tx AS INTEGER, v AS INTEGER
+    ACP_quant_track_rect x1%, y1%, x2%, y2%
+    v% = ACP_STATE.quantizeSteps%: IF v% < 0 THEN v% = 0
+    IF v% > ACP_QUANT_MAX THEN v% = ACP_QUANT_MAX
+    tx% = x1% + INT(CSNG(x2% - x1%) * v% / ACP_QUANT_MAX + 0.5)
+    LINE (x1%, y1% + 2)-(x2%, y2% - 2), _RGB32(20, 20, 22), BF
+    LINE (x1%, y1% + 2)-(x2%, y2% - 2), _RGB32(70, 70, 76), B
+    IF v% > 0 THEN LINE (x1% + 1, y1% + 3)-(tx%, y2% - 3), _RGB32(140, 140, 150), BF
+    LINE (tx% - 2, y1%)-(tx% + 2, y2%), _RGB32(230, 230, 235), BF
+    LINE (tx% - 2, y1%)-(tx% + 2, y2%), _RGB32(0, 0, 0), B
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -89,7 +152,7 @@ END FUNCTION
 ' ACP_shade_row_label_y% — Native Y of a row's label (top of the row block).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_row_label_y% (row AS INTEGER)
-    ACP_shade_row_label_y% = ACP_STATE.w% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
+    ACP_shade_row_label_y% = ACP_STATE.w% + ACP_quant_area_h% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -117,7 +180,7 @@ END SUB
 ' reallocate imgHandle if it changed. Call after changing shadeLineCount.
 ' --------------------------------------------------------------------------
 SUB ACP_apply_shade_layout ()
-    DIM newH AS INTEGER : newH% = ACP_STATE.w% + ACP_shade_area_h% + ACP_history_area_h%
+    DIM newH AS INTEGER : newH% = ACP_STATE.w% + ACP_quant_area_h% + ACP_shade_area_h% + ACP_history_area_h%
     IF newH% = ACP_STATE.h% THEN EXIT SUB
     ACP_STATE.h% = newH%
     IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
@@ -305,7 +368,8 @@ SUB ACP_render_all
     CIRCLE (mtx%, mty%), 5, _RGB32(0, 0, 0)
     CIRCLE (mtx%, mty%), 4, _RGB32(255, 255, 255)
 
-    ACP_render_shades  ' shade rows below the wheel (into imgHandle)
+    ACP_render_quant   ' quantize slider under the wheel (when shown)
+    ACP_render_shades  ' shade rows below it (into imgHandle)
     ACP_render_history ' recent-colors strip below the shades
 
     _DEST oldDest&
@@ -330,7 +394,8 @@ END SUB
 ' Sets ACP_STATE.changed = TRUE when the color changed this call.
 ' --------------------------------------------------------------------------
 SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
-    ACP_STATE.changed%    = 0
+    ACP_STATE.changed%      = 0
+    ACP_STATE.quantChanged% = 0
     ACP_STATE.mouseX%     = nx% : ACP_STATE.mouseY% = ny%
     ACP_STATE.oldMouseB1% = ACP_STATE.mouseB1%
     ACP_STATE.mouseB1%    = b1%
@@ -344,8 +409,13 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
     dx!   = nx% + 0.5 - ACP_STATE.cx! : dy! = ny% + 0.5 - ACP_STATE.cy!
     dist! = SQR(dx! * dx! + dy! * dy!)
 
+    DIM qx1 AS INTEGER, qy1 AS INTEGER, qx2 AS INTEGER, qy2 AS INTEGER
+    IF ACP_STATE.quantBar% THEN ACP_quant_track_rect qx1%, qy1%, qx2%, qy2%
+
     IF pressed% THEN
-        IF dist! >= ACP_STATE.ringRi! AND dist! <= ACP_STATE.ringRo! THEN
+        IF ACP_STATE.quantBar% _ANDALSO nx% >= qx1% - 3 _ANDALSO nx% <= qx2% + 3 _ANDALSO ny% >= qy1% - 2 _ANDALSO ny% <= qy2% + 2 THEN
+            ACP_STATE.dragging% = ACP_DRAG_QUANT
+        ELSEIF dist! >= ACP_STATE.ringRi! AND dist! <= ACP_STATE.ringRo! THEN
             IF ACP_near_neighbor_marker%(nx%, ny%) THEN
                 ACP_STATE.dragging% = ACP_DRAG_NEIGHBOR
             ELSE
@@ -372,6 +442,12 @@ SUB ACP_input_mouse (nx AS INTEGER, ny AS INTEGER, b1 AS INTEGER)
             CASE ACP_DRAG_RING     : ACP_pick_ring nx%, ny%
             CASE ACP_DRAG_TRIANGLE : ACP_pick_triangle nx%, ny%
             CASE ACP_DRAG_NEIGHBOR : ACP_pick_neighbor nx%, ny%
+            CASE ACP_DRAG_QUANT
+                DIM qv AS INTEGER : qv% = ACP_quant_from_x%(nx%)
+                IF qv% <> ACP_STATE.quantizeSteps% THEN
+                    ACP_set_quantize qv%
+                    ACP_STATE.quantChanged% = -1 ' (the paint color stays until the next pick)
+                END IF
         END SELECT
     END IF
 END SUB
@@ -712,7 +788,7 @@ END FUNCTION
 ' ACP_history_top% — Native Y where the history section (label) starts.
 ' --------------------------------------------------------------------------
 FUNCTION ACP_history_top% ()
-    ACP_history_top% = ACP_STATE.w% + ACP_shade_area_h%
+    ACP_history_top% = ACP_STATE.w% + ACP_quant_area_h% + ACP_shade_area_h%
 END FUNCTION
 
 ' --------------------------------------------------------------------------

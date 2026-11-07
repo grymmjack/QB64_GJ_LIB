@@ -26,7 +26,13 @@ self-contained.
 - **Hue-neighbors** — a shade line whose ± range is shown as two small draggable
   markers on the ring around the big current-hue marker.
 - **Quantize to steps** — snap the triangle S/V and the hue ring to *N* discrete
-  steps (rendered banded) for limited-palette / pixel-art work.
+  steps (rendered banded) for limited-palette / pixel-art work. With
+  `ACP_STATE.quantBar = TRUE` a **Quantize Steps slider** sits between the wheel
+  and the shade rows (0 = off at the left end, 2..`ACP_QUANT_MAX` = 32); dragging
+  it raises `ACP_STATE.quantChanged` for one poll so the host can persist it. The
+  slider is one row (`ACP_QUANT_ROW_H`): the host draws its label and value text
+  in it at `ACP_quant_row_y%` and keeps room for them with
+  `ACP_STATE.quantInsetL` / `quantInsetR`; the widget draws the track between.
 - **Custom background** — draw the wheel + shades on any colour (`ACP_STATE.bgColor`).
 - **Color history** — a recent-colours strip; `ACP_history_push` dedups to the front.
 
@@ -72,6 +78,7 @@ vertices → S/V, value→marker→pick round-trip).
 | `ACP_set_shade_line idx, dH, dS, dV, sH, sS, sV` | Configure a shade line (delta + shift) |
 | `ACP_apply_shade_layout` | Recompute height + realloc after changing the line count |
 | `ACP_set_quantize steps%` | Set quantize steps (rebuilds the ring) |
+| `ACP_quant_area_h%` / `ACP_quant_row_y%` / `ACP_quant_track_rect x1, y1, x2, y2` | Quantize slider geometry (native px; 0 height when `quantBar` is off) |
 | `ACP_history_push col~&` / `ACP_history_clear` | Manage the colour history |
 | `ACP_cleanup` | Free all images |
 

@@ -18,6 +18,7 @@ CONST ACP_DRAG_NONE     = 0
 CONST ACP_DRAG_RING     = 1                                    ' Picking hue from the ring
 CONST ACP_DRAG_TRIANGLE = 2                                    ' Picking saturation + value in the triangle
 CONST ACP_DRAG_NEIGHBOR = 3                                    ' Dragging a hue-neighbor range marker on the ring
+CONST ACP_DRAG_QUANT    = 4                                    ' Dragging the quantize-steps slider
 
 ' --- Default geometry (native pixels, before upscale) ------------------------
 CONST ACP_RING_OUTER = 150                                     ' Ring outer radius
@@ -36,6 +37,11 @@ CONST ACP_SHADE_PATCHES     = 9                                ' default patches
 CONST ACP_SHADE_PATCH_H     = 13                               ' patch height (native px)
 CONST ACP_SHADE_GAP         = 3                                ' gap between rows / side margin (native px)
 CONST ACP_SHADE_ROW_LABEL_H = 15                               ' per-row label height (text + padding above the patches, native px)
+
+' Quantize-steps slider between the wheel and the shade rows (optional).
+CONST ACP_QUANT_MAX     = 32                                   ' slider range 0 (off) .. 32 steps
+CONST ACP_QUANT_ROW_H   = 10                                   ' slider row height: label | track | value (native px)
+CONST ACP_QUANT_TUCK    = 6                                    ' the row starts this far up, in the wheel's bottom padding
 
 ' Per-line config (Krita model): each line spreads the current color across the
 ' row by delta (c*delta, c in [-1,+1]) and offsets the whole line by shift.
@@ -114,6 +120,10 @@ TYPE ACP_STATE_OBJ
     ' --- Quantize to steps (0 = off): snaps triangle S/V and ring hue to N
     '     discrete steps, and renders them banded so the steps are visible. ---
     quantizeSteps AS INTEGER
+    quantBar      AS INTEGER    ' TRUE = show the quantize-steps slider under the wheel (host-set)
+    quantInsetL   AS INTEGER    ' room the host keeps left / right of the track for its
+    quantInsetR   AS INTEGER    '   label and value text (native px, host-set)
+    quantChanged  AS INTEGER    ' TRUE for one poll after the slider changed quantizeSteps
 
     ' --- Background the wheel + shades are drawn onto (host-set; default set in
     '     ACP_init). Krita's "custom selector background" for theme-matched work. ---
