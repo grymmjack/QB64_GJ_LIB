@@ -348,6 +348,8 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
     TI_lastClickX    = px
     TI_lastClickY    = py
 
+    DIM wasFocused AS INTEGER
+    wasFocused = (TI_focusedId = hitId)
     TI_set_focus hitId
 
     ' --- Position cursor at click location ---
@@ -445,6 +447,11 @@ SUB TI_process_mouse (px AS INTEGER, py AS INTEGER, justPressed AS INTEGER)
             TI_inputs(hitId).selEnd    = LEN(t)
             TI_inputs(hitId).cursorPos = LEN(t)
     END SELECT
+
+    ' autoSelect: the click that gives the box focus selects all, so typing
+    ' replaces the text (the single-click case above had just cleared the
+    ' selection TI_set_focus made). A full box with maxLen took no typing.
+    IF wasFocused = 0 _ANDALSO TI_inputs(hitId).autoSelect _ANDALSO TI_clickCount = 1 THEN TI_select_all hitId
 
     TI_inputs(hitId).dirty = -1
 END SUB
