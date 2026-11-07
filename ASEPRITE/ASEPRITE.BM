@@ -1651,13 +1651,33 @@ END SUB
 
 
 ''
-' Load pixel data from only a specific layer
+' Load pixel data from only a specific layer, first frame
 '
 ' @param aseprite_img AS ASEPRITE_IMAGE The base ASEPRITE image data
 ' @param target_layer_index AS INTEGER The layer index to load (0-based)
 ' @return LONG Image handle containing only the specified layer's pixel data, or 0 on failure
 ''
 FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_layer_index AS INTEGER)
+    load_specific_layer_image& = load_layer_frame_image&(aseprite_img, target_layer_index, 0)
+END FUNCTION
+
+
+''
+' Load one layer's cel on one frame, alpha kept exactly.
+' (It used to paint the layer's cel from EVERY frame into one image, so an
+' animated file loaded with all its frames on top of each other; and it blended
+' each pixel onto the cleared image, so part-transparent pixels came out darker:
+' 50% red over white gave BE7F7F, not FF7F7F.) A linked cel loads the frame it
+' links to.
+'
+' @param aseprite_img AS ASEPRITE_IMAGE The base ASEPRITE image data
+' @param target_layer_index AS INTEGER The layer index to load (0-based)
+' @param frame_index AS INTEGER The frame to load (0-based)
+' @return LONG Image handle with that layer's pixels on that frame, or 0 when it has no cel there
+''
+FUNCTION load_layer_frame_image& (aseprite_img AS ASEPRITE_IMAGE, target_layer_index AS INTEGER, frame_index AS INTEGER)
+    DIM link_frame      AS LONG
+    DIM linked_to       AS _UNSIGNED INTEGER
     DIM file_handle     AS INTEGER
     DIM frame_header    AS ASEPRITE_FRAME_HEADER
     DIM chunk_header    AS ASEPRITE_CHUNK_HEADER
@@ -1674,7 +1694,9 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     
     IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Starting load_specific_layer_image for layer " + STR$(target_layer_index)
     
-    load_specific_layer_image& = 0            ' Default to failure
+    load_layer_frame_image& = 0               ' Default to failure
+    link_frame = -1
+    IF frame_index < 0 _ORELSE frame_index >= aseprite_img.header.num_frames THEN EXIT FUNCTION
     
     ' Create image to hold the layer data
     image_handle = _NEWIMAGE(aseprite_img.header.width, aseprite_img.header.height, 32)
@@ -1683,13 +1705,13 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
       EXIT FUNCTION
     END IF
     
-    ' Clear with transparent background using _CLEARCOLOR
+    ' Transparent, and pixels written as they are (no blending onto what's there)
     DIM old_dest AS LONG
     old_dest = _DEST
     _DEST image_handle
-    CLS , _RGB32(0, 0, 0)                     ' Fill with black
-    _CLEARCOLOR _RGB32(0, 0, 0), image_handle ' Make black transparent
+    CLS , _RGBA32(0, 0, 0, 0)
     _DEST old_dest
+    _DONTBLEND image_handle
     
     ' Open file for reading
     file_handle = FREEFILE
@@ -1735,8 +1757,8 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
             ' Calculate where the next chunk should start
             next_chunk_pos = chunk_start_pos + chunk_header.chunk_size
             
-            ' Check if this is a CEL chunk
-            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL THEN
+            ' Check if this is a CEL chunk (only the wanted frame's)
+            IF chunk_header.chunk_type = ASEPRITE_CHUNK_CEL _ANDALSO frame_num = frame_index THEN
                 ' Read CEL chunk data
                 GET #file_handle, , cel_chunk
                 
@@ -1771,6 +1793,10 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
                                 IF ASEPRITE_DEBUG_MODE THEN _ECHO "      Compressed pixel data loaded for layer " + STR$(target_layer_index)
                             END IF
                             
+                        CASE ASEPRITE_CEL_LINKED     ' Linked cel (type 1): the same cel as an earlier frame
+                            GET #file_handle, , linked_to
+                            link_frame = linked_to
+                            
                         CASE ELSE
                             ' Skip unsupported CEL types
                     END SELECT
@@ -1787,6 +1813,7 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
             SEEK #file_handle, next_chunk_pos
         NEXT chunk_num
         
+        IF frame_num = frame_index THEN EXIT FOR
         ' Move to next frame position
         frame_start_pos = frame_start_pos + frame_header.num_bytes
         
@@ -1794,8 +1821,15 @@ FUNCTION load_specific_layer_image& (aseprite_img AS ASEPRITE_IMAGE, target_laye
     
     CLOSE #file_handle
     
+    ' a linked cel: load the frame it links to (always an earlier one)
+    IF link_frame >= 0 _ANDALSO link_frame < frame_index THEN
+        QB64_GJ_SAFE_FREE_IMAGE image_handle
+        load_layer_frame_image& = load_layer_frame_image&(aseprite_img, target_layer_index, link_frame)
+        EXIT FUNCTION
+    END IF
+    
     IF chunks_found > 0 THEN
-        load_specific_layer_image& = image_handle
+        load_layer_frame_image& = image_handle
         IF ASEPRITE_DEBUG_MODE THEN _ECHO "  Debug: Successfully loaded " + STR$(chunks_found) + " CEL chunks for layer " + STR$(target_layer_index)
     ELSE
         QB64_GJ_SAFE_FREE_IMAGE image_handle
