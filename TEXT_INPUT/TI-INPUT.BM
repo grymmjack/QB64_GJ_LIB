@@ -35,6 +35,21 @@ FUNCTION TI__eff_fontW% (id AS INTEGER)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
+' TI__glyph_widths% — Does this widget measure text by its real glyph widths?
+'
+' Yes when it is marked proportional, and also for a ONE-LINE widget with its
+' own font (theme.fontHandle): those always drew their text as one string at
+' the font's real widths, with caret and selection from _PRINTWIDTH, so their
+' glyphs must not be placed on fixed fontW cells (that spread the letters out
+' in the file dialog's path / filename boxes). A multiline widget with a font
+' but not marked proportional keeps its fixed cells.
+' --------------------------------------------------------------------------
+FUNCTION TI__glyph_widths% (id AS INTEGER)
+    IF TI_inputs(id).proportional THEN TI__glyph_widths% = -1: EXIT FUNCTION
+    IF TI_inputs(id).multiline = 0 _ANDALSO TI_inputs(id).theme.fontHandle > 0 THEN TI__glyph_widths% = -1
+END FUNCTION
+
+' --------------------------------------------------------------------------
 ' TI__px_width% — Pixel width of the first n characters of s$
 '
 ' Fixed-pitch widgets keep the original n * fontW answer, so nothing changes
@@ -57,7 +72,7 @@ FUNCTION TI__px_width% (id AS INTEGER, s AS STRING, n AS INTEGER)
         EXIT FUNCTION
     END IF
 
-    IF NOT TI_inputs(id%).proportional THEN
+    IF TI__glyph_widths%(id%) = 0 THEN
         TI__px_width% = cnt% * TI__eff_fontW%(id%)
         EXIT FUNCTION
     END IF
@@ -127,7 +142,7 @@ FUNCTION TI__col_at_px% (id AS INTEGER, s AS STRING, px AS INTEGER)
         EXIT FUNCTION
     END IF
 
-    IF NOT TI_inputs(id%).proportional THEN
+    IF TI__glyph_widths%(id%) = 0 THEN
         fw%            = TI__eff_fontW%(id%) : IF fw% < 1 THEN fw% = 8
         TI__col_at_px% = px% \ fw%
         EXIT FUNCTION
