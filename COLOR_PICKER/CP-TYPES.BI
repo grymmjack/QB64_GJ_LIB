@@ -62,6 +62,10 @@ TYPE CP_STATE_OBJ
     dialogY AS INTEGER
     dialogW AS INTEGER
     dialogH AS INTEGER
+    fitW    AS INTEGER ' host-requested size (0 = natural): wider stretches the
+    fitH    AS INTEGER '   SV field + rows, taller grows the SV field (CP_layout_calculate)
+    natW    AS INTEGER ' the natural size, set by CP_layout_calculate
+    natH    AS INTEGER
 
     ' SV square layout (relative to dialog)
     svX AS INTEGER

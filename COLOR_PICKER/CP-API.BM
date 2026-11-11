@@ -447,9 +447,13 @@ END SUB
 
 ' --------------------------------------------------------------------------
 ' CP_layout_calculate — Size and position the dialog
+' Natural size from the theme; a host can ask for a bigger one with
+' CP_STATE.fitW / fitH (0 = natural): wider stretches the SV field, the
+' sliders, the hex input and the chip rows; taller grows the SV field (to
+' 1.5x its width at most). CP_STATE.natW / natH keep the natural size.
 ' --------------------------------------------------------------------------
 SUB CP_layout_calculate
-    DIM contentW AS INTEGER
+    DIM contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER
 
     ' SV square + gap + hue bar
     contentW = CP_THEME.svSize% + CP_THEME.hueGap% + CP_THEME.hueBarW%
@@ -460,8 +464,39 @@ SUB CP_layout_calculate
     IF btnBarW > contentW THEN contentW = btnBarW
 
     ' Dialog width
-    CP_STATE.dialogW = CP_THEME.padding% * 2 + contentW
+    CP_STATE.natW = CP_THEME.padding% * 2 + contentW
+    CP_STATE.dialogW = CP_STATE.natW
+    IF CP_STATE.fitW > CP_STATE.dialogW THEN
+        CP_STATE.dialogW = CP_STATE.fitW
+        contentW = CP_STATE.dialogW - CP_THEME.padding% * 2
+    END IF
+    svW = contentW - CP_THEME.hueGap% - CP_THEME.hueBarW%
+    IF svW < CP_THEME.svSize% THEN svW = CP_THEME.svSize%
+    svH = CP_THEME.svSize%
+    ' taller: everything below the SV field moves down by what it grows
+    CP_STATE.natH = CP_layout_rows%(contentW, svW, svH)
+    IF CP_STATE.fitH > CP_STATE.natH THEN
+        svH = svH + CP_STATE.fitH - CP_STATE.natH
+        IF svH > svW * 3 \ 2 THEN svH = svW * 3 \ 2
+        IF svH < CP_THEME.svSize% THEN svH = CP_THEME.svSize%
+        CP_STATE.dialogH = CP_layout_rows%(contentW, svW, svH)
+    END IF
 
+    ' Center on screen
+    DIM scrW AS INTEGER, scrH AS INTEGER
+    scrW             = _WIDTH(0) \ CP_STATE.scale
+    scrH             = _HEIGHT(0) \ CP_STATE.scale
+    CP_STATE.dialogX = (scrW - CP_STATE.dialogW) \ 2
+    CP_STATE.dialogY = (scrH - CP_STATE.dialogH) \ 2
+    IF CP_STATE.dialogX < 0 THEN CP_STATE.dialogX = 0
+    IF CP_STATE.dialogY < 0 THEN CP_STATE.dialogY = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' CP_layout_rows% — Lay the rows out for a contentW wide body with a
+' svW x svH SV field; sets CP_STATE.dialogH and returns it.
+' --------------------------------------------------------------------------
+FUNCTION CP_layout_rows% (contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER)
     ' Calculate vertical layout
     DIM y AS INTEGER
     y = CP_THEME.titleBarH% + CP_THEME.padding%
@@ -469,16 +504,16 @@ SUB CP_layout_calculate
     ' SV square
     CP_STATE.svX = CP_THEME.padding%
     CP_STATE.svY = y
-    CP_STATE.svW = CP_THEME.svSize%
-    CP_STATE.svH = CP_THEME.svSize%
+    CP_STATE.svW = svW
+    CP_STATE.svH = svH
 
     ' Hue bar (same height as SV square, to its right)
-    CP_STATE.hueBarX = CP_STATE.svX + CP_THEME.svSize% + CP_THEME.hueGap%
+    CP_STATE.hueBarX = CP_STATE.svX + svW + CP_THEME.hueGap%
     CP_STATE.hueBarY = y
     CP_STATE.hueBarW = CP_THEME.hueBarW%
-    CP_STATE.hueBarH = CP_THEME.svSize%
+    CP_STATE.hueBarH = svH
 
-    y = y + CP_THEME.svSize% + CP_THEME.sectionGap%
+    y = y + svH + CP_THEME.sectionGap%
 
     ' Preview swatches
     CP_STATE.previewY    = y
@@ -536,16 +571,8 @@ SUB CP_layout_calculate
 
     ' Dialog height
     CP_STATE.dialogH = y + CP_THEME.buttonBarH%
-
-    ' Center on screen
-    DIM scrW AS INTEGER, scrH AS INTEGER
-    scrW             = _WIDTH(0) \ CP_STATE.scale
-    scrH             = _HEIGHT(0) \ CP_STATE.scale
-    CP_STATE.dialogX = (scrW - CP_STATE.dialogW) \ 2
-    CP_STATE.dialogY = (scrH - CP_STATE.dialogH) \ 2
-    IF CP_STATE.dialogX < 0 THEN CP_STATE.dialogX = 0
-    IF CP_STATE.dialogY < 0 THEN CP_STATE.dialogY = 0
-END SUB
+    CP_layout_rows% = CP_STATE.dialogH
+END FUNCTION
 
 ' ==========================================================================
 ' COLOR SYNC — Keep HSV, RGB, HSL, hex in sync

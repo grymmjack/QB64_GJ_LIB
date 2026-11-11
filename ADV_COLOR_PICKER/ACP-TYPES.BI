@@ -29,8 +29,8 @@ CONST ACP_PADDING    = 8                                       ' Padding around 
 ' --- Shade selector: rows of patches below the wheel -------------------------
 ' Each row spreads the current color along one HSV axis (row 0 = value,
 ' 1 = saturation, 2 = hue), symmetric around the current color (centre patch =
-' current). The wheel occupies a w x w square on top; the shade rows sit in the
-' extra (h - w) height below it.
+' current). The wheel occupies a wheel x wheel square (centred, wheel = w by
+' default - see ACP_resize) on top; the shade rows sit below it, full width.
 CONST ACP_SHADE_ROWS        = 3                                ' default line count (Basic set)
 CONST ACP_SHADE_MAX_LINES   = 12                               ' hard cap on shade lines
 CONST ACP_SHADE_PATCHES     = 9                                ' default patches per row (odd -> a true centre patch)
@@ -73,6 +73,8 @@ TYPE ACP_STATE_OBJ
     ' --- Widget geometry (native pixels; origin 0,0 is top-left of imgHandle) ---
     w      AS INTEGER           ' Widget width
     h      AS INTEGER           ' Widget height
+    wheel  AS INTEGER           ' Wheel square (<= w, centred; = w unless ACP_resize asked otherwise)
+    patchH AS INTEGER           ' Shade patch height (0 = ACP_SHADE_PATCH_H; ACP_resize)
     cx     AS SINGLE            ' Wheel center X
     cy     AS SINGLE            ' Wheel center Y
     ringRo AS SINGLE            ' Ring outer radius

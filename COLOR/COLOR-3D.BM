@@ -68,6 +68,27 @@ SUB C3D_cleanup
 END SUB
 
 ''
+' Resize a created widget: nativeW wide (>= 160) with a viewH tall 3D view
+' (0 = square, as C3D_init makes it). The rows below follow; C3D_STATE.h
+' changes - re-read it. View, rotation and color are kept.
+'
+SUB C3D_resize (nativeW AS INTEGER, viewH AS INTEGER)
+    DIM w AS INTEGER, vh AS INTEGER
+    w = nativeW: IF w < 160 THEN w = 160
+    vh = viewH: IF vh < 1 THEN vh = w
+    IF C3D_STATE.imgHandle < -1 _ANDALSO w = C3D_STATE.w _ANDALSO vh = C3D_STATE.vh THEN EXIT SUB
+    C3D_STATE.w = w: C3D_STATE.vh = vh
+    C3D_layout
+    IF C3D_STATE.imgHandle < -1 THEN _FREEIMAGE C3D_STATE.imgHandle
+    C3D_STATE.imgHandle = _NEWIMAGE(C3D_STATE.w, C3D_STATE.h, 32)
+    IF C3D_STATE.font > 0 THEN _FONT C3D_STATE.font, C3D_STATE.imgHandle ELSE _FONT 8, C3D_STATE.imgHandle
+    REDIM C3D_cbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS _UNSIGNED LONG
+    REDIM C3D_pbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS _UNSIGNED LONG
+    REDIM C3D_zbuf(0 TO C3D_STATE.w * C3D_STATE.vh - 1) AS SINGLE
+    C3D_STATE.dirty = -1
+END SUB
+
+''
 ' Row positions and total height from the current row/slider/line heights.
 '
 SUB C3D_layout
