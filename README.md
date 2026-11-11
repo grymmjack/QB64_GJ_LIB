@@ -35,6 +35,7 @@ in it's current state.
 | [PSD](PSD/README.md) | Adds PSD Photoshop file support to QB64 | 8-bit Only |
 | [STEAM](STEAM/README.md) | Steam achievements + stats | **Steamworks achievements and stats** for QB64-PE on Windows, macOS and Linux: loads Valve's `steam_api` at runtime (no SDK or build flags), with a **mock backend** (in-memory / save file) when Steam isn't available. Includes a **Steam Direct shipping guide**, a guided **end-to-end check** against the real Steam client (`STEAM-TEST --e2e`) and a **SteamPipe upload kit**; test program, example, native unit test |
 | [STRINGS](STRINGS/README.md) | Strings library for lazy programmers | Includes a lot of batteries and helpers for arrays, finding, parsing, etc. |
+| [SWATCH](SWATCH/README.md) | Swatch sets | Load / save **Photoshop .aco** (RGB/HSB/CMYK/Lab/gray), **.gpl** (with columns, gaps, locks, groups), .act, .pal, .hex, .txt; edit with **locks** (delete / move / sort / dedupe the selection), guess a layout's columns |
 | [SYS](SYS/README.md) | System stuff | Contains misc. helpful utils/tools |
 | [TEXT_INPUT](TEXT_INPUT/README.md) | Text Input Widget | Reusable text input with undo/redo, clipboard, selection, and multiline support |
 | [VECT2D](VECT2D/README.md) | 2D Vector support | Thanks to William Barnes and Evan Shortiss |

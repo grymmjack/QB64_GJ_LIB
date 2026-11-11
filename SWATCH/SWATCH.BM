@@ -1,0 +1,798 @@
+''
+' QB64_GJ_LIB
+' GRYMMJACK'S SWATCH LIB - implementation. See SWATCH.BI.
+'
+' @author Rick Christy <grymmjack@gmail.com>
+'
+$INCLUDEONCE
+
+' ============================================================================
+' The set
+' ============================================================================
+
+''
+' Empty the set (name and columns too).
+SUB SWS_clear ()
+    SWS_N = 0: SWS_COLS = 0: SWS_NAME = "": SWS_ERR = ""
+    REDIM SWS(1 TO 64) AS SWATCH_ENTRY
+END SUB
+
+''
+' Room for at least n entries.
+SUB SWS_ensure (n AS LONG)
+    DIM cap AS LONG
+    cap = UBOUND(SWS)
+    IF n <= cap THEN EXIT SUB
+    DO WHILE cap < n: cap = cap * 2: LOOP
+    REDIM _PRESERVE SWS(1 TO cap) AS SWATCH_ENTRY
+END SUB
+
+''
+' Append an entry; returns its index.
+FUNCTION SWS_add& (c AS _UNSIGNED LONG, nm AS STRING, kind AS INTEGER, flags AS INTEGER)
+    SWS_ensure SWS_N + 1
+    SWS_N = SWS_N + 1
+    SWS(SWS_N).c = c OR &HFF000000~&
+    SWS(SWS_N).kind = kind
+    SWS(SWS_N).flags = flags
+    SWS(SWS_N).sel = 0
+    SWS(SWS_N).nm = nm
+    SWS(SWS_N).grp = ""
+    SWS_add& = SWS_N
+END FUNCTION
+
+''
+' Insert an entry before index at (SWS_N + 1 = append).
+SUB SWS_insert (at AS LONG, c AS _UNSIGNED LONG, nm AS STRING, kind AS INTEGER, flags AS INTEGER)
+    DIM i AS LONG, p AS LONG
+    p = at
+    IF p < 1 THEN p = 1
+    IF p > SWS_N + 1 THEN p = SWS_N + 1
+    SWS_ensure SWS_N + 1
+    SWS_N = SWS_N + 1
+    FOR i = SWS_N TO p + 1 STEP -1
+        SWS(i) = SWS(i - 1)
+    NEXT i
+    SWS(p).c = c OR &HFF000000~&
+    SWS(p).kind = kind
+    SWS(p).flags = flags
+    SWS(p).sel = 0
+    SWS(p).nm = nm
+    SWS(p).grp = ""
+END SUB
+
+''
+' Remove the entry at index at.
+SUB SWS_remove (at AS LONG)
+    DIM i AS LONG
+    IF at < 1 _ORELSE at > SWS_N THEN EXIT SUB
+    FOR i = at TO SWS_N - 1
+        SWS(i) = SWS(i + 1)
+    NEXT i
+    SWS(SWS_N).nm = "": SWS(SWS_N).grp = ""
+    SWS_N = SWS_N - 1
+END SUB
+
+''
+' How many colors (not spacers / breaks) the set has.
+FUNCTION SWS_color_count& ()
+    DIM i AS LONG, n AS LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR THEN n = n + 1
+    NEXT i
+    SWS_color_count& = n
+END FUNCTION
+
+''
+' How many entries are selected.
+FUNCTION SWS_sel_count& ()
+    DIM i AS LONG, n AS LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).sel THEN n = n + 1
+    NEXT i
+    SWS_sel_count& = n
+END FUNCTION
+
+SUB SWS_select_none ()
+    DIM i AS LONG
+    FOR i = 1 TO SWS_N: SWS(i).sel = 0: NEXT i
+END SUB
+
+''
+' Select a..b (either order), skipping row breaks.
+SUB SWS_select_range (a AS LONG, b AS LONG)
+    DIM i AS LONG, lo AS LONG, hi AS LONG
+    lo = a: hi = b
+    IF lo > hi THEN SWAP lo, hi
+    IF lo < 1 THEN lo = 1
+    IF hi > SWS_N THEN hi = SWS_N
+    FOR i = lo TO hi
+        IF SWS(i).kind <> SWS_KIND_BREAK THEN SWS(i).sel = -1
+    NEXT i
+END SUB
+
+''
+' Is entry i locked?
+FUNCTION SWS_locked% (i AS LONG)
+    IF i < 1 _ORELSE i > SWS_N THEN EXIT FUNCTION
+    SWS_locked% = ((SWS(i).flags AND SWS_FLAG_LOCK) <> 0)
+END FUNCTION
+
+' ============================================================================
+' Edits that go around locked entries: they work on the unlocked entries in
+' order, then the locked ones go back in at their old indices.
+' ============================================================================
+
+''
+' Split the set: the unlocked entries into fr() (1 .. nf), the locked ones'
+' indices into li() (1 .. nl, ascending).
+SUB SWS_split_locks (fr() AS SWATCH_ENTRY, nf AS LONG, li() AS LONG, nl AS LONG)
+    DIM i AS LONG
+    nf = 0: nl = 0
+    REDIM fr(1 TO _MAX(1, SWS_N)) AS SWATCH_ENTRY
+    REDIM li(1 TO _MAX(1, SWS_N)) AS LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).flags AND SWS_FLAG_LOCK THEN
+            nl = nl + 1: li(nl) = i
+        ELSE
+            nf = nf + 1: fr(nf) = SWS(i)
+        END IF
+    NEXT i
+END SUB
+
+''
+' Rebuild the set from the unlocked entries fr() (1 .. nf) and put each locked
+' entry (old copy in lk(), at index li()) back at its index.
+SUB SWS_join_locks (fr() AS SWATCH_ENTRY, nf AS LONG, lk() AS SWATCH_ENTRY, li() AS LONG, nl AS LONG)
+    DIM total AS LONG, i AS LONG, k AS LONG, j AS LONG
+    total = nf + nl
+    SWS_ensure total
+    j = 1: k = 1
+    FOR i = 1 TO total
+        IF k <= nl _ANDALSO li(k) = i THEN
+            SWS(i) = lk(k): k = k + 1
+        ELSEIF j <= nf THEN
+            SWS(i) = fr(j): j = j + 1
+        ELSE
+            SWS(i) = lk(k): k = k + 1 ' a locked entry past the end of what is left
+        END IF
+    NEXT i
+    SWS_N = total
+END SUB
+
+''
+' Copies of the locked entries, in index order (pairs with SWS_split_locks).
+SUB SWS_locked_copies (lk() AS SWATCH_ENTRY, li() AS LONG, nl AS LONG)
+    DIM k AS LONG
+    REDIM lk(1 TO _MAX(1, nl)) AS SWATCH_ENTRY
+    FOR k = 1 TO nl: lk(k) = SWS(li(k)): NEXT k
+END SUB
+
+''
+' Delete the selected entries (locked ones stay). Returns how many went.
+FUNCTION SWS_delete_selected& ()
+    DIM i AS LONG, n AS LONG, gone AS LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).sel = 0 _ORELSE (SWS(i).flags AND SWS_FLAG_LOCK) THEN
+            n = n + 1
+            IF n <> i THEN SWS(n) = SWS(i)
+        ELSE
+            gone = gone + 1
+        END IF
+    NEXT i
+    FOR i = n + 1 TO SWS_N: SWS(i).nm = "": SWS(i).grp = "": NEXT i
+    SWS_N = n
+    SWS_delete_selected& = gone
+END FUNCTION
+
+''
+' Move the selected (unlocked) entries, in order, to just before index toIdx
+' (1 .. SWS_N + 1) - scattered ones land together. Locked entries keep their
+' indices. They stay selected.
+SUB SWS_move_selected (toIdx AS LONG)
+    REDIM fr(1 TO 1) AS SWATCH_ENTRY, lk(1 TO 1) AS SWATCH_ENTRY, li(1 TO 1) AS LONG
+    DIM nf AS LONG, nl AS LONG, i AS LONG, nm AS LONG, nr AS LONG, before AS LONG, ins AS LONG
+    REDIM mv(1 TO 1) AS SWATCH_ENTRY, rs(1 TO 1) AS SWATCH_ENTRY, out2(1 TO 1) AS SWATCH_ENTRY
+    ' how many unmoved, unlocked entries sit before toIdx
+    FOR i = 1 TO SWS_N
+        IF i >= toIdx THEN EXIT FOR
+        IF (SWS(i).flags AND SWS_FLAG_LOCK) = 0 _ANDALSO SWS(i).sel = 0 THEN before = before + 1
+    NEXT i
+    SWS_split_locks fr(), nf, li(), nl
+    SWS_locked_copies lk(), li(), nl
+    REDIM mv(1 TO _MAX(1, nf)) AS SWATCH_ENTRY
+    REDIM rs(1 TO _MAX(1, nf)) AS SWATCH_ENTRY
+    FOR i = 1 TO nf
+        IF fr(i).sel THEN nm = nm + 1: mv(nm) = fr(i) ELSE nr = nr + 1: rs(nr) = fr(i)
+    NEXT i
+    IF nm = 0 THEN EXIT SUB
+    ins = before: IF ins > nr THEN ins = nr
+    REDIM out2(1 TO _MAX(1, nf)) AS SWATCH_ENTRY
+    FOR i = 1 TO ins: out2(i) = rs(i): NEXT i
+    FOR i = 1 TO nm: out2(ins + i) = mv(i): NEXT i
+    FOR i = ins + 1 TO nr: out2(nm + i) = rs(i): NEXT i
+    SWS_join_locks out2(), nf, lk(), li(), nl
+END SUB
+
+''
+' Copy the selected entries to just before toIdx (Ctrl+drag). The copies are
+' selected, the originals not.
+SUB SWS_copy_selected (toIdx AS LONG)
+    REDIM cp(1 TO 1) AS SWATCH_ENTRY
+    DIM n AS LONG, i AS LONG, p AS LONG
+    REDIM cp(1 TO _MAX(1, SWS_N)) AS SWATCH_ENTRY
+    FOR i = 1 TO SWS_N
+        IF SWS(i).sel _ANDALSO SWS(i).kind <> SWS_KIND_BREAK THEN n = n + 1: cp(n) = SWS(i)
+        SWS(i).sel = 0
+    NEXT i
+    p = toIdx
+    IF p < 1 THEN p = 1
+    IF p > SWS_N + 1 THEN p = SWS_N + 1
+    FOR i = 1 TO n
+        SWS_insert p + i - 1, cp(i).c, cp(i).nm, cp(i).kind, cp(i).flags AND NOT SWS_FLAG_LOCK
+        SWS(p + i - 1).sel = -1
+    NEXT i
+END SUB
+
+''
+' A color's sort key (SWS_SORT_*).
+FUNCTION SWS_sort_key# (c AS _UNSIGNED LONG, mode AS INTEGER)
+    DIM okL AS SINGLE, okC AS SINGLE, okH AS SINGLE
+    SELECT CASE mode
+        CASE SWS_SORT_HUE
+            CLR_rgb32_to_oklch c, okL, okC, okH
+            IF okC < 0.03 THEN SWS_sort_key# = -2 + okL ELSE SWS_sort_key# = okH ' grays first, dark to light
+        CASE SWS_SORT_LIGHT
+            CLR_rgb32_to_oklch c, okL, okC, okH: SWS_sort_key# = okL
+        CASE SWS_SORT_SAT
+            CLR_rgb32_to_oklch c, okL, okC, okH: SWS_sort_key# = okC
+        CASE ELSE ' SWS_SORT_LUMA
+            SWS_sort_key# = 0.2126 * _RED32(c) + 0.7152 * _GREEN32(c) + 0.0722 * _BLUE32(c)
+    END SELECT
+END FUNCTION
+
+''
+' Sort the colors in scope: the selected ones when 2 or more are selected,
+' else every color. Spacers, breaks and locked entries keep their places; the
+' sorted colors fill the scope's slots in order (a stable sort). mode 0 =
+' reverse them instead.
+SUB SWS_sort_selected (mode AS INTEGER)
+    DIM useSel AS INTEGER, i AS LONG, j AS LONG, n AS LONG
+    REDIM idx(1 TO 1) AS LONG, ent(1 TO 1) AS SWATCH_ENTRY, ky(1 TO 1) AS DOUBLE
+    DIM te AS SWATCH_ENTRY, tk AS DOUBLE
+    useSel = (SWS_sel_count& >= 2)
+    REDIM idx(1 TO _MAX(1, SWS_N)) AS LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR _ANDALSO (SWS(i).flags AND SWS_FLAG_LOCK) = 0 THEN
+            IF useSel = 0 _ORELSE SWS(i).sel THEN n = n + 1: idx(n) = i
+        END IF
+    NEXT i
+    IF n < 2 THEN EXIT SUB
+    REDIM ent(1 TO n) AS SWATCH_ENTRY
+    REDIM ky(1 TO n) AS DOUBLE
+    FOR i = 1 TO n
+        ent(i) = SWS(idx(i))
+        IF mode <> 0 THEN ky(i) = SWS_sort_key#(ent(i).c, mode)
+    NEXT i
+    IF mode = 0 THEN
+        FOR i = 1 TO n \ 2
+            te = ent(i): ent(i) = ent(n + 1 - i): ent(n + 1 - i) = te
+        NEXT i
+    ELSE
+        FOR i = 2 TO n ' insertion sort: stable
+            te = ent(i): tk = ky(i): j = i - 1
+            DO WHILE j >= 1
+                IF ky(j) <= tk THEN EXIT DO
+                ent(j + 1) = ent(j): ky(j + 1) = ky(j): j = j - 1
+            LOOP
+            ent(j + 1) = te: ky(j + 1) = tk
+        NEXT i
+    END IF
+    FOR i = 1 TO n: SWS(idx(i)) = ent(i): NEXT i
+END SUB
+
+''
+' Remove later copies of a color (unlocked ones). Returns how many went.
+FUNCTION SWS_remove_duplicates& ()
+    DIM i AS LONG, j AS LONG, gone AS LONG, n AS LONG, dup AS INTEGER
+    n = 0
+    FOR i = 1 TO SWS_N
+        dup = 0
+        IF SWS(i).kind = SWS_KIND_COLOR _ANDALSO (SWS(i).flags AND SWS_FLAG_LOCK) = 0 THEN
+            FOR j = 1 TO n
+                IF SWS(j).kind = SWS_KIND_COLOR _ANDALSO SWS(j).c = SWS(i).c THEN dup = -1: EXIT FOR
+            NEXT j
+        END IF
+        IF dup THEN
+            gone = gone + 1
+        ELSE
+            n = n + 1
+            IF n <> i THEN SWS(n) = SWS(i)
+        END IF
+    NEXT i
+    FOR i = n + 1 TO SWS_N: SWS(i).nm = "": SWS(i).grp = "": NEXT i
+    SWS_N = n
+    SWS_remove_duplicates& = gone
+END FUNCTION
+
+''
+' Turn pure-black filler into empty cells: Photoshop has no empty cell, so a
+' layout is padded with black swatches. keepFirst = the first black stays a
+' color (the set's real black). Trailing empty cells are dropped.
+SUB SWS_black_to_spaces (keepFirst AS INTEGER)
+    DIM i AS LONG, seen AS INTEGER
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR _ANDALSO (SWS(i).c AND &HFFFFFF~&) = 0 _ANDALSO (SWS(i).flags AND SWS_FLAG_LOCK) = 0 THEN
+            IF keepFirst _ANDALSO seen = 0 THEN
+                seen = -1
+            ELSE
+                SWS(i).kind = SWS_KIND_SPACE: SWS(i).nm = ""
+            END IF
+        END IF
+    NEXT i
+    DO WHILE SWS_N > 0
+        IF SWS(SWS_N).kind = SWS_KIND_COLOR THEN EXIT DO
+        SWS_N = SWS_N - 1
+    LOOP
+END SUB
+
+''
+' Guess the column count a layout was made for: the width at which entries
+' stacked on top of each other are most alike (ramps line up). 4..40; 16 when
+' there is too little to go on.
+FUNCTION SWS_guess_cols% ()
+    DIM k AS INTEGER, i AS LONG, pairs AS LONG, best AS INTEGER, bestScore AS DOUBLE, tot AS DOUBLE
+    DIM a AS _UNSIGNED LONG, b AS _UNSIGNED LONG, dr AS LONG, dg AS LONG, db AS LONG, kmax AS INTEGER
+    best = 16: bestScore = 1E+30
+    kmax = 40: IF kmax > SWS_N \ 2 THEN kmax = SWS_N \ 2
+    FOR k = 4 TO kmax
+        tot = 0: pairs = 0
+        FOR i = 1 TO SWS_N - k
+            IF SWS(i).kind = SWS_KIND_COLOR _ANDALSO SWS(i + k).kind = SWS_KIND_COLOR THEN
+                a = SWS(i).c: b = SWS(i + k).c
+                dr = _RED32(a) - _RED32(b): dg = _GREEN32(a) - _GREEN32(b): db = _BLUE32(a) - _BLUE32(b)
+                tot = tot + SQR(dr * dr + dg * dg + db * db): pairs = pairs + 1
+            END IF
+        NEXT i
+        IF pairs >= SWS_N \ 4 _ANDALSO pairs > 0 THEN
+            IF tot / pairs < bestScore - 0.0001 THEN bestScore = tot / pairs: best = k
+        END IF
+    NEXT k
+    SWS_guess_cols% = best
+END FUNCTION
+
+' ============================================================================
+' Snapshot (undo) - the whole set as text
+' ============================================================================
+
+FUNCTION SWS_snapshot$ ()
+    DIM s AS STRING, i AS LONG, lf AS STRING
+    lf = CHR$(10)
+    s = "SWS1" + lf + _TRIM$(STR$(SWS_COLS)) + lf + SWS_NAME + lf
+    FOR i = 1 TO SWS_N
+        s = s + HEX$(SWS(i).c) + "," + _TRIM$(STR$(SWS(i).kind)) + "," + _TRIM$(STR$(SWS(i).flags)) + "," + _TRIM$(STR$(SWS(i).sel <> 0)) + "," + SWS(i).grp + CHR$(1) + SWS(i).nm + lf
+    NEXT i
+    SWS_snapshot$ = s
+END FUNCTION
+
+SUB SWS_restore (snap AS STRING)
+    DIM p AS LONG, q AS LONG, ln AS STRING, ln2 AS STRING, f AS INTEGER, k AS LONG, idx AS LONG
+    DIM parts(1 TO 4) AS STRING, cut AS LONG
+    IF LEFT$(snap, 5) <> "SWS1" + CHR$(10) THEN EXIT SUB
+    SWS_N = 0
+    p = 6
+    q = INSTR(p, snap, CHR$(10)): SWS_COLS = VAL(MID$(snap, p, q - p)): p = q + 1
+    q = INSTR(p, snap, CHR$(10)): SWS_NAME = MID$(snap, p, q - p): p = q + 1
+    DO WHILE p <= LEN(snap)
+        q = INSTR(p, snap, CHR$(10))
+        IF q = 0 THEN q = LEN(snap) + 1
+        ln = MID$(snap, p, q - p): p = q + 1
+        IF LEN(ln) THEN
+            ln2 = ln
+            FOR f = 1 TO 4
+                k = INSTR(ln2, ",")
+                parts(f) = LEFT$(ln2, k - 1): ln2 = MID$(ln2, k + 1)
+            NEXT f
+            cut = INSTR(ln2, CHR$(1))
+            idx = SWS_add&(VAL("&H" + parts(1) + "~&"), MID$(ln2, cut + 1), VAL(parts(2)), VAL(parts(3)))
+            SWS(idx).sel = VAL(parts(4))
+            SWS(idx).grp = LEFT$(ln2, cut - 1)
+        END IF
+    LOOP
+END SUB
+
+' ============================================================================
+' Files
+' ============================================================================
+
+FUNCTION SWS_read_file$ (path AS STRING)
+    DIM fh AS INTEGER, buf AS STRING
+    IF _FILEEXISTS(path) = 0 THEN SWS_ERR = "not found: " + path: EXIT FUNCTION
+    fh = FREEFILE
+    OPEN path FOR BINARY AS #fh
+    buf = SPACE$(LOF(fh))
+    GET #fh, , buf
+    CLOSE #fh
+    SWS_read_file$ = buf
+END FUNCTION
+
+FUNCTION SWS_u16& (buf AS STRING, o AS LONG)
+    IF o + 1 > LEN(buf) THEN EXIT FUNCTION
+    SWS_u16& = ASC(buf, o) * 256& + ASC(buf, o + 1)
+END FUNCTION
+
+FUNCTION SWS_u32& (buf AS STRING, o AS LONG)
+    IF o + 3 > LEN(buf) THEN EXIT FUNCTION
+    SWS_u32& = ((ASC(buf, o) * 256& + ASC(buf, o + 1)) * 256& + ASC(buf, o + 2)) * 256& + ASC(buf, o + 3)
+END FUNCTION
+
+FUNCTION SWS_s16& (buf AS STRING, o AS LONG)
+    DIM v AS LONG
+    v = SWS_u16&(buf, o)
+    IF v >= 32768 THEN v = v - 65536
+    SWS_s16& = v
+END FUNCTION
+
+''
+' The file's name without folder or extension.
+FUNCTION SWS_base_name$ (path AS STRING)
+    DIM s AS STRING, k AS LONG
+    s = path
+    k = _INSTRREV(s, "/"): IF _INSTRREV(s, "\") > k THEN k = _INSTRREV(s, "\")
+    s = MID$(s, k + 1)
+    k = _INSTRREV(s, ".")
+    IF k > 1 THEN s = LEFT$(s, k - 1)
+    SWS_base_name$ = s
+END FUNCTION
+
+FUNCTION SWS_ext$ (path AS STRING)
+    DIM k AS LONG
+    k = _INSTRREV(path, ".")
+    IF k = 0 _ORELSE k < _INSTRREV(path, "/") _ORELSE k < _INSTRREV(path, "\") THEN EXIT FUNCTION
+    SWS_ext$ = LCASE$(MID$(path, k + 1))
+END FUNCTION
+
+''
+' Load any supported file (by extension). TRUE on success; the set is
+' replaced. SWS_COLS = the file's columns (0 = it has none: guess).
+FUNCTION SWS_load% (path AS STRING)
+    SELECT CASE SWS_ext$(path)
+        CASE "aco": SWS_load% = SWS_load_aco%(path)
+        CASE "gpl": SWS_load% = SWS_load_gpl%(path)
+        CASE "act": SWS_load% = SWS_load_act%(path)
+        CASE "pal": SWS_load% = SWS_load_pal%(path)
+        CASE "hex": SWS_load% = SWS_load_hex%(path)
+        CASE "txt": SWS_load% = SWS_load_txt%(path)
+        CASE ELSE: SWS_ERR = "not a swatch file: " + path
+    END SELECT
+END FUNCTION
+
+FUNCTION SWS_can_load% (path AS STRING)
+    SELECT CASE SWS_ext$(path)
+        CASE "aco", "gpl", "act", "pal", "hex", "txt": SWS_can_load% = -1
+    END SELECT
+END FUNCTION
+
+''
+' One Photoshop color record (color space + four 16-bit values) as RGB32.
+FUNCTION SWS_aco_color~& (sp AS LONG, w AS LONG, x AS LONG, y AS LONG, z AS LONG, xS AS LONG, yS AS LONG)
+    DIM r AS DOUBLE, g AS DOUBLE, b AS DOUBLE, hh AS DOUBLE, ss AS DOUBLE, vv AS DOUBLE
+    DIM f AS DOUBLE, p AS DOUBLE, q AS DOUBLE, t AS DOUBLE, hi AS INTEGER
+    SELECT CASE sp
+        CASE 0 ' RGB 0..65535
+            SWS_aco_color~& = _RGB32((w + 128) \ 257, (x + 128) \ 257, (y + 128) \ 257)
+        CASE 1 ' HSB: hue 0..65535 = 0..360, sat / brightness 0..65535
+            hh = (w / 65535#) * 6#: ss = x / 65535#: vv = y / 65535#
+            IF hh >= 6 THEN hh = 0
+            hi = INT(hh): f = hh - hi
+            p = vv * (1 - ss): q = vv * (1 - ss * f): t = vv * (1 - ss * (1 - f))
+            SELECT CASE hi
+                CASE 0: r = vv: g = t: b = p
+                CASE 1: r = q: g = vv: b = p
+                CASE 2: r = p: g = vv: b = t
+                CASE 3: r = p: g = q: b = vv
+                CASE 4: r = t: g = p: b = vv
+                CASE ELSE: r = vv: g = p: b = q
+            END SELECT
+            SWS_aco_color~& = _RGB32(INT(r * 255 + 0.5), INT(g * 255 + 0.5), INT(b * 255 + 0.5))
+        CASE 2 ' CMYK, stored inverted: 65535 = no ink. No color profile: a plain conversion
+            r = (w / 65535#) * (z / 65535#): g = (x / 65535#) * (z / 65535#): b = (y / 65535#) * (z / 65535#)
+            SWS_aco_color~& = _RGB32(INT(r * 255 + 0.5), INT(g * 255 + 0.5), INT(b * 255 + 0.5))
+        CASE 7 ' Lab: L 0..10000, a / b signed x100
+            SWS_aco_color~& = CLR_lab_to_rgb32(w / 100!, xS / 100!, yS / 100!) OR &HFF000000~&
+        CASE 8 ' grayscale 0..10000 (10000 = black)
+            vv = 1 - w / 10000#: IF vv < 0 THEN vv = 0
+            SWS_aco_color~& = _RGB32(INT(vv * 255 + 0.5), INT(vv * 255 + 0.5), INT(vv * 255 + 0.5))
+        CASE 9 ' wide CMYK 0..10000 = ink
+            r = (1 - w / 10000#) * (1 - z / 10000#): g = (1 - x / 10000#) * (1 - z / 10000#): b = (1 - y / 10000#) * (1 - z / 10000#)
+            SWS_aco_color~& = _RGB32(INT(r * 255 + 0.5), INT(g * 255 + 0.5), INT(b * 255 + 0.5))
+        CASE ELSE
+            SWS_aco_color~& = _RGB32(0, 0, 0)
+    END SELECT
+END FUNCTION
+
+''
+' UTF-16BE -> the 8-bit text DRAW draws (Latin-1; others become "?").
+FUNCTION SWS_utf16$ (buf AS STRING, o AS LONG, chars AS LONG)
+    DIM s AS STRING, i AS LONG, cp AS LONG
+    FOR i = 0 TO chars - 1
+        cp = SWS_u16&(buf, o + i * 2)
+        IF cp = 0 THEN EXIT FOR
+        IF cp < 256 THEN s = s + CHR$(cp) ELSE s = s + "?"
+    NEXT i
+    SWS_utf16$ = s
+END FUNCTION
+
+FUNCTION SWS_load_aco% (path AS STRING)
+    DIM buf AS STRING, o AS LONG, ver AS LONG, n AS LONG, i AS LONG, sp AS LONG
+    DIM w AS LONG, x AS LONG, y AS LONG, z AS LONG, nl AS LONG, nm AS STRING, idx AS LONG
+    buf = SWS_read_file$(path)
+    IF LEN(buf) < 4 THEN SWS_ERR = "empty or missing: " + path: EXIT FUNCTION
+    ver = SWS_u16&(buf, 1): n = SWS_u16&(buf, 3)
+    IF ver <> 1 _ANDALSO ver <> 2 THEN SWS_ERR = "not an .aco file: " + path: EXIT FUNCTION
+    o = 5
+    IF ver = 1 THEN
+        ' version 1 (no names); a version 2 block usually follows it
+        IF LEN(buf) >= o + n * 10 + 4 THEN
+            IF SWS_u16&(buf, o + n * 10) = 2 THEN
+                o = o + n * 10
+                ver = 2: n = SWS_u16&(buf, o + 2): o = o + 4
+            END IF
+        END IF
+    END IF
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    FOR i = 1 TO n
+        IF o + 9 > LEN(buf) THEN EXIT FOR
+        sp = SWS_u16&(buf, o)
+        w = SWS_u16&(buf, o + 2): x = SWS_u16&(buf, o + 4): y = SWS_u16&(buf, o + 6): z = SWS_u16&(buf, o + 8)
+        idx = SWS_add&(SWS_aco_color~&(sp, w, x, y, z, SWS_s16&(buf, o + 4), SWS_s16&(buf, o + 6)), "", SWS_KIND_COLOR, 0)
+        o = o + 10
+        IF ver = 2 THEN
+            nl = SWS_u32&(buf, o): o = o + 4
+            nm = SWS_utf16$(buf, o, nl)
+            o = o + nl * 2
+            IF SWS_auto_name%(nm) THEN nm = "" ' Photoshop's "Swatch 12": no name
+            SWS(idx).nm = nm
+        END IF
+    NEXT i
+    SWS_load_aco% = -1
+END FUNCTION
+
+''
+' Is nm one Photoshop made up for an unnamed swatch ("Swatch 12")?
+FUNCTION SWS_auto_name% (nm AS STRING)
+    DIM i AS LONG, t AS STRING
+    IF LEFT$(nm, 7) <> "Swatch " _ORELSE LEN(nm) < 8 THEN EXIT FUNCTION
+    t = MID$(nm, 8)
+    FOR i = 1 TO LEN(t)
+        IF INSTR("0123456789", MID$(t, i, 1)) = 0 THEN EXIT FUNCTION
+    NEXT i
+    SWS_auto_name% = -1
+END FUNCTION
+
+''
+' The next line of buf from position p (CR / LF / CRLF); p moves past it.
+FUNCTION SWS_next_line$ (buf AS STRING, p AS LONG)
+    DIM q AS LONG, r AS LONG
+    q = INSTR(p, buf, CHR$(10))
+    IF q = 0 THEN q = LEN(buf) + 1
+    r = q - 1
+    IF r >= p _ANDALSO MID$(buf, r, 1) = CHR$(13) THEN r = r - 1
+    SWS_next_line$ = MID$(buf, p, r - p + 1)
+    p = q + 1
+END FUNCTION
+
+FUNCTION SWS_load_gpl% (path AS STRING)
+    DIM buf AS STRING, p AS LONG, ln AS STRING, t AS STRING, k AS INTEGER, f AS INTEGER
+    DIM v(1 TO 3) AS LONG, idx AS LONG, pendFlags AS INTEGER, pendGrp AS STRING, nm AS STRING, cut AS LONG
+    buf = SWS_read_file$(path)
+    IF LEFT$(LTRIM$(buf), 12) <> "GIMP Palette" THEN SWS_ERR = "not a GIMP palette: " + path: EXIT FUNCTION
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    p = 1
+    ln = SWS_next_line$(buf, p) ' "GIMP Palette"
+    DO WHILE p <= LEN(buf)
+        ln = SWS_next_line$(buf, p)
+        t = LTRIM$(RTRIM$(ln))
+        IF LEN(t) = 0 THEN _CONTINUE
+        IF LEFT$(t, 5) = "Name:" THEN SWS_NAME = LTRIM$(MID$(t, 6)): _CONTINUE
+        IF LEFT$(t, 8) = "Columns:" THEN SWS_COLS = VAL(MID$(t, 9)): _CONTINUE
+        IF LEFT$(t, 5) = "#SWS:" THEN
+            t = MID$(t, 6)
+            SELECT CASE UCASE$(LEFT$(t, 5))
+                CASE "SPACE": idx = SWS_add&(0, "", SWS_KIND_SPACE, 0)
+                CASE "BREAK": idx = SWS_add&(0, "", SWS_KIND_BREAK, 0)
+                CASE "LOCK": pendFlags = pendFlags OR SWS_FLAG_LOCK
+                CASE "GROUP": pendFlags = pendFlags OR SWS_FLAG_GROUP: pendGrp = LTRIM$(MID$(t, 6))
+            END SELECT
+            _CONTINUE
+        END IF
+        IF LEFT$(t, 1) = "#" THEN _CONTINUE
+        ' "R G B<tab or spaces>name"
+        cut = 1
+        FOR f = 1 TO 3
+            DO WHILE cut <= LEN(ln) _ANDALSO (MID$(ln, cut, 1) = " " _ORELSE MID$(ln, cut, 1) = CHR$(9))
+                cut = cut + 1
+            LOOP
+            k = cut
+            DO WHILE cut <= LEN(ln) _ANDALSO INSTR("0123456789", MID$(ln, cut, 1)) > 0
+                cut = cut + 1
+            LOOP
+            IF cut = k THEN EXIT FOR
+            v(f) = VAL(MID$(ln, k, cut - k))
+        NEXT f
+        IF f <= 3 THEN _CONTINUE ' not a color line
+        nm = LTRIM$(RTRIM$(MID$(ln, cut)))
+        DO WHILE LEFT$(nm, 1) = CHR$(9): nm = MID$(nm, 2): LOOP
+        idx = SWS_add&(_RGB32(v(1), v(2), v(3)), nm, SWS_KIND_COLOR, pendFlags)
+        IF pendFlags AND SWS_FLAG_GROUP THEN SWS(idx).grp = pendGrp
+        pendFlags = 0: pendGrp = ""
+    LOOP
+    SWS_load_gpl% = -1
+END FUNCTION
+
+FUNCTION SWS_load_act% (path AS STRING)
+    DIM buf AS STRING, n AS LONG, i AS LONG, idx AS LONG
+    buf = SWS_read_file$(path)
+    IF LEN(buf) < 768 THEN SWS_ERR = "not an .act file: " + path: EXIT FUNCTION
+    n = 256
+    IF LEN(buf) >= 772 THEN
+        n = SWS_u16&(buf, 769)
+        IF n < 1 _ORELSE n > 256 THEN n = 256
+    END IF
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    SWS_COLS = 16
+    FOR i = 0 TO n - 1
+        idx = SWS_add&(_RGB32(ASC(buf, i * 3 + 1), ASC(buf, i * 3 + 2), ASC(buf, i * 3 + 3)), "", SWS_KIND_COLOR, 0)
+    NEXT i
+    SWS_load_act% = -1
+END FUNCTION
+
+FUNCTION SWS_load_pal% (path AS STRING)
+    DIM buf AS STRING, p AS LONG, ln AS STRING, n AS LONG, i AS LONG, idx AS LONG, o AS LONG
+    DIM r AS LONG, g AS LONG, b AS LONG, sp1 AS LONG, sp2 AS LONG
+    buf = SWS_read_file$(path)
+    IF LEFT$(buf, 4) = "RIFF" _ANDALSO MID$(buf, 9, 4) = "PAL " THEN
+        ' RIFF PAL: "data" chunk = version(2) count(2, LE) then r g b flags
+        o = INSTR(buf, "data")
+        IF o = 0 THEN SWS_ERR = "bad RIFF palette: " + path: EXIT FUNCTION
+        n = ASC(buf, o + 10) + ASC(buf, o + 11) * 256&
+        SWS_clear
+        SWS_NAME = SWS_base_name$(path)
+        o = o + 12
+        FOR i = 0 TO n - 1
+            IF o + 2 > LEN(buf) THEN EXIT FOR
+            idx = SWS_add&(_RGB32(ASC(buf, o), ASC(buf, o + 1), ASC(buf, o + 2)), "", SWS_KIND_COLOR, 0)
+            o = o + 4
+        NEXT i
+        SWS_load_pal% = -1
+        EXIT FUNCTION
+    END IF
+    IF LEFT$(buf, 8) <> "JASC-PAL" THEN SWS_ERR = "not a .pal file: " + path: EXIT FUNCTION
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    p = 1
+    ln = SWS_next_line$(buf, p) ' JASC-PAL
+    ln = SWS_next_line$(buf, p) ' 0100
+    n = VAL(SWS_next_line$(buf, p))
+    FOR i = 1 TO n
+        IF p > LEN(buf) THEN EXIT FOR
+        ln = LTRIM$(SWS_next_line$(buf, p))
+        sp1 = INSTR(ln, " "): IF sp1 = 0 THEN _CONTINUE
+        sp2 = INSTR(sp1 + 1, ln, " "): IF sp2 = 0 THEN _CONTINUE
+        r = VAL(LEFT$(ln, sp1 - 1)): g = VAL(MID$(ln, sp1 + 1, sp2 - sp1 - 1)): b = VAL(MID$(ln, sp2 + 1))
+        idx = SWS_add&(_RGB32(r, g, b), "", SWS_KIND_COLOR, 0)
+    NEXT i
+    SWS_load_pal% = -1
+END FUNCTION
+
+FUNCTION SWS_load_hex% (path AS STRING)
+    DIM buf AS STRING, p AS LONG, t AS STRING, idx AS LONG
+    buf = SWS_read_file$(path)
+    IF LEN(buf) = 0 THEN SWS_ERR = "empty or missing: " + path: EXIT FUNCTION
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    p = 1
+    DO WHILE p <= LEN(buf)
+        t = LTRIM$(RTRIM$(SWS_next_line$(buf, p)))
+        IF LEFT$(t, 1) = "#" THEN t = MID$(t, 2)
+        IF LEN(t) >= 6 THEN idx = SWS_add&(VAL("&H" + LEFT$(t, 6) + "~&"), "", SWS_KIND_COLOR, 0)
+    LOOP
+    SWS_load_hex% = (SWS_N > 0)
+    IF SWS_N = 0 THEN SWS_ERR = "no colors in " + path
+END FUNCTION
+
+FUNCTION SWS_load_txt% (path AS STRING)
+    DIM buf AS STRING, p AS LONG, t AS STRING, idx AS LONG
+    buf = SWS_read_file$(path)
+    IF LEN(buf) = 0 THEN SWS_ERR = "empty or missing: " + path: EXIT FUNCTION
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    p = 1
+    DO WHILE p <= LEN(buf)
+        t = LTRIM$(RTRIM$(SWS_next_line$(buf, p)))
+        IF LEFT$(t, 1) = ";" _ORELSE LEN(t) < 6 THEN _CONTINUE
+        IF LEN(t) >= 8 THEN t = MID$(t, 3, 6) ELSE t = LEFT$(t, 6) ' AARRGGBB
+        idx = SWS_add&(VAL("&H" + t + "~&"), "", SWS_KIND_COLOR, 0)
+    LOOP
+    SWS_load_txt% = (SWS_N > 0)
+    IF SWS_N = 0 THEN SWS_ERR = "no colors in " + path
+END FUNCTION
+
+''
+' Save as a GIMP palette (DRAW's own format for sets). Spacers, row breaks,
+' locks and groups go in "#SWS:" comment lines other programs skip.
+FUNCTION SWS_save_gpl% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG, c AS _UNSIGNED LONG, ln AS STRING
+    fh = FREEFILE
+    OPEN path FOR OUTPUT AS #fh
+    PRINT #fh, "GIMP Palette"
+    PRINT #fh, "Name: " + SWS_NAME
+    IF SWS_COLS > 0 THEN PRINT #fh, "Columns: " + _TRIM$(STR$(SWS_COLS))
+    PRINT #fh, "#"
+    FOR i = 1 TO SWS_N
+        SELECT CASE SWS(i).kind
+            CASE SWS_KIND_SPACE: PRINT #fh, "#SWS:SPACE"
+            CASE SWS_KIND_BREAK: PRINT #fh, "#SWS:BREAK"
+            CASE ELSE
+                IF SWS(i).flags AND SWS_FLAG_GROUP THEN PRINT #fh, "#SWS:GROUP " + SWS(i).grp
+                IF SWS(i).flags AND SWS_FLAG_LOCK THEN PRINT #fh, "#SWS:LOCK"
+                c = SWS(i).c
+                ln = RIGHT$("  " + _TRIM$(STR$(_RED32(c))), 3) + " " + RIGHT$("  " + _TRIM$(STR$(_GREEN32(c))), 3) + " " + RIGHT$("  " + _TRIM$(STR$(_BLUE32(c))), 3)
+                IF LEN(SWS(i).nm) THEN ln = ln + CHR$(9) + SWS(i).nm ELSE ln = ln + CHR$(9) + RIGHT$("000000" + HEX$(c AND &HFFFFFF~&), 6)
+                PRINT #fh, ln
+        END SELECT
+    NEXT i
+    CLOSE #fh
+    SWS_save_gpl% = -1
+END FUNCTION
+
+''
+' Save as a Photoshop .aco (version 1 + version 2 with names). RGB only;
+' spacers become black (Photoshop has no empty cell).
+FUNCTION SWS_save_aco% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG, n AS LONG, buf AS STRING, v AS INTEGER, j AS LONG, nm AS STRING
+    DIM c AS _UNSIGNED LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind <> SWS_KIND_BREAK THEN n = n + 1
+    NEXT i
+    FOR v = 1 TO 2
+        buf = buf + SWS_be16$(v) + SWS_be16$(n)
+        FOR i = 1 TO SWS_N
+            IF SWS(i).kind = SWS_KIND_BREAK THEN _CONTINUE
+            IF SWS(i).kind = SWS_KIND_COLOR THEN c = SWS(i).c ELSE c = 0
+            buf = buf + SWS_be16$(0) + SWS_be16$(_RED32(c) * 257&) + SWS_be16$(_GREEN32(c) * 257&) + SWS_be16$(_BLUE32(c) * 257&) + SWS_be16$(0)
+            IF v = 2 THEN
+                nm = SWS(i).nm
+                buf = buf + SWS_be16$(0) + SWS_be16$(LEN(nm) + 1)
+                FOR j = 1 TO LEN(nm): buf = buf + CHR$(0) + MID$(nm, j, 1): NEXT j
+                buf = buf + CHR$(0) + CHR$(0)
+            END IF
+        NEXT i
+    NEXT v
+    IF _FILEEXISTS(path) THEN KILL path
+    fh = FREEFILE
+    OPEN path FOR BINARY AS #fh
+    PUT #fh, , buf
+    CLOSE #fh
+    SWS_save_aco% = -1
+END FUNCTION
+
+FUNCTION SWS_be16$ (v AS LONG)
+    SWS_be16$ = CHR$((v \ 256) AND 255) + CHR$(v AND 255)
+END FUNCTION
+
+''
+' Save as Lospec .hex (colors only).
+FUNCTION SWS_save_hex% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG
+    fh = FREEFILE
+    OPEN path FOR OUTPUT AS #fh
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR THEN PRINT #fh, LCASE$(RIGHT$("000000" + HEX$(SWS(i).c AND &HFFFFFF~&), 6))
+    NEXT i
+    CLOSE #fh
+    SWS_save_hex% = -1
+END FUNCTION
