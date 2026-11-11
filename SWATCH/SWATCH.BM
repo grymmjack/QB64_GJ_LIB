@@ -463,13 +463,15 @@ FUNCTION SWS_load% (path AS STRING)
         CASE "pal": SWS_load% = SWS_load_pal%(path)
         CASE "hex": SWS_load% = SWS_load_hex%(path)
         CASE "txt": SWS_load% = SWS_load_txt%(path)
+        CASE "ase": SWS_load% = SWS_load_ase%(path)
+        CASE "png": SWS_load% = SWS_load_png%(path)
         CASE ELSE: SWS_ERR = "not a swatch file: " + path
     END SELECT
 END FUNCTION
 
 FUNCTION SWS_can_load% (path AS STRING)
     SELECT CASE SWS_ext$(path)
-        CASE "aco", "gpl", "act", "pal", "hex", "txt": SWS_can_load% = -1
+        CASE "aco", "gpl", "act", "pal", "hex", "txt", "ase", "png": SWS_can_load% = -1
     END SELECT
 END FUNCTION
 
@@ -795,4 +797,303 @@ FUNCTION SWS_save_hex% (path AS STRING)
     NEXT i
     CLOSE #fh
     SWS_save_hex% = -1
+END FUNCTION
+
+' ===========================================================================
+' More formats: Adobe Swatch Exchange (.ase), and saving .act / .pal / .txt;
+' PNG in (each distinct color, reading order) and out (the grid).
+' ===========================================================================
+
+''
+' Save the set by the file's extension (.gpl .aco .ase .act .pal .hex .txt
+' .png). PNG: SWS_COLS columns (16 if none), 8 px cells, 1 px gaps.
+FUNCTION SWS_save% (path AS STRING)
+    DIM cols AS INTEGER
+    SWS_ERR = ""
+    SELECT CASE SWS_ext$(path)
+        CASE "gpl": SWS_save% = SWS_save_gpl%(path)
+        CASE "aco": SWS_save% = SWS_save_aco%(path)
+        CASE "ase": SWS_save% = SWS_save_ase%(path)
+        CASE "act": SWS_save% = SWS_save_act%(path)
+        CASE "pal": SWS_save% = SWS_save_pal%(path)
+        CASE "hex": SWS_save% = SWS_save_hex%(path)
+        CASE "txt": SWS_save% = SWS_save_txt%(path)
+        CASE "png"
+            cols = SWS_COLS: IF cols < 1 THEN cols = 16
+            SWS_save% = SWS_save_png%(path, cols, 8, 1)
+        CASE ELSE: SWS_ERR = "can't save that kind of file: " + path
+    END SELECT
+END FUNCTION
+
+FUNCTION SWS_u32be$ (v AS _UNSIGNED LONG)
+    SWS_u32be$ = CHR$(_SHR(v, 24) AND 255) + CHR$(_SHR(v, 16) AND 255) + CHR$(_SHR(v, 8) AND 255) + CHR$(v AND 255)
+END FUNCTION
+
+' a big-endian float32 (ASE) at o / as 4 bytes
+FUNCTION SWS_cvf32be! (buf AS STRING, o AS LONG)
+    SWS_cvf32be! = CVS(MID$(buf, o + 3, 1) + MID$(buf, o + 2, 1) + MID$(buf, o + 1, 1) + MID$(buf, o, 1))
+END FUNCTION
+FUNCTION SWS_mkf32be$ (v AS SINGLE)
+    DIM s AS STRING
+    s = MKS$(v)
+    SWS_mkf32be$ = MID$(s, 4, 1) + MID$(s, 3, 1) + MID$(s, 2, 1) + MID$(s, 1, 1)
+END FUNCTION
+
+' an ASE name: length in UTF-16 units with the terminator, then the text
+FUNCTION SWS_ase_name$ (nm AS STRING)
+    DIM s AS STRING, j AS LONG
+    s = SWS_be16$(LEN(nm) + 1)
+    FOR j = 1 TO LEN(nm): s = s + CHR$(0) + MID$(nm, j, 1): NEXT j
+    SWS_ase_name$ = s + CHR$(0) + CHR$(0)
+END FUNCTION
+
+FUNCTION SWS_clamp255% (v AS DOUBLE)
+    IF v < 0 THEN v = 0
+    IF v > 1 THEN v = 1
+    SWS_clamp255% = INT(v * 255 + 0.5)
+END FUNCTION
+
+''
+' Adobe Swatch Exchange: "ASEF" 1.0, then blocks - C001 group start (name),
+' C002 group end, 0001 a color (name, model RGB / CMYK / LAB / Gray, floats,
+' type). A group starts on a row of its own (a row break before it) and its
+' first color carries the group label (SWS_FLAG_GROUP).
+FUNCTION SWS_load_ase% (path AS STRING)
+    DIM buf AS STRING, nb AS LONG, b AS LONG, o AS LONG, typ AS LONG, ln AS LONG, nl AS LONG
+    DIM nm AS STRING, model AS STRING, d AS LONG, c AS _UNSIGNED LONG, idx AS LONG
+    DIM pendGrp AS STRING, havePend AS INTEGER, k AS DOUBLE
+    buf = SWS_read_file$(path)
+    IF LEFT$(buf, 4) <> "ASEF" THEN SWS_ERR = "not an .ase file: " + path: EXIT FUNCTION
+    nb = SWS_u32&(buf, 9)
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    o = 13
+    FOR b = 1 TO nb
+        IF o + 5 > LEN(buf) THEN EXIT FOR
+        typ = SWS_u16&(buf, o): ln = SWS_u32&(buf, o + 2)
+        d = o + 6
+        SELECT CASE typ
+            CASE &HC001&
+                nl = SWS_u16&(buf, d)
+                pendGrp = SWS_utf16$(buf, d + 2, nl): havePend = -1
+                IF SWS_N > 0 THEN
+                    IF SWS(SWS_N).kind <> SWS_KIND_BREAK THEN idx = SWS_add&(0, "", SWS_KIND_BREAK, 0)
+                END IF
+            CASE &HC002&
+                havePend = 0
+            CASE &H0001
+                nl = SWS_u16&(buf, d)
+                nm = SWS_utf16$(buf, d + 2, nl)
+                d = d + 2 + nl * 2
+                model = MID$(buf, d, 4): d = d + 4
+                SELECT CASE model
+                    CASE "RGB "
+                        c = _RGB32(SWS_clamp255%(SWS_cvf32be!(buf, d)), SWS_clamp255%(SWS_cvf32be!(buf, d + 4)), SWS_clamp255%(SWS_cvf32be!(buf, d + 8)))
+                    CASE "CMYK"
+                        k = 1 - SWS_cvf32be!(buf, d + 12)
+                        c = _RGB32(SWS_clamp255%((1 - SWS_cvf32be!(buf, d)) * k), SWS_clamp255%((1 - SWS_cvf32be!(buf, d + 4)) * k), SWS_clamp255%((1 - SWS_cvf32be!(buf, d + 8)) * k))
+                    CASE "LAB "
+                        c = CLR_lab_to_rgb32(SWS_cvf32be!(buf, d) * 100!, SWS_cvf32be!(buf, d + 4), SWS_cvf32be!(buf, d + 8))
+                    CASE "Gray"
+                        k = SWS_cvf32be!(buf, d)
+                        c = _RGB32(SWS_clamp255%(k), SWS_clamp255%(k), SWS_clamp255%(k))
+                    CASE ELSE
+                        c = _RGB32(0, 0, 0)
+                END SELECT
+                idx = SWS_add&(c OR &HFF000000~&, nm, SWS_KIND_COLOR, 0)
+                IF havePend _ANDALSO LEN(pendGrp) THEN
+                    SWS(idx).flags = SWS(idx).flags OR SWS_FLAG_GROUP: SWS(idx).grp = pendGrp
+                    pendGrp = ""
+                END IF
+        END SELECT
+        o = o + 6 + ln
+    NEXT b
+    SWS_load_ase% = -1
+END FUNCTION
+
+''
+' Save as .ase: every color as RGB; a color with SWS_FLAG_GROUP starts a
+' group that runs to the next one. Empty cells, row breaks and locks are
+' not in the format.
+FUNCTION SWS_save_ase% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG, nb AS LONG, body AS STRING, blk AS STRING, inGrp AS INTEGER
+    DIM c AS _UNSIGNED LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind <> SWS_KIND_COLOR THEN _CONTINUE
+        IF (SWS(i).flags AND SWS_FLAG_GROUP) _ANDALSO LEN(SWS(i).grp) THEN
+            IF inGrp THEN body = body + SWS_be16$(&HC002&) + SWS_u32be$(0): nb = nb + 1
+            blk = SWS_ase_name$(SWS(i).grp)
+            body = body + SWS_be16$(&HC001&) + SWS_u32be$(LEN(blk)) + blk: nb = nb + 1
+            inGrp = -1
+        END IF
+        c = SWS(i).c
+        blk = SWS_ase_name$(SWS(i).nm) + "RGB " + SWS_mkf32be$(_RED32(c) / 255!) + SWS_mkf32be$(_GREEN32(c) / 255!) + SWS_mkf32be$(_BLUE32(c) / 255!) + SWS_be16$(2)
+        body = body + SWS_be16$(1) + SWS_u32be$(LEN(blk)) + blk: nb = nb + 1
+    NEXT i
+    IF inGrp THEN body = body + SWS_be16$(&HC002&) + SWS_u32be$(0): nb = nb + 1
+    IF _FILEEXISTS(path) THEN KILL path
+    fh = FREEFILE
+    OPEN path FOR BINARY AS #fh
+    body = "ASEF" + SWS_be16$(1) + SWS_be16$(0) + SWS_u32be$(nb) + body
+    PUT #fh, , body
+    CLOSE #fh
+    SWS_save_ase% = -1
+END FUNCTION
+
+''
+' Photoshop color table: 256 RGB triplets, the count, no transparent index.
+' Only the first 256 colors fit.
+FUNCTION SWS_save_act% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG, n AS LONG, buf AS STRING, c AS _UNSIGNED LONG
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR _ANDALSO n < 256 THEN
+            c = SWS(i).c: n = n + 1
+            buf = buf + CHR$(_RED32(c)) + CHR$(_GREEN32(c)) + CHR$(_BLUE32(c))
+        END IF
+    NEXT i
+    buf = buf + STRING$(768 - LEN(buf), 0) + SWS_be16$(n) + SWS_be16$(&HFFFF&)
+    IF _FILEEXISTS(path) THEN KILL path
+    fh = FREEFILE
+    OPEN path FOR BINARY AS #fh
+    PUT #fh, , buf
+    CLOSE #fh
+    SWS_save_act% = -1
+END FUNCTION
+
+' JASC / Paint Shop Pro palette
+FUNCTION SWS_save_pal% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG, n AS LONG, c AS _UNSIGNED LONG, crlf AS STRING
+    crlf = CHR$(13) + CHR$(10)
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR THEN n = n + 1
+    NEXT i
+    fh = FREEFILE
+    OPEN path FOR OUTPUT AS #fh
+    PRINT #fh, "JASC-PAL" + CHR$(13)
+    PRINT #fh, "0100" + CHR$(13)
+    PRINT #fh, _TRIM$(STR$(n)) + CHR$(13)
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR THEN
+            c = SWS(i).c
+            PRINT #fh, _TRIM$(STR$(_RED32(c))) + " " + _TRIM$(STR$(_GREEN32(c))) + " " + _TRIM$(STR$(_BLUE32(c))) + CHR$(13)
+        END IF
+    NEXT i
+    CLOSE #fh
+    SWS_save_pal% = -1
+END FUNCTION
+
+' Paint.NET palette: "; comments", then AARRGGBB per line
+FUNCTION SWS_save_txt% (path AS STRING)
+    DIM fh AS INTEGER, i AS LONG
+    fh = FREEFILE
+    OPEN path FOR OUTPUT AS #fh
+    PRINT #fh, "; paint.net Palette File"
+    PRINT #fh, "; " + SWS_NAME
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_COLOR THEN PRINT #fh, "FF" + RIGHT$("000000" + HEX$(SWS(i).c AND &HFFFFFF~&), 6)
+    NEXT i
+    CLOSE #fh
+    SWS_save_txt% = -1
+END FUNCTION
+
+''
+' Save the grid as a PNG: cols columns of cell x cell px, gap px apart; a row
+' break starts a new row, empty cells and the gaps are transparent.
+FUNCTION SWS_save_png% (path AS STRING, cols AS INTEGER, cell AS INTEGER, gap AS INTEGER)
+    DIM i AS LONG, r AS LONG, k AS LONG, rows AS LONG, img AS LONG, oldDest AS LONG
+    DIM w AS LONG, h AS LONG, x AS LONG, y AS LONG
+    IF cols < 1 THEN cols = 16
+    IF cell < 1 THEN cell = 8
+    IF gap < 0 THEN gap = 0
+    ' rows first
+    r = 0: k = 0
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_BREAK THEN
+            IF k > 0 THEN r = r + 1: k = 0
+        ELSE
+            IF k >= cols THEN r = r + 1: k = 0
+            k = k + 1
+        END IF
+    NEXT i
+    rows = r + 1: IF k = 0 _ANDALSO r > 0 THEN rows = r
+    w = cols * cell + (cols - 1) * gap: h = rows * cell + (rows - 1) * gap
+    IF w < 1 THEN w = 1
+    IF h < 1 THEN h = 1
+    img = _NEWIMAGE(w, h, 32)
+    IF img >= -1 THEN SWS_ERR = "no memory for the PNG": EXIT FUNCTION
+    oldDest = _DEST
+    _DEST img
+    CLS , _RGBA32(0, 0, 0, 0)
+    r = 0: k = 0
+    FOR i = 1 TO SWS_N
+        IF SWS(i).kind = SWS_KIND_BREAK THEN
+            IF k > 0 THEN r = r + 1: k = 0
+        ELSE
+            IF k >= cols THEN r = r + 1: k = 0
+            IF SWS(i).kind = SWS_KIND_COLOR THEN
+                x = k * (cell + gap): y = r * (cell + gap)
+                LINE (x, y)-(x + cell - 1, y + cell - 1), SWS(i).c OR &HFF000000~&, BF
+            END IF
+            k = k + 1
+        END IF
+    NEXT i
+    _DEST oldDest
+    IF _FILEEXISTS(path) THEN KILL path
+    _SAVEIMAGE path, img
+    _FREEIMAGE img
+    SWS_save_png% = _FILEEXISTS(path)
+END FUNCTION
+
+''
+' Load a PNG (any image QB64 reads): each distinct opaque color once, in
+' reading order. The columns = the colors on the first row that has any (a
+' grid saved by SWS_save_png% comes back laid out as it was, less its empty
+' cells). More than 1024 colors = not a swatch image.
+FUNCTION SWS_load_png% (path AS STRING)
+    DIM img AS LONG, oldSrc AS LONG, w AS LONG, h AS LONG, x AS LONG, y AS LONG
+    DIM c AS _UNSIGNED LONG, prev AS _UNSIGNED LONG, hp AS LONG, j AS LONG, idx AS LONG
+    DIM firstRow AS LONG, rowCols AS LONG, found AS INTEGER
+    DIM m AS _MEM, o AS _OFFSET
+    IF _FILEEXISTS(path) = 0 THEN SWS_ERR = "no such file: " + path: EXIT FUNCTION
+    img = _LOADIMAGE(path, 32)
+    IF img >= -1 THEN SWS_ERR = "not an image: " + path: EXIT FUNCTION
+    w = _WIDTH(img): h = _HEIGHT(img)
+    DIM hashHead(0 TO 4095) AS LONG
+    REDIM nxt(1 TO 1025) AS LONG
+    SWS_clear
+    SWS_NAME = SWS_base_name$(path)
+    firstRow = -1: prev = 1 ' (never a real color: alpha 0, blue 1)
+    m = _MEMIMAGE(img)
+    FOR y = 0 TO h - 1
+        FOR x = 0 TO w - 1
+            o = m.OFFSET + (y * w + x) * 4
+            c = _MEMGET(m, o, _UNSIGNED LONG)
+            IF _SHR(c, 24) < 128 _ORELSE c = prev THEN _CONTINUE
+            prev = c: c = c OR &HFF000000~&
+            IF firstRow < 0 THEN firstRow = y
+            hp = (c AND &HFFFFFF~&) MOD 4093
+            j = hashHead(hp): found = 0
+            DO WHILE j > 0
+                IF SWS(j).c = c THEN found = -1: EXIT DO
+                j = nxt(j)
+            LOOP
+            IF found = 0 THEN
+                IF SWS_N >= 1024 THEN
+                    _MEMFREE m: _FREEIMAGE img: SWS_clear
+                    SWS_ERR = "more than 1024 colors - not a swatch image: " + path
+                    EXIT FUNCTION
+                END IF
+                idx = SWS_add&(c, "", SWS_KIND_COLOR, 0)
+                nxt(idx) = hashHead(hp): hashHead(hp) = idx
+                IF y = firstRow THEN rowCols = rowCols + 1
+            END IF
+        NEXT x
+        prev = 1
+    NEXT y
+    _MEMFREE m
+    _FREEIMAGE img
+    IF SWS_N = 0 THEN SWS_ERR = "no opaque colors in " + path: EXIT FUNCTION
+    SWS_COLS = rowCols
+    IF SWS_COLS > 64 _ORELSE SWS_COLS < 1 THEN SWS_COLS = SWS_guess_cols%
+    SWS_load_png% = -1
 END FUNCTION

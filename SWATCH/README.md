@@ -8,10 +8,14 @@ data — no drawing — so it compiles and unit-tests headless.
 |------|:-----:|:------:|-------|
 | `.aco` Photoshop swatches | ✔ | ✔ | v1 + v2 (names). RGB, HSB, CMYK, Lab, grayscale, wide CMYK. No column count in the format. |
 | `.gpl` GIMP / Inkscape / Aseprite / Krita | ✔ | ✔ | `Columns:` + names. Spacers, breaks, locks and groups ride in `#SWS:` comment lines other programs skip. |
-| `.act` Photoshop color table | ✔ | | 768 bytes + optional count |
-| `.pal` JASC-PAL / RIFF PAL | ✔ | | |
+| `.ase` Adobe Swatch Exchange | ✔ | ✔ | Groups (a group starts a row), names. Reads RGB, CMYK, Lab, gray; writes RGB. |
+| `.act` Photoshop color table | ✔ | ✔ | 768 bytes + optional count |
+| `.pal` JASC-PAL / RIFF PAL | ✔ | ✔ | writes JASC |
 | `.hex` Lospec | ✔ | ✔ | one `RRGGBB` per line |
-| `.txt` Paint.NET | ✔ | | `AARRGGBB`, `;` comments |
+| `.txt` Paint.NET | ✔ | ✔ | `AARRGGBB`, `;` comments |
+| `.png` image | ✔ | ✔ | Reads each distinct opaque color in reading order (columns = colors on the first row; over 1024 colors is refused). Writes the grid: `SWS_save_png%(path, cols, cell, gap)`. |
+
+`SWS_save%(path)` picks the writer from the extension.
 
 ## Needs
 

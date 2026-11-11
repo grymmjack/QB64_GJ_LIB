@@ -222,8 +222,71 @@ check "paint.net txt", ok <> 0 _ANDALSO SWS_N = 2 _ANDALSO hx$(1) = "112233"
 
 ok = SWS_load%(tmpDir + "/missing.aco")
 check "missing file fails with a reason", ok = 0 _ANDALSO LEN(SWS_ERR) > 0
-ok = SWS_load%(tmpDir + "/rt.png")
-check "unknown extension fails", ok = 0 _ANDALSO SWS_can_load%("x.ACO") <> 0 _ANDALSO SWS_can_load%("x.png") = 0
+ok = SWS_load%(tmpDir + "/rt.xyz")
+check "unknown extension fails", ok = 0 _ANDALSO SWS_can_load%("x.ACO") <> 0 _ANDALSO SWS_can_load%("x.xyz") = 0 _ANDALSO SWS_can_load%("x.ase") <> 0 _ANDALSO SWS_can_load%("x.PNG") <> 0
+
+' --- .ase: groups, and every color model --------------------------------
+make_abc "ABCDE"
+SWS(3).flags = SWS_FLAG_GROUP: SWS(3).grp = "Warm"
+SWS(5).flags = SWS_FLAG_GROUP: SWS(5).grp = "Cool"
+ok = SWS_save%(tmpDir + "/g.ase")
+a = SWS_read_file$(tmpDir + "/g.ase")
+check "ase: saved by extension, ASEF 1.0", ok <> 0 _ANDALSO LEFT$(a, 8) = "ASEF" + CHR$(0) + CHR$(1) + CHR$(0) + CHR$(0)
+check "ase: 5 colors + 2 group starts + 2 ends = 9 blocks", SWS_u32&(a, 9) = 9
+ok = SWS_load%(tmpDir + "/g.ase")
+check "ase round trip: a group starts a row (A B | C D | E)", ok <> 0 _ANDALSO kinds$ = "CC|CC|C"
+check "ase round trip: colors + names", names$ = "ABCDE" _ANDALSO SWS(4).c = color_of~&("C") _ANDALSO SWS(7).c = color_of~&("E")
+check "ase round trip: group labels", (SWS(4).flags AND SWS_FLAG_GROUP) <> 0 _ANDALSO SWS(4).grp = "Warm" _ANDALSO SWS(7).grp = "Cool" _ANDALSO (SWS(5).flags AND SWS_FLAG_GROUP) = 0
+' hand-made blocks: CMYK pure red, Gray 50%, Lab L50 a0 b0, a spot RGB
+a = ase_color$("cm", "CMYK", f4$(0) + f4$(1) + f4$(1) + f4$(0)) + ase_color$("gr", "Gray", f4$(0.5)) + ase_color$("lb", "LAB ", f4$(0.5) + f4$(0) + f4$(0)) + ase_color$("sp", "RGB ", f4$(0) + f4$(0.5) + f4$(1))
+write_text tmpDir + "/m.ase", "ASEF" + be$(1) + be$(0) + be32$(4) + a
+ok = SWS_load%(tmpDir + "/m.ase")
+check "ase CMYK 0 1 1 0 = red", ok <> 0 _ANDALSO SWS_N = 4 _ANDALSO hx$(1) = "FF0000" _ANDALSO SWS(1).nm = "cm"
+check "ase Gray 0.5 = 808080", hx$(2) = "808080"
+check "ase Lab 50 0 0 = a mid gray (76-77)", hx$(3) = "777777" _ORELSE hx$(3) = "767676"
+check "ase RGB 0 .5 1", hx$(4) = "0080FF"
+write_text tmpDir + "/bad.ase", "ASEX"
+check "a bad .ase fails with a reason", SWS_load%(tmpDir + "/bad.ase") = 0 _ANDALSO LEN(SWS_ERR) > 0
+
+' --- saving .act / .pal / .txt -------------------------------------------
+make_abc "ABC"
+ok = SWS_save%(tmpDir + "/o.act")
+check "act: 768 + count + no transparency", ok <> 0 _ANDALSO LEN(SWS_read_file$(tmpDir + "/o.act")) = 772
+ok = SWS_load%(tmpDir + "/o.act")
+check "act round trip: 3 colors", ok <> 0 _ANDALSO SWS_N = 3 _ANDALSO SWS(3).c = color_of~&("C")
+make_abc "ABC"
+ok = SWS_save%(tmpDir + "/o.pal")
+check "pal: JASC", ok <> 0 _ANDALSO LEFT$(SWS_read_file$(tmpDir + "/o.pal"), 8) = "JASC-PAL"
+ok = SWS_load%(tmpDir + "/o.pal")
+check "pal round trip", ok <> 0 _ANDALSO SWS_N = 3 _ANDALSO SWS(2).c = color_of~&("B")
+make_abc "ABC"
+ok = SWS_save%(tmpDir + "/o.txt")
+ok = SWS_load%(tmpDir + "/o.txt")
+check "paint.net txt round trip", ok <> 0 _ANDALSO SWS_N = 3 _ANDALSO (SWS(3).c AND &HFFFFFF~&) = (color_of~&("C") AND &HFFFFFF~&)
+
+' --- PNG -----------------------------------------------------------------
+make_abc "ABCDE"
+SWS_insert 4, 0, "", SWS_KIND_BREAK, 0   ' A B C | D E
+SWS_insert 6, 0, "", SWS_KIND_SPACE, 0   ' A B C | D _ E
+SWS_COLS = 3
+ok = SWS_save%(tmpDir + "/g.png")
+check "png saved", ok <> 0 _ANDALSO _FILEEXISTS(tmpDir + "/g.png")
+DIM pimg AS LONG
+pimg = _LOADIMAGE(tmpDir + "/g.png", 32)
+check "png grid: 3 cols x 2 rows of 8px cells, 1px gaps = 26 x 17", pimg < -1 _ANDALSO _WIDTH(pimg) = 26 _ANDALSO _HEIGHT(pimg) = 17
+IF pimg < -1 THEN _FREEIMAGE pimg
+ok = SWS_load%(tmpDir + "/g.png")
+check "png round trip: the colors in order", ok <> 0 _ANDALSO SWS_N = 5 _ANDALSO SWS(1).c = color_of~&("A") _ANDALSO SWS(4).c = color_of~&("D") _ANDALSO SWS(5).c = color_of~&("E")
+check "png round trip: 3 columns (the first row)", SWS_COLS = 3
+pimg = _NEWIMAGE(64, 64, 32)
+DIM px AS LONG, py AS LONG, od AS LONG
+od = _DEST: _DEST pimg
+FOR py = 0 TO 63: FOR px = 0 TO 63: PSET (px, py), _RGB32(px * 4, py * 4, 7): NEXT px: NEXT py
+_DEST od
+_SAVEIMAGE tmpDir + "/photo.png", pimg
+_FREEIMAGE pimg
+check "a 4096-color image is not a swatch set", SWS_load%(tmpDir + "/photo.png") = 0 _ANDALSO INSTR(SWS_ERR, "1024") > 0
+check "an unknown save extension fails", SWS_save%(tmpDir + "/x.xyz") = 0 _ANDALSO LEN(SWS_ERR) > 0
 
 ' clean up the fixtures
 DIM f$
@@ -291,6 +354,17 @@ END FUNCTION
 
 FUNCTION be$ (v AS LONG)
     be$ = CHR$((v \ 256) AND 255) + CHR$(v AND 255)
+END FUNCTION
+
+FUNCTION f4$ (v AS SINGLE)
+    f4$ = SWS_mkf32be$(v)
+END FUNCTION
+
+' one ASE color block: name, model, the floats, type 1 (spot)
+FUNCTION ase_color$ (nm AS STRING, model AS STRING, vals AS STRING)
+    DIM blk AS STRING
+    blk = SWS_ase_name$(nm) + model + vals + be$(1)
+    ase_color$ = be$(1) + be32$(LEN(blk)) + blk
 END FUNCTION
 
 FUNCTION be32$ (v AS LONG)
