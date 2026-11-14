@@ -220,7 +220,8 @@ END SUB
 ' FD_init — Initialize dialog state for a new dialog session
 ' --------------------------------------------------------------------------
 SUB FD_init (mode AS INTEGER, title AS STRING, confirmLabel AS STRING, startDir AS STRING, filters AS STRING, defaultFilter AS INTEGER, defaultExt AS STRING)
-    ' Reset state
+    ' Reset state (the animated preview's frames are images: free them first)
+    FD_PV_clear
     DIM emptyState AS FD_STATE_OBJ
     FD_STATE = emptyState
 
@@ -382,6 +383,7 @@ SUB FD_cleanup_internal (saveConfig AS INTEGER)
     FD_STATE.screenShot = -1
     IF FD_STATE.previewImgHandle < -1 THEN QB64_GJ_SAFE_FREE_IMAGE FD_STATE.previewImgHandle
     FD_STATE.previewImgHandle = -1
+    FD_PV_clear
 
     ' Free thumbnail cache
     FD_THUMB_cleanup
@@ -442,6 +444,9 @@ SUB FD_modal_loop
 
         ' Tick text input cursor blink
         TI_tick
+
+        ' An animated preview's next frame (sets dirty when it moves on)
+        IF FD_PV_tick% THEN FD_STATE.dirty = -1
 
         ' Advance tooltip timer (shows tooltip after hover delay)
         FD_TOOLTIP_update

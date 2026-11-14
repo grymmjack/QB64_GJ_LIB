@@ -322,6 +322,20 @@ TYPE FD_STATE_OBJ
     ' Pending host-app callback actions (checked & cleared by the host after each tick)
     pendingRecentPath AS STRING * 260 ' Non-empty = host should add this path to its recent list
     pendingOpenInDraw AS STRING * 260 ' Non-empty = host should open this path as a document
+
+    ' Animated preview (FD_PV_*): pvN frames in FD_PV_IMG / FD_PV_DUR, pvK the one showing
+    pvN    AS INTEGER                 ' frames (0 = a still picture)
+    pvK    AS INTEGER                 ' the frame showing (1..pvN)
+    pvPlay AS INTEGER                 ' TRUE = playing
+    pvSeek AS INTEGER                 ' TRUE = the seek knob is being dragged
+    pvNext AS DOUBLE                  ' TIMER(.001) when the next frame is due
+    pvBtnX AS INTEGER                 ' play / pause box (FD px, set by FD_RENDER_preview)
+    pvBtnY AS INTEGER
+    pvBtnS AS INTEGER
+    pvTrkX AS INTEGER                 ' seek track
+    pvTrkY AS INTEGER
+    pvTrkW AS INTEGER
+    pvTrkH AS INTEGER
 END TYPE
 
 ' --- Thumbnail Cache ---------------------------------------------------------
@@ -345,6 +359,12 @@ END TYPE
 DIM SHARED FD_CFG         AS FD_CONFIG_OBJ
 DIM SHARED FD_STATE       AS FD_STATE_OBJ
 DIM SHARED FD_THUMB_CACHE AS FD_THUMB_CACHE_OBJ
+
+' Animated preview frames (owned by the dialog: FD_PV_clear frees them). A host
+' adds them in FD_HOST_preview_frames (with $LET FD_HAS_HOST_FRAMES = TRUE).
+CONST FD_PV_MAX = 256
+DIM SHARED FD_PV_IMG(1 TO FD_PV_MAX) AS LONG
+DIM SHARED FD_PV_DUR(1 TO FD_PV_MAX) AS SINGLE ' seconds the frame shows
 
 ' Navigation history stacks
 DIM SHARED FD_navBackStack(FD_MAX_NAV_HIST - 1) AS STRING * 260
