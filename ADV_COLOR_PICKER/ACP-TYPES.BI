@@ -134,6 +134,11 @@ TYPE ACP_STATE_OBJ
     ' --- Color history strip ---
     historyShow  AS INTEGER     ' TRUE = show the recent-colors strip
     historyCount AS INTEGER     ' number of valid history entries (0..ACP_HISTORY_MAX)
+
+    ' --- A host row under the quantize row (e.g. a "VARIATIONS" disclosure) and
+    '     the collapsed state it toggles: shade rows + history hidden ---
+    discloseH AS INTEGER        ' native px reserved for the host's row (0 = none, host-set)
+    collapsed AS INTEGER        ' TRUE = no shade rows, no history (the widget ends at the host row)
 END TYPE
 
 DIM SHARED ACP_STATE AS ACP_STATE_OBJ

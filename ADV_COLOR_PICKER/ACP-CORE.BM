@@ -48,7 +48,7 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     ACP_set_shade_line 2, 60.0, 0.0, 0.0, 0.0, 0.0, 0.0     ' hue spread
 
     ' Widget = wheel (sz x sz) + shade rows + optional history strip.
-    ACP_STATE.h% = sz% + ACP_quant_area_h% + ACP_shade_area_h% + ACP_history_area_h%
+    ACP_STATE.h% = ACP_full_h%
     ACP_wheel_geometry
 
     ' Buffers
@@ -129,7 +129,32 @@ END SUB
 ' ACP_shade_area_h% — Native height of the shade-row area below the wheel.
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_area_h% ()
+    IF ACP_STATE.collapsed% THEN EXIT FUNCTION
     ACP_shade_area_h% = ACP_shade_line_count% * ACP_shade_row_pitch% + ACP_SHADE_GAP
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_disclose_row_y% — Native Y of the host's row under the quantize row
+' (ACP_STATE.discloseH tall; the host draws it and handles its clicks).
+' --------------------------------------------------------------------------
+FUNCTION ACP_disclose_row_y% ()
+    ACP_disclose_row_y% = ACP_STATE.wheel% + ACP_quant_area_h%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_body_top% — Native Y where the shade rows start (under the host row).
+' --------------------------------------------------------------------------
+FUNCTION ACP_body_top% ()
+    DIM dh AS INTEGER : dh% = ACP_STATE.discloseH% : IF dh% < 0 THEN dh% = 0
+    ACP_body_top% = ACP_disclose_row_y% + dh%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_full_h% — The widget's height: wheel, quantize row, host row, shade
+' rows, history.
+' --------------------------------------------------------------------------
+FUNCTION ACP_full_h% ()
+    ACP_full_h% = ACP_body_top% + ACP_shade_area_h% + ACP_history_area_h%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -153,7 +178,7 @@ END FUNCTION
 ' ACP_shade_row_label_y% — Native Y of a row's label (top of the row block).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_row_label_y% (row AS INTEGER)
-    ACP_shade_row_label_y% = ACP_STATE.wheel% + ACP_quant_area_h% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
+    ACP_shade_row_label_y% = ACP_body_top% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -181,7 +206,7 @@ END SUB
 ' reallocate imgHandle if it changed. Call after changing shadeLineCount.
 ' --------------------------------------------------------------------------
 SUB ACP_apply_shade_layout ()
-    DIM newH AS INTEGER : newH% = ACP_STATE.wheel% + ACP_quant_area_h% + ACP_shade_area_h% + ACP_history_area_h%
+    DIM newH AS INTEGER : newH% = ACP_full_h%
     IF newH% = ACP_STATE.h% THEN EXIT SUB
     ACP_STATE.h% = newH%
     IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
@@ -215,7 +240,7 @@ SUB ACP_resize (nativeW AS INTEGER, wheelSize AS INTEGER, patchH AS INTEGER)
     ph% = patchH% : IF ph% < 0 THEN ph% = 0
     IF w% = ACP_STATE.w% AND wh% = ACP_STATE.wheel% AND ph% = ACP_STATE.patchH% AND ACP_STATE.imgHandle& < -1 THEN EXIT SUB
     ACP_STATE.w% = w% : ACP_STATE.wheel% = wh% : ACP_STATE.patchH% = ph%
-    ACP_STATE.h% = wh% + ACP_quant_area_h% + ACP_shade_area_h% + ACP_history_area_h%
+    ACP_STATE.h% = ACP_full_h%
     ACP_wheel_geometry
     IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
     IF ACP_STATE.ringImage& < -1 THEN _FREEIMAGE ACP_STATE.ringImage&
@@ -730,6 +755,7 @@ SUB ACP_render_shades ()
     DIM row       AS INTEGER, patch AS INTEGER
     DIM x1        AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
     DIM centreIdx AS INTEGER : centreIdx% = (np% - 1) \ 2
+    IF ACP_STATE.collapsed% THEN EXIT SUB
     FOR row% = 0 TO ACP_shade_line_count% - 1
         FOR patch% = 0 TO np% - 1
             ACP_shade_patch_rect row%, patch%, x1%, y1%, x2%, y2%
@@ -745,6 +771,7 @@ END SUB
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_hit% (nx AS INTEGER, ny AS INTEGER, row AS INTEGER, patch AS INTEGER)
     ACP_shade_hit% = 0
+    IF ACP_STATE.collapsed% THEN EXIT FUNCTION
     DIM np AS INTEGER : np% = ACP_shade_patch_count%
     DIM rr AS INTEGER, pp AS INTEGER
     DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
@@ -817,7 +844,7 @@ END SUB
 ' (0 when hidden).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_history_area_h% ()
-    IF ACP_STATE.historyShow% THEN
+    IF ACP_STATE.historyShow% <> 0 AND ACP_STATE.collapsed% = 0 THEN
         ACP_history_area_h% = ACP_HISTORY_LABEL_H + ACP_HISTORY_H + ACP_SHADE_GAP
     ELSE
         ACP_history_area_h% = 0
@@ -828,7 +855,7 @@ END FUNCTION
 ' ACP_history_top% — Native Y where the history section (label) starts.
 ' --------------------------------------------------------------------------
 FUNCTION ACP_history_top% ()
-    ACP_history_top% = ACP_STATE.wheel% + ACP_quant_area_h% + ACP_shade_area_h%
+    ACP_history_top% = ACP_body_top% + ACP_shade_area_h%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -836,7 +863,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION ACP_over_history% (nx AS INTEGER, ny AS INTEGER)
     ACP_over_history% = 0
-    IF NOT ACP_STATE.historyShow% THEN EXIT FUNCTION
+    IF ACP_history_area_h% = 0 THEN EXIT FUNCTION
     DIM top AS INTEGER : top% = ACP_history_top%
     IF ny% >= top% AND ny% < top% + ACP_history_area_h% AND nx% >= 0 AND nx% < ACP_STATE.w% THEN ACP_over_history% = -1
 END FUNCTION
@@ -879,7 +906,7 @@ END SUB
 ' ACP_history_patch_rect — Native rect of history slot i (0..ACP_HISTORY_MAX-1).
 ' --------------------------------------------------------------------------
 SUB ACP_history_patch_rect (idx AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
-    DIM top     AS INTEGER : top% = ACP_STATE.wheel% + ACP_shade_area_h% + ACP_HISTORY_LABEL_H
+    DIM top     AS INTEGER : top% = ACP_history_top% + ACP_HISTORY_LABEL_H ' (under its label: the quantize and host rows too)
     DIM usableW AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
     DIM pw      AS INTEGER : pw% = usableW% \ ACP_HISTORY_MAX
     IF pw% < 1 THEN pw% = 1
@@ -897,7 +924,7 @@ END SUB
 ' empties as background). Into the current _DEST (imgHandle).
 ' --------------------------------------------------------------------------
 SUB ACP_render_history ()
-    IF NOT ACP_STATE.historyShow% THEN EXIT SUB
+    IF ACP_history_area_h% = 0 THEN EXIT SUB
     DIM i  AS INTEGER
     DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
     FOR i% = 0 TO ACP_HISTORY_MAX - 1
@@ -917,7 +944,7 @@ END SUB
 ' --------------------------------------------------------------------------
 FUNCTION ACP_history_hit% (nx AS INTEGER, ny AS INTEGER, idx AS INTEGER)
     ACP_history_hit% = 0
-    IF NOT ACP_STATE.historyShow% THEN EXIT FUNCTION
+    IF ACP_history_area_h% = 0 THEN EXIT FUNCTION
     DIM i  AS INTEGER
     DIM x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER
     FOR i% = 0 TO ACP_STATE.historyCount% - 1

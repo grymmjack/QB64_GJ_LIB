@@ -64,6 +64,9 @@ TYPE CP_STATE_OBJ
     dialogH AS INTEGER
     fitW    AS INTEGER ' host-requested size (0 = natural): wider stretches the
     fitH    AS INTEGER '   SV field + rows, taller grows the SV field (CP_layout_calculate)
+    discloseH AS INTEGER ' a host row under the OLD / NEW swatches (e.g. a "MORE" disclosure), native px (0 = none)
+    discloseY AS INTEGER ' its Y (CP_layout_rows)
+    collapsed AS INTEGER ' TRUE = the dialog ends at that row: sliders, hex, snap, history, FG<>BG, buttons hidden
     natW    AS INTEGER ' the natural size, set by CP_layout_calculate
     natH    AS INTEGER
 

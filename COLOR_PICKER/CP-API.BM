@@ -521,6 +521,14 @@ FUNCTION CP_layout_rows% (contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER)
     CP_STATE.previewNewX = CP_THEME.padding% + CP_THEME.previewW% + 8
     y = y + CP_STATE.fontH + CP_THEME.previewH% + CP_THEME.sectionGap%
 
+    ' The host's row (a disclosure), then - collapsed - nothing more: the rows
+    ' below are still laid out (their positions stay valid) but the dialog ends
+    ' here, so they are neither drawn (clipped) nor hit
+    DIM yEnd AS INTEGER
+    CP_STATE.discloseY = y
+    IF CP_STATE.discloseH > 0 THEN y = y + CP_STATE.discloseH
+    yEnd = y
+
     ' Slider area
     CP_STATE.sliderX = CP_THEME.padding%
     CP_STATE.sliderY = y
@@ -571,6 +579,7 @@ FUNCTION CP_layout_rows% (contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER)
 
     ' Dialog height
     CP_STATE.dialogH = y + CP_THEME.buttonBarH%
+    IF CP_STATE.collapsed THEN CP_STATE.dialogH = yEnd + CP_THEME.padding% \ 2
     CP_layout_rows% = CP_STATE.dialogH
 END FUNCTION
 
