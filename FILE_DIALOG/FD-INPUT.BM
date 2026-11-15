@@ -612,7 +612,10 @@ SUB FD_INPUT_poll
     FD_STATE.oldMouseB5 = FD_STATE.mouseB5
     FD_STATE.mouseWheel = 0
 
-    ' Poll mouse events
+    ' Poll mouse events. A thumb-button click often goes down and up inside one
+    ' drain, so the state after it reads "up" and the click is lost: latch it.
+    DIM fd_b4 AS INTEGER, fd_b5 AS INTEGER
+    fd_b4% = FALSE: fd_b5% = FALSE
     $IF MAC THEN
         ' macOS: Capture button presses during drain — trackpad tap-to-click
         ' can press+release within a single drain cycle.
@@ -622,10 +625,14 @@ SUB FD_INPUT_poll
             FD_STATE.mouseWheel = FD_STATE.mouseWheel + _MOUSEWHEEL
             IF _MOUSEBUTTON(1) THEN mac_b1% = TRUE
             IF _MOUSEBUTTON(2) THEN mac_b2% = TRUE
+            IF _MOUSEBUTTON(4) THEN fd_b4% = TRUE
+            IF _MOUSEBUTTON(5) THEN fd_b5% = TRUE
         LOOP
     $ELSE
         DO WHILE _MOUSEINPUT
             FD_STATE.mouseWheel = FD_STATE.mouseWheel + _MOUSEWHEEL
+            IF _MOUSEBUTTON(4) THEN fd_b4% = TRUE
+            IF _MOUSEBUTTON(5) THEN fd_b5% = TRUE
         LOOP
     $END IF
 
@@ -640,8 +647,10 @@ SUB FD_INPUT_poll
         FD_STATE.mouseB2 = _MOUSEBUTTON(2)
     $END IF
     ' Buttons 4 (back) and 5 (forward) — supported on all platforms via SDL2
-    FD_STATE.mouseB4 = _MOUSEBUTTON(4)
-    FD_STATE.mouseB5 = _MOUSEBUTTON(5)
+    ' (down now, or pressed during the drain: a quick click is down this poll and
+    ' up the next, so FD_INPUT_mouse still sees its press edge)
+    FD_STATE.mouseB4 = fd_b4% OR _MOUSEBUTTON(4)
+    FD_STATE.mouseB5 = fd_b5% OR _MOUSEBUTTON(5)
 
     ' Capture modifier key state (Shift for range-select)
     FD_STATE.modCtrl  = (_KEYDOWN(100305) OR _KEYDOWN(100306))
