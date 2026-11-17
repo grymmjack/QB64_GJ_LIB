@@ -78,6 +78,7 @@ SUB MB_RENDER_title_bar
     DIM title AS STRING
     title = RTRIM$(MB_STATE.title)
     IF LEN(title) = 0 THEN title = "Message"
+    title = GJ_UI_TEXT$(title)
     COLOR MB_CLR_TEXT_BRIGHT~&, _RGBA32(0, 0, 0, 0)
     _PRINTSTRING (MB_PADDING \ 2 + 2, (MB_TITLE_BAR_H - MB_STATE.fontH) \ 2 + 1), title
 
@@ -210,7 +211,7 @@ SUB MB_RENDER_button_bar
 
     FOR i = 0 TO MB_STATE.buttonCount - 1
         bx  = startX + i * (MB_BUTTON_W + MB_BUTTON_GAP)
-        lbl = RTRIM$(MB_buttons(i).label)
+        lbl = GJ_UI_TEXT$(RTRIM$(MB_buttons(i).label))
 
         ' Determine colors
         IF MB_buttons(i).isDefault THEN

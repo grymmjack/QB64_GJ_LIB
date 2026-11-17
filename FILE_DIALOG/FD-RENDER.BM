@@ -395,7 +395,7 @@ SUB FD_RENDER_toolbar
     ELSEIF FD_STATE.searchFocus THEN
         searchDisp = "" ' (focused: the caret, no hint)
     ELSE
-        searchDisp = "Search..."
+        searchDisp = GJ_UI_TEXT$("Search...")
     END IF
     IF FD_STATE.searchFocus THEN ' focused: a bright border
         LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_STATE.toolBarH - 4), FD_CLR_TEXT~&, B
@@ -808,10 +808,10 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
         IF col1W > 0 THEN
             DIM typeStr AS STRING
             IF FD_entries(entryIdx).isDirectory THEN
-                typeStr = "Folder"
+                typeStr = GJ_UI_TEXT$("Folder")
             ELSE
                 typeStr = UCASE$(RTRIM$(FD_entries(entryIdx).extension))
-                IF LEN(typeStr) = 0 THEN typeStr = "File"
+                IF LEN(typeStr) = 0 THEN typeStr = GJ_UI_TEXT$("File")
             END IF
             COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
             FD_print_scaled cx + FD_PADDING, drawY + (rh - FD_text_height%(cfs)) \ 2 + 1, typeStr, cfs
@@ -1156,7 +1156,7 @@ SUB FD_RENDER_button_bar
     ifs = FD_CFG.inputFontScale: IF ifs < 1 THEN ifs = 1
 
     DIM okLabel AS STRING
-    okLabel = RTRIM$(FD_STATE.confirmLabel)
+    okLabel = GJ_UI_TEXT$(RTRIM$(FD_STATE.confirmLabel))
     IF LEN(okLabel) = 0 THEN
         SELECT CASE FD_STATE.mode
             CASE FD_MODE_OPEN                  : okLabel = "OPEN"

@@ -102,7 +102,7 @@ SUB FD_RENDER_tooltip
     ELSE
         IF FD_TT_hoverTargetId < 0 OR FD_TT_hoverTargetId > FD_TT_MAX THEN EXIT SUB
         IF NOT FD_tooltips(FD_TT_hoverTargetId).enabled THEN EXIT SUB
-        tipText = RTRIM$(FD_tooltips(FD_TT_hoverTargetId).text)
+        tipText = GJ_UI_MSG$(RTRIM$(FD_tooltips(FD_TT_hoverTargetId).text))
     END IF
     IF LEN(tipText) = 0 THEN EXIT SUB
 

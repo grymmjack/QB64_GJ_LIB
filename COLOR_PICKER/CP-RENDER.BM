@@ -93,7 +93,7 @@ SUB CP_RENDER_title_bar
     LINE (0, 0)-(CP_STATE.dialogW - 1, CP_THEME.titleBarH% - 1), CP_THEME.titleBg~&, BF
 
     COLOR CP_THEME.titleFg~&, _RGBA32(0, 0, 0, 0)
-    _UPRINTSTRING (CP_THEME.padding% \ 2 + 2, (CP_THEME.titleBarH% - CP_STATE.fontH) \ 2 + 1), RTRIM$(CP_STATE.title)
+    _UPRINTSTRING (CP_THEME.padding% \ 2 + 2, (CP_THEME.titleBarH% - CP_STATE.fontH) \ 2 + 1), GJ_UI_TEXT$(RTRIM$(CP_STATE.title))
 
     ' Close button [X]
     DIM bx AS INTEGER

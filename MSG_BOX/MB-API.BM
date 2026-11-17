@@ -130,7 +130,7 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
     MB_setup_buttons buttons
 
     ' ---- Wrap message text ----
-    MB_wrap_text message
+    MB_wrap_text GJ_UI_MSG$(message) ' (same length: the wrap by LEN holds)
 
     ' ---- Calculate layout ----
     MB_layout_calculate
@@ -147,7 +147,7 @@ SUB MB_init (mode AS INTEGER, title AS STRING, message AS STRING, buttons AS INT
         IF MB_STATE.tiInputId > 0 THEN
             IF LEN(defaultText) > 0 THEN TI_set_text MB_STATE.tiInputId, defaultText
             IF LEN(placeholder) > 0 THEN
-                TI_inputs(MB_STATE.tiInputId).placeholder = placeholder
+                TI_inputs(MB_STATE.tiInputId).placeholder = GJ_UI_TEXT$(placeholder)
             END IF
             IF MB_STATE.autoSelectText THEN
                 TI_inputs(MB_STATE.tiInputId).autoSelect = _TRUE
