@@ -778,8 +778,13 @@ SUB FD_INPUT_mouse
         END IF
         IF FD_STATE.previewW > 0 AND FD_CFG.showPreview THEN
             DIM splPX AS INTEGER
-            splPX = FD_STATE.previewX - FD_SPLITTER_W
-            IF mx >= splPX AND mx < splPX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
+            IF FD_STATE.pvStack THEN
+                splPX = FD_STATE.previewY - FD_SPLITTER_W
+                IF mx >= FD_STATE.placesX _ANDALSO mx < FD_STATE.placesX + FD_STATE.placesW _ANDALSO my >= splPX _ANDALSO my < splPX + FD_SPLITTER_W THEN needCursor = "VERTICAL"
+            ELSE
+                splPX = FD_STATE.previewX - FD_SPLITTER_W
+                IF mx >= splPX AND mx < splPX + FD_SPLITTER_W THEN needCursor = "HORIZONTAL"
+            END IF
         END IF
     END IF
     IF needCursor <> RTRIM$(FD_STATE.lastCursor) THEN
@@ -828,7 +833,7 @@ SUB FD_INPUT_mouse
         IF mx >= ttBx AND mx < ttBx + ttBtnW THEN ttTarget = FD_TT_BTN_PREVIEW
     ELSEIF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
         ' Places pane — iterate to find entry under cursor
-        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_places_h% THEN
             DIM ttPlPy AS INTEGER
             ttPlPy = FD_STATE.contentY + FD_PADDING - FD_STATE.placesScroll
             DIM ttPlI  AS INTEGER
@@ -841,7 +846,7 @@ SUB FD_INPUT_mouse
                     ttPlPy = ttPlPy + FD_STATE.rowHeight
                     _CONTINUE
                 END IF
-                IF ttPlPy + FD_STATE.rowHeight > FD_STATE.contentY + FD_STATE.contentH THEN EXIT FOR
+                IF ttPlPy + FD_STATE.rowHeight > FD_STATE.contentY + FD_places_h% THEN EXIT FOR
                 IF my >= ttPlPy AND my < ttPlPy + FD_STATE.rowHeight THEN
                     ttTarget = FD_TT_PLACE_ENTRY
                     ttDyn    = RTRIM$(FD_places(ttPlI).path)
@@ -853,6 +858,10 @@ SUB FD_INPUT_mouse
     END IF
     FD_TOOLTIP_set_hover ttTarget, ttDyn
     ' --- End tooltip hover detection ---
+
+    ' a press anywhere but the search box takes the search's focus away (the
+    ' toolbar click below gives it back)
+    IF justPressed _ANDALSO FD_STATE.searchFocus THEN FD_STATE.searchFocus = 0: FD_STATE.dirty = -1
 
     ' --- Check for resize edge hover/start on press ---
     IF justPressed THEN
@@ -932,6 +941,17 @@ SUB FD_INPUT_mouse
     toolbarY = FD_STATE.titleBarH + FD_STATE.pathBarH
     IF my >= toolbarY AND my < toolbarY + FD_STATE.toolBarH THEN
         IF justPressed THEN
+            ' the search box (FD_RENDER_toolbar: 150 px at the right): focus it
+            DIM sbX AS INTEGER
+            sbX = FD_STATE.dialogW - 150 - FD_PADDING
+            IF mx >= sbX _ANDALSO mx < sbX + 150 THEN
+                IF FD_STATE.pathInputActive THEN FD_STATE.pathInputActive = 0: TI_clear_focus
+                FD_STATE.searchFocus = -1
+                FD_STATE.focusPane   = FD_FOCUS_CONTENT
+                FD_STATE.cursorBlink = -1: FD_STATE.cursorTimer = TIMER(.001)
+                FD_STATE.dirty       = -1
+                EXIT SUB
+            END IF
             FD_INPUT_toolbar_click mx, my - toolbarY
         END IF
         EXIT SUB
@@ -939,7 +959,7 @@ SUB FD_INPUT_mouse
 
     ' --- Places pane ---
     IF mx >= FD_STATE.placesX AND mx < FD_STATE.placesX + FD_STATE.placesW THEN
-        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_STATE.contentH THEN
+        IF my >= FD_STATE.contentY AND my < FD_STATE.contentY + FD_places_h% THEN
             FD_INPUT_places mx, my, justPressed, justPressedB2
             EXIT SUB
         END IF
@@ -1360,7 +1380,7 @@ SUB FD_INPUT_places (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, justP
             py = py + entryH
             _CONTINUE
         END IF
-        IF py + entryH > FD_STATE.contentY + FD_STATE.contentH THEN EXIT FOR
+        IF py + entryH > FD_STATE.contentY + FD_places_h% THEN EXIT FOR
 
         IF my >= py AND my < py + entryH THEN
             FD_STATE.placesHover = i
@@ -1436,6 +1456,20 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, just
         FD_STATE.dirty = -1
     END IF
 
+    ' The scrollbar: press the thumb and drag it, or press the track to bring
+    ' the thumb's middle there and drag on (a long list had only the wheel -
+    ' 724 thumbnails in a docked column is ~60k px at 39 px a notch)
+    IF justPressed _ANDALSO FD_INPUT_on_scrollbar%(mx, my) THEN
+        DIM sbTY AS INTEGER, sbTH AS INTEGER
+        FD_scrollbar_thumb contentTop, FD_STATE.contentY + FD_STATE.contentH - contentTop, sbTY, sbTH
+        FD_STATE.dragging   = -1
+        FD_STATE.dragType   = 5 ' Scrollbar
+        FD_STATE.dragStartY = sbTH \ 2
+        IF my >= sbTY _ANDALSO my < sbTY + sbTH THEN FD_STATE.dragStartY = my - sbTY
+        FD_INPUT_scrollbar_to my
+        EXIT SUB
+    END IF
+
     ' Hit-test entries
     DIM hitIndex AS INTEGER
     hitIndex = -1
@@ -1451,7 +1485,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, just
         cols = hitW \ cellW
         IF cols < 1 THEN cols = 1
 
-        DIM relX AS INTEGER, relY AS INTEGER
+        DIM relX AS INTEGER, relY AS LONG
         relX = mx - FD_STATE.contentX
         relY = my - contentTop + FD_STATE.scrollOffset
         IF relX >= 0 AND relY >= 0 THEN
@@ -1464,7 +1498,7 @@ SUB FD_INPUT_content (mx AS INTEGER, my AS INTEGER, justPressed AS INTEGER, just
         END IF
     ELSE
         ' List/details hit test
-        DIM relRow AS INTEGER
+        DIM relRow AS LONG
         relRow = (my - contentTop + FD_STATE.scrollOffset) \ FD_STATE.rowHeight
         IF relRow >= 0 THEN hitIndex = relRow
     END IF
@@ -1759,6 +1793,25 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 ' FD_INPUT_handle_drag — Process active drag operation
 ' --------------------------------------------------------------------------
+' --------------------------------------------------------------------------
+' FD_INPUT_scrollbar_to — the list scrollbar's thumb dragged with the pointer at
+' my (dragStartY = where in the thumb it was grabbed)
+' --------------------------------------------------------------------------
+SUB FD_INPUT_scrollbar_to (my AS INTEGER)
+    DIM trackY AS INTEGER, trackH AS INTEGER, thY AS INTEGER, thH AS INTEGER
+    trackY = FD_STATE.contentY
+    IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN trackY = trackY + FD_STATE.columnHeaderH
+    trackH = FD_STATE.contentY + FD_STATE.contentH - trackY
+    FD_scrollbar_thumb trackY, trackH, thY, thH
+    IF trackH - thH < 1 THEN EXIT SUB
+    DIM f AS DOUBLE
+    f = (my - FD_STATE.dragStartY - trackY) / (trackH - thH)
+    IF f < 0 THEN f = 0
+    IF f > 1 THEN f = 1
+    FD_STATE.scrollOffset = CLNG(f * FD_STATE.maxScroll)
+    FD_STATE.dirty = -1
+END SUB
+
 SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
     SELECT CASE FD_STATE.dragType
         CASE 1 ' Dialog move
@@ -1780,6 +1833,9 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
         CASE 2 ' Dialog resize
             FD_INPUT_do_resize mx, my
 
+        CASE 5 ' Scrollbar (FD_INPUT_content)
+            FD_INPUT_scrollbar_to my
+
         CASE 3 ' Column resize
             IF FD_STATE.colResizing >= 0 AND FD_STATE.colResizing < FD_MAX_COLUMNS THEN
                 DIM delta AS INTEGER
@@ -1799,7 +1855,7 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 DIM newPlacesW  AS INTEGER
                 newPlacesW = mx - FD_STATE.placesX
                 DIM plMin       AS INTEGER
-                plMin = FD_STATE.placesMinW: IF plMin < 40 THEN plMin = 80
+                plMin = FD_places_tiny_w% ' (dragged: down to an icon and a letter)
                 IF newPlacesW < plMin THEN newPlacesW = plMin
                 IF newPlacesW > FD_STATE.dialogW \ 3 THEN newPlacesW = FD_STATE.dialogW \ 3
                 ' stop where the list would go below its minimum
@@ -1810,6 +1866,15 @@ SUB FD_INPUT_handle_drag (mx AS INTEGER, my AS INTEGER, justReleased AS INTEGER)
                 IF newPlacesW < plMin THEN newPlacesW = plMin
                 FD_STATE.placesW   = newPlacesW
                 FD_CFG.placesWidth = newPlacesW
+                FD_LAYOUT_calculate
+                FD_STATE.dirty = -1
+            ELSEIF FD_STATE.splitterDragging = 2 _ANDALSO FD_STATE.pvStack <> 0 THEN
+                ' Places / preview bar (stacked): the preview's height
+                DIM newPvH AS INTEGER
+                newPvH = FD_STATE.contentY + FD_STATE.contentH - my - FD_SPLITTER_W \ 2
+                IF newPvH < 40 THEN newPvH = 40
+                IF newPvH > FD_STATE.contentH - FD_SPLITTER_W - FD_STATE.rowHeight * 2 THEN newPvH = FD_STATE.contentH - FD_SPLITTER_W - FD_STATE.rowHeight * 2
+                FD_STATE.pvStackH = newPvH
                 FD_LAYOUT_calculate
                 FD_STATE.dirty = -1
             ELSEIF FD_STATE.splitterDragging = 2 THEN
@@ -1913,9 +1978,24 @@ END SUB
 ' --------------------------------------------------------------------------
 ' FD_INPUT_hit_resize_edge% — Test if mouse is on a resize edge
 ' --------------------------------------------------------------------------
+' --------------------------------------------------------------------------
+' FD_INPUT_on_scrollbar% — the pointer on the list's scrollbar (when it shows)
+' --------------------------------------------------------------------------
+FUNCTION FD_INPUT_on_scrollbar% (mx AS INTEGER, my AS INTEGER)
+    DIM top AS INTEGER
+    IF FD_STATE.maxScroll <= 0 THEN EXIT FUNCTION
+    top = FD_STATE.contentY
+    IF FD_CFG.viewMode = FD_VIEW_DETAILS THEN top = top + FD_STATE.columnHeaderH
+    IF mx >= FD_STATE.contentX + FD_STATE.contentW - FD_SCROLLBAR_W _ANDALSO mx < FD_STATE.contentX + FD_STATE.contentW _ANDALSO my >= top _ANDALSO my < FD_STATE.contentY + FD_STATE.contentH THEN FD_INPUT_on_scrollbar% = -1
+END FUNCTION
+
 FUNCTION FD_INPUT_hit_resize_edge% (mx AS INTEGER, my AS INTEGER)
     DIM g AS INTEGER
     g = FD_RESIZE_GRIP
+    ' the list's scrollbar runs down the right edge: it keeps the press there,
+    ' bar the outer 2 px (the grip took half the bar - a docked Browser's long
+    ' list could not be dragged)
+    IF FD_INPUT_on_scrollbar%(mx, my) _ANDALSO mx < FD_STATE.dialogW - 2 THEN EXIT FUNCTION
 
     DIM onLeft AS INTEGER, onRight AS INTEGER, onTop AS INTEGER, onBottom AS INTEGER
     onLeft   = (mx >= 0 AND mx < g)
@@ -1960,6 +2040,17 @@ FUNCTION FD_INPUT_hit_splitter% (mx AS INTEGER, my AS INTEGER)
     ' Content / preview splitter
     IF FD_STATE.previewW > 0 AND FD_CFG.showPreview THEN
         DIM px AS INTEGER
+        IF FD_STATE.pvStack THEN ' (stacked: the bar between the places and the preview)
+            px = FD_STATE.previewY - FD_SPLITTER_W
+            IF mx >= FD_STATE.placesX _ANDALSO mx < FD_STATE.placesX + FD_STATE.placesW _ANDALSO my >= px - 1 _ANDALSO my < px + FD_SPLITTER_W + 1 THEN
+                FD_STATE.dragging         = -1
+                FD_STATE.dragType         = 4
+                FD_STATE.splitterDragging = 2
+                FD_STATE.dragStartY       = my
+                FD_INPUT_hit_splitter%    = -1
+            END IF
+            EXIT FUNCTION
+        END IF
         px = FD_STATE.previewX - FD_SPLITTER_W
         IF mx >= px AND mx < px + FD_SPLITTER_W THEN
             FD_STATE.dragging         = -1
@@ -2262,7 +2353,7 @@ END SUB
 SUB FD_INPUT_ensure_visible (index AS INTEGER)
     IF index < 0 OR index >= FD_STATE.visibleCount THEN EXIT SUB
 
-    DIM itemY AS INTEGER
+    DIM itemY AS LONG
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
         DIM cols  AS INTEGER
         cols = FD_STATE.contentW \ (FD_CFG.thumbSize + FD_PADDING * 2)
@@ -2271,14 +2362,14 @@ SUB FD_INPUT_ensure_visible (index AS INTEGER)
         row = index \ cols
         DIM cellH AS INTEGER
         cellH = FD_CFG.thumbSize + FD_PADDING * 2 + FD_STATE.rowHeight
-        itemY = row * cellH
+        itemY = CLNG(row) * cellH
         IF itemY < FD_STATE.scrollOffset THEN
             FD_STATE.scrollOffset = itemY
         ELSEIF itemY + cellH > FD_STATE.scrollOffset + FD_STATE.contentH THEN
             FD_STATE.scrollOffset = itemY + cellH - FD_STATE.contentH
         END IF
     ELSE
-        itemY = index * FD_STATE.rowHeight
+        itemY = CLNG(index) * FD_STATE.rowHeight
         IF itemY < FD_STATE.scrollOffset THEN
             FD_STATE.scrollOffset = itemY
         ELSEIF itemY + FD_STATE.rowHeight > FD_STATE.scrollOffset + FD_STATE.contentH THEN
@@ -2324,3 +2415,36 @@ SUB FD_INPUT_cycle_focus (direction AS INTEGER)
 
     FD_STATE.dirty = -1
 END SUB
+
+' --------------------------------------------------------------------------
+' FD_INPUT_search_key% — a key for the focused search box (FD_STATE.searchFocus):
+' printable text adds to the filter, BackSpace takes one off, Enter keeps the
+' filter and leaves the box, Esc clears it and leaves. TRUE = the key was used.
+' --------------------------------------------------------------------------
+FUNCTION FD_INPUT_search_key% (k AS LONG)
+    IF FD_STATE.searchFocus = 0 THEN EXIT FUNCTION
+    FD_INPUT_search_key% = -1
+    SELECT CASE k
+        CASE 32 TO 126
+            IF FD_STATE.searchLen >= 63 THEN EXIT FUNCTION
+            FD_STATE.searchLen = FD_STATE.searchLen + 1
+            MID$(FD_STATE.searchText, FD_STATE.searchLen, 1) = CHR$(k)
+        CASE 8
+            IF FD_STATE.searchLen = 0 THEN EXIT FUNCTION
+            MID$(FD_STATE.searchText, FD_STATE.searchLen, 1) = " "
+            FD_STATE.searchLen = FD_STATE.searchLen - 1
+        CASE 13
+            FD_STATE.searchFocus = 0: FD_STATE.dirty = -1
+            EXIT FUNCTION
+        CASE 27
+            FD_STATE.searchFocus = 0
+            FD_STATE.searchText = SPACE$(64): FD_STATE.searchLen = 0
+        CASE ELSE
+            EXIT FUNCTION
+    END SELECT
+    FD_FS_apply_filter
+    FD_STATE.selectedIndex = 0
+    FD_STATE.scrollOffset  = 0
+    FD_STATE.cursorBlink   = -1: FD_STATE.cursorTimer = TIMER(.001)
+    FD_STATE.dirty         = -1
+END FUNCTION

@@ -454,6 +454,7 @@ END SUB
 ' CP_RENDER_button_bar — OK and Cancel buttons
 ' --------------------------------------------------------------------------
 SUB CP_RENDER_button_bar
+    IF CP_STATE.noButtons THEN EXIT SUB
     DIM y1 AS INTEGER
     y1 = CP_STATE.buttonBarY
 

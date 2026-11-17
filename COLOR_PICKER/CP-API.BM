@@ -450,7 +450,8 @@ END SUB
 ' Natural size from the theme; a host can ask for a bigger one with
 ' CP_STATE.fitW / fitH (0 = natural): wider stretches the SV field, the
 ' sliders, the hex input and the chip rows; taller grows the SV field (to
-' 1.5x its width at most). CP_STATE.natW / natH keep the natural size.
+' 1.5x its width at most); svHFix > 0 sets the SV field's height outright
+' (even below natural). CP_STATE.natW / natH keep the natural size.
 ' --------------------------------------------------------------------------
 SUB CP_layout_calculate
     DIM contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER
@@ -461,6 +462,7 @@ SUB CP_layout_calculate
     ' Width must also accommodate button bar row
     DIM btnBarW AS INTEGER
     btnBarW = CP_THEME.buttonW% * 2 + CP_THEME.buttonGap%
+    IF CP_STATE.noButtons THEN btnBarW = 0
     IF btnBarW > contentW THEN contentW = btnBarW
 
     ' Dialog width
@@ -481,6 +483,7 @@ SUB CP_layout_calculate
         IF svH < CP_THEME.svSize% THEN svH = CP_THEME.svSize%
         CP_STATE.dialogH = CP_layout_rows%(contentW, svW, svH)
     END IF
+    IF CP_STATE.svHFix > 0 THEN CP_STATE.dialogH = CP_layout_rows%(contentW, svW, CP_STATE.svHFix)
 
     ' Center on screen
     DIM scrW AS INTEGER, scrH AS INTEGER
@@ -579,6 +582,7 @@ FUNCTION CP_layout_rows% (contentW AS INTEGER, svW AS INTEGER, svH AS INTEGER)
 
     ' Dialog height
     CP_STATE.dialogH = y + CP_THEME.buttonBarH%
+    IF CP_STATE.noButtons THEN CP_STATE.dialogH = y ' (no OK / Cancel bar)
     IF CP_STATE.collapsed THEN CP_STATE.dialogH = yEnd + CP_THEME.padding% \ 2
     CP_layout_rows% = CP_STATE.dialogH
 END FUNCTION

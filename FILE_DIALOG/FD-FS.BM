@@ -329,7 +329,7 @@ END SUB
 ' FD_places_content_height% — Total pixel height of the places list
 ' --------------------------------------------------------------------------
 FUNCTION FD_places_content_height% ()
-    DIM totalH AS INTEGER
+    DIM totalH AS LONG
     DIM i      AS INTEGER
     DIM entryH AS INTEGER
 
@@ -354,7 +354,7 @@ END FUNCTION
 FUNCTION FD_places_max_scroll% ()
     DIM maxScroll AS INTEGER
 
-    maxScroll = FD_places_content_height% - FD_STATE.contentH
+    maxScroll = FD_places_content_height% - FD_places_h%
     IF maxScroll < 0 THEN maxScroll = 0
 
     FD_places_max_scroll% = maxScroll
@@ -375,7 +375,7 @@ END SUB
 ' FD_FS_recalc_scroll — Recalculate max scroll offset based on content
 ' --------------------------------------------------------------------------
 SUB FD_FS_recalc_scroll
-    DIM totalH AS INTEGER
+    DIM totalH AS LONG
 
     IF FD_CFG.viewMode = FD_VIEW_THUMBNAILS THEN
         ' Thumbnail grid: calculate rows

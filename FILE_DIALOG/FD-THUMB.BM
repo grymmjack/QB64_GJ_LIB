@@ -230,26 +230,35 @@ SUB FD_THUMB_tick
     IF FD_STATE.visibleCount = 0 THEN EXIT SUB
     IF FD_CFG.viewMode <> FD_VIEW_THUMBNAILS THEN EXIT SUB
 
-    ' Calculate visible range
-    DIM startRow AS INTEGER
+    ' Calculate visible range - the same grid FD_RENDER_content_thumbs draws: the
+    ' width less the scrollbar when there is one, the cell's name row at the real
+    ' row height (FD_ROW_HEIGHT and the full width put the range rows off at a
+    ' bigger font, more so the further down the list: its thumbnails never loaded)
+    DIM startRow AS LONG
     DIM cols     AS INTEGER
-    cols = FD_STATE.contentW \ (FD_CFG.thumbSize + FD_PADDING * 2)
+    DIM tw       AS INTEGER
+    DIM rh       AS INTEGER
+    DIM cellH    AS INTEGER
+    tw = FD_STATE.contentW: IF FD_STATE.maxScroll > 0 THEN tw = tw - FD_SCROLLBAR_W
+    cols = tw \ (FD_CFG.thumbSize + FD_PADDING * 2)
     IF cols < 1 THEN cols = 1
+    rh = FD_STATE.rowHeight: IF rh < 1 THEN rh = FD_ROW_HEIGHT
+    cellH = FD_CFG.thumbSize + FD_PADDING * 2 + rh
 
-    startRow = FD_STATE.scrollOffset \ (FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT)
+    startRow = FD_STATE.scrollOffset \ cellH
     IF startRow > 0 THEN startRow = startRow - 1  ' 1 row above for prefetch
-    DIM startIdx AS INTEGER
+    DIM startIdx AS LONG
     startIdx = startRow * cols
     IF startIdx < 0 THEN startIdx = 0
 
-    DIM visibleItems AS INTEGER
-    DIM endIdx       AS INTEGER
-    visibleItems = ((FD_STATE.contentH \ (FD_CFG.thumbSize + FD_PADDING * 2 + FD_ROW_HEIGHT)) + 3) * cols ' +3: visible + 1 above + 1 below
+    DIM visibleItems AS LONG
+    DIM endIdx       AS LONG
+    visibleItems = ((FD_STATE.contentH \ cellH) + 3) * cols ' +3: visible + 1 above + 1 below
     endIdx       = startIdx + visibleItems
     IF endIdx > FD_STATE.visibleCount THEN endIdx = FD_STATE.visibleCount
 
     ' Find first visible entry needing a thumbnail
-    DIM i        AS INTEGER
+    DIM i        AS LONG
     DIM entryIdx AS INTEGER
     DIM fullPath AS STRING
     DIM sep      AS STRING

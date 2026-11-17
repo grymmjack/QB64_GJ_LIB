@@ -580,17 +580,45 @@ SUB FD_LAYOUT_calculate
     ' Places | content | preview: one clamp makes the three fit dialogW, so
     ' they never overlap (the list was forced to 100 px and slid under the
     ' preview, splitters drawn on top)
+    IF FD_STATE.pvSideW > 0 THEN FD_STATE.previewW = FD_STATE.pvSideW: FD_STATE.pvSideW = 0 ' (the side width back)
     FD_LAYOUT_clamp_panes
     FD_STATE.placesX = 0
-    ' a hidden preview KEEPS its width: toggled back on, the clamp fits it
-    IF FD_CFG.showPreview <> 0 _ANDALSO FD_STATE.previewW > 0 THEN
+    FD_STATE.placesH = FD_STATE.contentH
+    FD_STATE.previewY = FD_STATE.contentY
+    FD_STATE.previewH = FD_STATE.contentH + FD_STATE.buttonBarH
+    IF FD_STATE.pvStack <> 0 _ANDALSO FD_CFG.showPreview <> 0 THEN
+        ' Stacked (Rick 2026-11-16: the Browser docked in a side column - "the
+        ' preview ... should land under the folders on the bottom left"): the
+        ' preview under the places, as wide; the list takes the rest
+        DIM ph AS INTEGER, phMax AS INTEGER
+        ph = FD_STATE.pvStackH: IF ph <= 0 THEN ph = FD_STATE.contentH * 2 \ 5
+        phMax = FD_STATE.contentH - FD_SPLITTER_W - FD_STATE.rowHeight * 2
+        IF ph > phMax THEN ph = phMax
+        IF ph < 40 THEN ph = 40
+        IF ph > phMax THEN ph = 0 ' (no room: no preview this layout)
+        IF FD_STATE.previewW > 0 THEN FD_STATE.pvSideW = FD_STATE.previewW ELSE FD_STATE.pvSideW = FD_CFG.previewWidth
+        IF ph > 0 THEN
+            FD_STATE.previewX = FD_STATE.placesX
+            FD_STATE.previewW = FD_STATE.placesW
+            FD_STATE.placesH = FD_STATE.contentH - ph - FD_SPLITTER_W
+            FD_STATE.previewY = FD_STATE.contentY + FD_STATE.placesH + FD_SPLITTER_W
+            FD_STATE.previewH = ph
+        ELSE
+            FD_STATE.previewX = FD_STATE.dialogW: FD_STATE.previewW = 0
+        END IF
+        FD_STATE.contentX = FD_STATE.placesW + FD_SPLITTER_W
+        FD_STATE.contentW = FD_STATE.dialogW - FD_STATE.contentX
+        IF FD_STATE.contentW < 0 THEN FD_STATE.contentW = 0
+    ELSEIF FD_CFG.showPreview <> 0 _ANDALSO FD_STATE.previewW > 0 THEN
         FD_STATE.previewX = FD_STATE.dialogW - FD_STATE.previewW
     ELSE
         FD_STATE.previewX = FD_STATE.dialogW
     END IF
-    FD_STATE.contentX = FD_STATE.placesW + FD_SPLITTER_W
-    FD_STATE.contentW = FD_STATE.previewX - FD_STATE.contentX - FD_SPLITTER_W
-    IF FD_STATE.contentW < 0 THEN FD_STATE.contentW = 0 ' only in a dialog narrower than places-min + list-min
+    IF FD_STATE.pvStack = 0 _ORELSE FD_CFG.showPreview = 0 THEN
+        FD_STATE.contentX = FD_STATE.placesW + FD_SPLITTER_W
+        FD_STATE.contentW = FD_STATE.previewX - FD_STATE.contentX - FD_SPLITTER_W
+        IF FD_STATE.contentW < 0 THEN FD_STATE.contentW = 0 ' only in a dialog narrower than places-min + list-min
+    END IF
 
     ' Recalculate scroll limits
     FD_FS_recalc_scroll
@@ -609,12 +637,33 @@ END SUB
 ' collapses (width 0) for this layout and comes back when there is room.
 ' The places and the list never go below their minimums.
 ' --------------------------------------------------------------------------
+FUNCTION FD_places_h% ()
+    ' The places pane's height: the content's, less the preview under it when stacked
+    IF FD_STATE.placesH > 0 THEN FD_places_h% = FD_STATE.placesH ELSE FD_places_h% = FD_STATE.contentH
+END FUNCTION
+
+FUNCTION FD_places_tiny_w% ()
+    ' The narrowest the places pane goes when dragged: an icon and one letter
+    ' (Rick 2026-11-16: "it used to be able to go down to 1 letter and the icon").
+    DIM isc AS INTEGER, pfs AS INTEGER, cw AS INTEGER
+    isc = FD_CFG.iconScale: IF isc < 1 THEN isc = 1
+    pfs = FD_CFG.placesFontScale: IF pfs < 1 THEN pfs = 1
+    cw = FD_CFG.fontW * pfs: IF cw < 1 THEN cw = 8 * pfs
+    FD_places_tiny_w% = FD_PADDING * 2 + 3 + FD_ICON_SIZE * isc + FD_ICON_TEXT_GAP + cw + 2
+END FUNCTION
+
 SUB FD_LAYOUT_clamp_panes
     DIM navMin AS INTEGER, prevMin AS INTEGER, showPv AS INTEGER
     DIM over AS INTEGER, take AS INTEGER
     navMin = FD_STATE.placesMinW: IF navMin < 40 THEN navMin = 80
+    ' a width the user dragged below the minimum is kept (down to an icon and
+    ' a letter): the minimum is only where the panes stop squeezing it
+    IF FD_CFG.placesWidth > 0 _ANDALSO FD_CFG.placesWidth < navMin THEN
+        navMin = FD_CFG.placesWidth
+        IF navMin < FD_places_tiny_w% THEN navMin = FD_places_tiny_w%
+    END IF
     prevMin = FD_STATE.previewMinW: IF prevMin < 40 THEN prevMin = 100
-    showPv = (FD_CFG.showPreview <> 0)
+    showPv = (FD_CFG.showPreview <> 0 _ANDALSO FD_STATE.pvStack = 0) ' (stacked: it takes no width)
     IF showPv _ANDALSO FD_STATE.previewW <= 0 THEN FD_STATE.previewW = FD_CFG.previewWidth
 
     IF FD_STATE.placesW > FD_STATE.dialogW \ 3 THEN FD_STATE.placesW = FD_STATE.dialogW \ 3
@@ -1086,7 +1135,7 @@ SUB FD_save_config
     FD_CFG.dialogW      = FD_STATE.dialogW
     FD_CFG.dialogH      = FD_STATE.dialogH
     FD_CFG.placesWidth  = FD_STATE.placesW
-    FD_CFG.previewWidth = FD_STATE.previewW
+    FD_CFG.previewWidth = FD_STATE.previewW: IF FD_STATE.pvSideW > 0 THEN FD_CFG.previewWidth = FD_STATE.pvSideW
 
     ' Save column widths
     FD_CFG.colWidth0 = FD_columns(0).width

@@ -659,6 +659,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION CP_INPUT_hit_button% (lx AS INTEGER, ly AS INTEGER)
     CP_INPUT_hit_button% = -1
+    IF CP_STATE.noButtons THEN EXIT FUNCTION
 
     DIM y1 AS INTEGER, by AS INTEGER
     y1 = CP_STATE.buttonBarY

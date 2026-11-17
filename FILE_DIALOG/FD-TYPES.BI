@@ -213,12 +213,13 @@ TYPE FD_STATE_OBJ
     ' Search / type-ahead
     searchText AS STRING * 64         ' Type-ahead filter text
     searchLen  AS INTEGER             ' Length of search text
+    searchFocus AS INTEGER            ' TRUE = the toolbar's search box was clicked: it takes the typing (caret shown)
 
     ' Content state
     entryCount    AS INTEGER          ' Number of entries in current listing
     visibleCount  AS INTEGER          ' Number of entries after filtering
-    scrollOffset  AS INTEGER          ' Pixel scroll offset
-    maxScroll     AS INTEGER          ' Maximum scroll offset
+    scrollOffset  AS LONG             ' Pixel scroll offset (LONG: 724 thumbnails in one column is ~113k px)
+    maxScroll     AS LONG             ' Maximum scroll offset
     selectedIndex AS INTEGER          ' Selected/focused entry index (-1 = none)
     hoverIndex    AS INTEGER          ' Hovered entry index (-1 = none)
 
@@ -248,11 +249,17 @@ TYPE FD_STATE_OBJ
     contentH      AS INTEGER          ' Content pane height
     previewX      AS INTEGER          ' Preview pane X
     previewW      AS INTEGER          ' Preview pane width
+    previewY      AS INTEGER          ' Preview pane Y (contentY, or under the places when stacked)
+    previewH      AS INTEGER          ' Preview pane height
+    placesH       AS INTEGER          ' Places pane height (contentH, or above the preview when stacked)
+    pvStack       AS INTEGER          ' host: the preview goes UNDER the places, same width (a tall, narrow dialog)
+    pvStackH      AS INTEGER          ' its wanted height when stacked (0 = 2/5 of the content; dragged)
+    pvSideW       AS INTEGER          ' the side preview's width, kept while stacked (previewW = placesW then)
     rowHeight     AS INTEGER          ' Row height in list/details mode
 
     ' Interaction state
     dragging         AS INTEGER       ' TRUE = currently dragging something
-    dragType         AS INTEGER       ' 0 = none, 1 = dialog move, 2 = resize, 3 = col resize, 4 = splitter
+    dragType         AS INTEGER       ' 0 = none, 1 = dialog move, 2 = resize, 3 = col resize, 4 = splitter, 5 = scrollbar
     dragStartX       AS INTEGER       ' Mouse X when drag started
     dragStartY       AS INTEGER       ' Mouse Y when drag started
     dragOrigVal      AS INTEGER       ' Original value being dragged (column width, etc.)

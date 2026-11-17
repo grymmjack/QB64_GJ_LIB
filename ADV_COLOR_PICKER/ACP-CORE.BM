@@ -26,6 +26,7 @@ SUB ACP_init (initialColor AS _UNSIGNED LONG, nativeSize AS INTEGER)
     IF sz% < 120 THEN sz% = 120
     ACP_STATE.w%     = sz%
     ACP_STATE.wheel% = sz%
+    ACP_STATE.sideX% = 0                                    ' stacked (ACP_resize_side lays it sideways)
     ACP_STATE.scale% = 1
 
     ' Shade + misc defaults (line count is needed before the height is computed).
@@ -71,7 +72,16 @@ END SUB
 FUNCTION ACP_quant_area_h% ()
     ' (the row is tucked into the empty padding under the ring, so the widget
     '  grows by less than the row: a docked picker must still fit small windows)
-    IF ACP_STATE.quantBar% THEN ACP_quant_area_h% = ACP_QUANT_ROW_H - ACP_QUANT_TUCK + 1
+    IF ACP_STATE.quantBar% = 0 THEN EXIT FUNCTION
+    IF ACP_STATE.sideX% > 0 THEN ACP_quant_area_h% = ACP_QUANT_ROW_H + 1 ELSE ACP_quant_area_h% = ACP_QUANT_ROW_H - ACP_QUANT_TUCK + 1
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_quant_w% — The width the quantize row spans: the widget, or sideways
+' the wheel (it stays under the wheel).
+' --------------------------------------------------------------------------
+FUNCTION ACP_quant_w% ()
+    IF ACP_STATE.sideX% > 0 THEN ACP_quant_w% = ACP_STATE.sideX% - ACP_SHADE_GAP ELSE ACP_quant_w% = ACP_STATE.w%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -79,6 +89,7 @@ END FUNCTION
 ' the host centres its label and value text in it).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_quant_row_y% ()
+    IF ACP_STATE.sideX% > 0 THEN ACP_quant_row_y% = ACP_STATE.wheel%: EXIT FUNCTION ' (under the wheel, no tuck)
     ACP_quant_row_y% = ACP_STATE.wheel% - ACP_QUANT_TUCK
 END FUNCTION
 
@@ -88,7 +99,7 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 SUB ACP_quant_track_rect (x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
     x1% = ACP_SHADE_GAP + ACP_STATE.quantInsetL%
-    x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1 - ACP_STATE.quantInsetR%
+    x2% = ACP_quant_w% - ACP_SHADE_GAP - 1 - ACP_STATE.quantInsetR%
     IF x2% < x1% + 8 THEN x2% = x1% + 8
     y1% = ACP_quant_row_y% + 1
     y2% = y1% + ACP_QUANT_ROW_H - 3
@@ -138,6 +149,7 @@ END FUNCTION
 ' (ACP_STATE.discloseH tall; the host draws it and handles its clicks).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_disclose_row_y% ()
+    IF ACP_STATE.sideX% > 0 THEN ACP_disclose_row_y% = 0: EXIT FUNCTION ' (sideways the host's row is its gutter)
     ACP_disclose_row_y% = ACP_STATE.wheel% + ACP_quant_area_h%
 END FUNCTION
 
@@ -154,7 +166,94 @@ END FUNCTION
 ' rows, history.
 ' --------------------------------------------------------------------------
 FUNCTION ACP_full_h% ()
+    DIM bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER
+    IF ACP_STATE.sideX% > 0 THEN ACP_side_flow -1, bx%, by%, ew%, eh%: ACP_full_h% = eh%: EXIT FUNCTION
     ACP_full_h% = ACP_body_top% + ACP_shade_area_h% + ACP_history_area_h%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_full_w% — The widget's width: w, or in the side layout the wheel and
+' the section columns beside it.
+' --------------------------------------------------------------------------
+FUNCTION ACP_full_w% ()
+    DIM bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER
+    IF ACP_STATE.sideX% > 0 THEN ACP_side_flow -1, bx%, by%, ew%, eh%: ACP_full_w% = ew%: EXIT FUNCTION
+    ACP_full_w% = ACP_STATE.w%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_side_flow — The side layout: the shade rows top to bottom in columns
+' sideColW wide from sideX, as many to a column as fit the wheel + quantize
+' row's height but spread evenly (8 rows that fit 5 to a column go 4 + 4),
+' then the history, in a new column when it would end below. Returns section
+' blk's top-left (bx, by; -1 = none) and the widget's extent (ew x eh): no
+' sections (VARIATIONS closed) = just the wheel and the gutter.
+' --------------------------------------------------------------------------
+SUB ACP_side_flow (blk AS INTEGER, bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER)
+    DIM r AS INTEGER, fx AS INTEGER, fy AS INTEGER, mxY AS INTEGER, colH AS INTEGER, lc AS INTEGER
+    DIM pitch AS INTEGER, k AS INTEGER, ncols AS INTEGER, per AS INTEGER, hh AS INTEGER, lead AS INTEGER, anyShown AS INTEGER
+    colH% = ACP_STATE.wheel% + ACP_quant_area_h%
+    fx% = ACP_STATE.sideX% : fy% = 0
+    bx% = fx% : by% = 0
+    IF ACP_STATE.collapsed% = 0 THEN lc% = ACP_shade_line_count%
+    pitch% = ACP_shade_row_pitch%
+    IF lc% > 0 THEN
+        k% = colH% \ pitch% : IF k% < 1 THEN k% = 1
+        ncols% = (lc% + k% - 1) \ k%
+        per% = (lc% + ncols% - 1) \ ncols%
+        FOR r% = 0 TO lc% - 1
+            IF r% > 0 _ANDALSO r% MOD per% = 0 THEN fx% = fx% + ACP_STATE.sideColW% : fy% = 0
+            IF ACP_BLK_SHADE0 + r% = blk% THEN bx% = fx% : by% = fy%
+            fy% = fy% + pitch% : anyShown% = -1
+            IF fy% > mxY% THEN mxY% = fy%
+        NEXT r%
+    END IF
+    hh% = ACP_history_area_h%
+    IF hh% > 0 THEN
+        lead% = 0 : IF fy% > 0 THEN lead% = ACP_SHADE_GAP
+        IF fy% > 0 _ANDALSO fy% + lead% + hh% > colH% THEN fx% = fx% + ACP_STATE.sideColW% : fy% = 0 : lead% = 0
+        fy% = fy% + lead%
+        IF blk% = ACP_BLK_HIST THEN bx% = fx% : by% = fy%
+        fy% = fy% + hh% : anyShown% = -1
+        IF fy% > mxY% THEN mxY% = fy%
+    END IF
+    IF anyShown% THEN ew% = fx% + ACP_STATE.sideColW% ELSE ew% = ACP_STATE.sideX%
+    eh% = colH% : IF mxY% > eh% THEN eh% = mxY%
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_blk_x% / ACP_blk_y% — A section's left / top (native px); ACP_blk_w%
+' the width the sections span (w stacked, sideColW sideways).
+' --------------------------------------------------------------------------
+FUNCTION ACP_blk_x% (blk AS INTEGER)
+    DIM bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER
+    IF ACP_STATE.sideX% = 0 _ORELSE blk% = ACP_BLK_QUANT _ORELSE blk% = ACP_BLK_HOST THEN EXIT FUNCTION
+    ACP_side_flow blk%, bx%, by%, ew%, eh%
+    ACP_blk_x% = bx%
+END FUNCTION
+
+FUNCTION ACP_blk_y% (blk AS INTEGER)
+    DIM bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER
+    ACP_side_flow blk%, bx%, by%, ew%, eh%
+    ACP_blk_y% = by%
+END FUNCTION
+
+FUNCTION ACP_blk_w% ()
+    IF ACP_STATE.sideX% > 0 THEN ACP_blk_w% = ACP_STATE.sideColW% ELSE ACP_blk_w% = ACP_STATE.w%
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_side_w% — The widget's width in the side layout with a wheelSize wheel,
+' colW wide section columns and patchH tall patches (the current settings;
+' nothing changes).
+' --------------------------------------------------------------------------
+FUNCTION ACP_side_w% (wheelSize AS INTEGER, colW AS INTEGER, patchH AS INTEGER)
+    DIM oS AS INTEGER, oC AS INTEGER, oW AS INTEGER, oP AS INTEGER, bx AS INTEGER, by AS INTEGER, ew AS INTEGER, eh AS INTEGER
+    oS% = ACP_STATE.sideX% : oC% = ACP_STATE.sideColW% : oW% = ACP_STATE.wheel% : oP% = ACP_STATE.patchH%
+    ACP_STATE.wheel% = wheelSize% : ACP_STATE.sideX% = wheelSize% + ACP_SHADE_GAP + ACP_STATE.sideGutter% : ACP_STATE.sideColW% = colW% : ACP_STATE.patchH% = patchH%
+    ACP_side_flow -1, bx%, by%, ew%, eh%
+    ACP_STATE.sideX% = oS% : ACP_STATE.sideColW% = oC% : ACP_STATE.wheel% = oW% : ACP_STATE.patchH% = oP%
+    ACP_side_w% = ew%
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -163,8 +262,16 @@ END FUNCTION
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_row_pitch% ()
     DIM lh AS INTEGER : lh% = 0
-    IF ACP_STATE.shadeLabels% THEN lh% = ACP_SHADE_ROW_LABEL_H
+    IF ACP_STATE.shadeLabels% _ANDALSO ACP_inline_labels% = 0 THEN lh% = ACP_SHADE_ROW_LABEL_H
     ACP_shade_row_pitch% = lh% + ACP_patch_h% + ACP_SHADE_GAP
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_inline_labels% — Sideways with sideLabelW set: the shade row labels sit
+' left of the patches (the row is one patch tall), not on a line above.
+' --------------------------------------------------------------------------
+FUNCTION ACP_inline_labels% ()
+    ACP_inline_labels% = (ACP_STATE.sideX% > 0 _ANDALSO ACP_STATE.shadeLabels% <> 0 _ANDALSO ACP_STATE.sideLabelW% > 0)
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -178,6 +285,7 @@ END FUNCTION
 ' ACP_shade_row_label_y% — Native Y of a row's label (top of the row block).
 ' --------------------------------------------------------------------------
 FUNCTION ACP_shade_row_label_y% (row AS INTEGER)
+    IF ACP_STATE.sideX% > 0 THEN ACP_shade_row_label_y% = ACP_blk_y%(ACP_BLK_SHADE0 + row%): EXIT FUNCTION
     ACP_shade_row_label_y% = ACP_body_top% + ACP_SHADE_GAP + row% * ACP_shade_row_pitch%
 END FUNCTION
 
@@ -207,8 +315,9 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB ACP_apply_shade_layout ()
     DIM newH AS INTEGER : newH% = ACP_full_h%
-    IF newH% = ACP_STATE.h% THEN EXIT SUB
-    ACP_STATE.h% = newH%
+    DIM newW AS INTEGER : newW% = ACP_full_w%
+    IF newH% = ACP_STATE.h% _ANDALSO newW% = ACP_STATE.w% THEN EXIT SUB
+    ACP_STATE.h% = newH% : ACP_STATE.w% = newW%
     IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
     ACP_STATE.imgHandle& = _NEWIMAGE(ACP_STATE.w%, ACP_STATE.h%, 32)
 END SUB
@@ -218,11 +327,16 @@ END SUB
 ' with ACP_PADDING margin, and the triangle inside the ring.
 ' --------------------------------------------------------------------------
 SUB ACP_wheel_geometry ()
-    ACP_STATE.cx!     = ACP_STATE.w% / 2.0
+    ' (under 120 px - the side layout in a short spot - the padding, ring and
+    '  triangle inset shrink with the wheel, or the ring would eat it)
+    DIM k AS SINGLE : k! = 1.0
+    IF ACP_STATE.wheel% < 120 THEN k! = ACP_STATE.wheel% / 120.0
+    IF ACP_STATE.sideX% > 0 THEN ACP_STATE.cx! = ACP_STATE.wheel% / 2.0 ELSE ACP_STATE.cx! = ACP_STATE.w% / 2.0
     ACP_STATE.cy!     = ACP_STATE.wheel% / 2.0
-    ACP_STATE.ringRo! = ACP_STATE.wheel% / 2.0 - ACP_PADDING
-    ACP_STATE.ringRi! = ACP_STATE.ringRo! - ACP_RING_THICK
-    ACP_STATE.triR!   = ACP_STATE.ringRi! - ACP_TRI_INSET
+    ACP_STATE.ringRo! = ACP_STATE.wheel% / 2.0 - ACP_PADDING * k!
+    DIM rp AS INTEGER : rp% = ACP_STATE.ringPct% : IF rp% <= 0 THEN rp% = 100
+    ACP_STATE.ringRi! = ACP_STATE.ringRo! - ACP_RING_THICK * k! * rp% / 100.0 ' (a thinner ring: a bigger triangle)
+    ACP_STATE.triR!   = ACP_STATE.ringRi! - ACP_TRI_INSET * k!
     ACP_layout_triangle
 END SUB
 
@@ -238,16 +352,58 @@ SUB ACP_resize (nativeW AS INTEGER, wheelSize AS INTEGER, patchH AS INTEGER)
     w% = nativeW% : IF w% < 120 THEN w% = 120
     wh% = wheelSize% : IF wh% < 1 OR wh% > w% THEN wh% = w%
     ph% = patchH% : IF ph% < 0 THEN ph% = 0
-    IF w% = ACP_STATE.w% AND wh% = ACP_STATE.wheel% AND ph% = ACP_STATE.patchH% AND ACP_STATE.imgHandle& < -1 THEN EXIT SUB
-    ACP_STATE.w% = w% : ACP_STATE.wheel% = wh% : ACP_STATE.patchH% = ph%
+    IF w% = ACP_STATE.w% AND wh% = ACP_STATE.wheel% AND ph% = ACP_STATE.patchH% AND ACP_STATE.sideX% = 0 AND ACP_STATE.imgHandle& < -1 THEN EXIT SUB
+    ACP_STATE.w% = w% : ACP_STATE.wheel% = wh% : ACP_STATE.patchH% = ph% : ACP_STATE.sideX% = 0
     ACP_STATE.h% = ACP_full_h%
+    ACP_rebuild_images
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_set_ring_pct — The ring's thickness as a % of its own (30..100): a
+' thinner ring leaves a bigger triangle. Cheap when it does not change.
+' --------------------------------------------------------------------------
+SUB ACP_set_ring_pct (pct AS INTEGER)
+    DIM p AS INTEGER : p% = pct% : IF p% <= 0 THEN p% = 100
+    IF p% < 30 THEN p% = 30
+    IF p% > 100 THEN p% = 100
+    IF p% = ACP_STATE.ringPct% THEN EXIT SUB
+    ACP_STATE.ringPct% = p%
+    IF ACP_STATE.ringImage& >= -1 THEN EXIT SUB
+    ACP_wheel_geometry
+    ACP_build_ring
+    ACP_STATE.triDirty% = -1
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_resize_side — Lay the widget sideways for a short, wide spot: a
+' wheelSize wheel at the left (>= 32), the sections that sit under it
+' (quantize, host row, shade rows, history) in colW wide columns to its
+' right, top to bottom, a new column when one would end below the wheel.
+' ACP_STATE.w / h change - re-read them (h = the wheel unless one section
+' is taller). ACP_resize puts it back to stacked.
+' --------------------------------------------------------------------------
+SUB ACP_resize_side (wheelSize AS INTEGER, colW AS INTEGER, patchH AS INTEGER)
+    DIM wh AS INTEGER, cw AS INTEGER, ph AS INTEGER
+    wh% = wheelSize% : IF wh% < 24 THEN wh% = 24
+    cw% = colW% : IF cw% < 60 THEN cw% = 60
+    ph% = patchH% : IF ph% < 0 THEN ph% = 0
+    IF ACP_STATE.sideX% = wh% + ACP_SHADE_GAP + ACP_STATE.sideGutter% AND ACP_STATE.sideColW% = cw% AND wh% = ACP_STATE.wheel% AND ph% = ACP_STATE.patchH% AND ACP_STATE.imgHandle& < -1 THEN EXIT SUB
+    ACP_STATE.wheel% = wh% : ACP_STATE.patchH% = ph%
+    ACP_STATE.sideX% = wh% + ACP_SHADE_GAP + ACP_STATE.sideGutter% : ACP_STATE.sideColW% = cw%
+    ACP_STATE.w% = ACP_full_w%
+    ACP_STATE.h% = ACP_full_h%
+    ACP_rebuild_images
+END SUB
+
+' ACP_rebuild_images — New buffers for the current w / h / wheel.
+SUB ACP_rebuild_images ()
     ACP_wheel_geometry
     IF ACP_STATE.imgHandle& < -1 THEN _FREEIMAGE ACP_STATE.imgHandle&
     IF ACP_STATE.ringImage& < -1 THEN _FREEIMAGE ACP_STATE.ringImage&
     IF ACP_STATE.triImage& < -1 THEN _FREEIMAGE ACP_STATE.triImage&
-    ACP_STATE.imgHandle& = _NEWIMAGE(w%, ACP_STATE.h%, 32)
-    ACP_STATE.ringImage& = _NEWIMAGE(w%, wh%, 32)
-    ACP_STATE.triImage&  = _NEWIMAGE(w%, wh%, 32)
+    ACP_STATE.imgHandle& = _NEWIMAGE(ACP_STATE.w%, ACP_STATE.h%, 32)
+    ACP_STATE.ringImage& = _NEWIMAGE(ACP_STATE.w%, ACP_STATE.wheel%, 32)
+    ACP_STATE.triImage&  = _NEWIMAGE(ACP_STATE.w%, ACP_STATE.wheel%, 32)
     ACP_build_ring
     ACP_STATE.triDirty% = -1
 END SUB
@@ -694,16 +850,20 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB ACP_shade_patch_rect (row AS INTEGER, patch AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
     DIM np      AS INTEGER : np% = ACP_shade_patch_count%
-    DIM usableW AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
+    DIM bx      AS INTEGER : bx% = ACP_blk_x%(ACP_BLK_SHADE0 + row%)
+    DIM bx0     AS INTEGER : bx0% = bx%
+    IF ACP_inline_labels% THEN bx% = bx% + ACP_STATE.sideLabelW%
+    DIM usableW AS INTEGER : usableW% = ACP_blk_w% - ACP_SHADE_GAP * 2
+    IF ACP_inline_labels% THEN usableW% = usableW% - ACP_STATE.sideLabelW%
     DIM patchW  AS INTEGER : patchW% = usableW% \ np%
     IF patchW% < 1 THEN patchW% = 1
     DIM lh      AS INTEGER : lh% = 0
-    IF ACP_STATE.shadeLabels% THEN lh% = ACP_SHADE_ROW_LABEL_H
+    IF ACP_STATE.shadeLabels% _ANDALSO ACP_inline_labels% = 0 THEN lh% = ACP_SHADE_ROW_LABEL_H
     y1% = ACP_shade_row_label_y%(row%) + lh% ' patch strip sits below the label
     y2% = y1% + ACP_patch_h% - 1
-    x1% = ACP_SHADE_GAP + patch% * patchW%
+    x1% = bx% + ACP_SHADE_GAP + patch% * patchW%
     IF patch% = np% - 1 THEN
-        x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1
+        x2% = bx0% + ACP_blk_w% - ACP_SHADE_GAP - 1 ' (the column's right edge, not past it)
     ELSE
         x2% = x1% + patchW% - 1
     END IF
@@ -855,6 +1015,7 @@ END FUNCTION
 ' ACP_history_top% — Native Y where the history section (label) starts.
 ' --------------------------------------------------------------------------
 FUNCTION ACP_history_top% ()
+    IF ACP_STATE.sideX% > 0 THEN ACP_history_top% = ACP_blk_y%(ACP_BLK_HIST): EXIT FUNCTION
     ACP_history_top% = ACP_body_top% + ACP_shade_area_h%
 END FUNCTION
 
@@ -865,7 +1026,8 @@ FUNCTION ACP_over_history% (nx AS INTEGER, ny AS INTEGER)
     ACP_over_history% = 0
     IF ACP_history_area_h% = 0 THEN EXIT FUNCTION
     DIM top AS INTEGER : top% = ACP_history_top%
-    IF ny% >= top% AND ny% < top% + ACP_history_area_h% AND nx% >= 0 AND nx% < ACP_STATE.w% THEN ACP_over_history% = -1
+    DIM bx AS INTEGER : bx% = ACP_blk_x%(ACP_BLK_HIST)
+    IF ny% >= top% AND ny% < top% + ACP_history_area_h% AND nx% >= bx% AND nx% < bx% + ACP_blk_w% THEN ACP_over_history% = -1
 END FUNCTION
 
 ' --------------------------------------------------------------------------
@@ -907,13 +1069,14 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB ACP_history_patch_rect (idx AS INTEGER, x1 AS INTEGER, y1 AS INTEGER, x2 AS INTEGER, y2 AS INTEGER)
     DIM top     AS INTEGER : top% = ACP_history_top% + ACP_HISTORY_LABEL_H ' (under its label: the quantize and host rows too)
-    DIM usableW AS INTEGER : usableW% = ACP_STATE.w% - ACP_SHADE_GAP * 2
+    DIM bx      AS INTEGER : bx% = ACP_blk_x%(ACP_BLK_HIST)
+    DIM usableW AS INTEGER : usableW% = ACP_blk_w% - ACP_SHADE_GAP * 2
     DIM pw      AS INTEGER : pw% = usableW% \ ACP_HISTORY_MAX
     IF pw% < 1 THEN pw% = 1
     y1% = top% : y2% = top% + ACP_HISTORY_H - 1
-    x1% = ACP_SHADE_GAP + idx% * pw%
+    x1% = bx% + ACP_SHADE_GAP + idx% * pw%
     IF idx% = ACP_HISTORY_MAX - 1 THEN
-        x2% = ACP_STATE.w% - ACP_SHADE_GAP - 1
+        x2% = bx% + ACP_blk_w% - ACP_SHADE_GAP - 1
     ELSE
         x2% = x1% + pw% - 1
     END IF

@@ -59,6 +59,12 @@ CONST ACP_HISTORY_H       = 13                                 ' history strip h
 CONST ACP_HISTORY_LABEL_H = 17                                 ' "COLOR HISTORY" label + ~8px padding below (native px)
 DIM SHARED ACP_history(0 TO ACP_HISTORY_MAX - 1) AS _UNSIGNED LONG
 
+' Sections, in their order under / beside the wheel (ACP_blk_pos)
+CONST ACP_BLK_QUANT  = 0                                          ' the quantize slider row
+CONST ACP_BLK_HOST   = 1                                          ' the host's row (discloseH)
+CONST ACP_BLK_SHADE0 = 2                                          ' shade row 0 (row r = ACP_BLK_SHADE0 + r)
+CONST ACP_BLK_HIST   = ACP_BLK_SHADE0 + ACP_SHADE_MAX_LINES       ' the history strip + its label
+
 TYPE ACP_STATE_OBJ
     ' --- Color (canonical HSV) ---
     hue AS SINGLE               ' 0..360
@@ -139,6 +145,18 @@ TYPE ACP_STATE_OBJ
     '     the collapsed state it toggles: shade rows + history hidden ---
     discloseH AS INTEGER        ' native px reserved for the host's row (0 = none, host-set)
     collapsed AS INTEGER        ' TRUE = no shade rows, no history (the widget ends at the host row)
+
+    ' --- Side layout (ACP_resize_side): the wheel at the left, the sections
+    '     below it (quantize, host row, shade rows, history) flowed top to
+    '     bottom in columns sideColW wide to its right, never taller than the
+    '     wheel + the quantize row (which stays under the wheel) - for a short,
+    '     wide spot (a toolbar row); the host's row goes in a gutter between
+    '     the wheel and the columns (the host draws it). 0 = stacked. ---
+    sideX    AS INTEGER         ' x of the first section column (0 = stacked)
+    sideGutter AS INTEGER       ' host-set: px between the wheel and the columns (its own controls)
+    sideColW AS INTEGER         ' each section column's width (native px)
+    ringPct  AS INTEGER         ' the ring's thickness, % of its own (0 = 100; ACP_set_ring_pct)
+    sideLabelW AS INTEGER       ' > 0 (host-set): sideways, each shade row's label sits this wide LEFT of its patches, not above
 END TYPE
 
 DIM SHARED ACP_STATE AS ACP_STATE_OBJ

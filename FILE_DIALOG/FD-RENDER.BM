@@ -391,9 +391,14 @@ SUB FD_RENDER_toolbar
 
     DIM searchDisp AS STRING
     IF FD_STATE.searchLen > 0 THEN
-        searchDisp = LEFT$(RTRIM$(FD_STATE.searchText), FD_STATE.searchLen)
+        searchDisp = LEFT$(FD_STATE.searchText, FD_STATE.searchLen)
+    ELSEIF FD_STATE.searchFocus THEN
+        searchDisp = "" ' (focused: the caret, no hint)
     ELSE
         searchDisp = "Search..."
+    END IF
+    IF FD_STATE.searchFocus THEN ' focused: a bright border
+        LINE (searchX, y1 + 3)-(searchX + searchW - 1, y1 + FD_STATE.toolBarH - 4), FD_CLR_TEXT~&, B
     END IF
     IF FD_STATE.searchLen = 0 THEN
         COLOR FD_CLR_TEXT_DIM~&, _RGBA32(0, 0, 0, 0)
@@ -401,6 +406,12 @@ SUB FD_RENDER_toolbar
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
     END IF
     FD_print_scaled searchX + FD_PADDING, y1 + (FD_STATE.toolBarH - FD_text_height%(sfs)) \ 2 + 1, searchDisp, sfs
+    IF FD_STATE.searchFocus _ANDALSO FD_STATE.cursorBlink THEN ' the caret after the text
+        DIM scx AS INTEGER, scy AS INTEGER
+        scx = searchX + FD_PADDING + FD_text_width%(searchDisp, sfs) + 1
+        scy = y1 + (FD_STATE.toolBarH - FD_text_height%(sfs)) \ 2 + 1
+        IF scx < searchX + searchW - 2 THEN LINE (scx, scy)-(scx, scy + FD_text_height%(sfs) - 1), FD_CLR_TEXT~&
+    END IF
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -411,7 +422,7 @@ SUB FD_RENDER_places
     x1 = FD_STATE.placesX
     y1 = FD_STATE.contentY
     w  = FD_STATE.placesW
-    h  = FD_STATE.contentH
+    h  = FD_places_h% ' (less the preview under it when stacked)
 
     IF w <= 0 THEN EXIT SUB
 
@@ -506,7 +517,10 @@ SUB FD_RENDER_places
         labelCharW = FD_CFG.fontW * pfs
         IF labelCharW < 1 THEN labelCharW = 8 * pfs
         maxLabelW = (w - FD_PADDING * 2 - FD_ICON_SIZE * plIsc - FD_ICON_TEXT_GAP) \ labelCharW
-        IF LEN(label) > maxLabelW THEN label = LEFT$(label, maxLabelW - 1) + "."
+        IF maxLabelW < 1 THEN maxLabelW = 0
+        IF LEN(label) > maxLabelW THEN ' (room for 1-2 letters: the letters, no dot)
+            IF maxLabelW <= 2 THEN label = LEFT$(label, maxLabelW) ELSE label = LEFT$(label, maxLabelW - 1) + "."
+        END IF
         label = UCASE$(label)
         COLOR FD_CLR_TEXT~&, _RGBA32(0, 0, 0, 0)
         DIM labelIconW AS INTEGER
@@ -667,7 +681,7 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INTEGER)
     DIM i        AS INTEGER
-    DIM drawY    AS INTEGER
+    DIM drawY    AS LONG
     DIM entryIdx AS INTEGER
     DIM contentW AS INTEGER
     contentW = w
@@ -683,7 +697,7 @@ SUB FD_RENDER_content_list (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INT
     iconSpan = FD_ICON_SIZE * isc
 
     FOR i = 0 TO FD_STATE.visibleCount - 1
-        drawY = y1 + (i * rh) - FD_STATE.scrollOffset
+        drawY = y1 + (CLNG(i) * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
         IF drawY >= y1 + h THEN EXIT FOR
 
@@ -729,7 +743,7 @@ END SUB
 ' --------------------------------------------------------------------------
 SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INTEGER)
     DIM i        AS INTEGER
-    DIM drawY    AS INTEGER
+    DIM drawY    AS LONG
     DIM entryIdx AS INTEGER
     DIM contentW AS INTEGER
     contentW = w
@@ -745,7 +759,7 @@ SUB FD_RENDER_content_details (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS 
     iconSpan = FD_ICON_SIZE * isc
 
     FOR i = 0 TO FD_STATE.visibleCount - 1
-        drawY = y1 + (i * rh) - FD_STATE.scrollOffset
+        drawY = y1 + (CLNG(i) * rh) - FD_STATE.scrollOffset
         IF drawY < y1 THEN _CONTINUE
         IF drawY >= y1 + h THEN EXIT FOR
 
@@ -859,9 +873,9 @@ SUB FD_RENDER_content_thumbs (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS I
         col = i MOD cols
         row = i \ cols
 
-        DIM cellX AS INTEGER, cellY AS INTEGER
+        DIM cellX AS INTEGER, cellY AS LONG ' (LONG: row * cellH passes 32767 in a long one-column list)
         cellX = x1 + col * cellW
-        cellY = y1 + row * cellH - FD_STATE.scrollOffset
+        cellY = y1 + CLNG(row) * cellH - FD_STATE.scrollOffset
 
         ' Allow 1 row overdraw above and below for smooth scroll clipping
         IF cellY + cellH < y1 - cellH THEN _CONTINUE
@@ -943,9 +957,9 @@ END SUB
 SUB FD_RENDER_preview
     DIM x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INTEGER
     x1 = FD_STATE.previewX
-    y1 = FD_STATE.contentY
+    y1 = FD_STATE.previewY ' (under the places when stacked: FD_LAYOUT_calculate)
     w  = FD_STATE.previewW
-    h  = FD_STATE.contentH + FD_STATE.buttonBarH
+    h  = FD_STATE.previewH
 
     IF w <= 0 OR NOT FD_CFG.showPreview THEN EXIT SUB
 
@@ -1368,9 +1382,28 @@ SUB FD_RENDER_splitters
     ' Content / Preview splitter
     IF FD_STATE.previewW > 0 AND FD_CFG.showPreview THEN
         DIM px AS INTEGER
-        px = FD_STATE.previewX - FD_SPLITTER_W
-        LINE (px, y1)-(px + FD_SPLITTER_W - 1, y1 + FD_STATE.contentH - 1), FD_CLR_SPLITTER~&, BF
+        IF FD_STATE.pvStack THEN ' (stacked: a bar between the places and the preview)
+            px = FD_STATE.previewY - FD_SPLITTER_W
+            LINE (FD_STATE.placesX, px)-(FD_STATE.placesX + FD_STATE.placesW - 1, px + FD_SPLITTER_W - 1), FD_CLR_SPLITTER~&, BF
+        ELSE
+            px = FD_STATE.previewX - FD_SPLITTER_W
+            LINE (px, y1)-(px + FD_SPLITTER_W - 1, y1 + FD_STATE.contentH - 1), FD_CLR_SPLITTER~&, BF
+        END IF
     END IF
+END SUB
+
+' --------------------------------------------------------------------------
+' FD_scrollbar_thumb — the list scrollbar's thumb on a track at trackY, trackH
+' tall: its top and height (FD_RENDER_scrollbar draws it, FD_INPUT_content drags it)
+' --------------------------------------------------------------------------
+SUB FD_scrollbar_thumb (trackY AS INTEGER, trackH AS INTEGER, thumbY AS INTEGER, thumbH AS INTEGER)
+    DIM visibleFrac AS SINGLE, scrollFrac AS SINGLE
+    visibleFrac = FD_STATE.contentH / (FD_STATE.contentH + FD_STATE.maxScroll)
+    thumbH      = INT(trackH * visibleFrac)
+    IF thumbH < 16 THEN thumbH = 16
+    IF thumbH > trackH THEN thumbH = trackH
+    IF FD_STATE.maxScroll > 0 THEN scrollFrac = FD_STATE.scrollOffset / FD_STATE.maxScroll
+    thumbY = trackY + INT((trackH - thumbH) * scrollFrac)
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -1382,25 +1415,10 @@ SUB FD_RENDER_scrollbar (x1 AS INTEGER, y1 AS INTEGER, w AS INTEGER, h AS INTEGE
     ' Track
     LINE (x1, y1)-(x1 + w - 1, y1 + h - 1), FD_CLR_SCROLLBAR_BG~&, BF
 
-    ' Thumb position and size
+    ' Thumb position and size (FD_scrollbar_thumb: the same one the drag grabs)
     DIM thumbH AS INTEGER
     DIM thumbY AS INTEGER
-    DIM trackH AS INTEGER
-    trackH = h
-
-    DIM visibleFrac AS SINGLE
-    visibleFrac = FD_STATE.contentH / (FD_STATE.contentH + FD_STATE.maxScroll)
-    thumbH      = INT(trackH * visibleFrac)
-    IF thumbH < 16 THEN thumbH = 16
-    IF thumbH > trackH THEN thumbH = trackH
-
-    DIM scrollFrac AS SINGLE
-    IF FD_STATE.maxScroll > 0 THEN
-        scrollFrac = FD_STATE.scrollOffset / FD_STATE.maxScroll
-    ELSE
-        scrollFrac = 0
-    END IF
-    thumbY = y1 + INT((trackH - thumbH) * scrollFrac)
+    FD_scrollbar_thumb y1, h, thumbY, thumbH
 
     ' Draw thumb
     LINE (x1 + 1, thumbY)-(x1 + w - 2, thumbY + thumbH - 1), FD_CLR_SCROLLBAR_THUMB~&, BF
