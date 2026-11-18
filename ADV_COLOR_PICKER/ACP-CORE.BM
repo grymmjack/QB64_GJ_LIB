@@ -438,10 +438,12 @@ END SUB
 ' --------------------------------------------------------------------------
 ' ACP_build_ring — Render the hue ring (built once; independent of hue).
 ' Hue 0 (red) at +X (3 o'clock), increasing clockwise (screen Y down).
-' A pixel belongs to the ring when its CENTER (px + 0.5, py + 0.5) lies in
-' the annulus. Measuring from the pixel's corner with an integer center and
-' radius let one lone pixel through at each of the four compass extremes
-' (its neighbours fall just outside), leaving 1px ticks on the outer edge.
+' Antialiased: each pixel's alpha is how much of it the annulus covers,
+' measured from its CENTER (px + 0.5, py + 0.5) - (ro - dist + 0.5) for the
+' outer edge, (dist - ri + 0.5) for the inner. (Measuring from the pixel's
+' corner once let one lone pixel through at each compass extreme.) Written
+' straight-alpha with _DONTBLEND onto the clear ring image; ACP_render_all's
+' _PUTIMAGE blends it onto the background.
 ' --------------------------------------------------------------------------
 SUB ACP_build_ring
     IF ACP_STATE.ringImage& >= -1 THEN EXIT SUB
@@ -464,20 +466,26 @@ SUB ACP_build_ring
     IF y1% > ACP_STATE.wheel% - 1 THEN y1% = ACP_STATE.wheel% - 1
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
 
+    DIM co AS SINGLE, ci AS SINGLE, cov AS SINGLE
+    _DONTBLEND
     FOR py% = y0% TO y1%
         FOR px% = x0% TO x1%
             dx!   = px% + 0.5 - ACP_STATE.cx!
             dy!   = py% + 0.5 - ACP_STATE.cy!
             dist! = SQR(dx! * dx! + dy! * dy!)
-            IF dist! >= ri! AND dist! <= ro! THEN
+            co! = ro! - dist! + 0.5 : IF co! > 1.0 THEN co! = 1.0
+            ci! = dist! - ri! + 0.5 : IF ci! > 1.0 THEN ci! = 1.0
+            cov! = co! + ci! - 1.0
+            IF cov! > 0.0 THEN
                 ang! = _ATAN2(dy!, dx!) * 180.0 / 3.14159265
                 IF ang! < 0.0 THEN ang! = ang! + 360.0
                 hueDeg! = ACP_quantize_hue!(ang!)
                 ACP_hsv_to_rgb hueDeg!, 1.0, 1.0, r%, g%, b%
-                PSET (px%, py%), _RGB32(r%, g%, b%)
+                PSET (px%, py%), _RGBA32(r%, g%, b%, INT(cov! * 255.0 + 0.5))
             END IF
         NEXT px%
     NEXT py%
+    _BLEND
 
     _DEST oldDest&
 END SUB
@@ -485,6 +493,11 @@ END SUB
 ' --------------------------------------------------------------------------
 ' ACP_build_triangle — Render the SV triangle for the current hue.
 ' Each pixel's barycentric weights map to (S,V); color = hsv(hue,S,V).
+' Antialiased, with its 1px black outline built in: the fill's alpha is how
+' far the pixel sits inside the nearest edge (+ 0.5), the outline's is
+' 1 - its distance to the nearest edge segment, and the outline is laid over
+' the fill (straight alpha, _DONTBLEND onto the clear image). Samples at the
+' whole pixel (px, py), as ACP_point_in_triangle% and the SV marker do.
 ' --------------------------------------------------------------------------
 SUB ACP_build_triangle
     IF ACP_STATE.triImage& >= -1 THEN EXIT SUB
@@ -502,45 +515,136 @@ SUB ACP_build_triangle
     IF ABS(det!) < 0.0001 THEN _DEST oldDest& : EXIT SUB
 
     DIM x0 AS INTEGER, x1 AS INTEGER, y0 AS INTEGER, y1 AS INTEGER
-    x0% = INT(ACP_min3(Ax!, Bx!, Cx!)) : x1% = INT(ACP_max3(Ax!, Bx!, Cx!)) + 1
-    y0% = INT(ACP_min3(Ay!, By!, Cy!)) : y1% = INT(ACP_max3(Ay!, By!, Cy!)) + 1
+    x0% = INT(ACP_min3(Ax!, Bx!, Cx!)) - 2 : x1% = INT(ACP_max3(Ax!, Bx!, Cx!)) + 2
+    y0% = INT(ACP_min3(Ay!, By!, Cy!)) - 2 : y1% = INT(ACP_max3(Ay!, By!, Cy!)) + 2
     IF x0% < 0 THEN x0% = 0
     IF y0% < 0 THEN y0% = 0
     IF x1% > ACP_STATE.w% - 1 THEN x1% = ACP_STATE.w% - 1
     IF y1% > ACP_STATE.wheel% - 1 THEN y1% = ACP_STATE.wheel% - 1
 
     DIM px  AS INTEGER, py AS INTEGER
+    DIM fx  AS SINGLE, fy AS SINGLE
     DIM wa  AS SINGLE, wb AS SINGLE, wc AS SINGLE
     DIM sv  AS SINGLE, vv AS SINGLE
     DIM r   AS INTEGER, g AS INTEGER, b AS INTEGER
-    DIM eps AS SINGLE : eps! = -0.001
+    DIM fd  AS SINGLE, ld AS SINGLE, t AS SINGLE
+    DIM fa  AS SINGLE, lc AS SINGLE, oa AS SINGLE, k AS SINGLE
 
+    _DONTBLEND
     FOR py% = y0% TO y1%
         FOR px% = x0% TO x1%
-            wa! = ((By! - Cy!) * (px% - Cx!) + (Cx! - Bx!) * (py% - Cy!)) / det!
-            wb! = ((Cy! - Ay!) * (px% - Cx!) + (Ax! - Cx!) * (py% - Cy!)) / det!
-            wc! = 1.0 - wa! - wb!
-            IF wa! >= eps! AND wb! >= eps! AND wc! >= eps! THEN
-                vv! = wa! + wb! ' V = weight(hue) + weight(white)
-                IF vv! <= 0.0 THEN
-                    sv! = 0.0
-                ELSE
-                    sv! = wa! / vv! ' S = weight(hue) / V
+            fx! = px% : fy! = py%
+            fd! = ACP_edge_in!(fx!, fy!, Bx!, By!, Cx!, Cy!, Ax!, Ay!)
+            t! = ACP_edge_in!(fx!, fy!, Cx!, Cy!, Ax!, Ay!, Bx!, By!) : IF t! < fd! THEN fd! = t!
+            t! = ACP_edge_in!(fx!, fy!, Ax!, Ay!, Bx!, By!, Cx!, Cy!) : IF t! < fd! THEN fd! = t!
+            fa! = fd! + 0.5
+            IF fa! > 1.0 THEN fa! = 1.0
+            IF fa! < 0.0 THEN fa! = 0.0
+            ld! = ACP_seg_dist!(fx!, fy!, Ax!, Ay!, Bx!, By!)
+            t! = ACP_seg_dist!(fx!, fy!, Bx!, By!, Cx!, Cy!) : IF t! < ld! THEN ld! = t!
+            t! = ACP_seg_dist!(fx!, fy!, Cx!, Cy!, Ax!, Ay!) : IF t! < ld! THEN ld! = t!
+            lc! = 1.0 - ld!
+            IF lc! < 0.0 THEN lc! = 0.0
+            IF fa! > 0.0 OR lc! > 0.0 THEN
+                r% = 0 : g% = 0 : b% = 0
+                IF fa! > 0.0 THEN
+                    wa! = ((By! - Cy!) * (fx! - Cx!) + (Cx! - Bx!) * (fy! - Cy!)) / det!
+                    wb! = ((Cy! - Ay!) * (fx! - Cx!) + (Ax! - Cx!) * (fy! - Cy!)) / det!
+                    wc! = 1.0 - wa! - wb!
+                    IF wa! < 0.0 THEN wa! = 0.0 ' (the soft rim, just outside: clamp to the edge)
+                    IF wb! < 0.0 THEN wb! = 0.0
+                    vv! = wa! + wb! ' V = weight(hue) + weight(white)
+                    IF vv! <= 0.0 THEN
+                        sv! = 0.0
+                    ELSE
+                        sv! = wa! / vv! ' S = weight(hue) / V
+                    END IF
+                    IF sv! < 0.0 THEN sv! = 0.0
+                    IF sv! > 1.0 THEN sv! = 1.0
+                    IF vv! < 0.0 THEN vv! = 0.0
+                    IF vv! > 1.0 THEN vv! = 1.0
+                    sv! = ACP_quantize_unit!(sv!)
+                    vv! = ACP_quantize_unit!(vv!)
+                    ACP_hsv_to_rgb ACP_STATE.hue!, sv!, vv!, r%, g%, b%
                 END IF
-                IF sv! < 0.0 THEN sv! = 0.0
-                IF sv! > 1.0 THEN sv! = 1.0
-                IF vv! < 0.0 THEN vv! = 0.0
-                IF vv! > 1.0 THEN vv! = 1.0
-                sv! = ACP_quantize_unit!(sv!)
-                vv! = ACP_quantize_unit!(vv!)
-                ACP_hsv_to_rgb ACP_STATE.hue!, sv!, vv!, r%, g%, b%
-                PSET (px%, py%), _RGB32(r%, g%, b%)
+                ' black outline (lc) over the fill (fa), straight alpha
+                oa! = lc! + fa! * (1.0 - lc!)
+                k! = fa! * (1.0 - lc!) / oa!
+                PSET (px%, py%), _RGBA32(INT(r% * k! + 0.5), INT(g% * k! + 0.5), INT(b% * k! + 0.5), INT(oa! * 255.0 + 0.5))
             END IF
         NEXT px%
     NEXT py%
+    _BLEND
 
     _DEST oldDest&
     ACP_STATE.triDirty% = 0
+END SUB
+
+' --------------------------------------------------------------------------
+' ACP_edge_in! — How far (px,py) sits inside the line through (ax,ay)-(bx,by),
+' in pixels: positive on the side of (rx,ry), negative beyond the line.
+' --------------------------------------------------------------------------
+FUNCTION ACP_edge_in! (px AS SINGLE, py AS SINGLE, ax AS SINGLE, ay AS SINGLE, bx AS SINGLE, by AS SINGLE, rx AS SINGLE, ry AS SINGLE)
+    DIM dx AS SINGLE, dy AS SINGLE, l AS SINGLE, s AS SINGLE
+    dx! = bx! - ax! : dy! = by! - ay!
+    l! = SQR(dx! * dx! + dy! * dy!)
+    IF l! < 0.000001 THEN ACP_edge_in! = 0.0 : EXIT FUNCTION
+    s! = ((px! - ax!) * dy! - (py! - ay!) * dx!) / l!
+    IF (rx! - ax!) * dy! - (ry! - ay!) * dx! < 0.0 THEN s! = -s!
+    ACP_edge_in! = s!
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_seg_dist! — Distance from (px,py) to the segment (ax,ay)-(bx,by).
+' --------------------------------------------------------------------------
+FUNCTION ACP_seg_dist! (px AS SINGLE, py AS SINGLE, ax AS SINGLE, ay AS SINGLE, bx AS SINGLE, by AS SINGLE)
+    DIM dx AS SINGLE, dy AS SINGLE, ll AS SINGLE, t AS SINGLE, qx AS SINGLE, qy AS SINGLE
+    dx! = bx! - ax! : dy! = by! - ay!
+    ll! = dx! * dx! + dy! * dy!
+    t! = 0.0
+    IF ll! > 0.0 THEN t! = ((px! - ax!) * dx! + (py! - ay!) * dy!) / ll!
+    IF t! < 0.0 THEN t! = 0.0
+    IF t! > 1.0 THEN t! = 1.0
+    qx! = ax! + t! * dx! - px! : qy! = ay! + t! * dy! - py!
+    ACP_seg_dist! = SQR(qx! * qx! + qy! * qy!)
+END FUNCTION
+
+' --------------------------------------------------------------------------
+' ACP_aa_band — An antialiased ring band (inner radius ri, outer ro) around
+' (cx,cy) in col, laid over _DEST (straight-alpha source-over). The markers.
+' Samples at the whole pixel, as CIRCLE does.
+' --------------------------------------------------------------------------
+SUB ACP_aa_band (cx AS SINGLE, cy AS SINGLE, ri AS SINGLE, ro AS SINGLE, col AS _UNSIGNED LONG)
+    DIM x0 AS INTEGER, x1 AS INTEGER, y0 AS INTEGER, y1 AS INTEGER
+    x0% = INT(cx! - ro! - 1) : x1% = INT(cx! + ro! + 1)
+    y0% = INT(cy! - ro! - 1) : y1% = INT(cy! + ro! + 1)
+    IF x0% < 0 THEN x0% = 0
+    IF y0% < 0 THEN y0% = 0
+    IF x1% > _WIDTH - 1 THEN x1% = _WIDTH - 1
+    IF y1% > _HEIGHT - 1 THEN y1% = _HEIGHT - 1
+    DIM px AS INTEGER, py AS INTEGER
+    DIM dx AS SINGLE, dy AS SINGLE, d AS SINGLE, co AS SINGLE, ci AS SINGLE, a AS SINGLE
+    DIM dst AS _UNSIGNED LONG, da AS SINGLE, oa AS SINGLE, ka AS SINGLE, kd AS SINGLE
+    _DONTBLEND
+    FOR py% = y0% TO y1%
+        FOR px% = x0% TO x1%
+            dx! = px% - cx! : dy! = py% - cy!
+            d! = SQR(dx! * dx! + dy! * dy!)
+            co! = ro! - d! + 0.5 : IF co! > 1.0 THEN co! = 1.0
+            ci! = d! - ri! + 0.5 : IF ci! > 1.0 THEN ci! = 1.0
+            a! = co! + ci! - 1.0
+            IF a! > 0.0 THEN
+                dst~& = POINT(px%, py%)
+                da! = _ALPHA32(dst~&) / 255.0
+                oa! = a! + da! * (1.0 - a!)
+                IF oa! > 0.0 THEN
+                    ka! = a! / oa! : kd! = da! * (1.0 - a!) / oa!
+                    PSET (px%, py%), _RGBA32(INT(_RED32(col~&) * ka! + _RED32(dst~&) * kd! + 0.5), INT(_GREEN32(col~&) * ka! + _GREEN32(dst~&) * kd! + 0.5), INT(_BLUE32(col~&) * ka! + _BLUE32(dst~&) * kd! + 0.5), INT(oa! * 255.0 + 0.5))
+                END IF
+            END IF
+        NEXT px%
+    NEXT py%
+    _BLEND
 END SUB
 
 ' --------------------------------------------------------------------------
@@ -557,37 +661,37 @@ SUB ACP_render_all
     _PUTIMAGE (0, 0), ACP_STATE.ringImage&
     _PUTIMAGE (0, 0), ACP_STATE.triImage&
 
-    ' Triangle outline
-    LINE (ACP_STATE.triAx!, ACP_STATE.triAy!)-(ACP_STATE.triBx!, ACP_STATE.triBy!), _RGB32(0, 0, 0)
-    LINE (ACP_STATE.triBx!, ACP_STATE.triBy!)-(ACP_STATE.triCx!, ACP_STATE.triCy!), _RGB32(0, 0, 0)
-    LINE (ACP_STATE.triCx!, ACP_STATE.triCy!)-(ACP_STATE.triAx!, ACP_STATE.triAy!), _RGB32(0, 0, 0)
+    ' (the triangle's outline is built into triImage, antialiased)
 
-    ' Ring hue marker (on ring midline)
+    ' Ring hue marker (on ring midline). Antialiased bands at the exact spot:
+    ' the ring samples pixel centres (+0.5), the bands whole pixels, so -0.5.
     DIM rmid AS SINGLE : rmid! = (ACP_STATE.ringRo! + ACP_STATE.ringRi!) / 2.0
     DIM hr   AS SINGLE : hr! = ACP_STATE.hue! * 3.14159265 / 180.0
-    DIM mrx  AS INTEGER, mry AS INTEGER
-    mrx% = INT(ACP_STATE.cx! + rmid! * COS(hr!))
-    mry% = INT(ACP_STATE.cy! + rmid! * SIN(hr!))
-    CIRCLE (mrx%, mry%), 6, _RGB32(0, 0, 0)
-    CIRCLE (mrx%, mry%), 5, _RGB32(255, 255, 255)
+    DIM mx   AS SINGLE, my AS SINGLE
+    mx! = ACP_STATE.cx! + rmid! * COS(hr!) - 0.5
+    my! = ACP_STATE.cy! + rmid! * SIN(hr!) - 0.5
+    ACP_aa_band mx!, my!, 4.5, 6.5, _RGB32(0, 0, 0)
+    ACP_aa_band mx!, my!, 4.5, 5.5, _RGB32(255, 255, 255)
 
     ' Hue-neighbor range markers (smaller) at hue +/- range — drag to resize.
-    DIM nlx AS INTEGER, nly AS INTEGER, nrx AS INTEGER, nry AS INTEGER
-    ACP_neighbor_marker_pos -1, nlx%, nly%
-    ACP_neighbor_marker_pos 1, nrx%, nry%
-    CIRCLE (nlx%, nly%), 4, _RGB32(0, 0, 0) : CIRCLE (nlx%, nly%), 3, _RGB32(255, 255, 255)
-    CIRCLE (nrx%, nry%), 4, _RGB32(0, 0, 0) : CIRCLE (nrx%, nry%), 3, _RGB32(255, 255, 255)
+    DIM side AS INTEGER
+    FOR side% = -1 TO 1 STEP 2
+        hr! = (ACP_STATE.hue! + side% * ACP_STATE.hueNeighborRange!) * 3.14159265 / 180.0
+        mx! = ACP_STATE.cx! + rmid! * COS(hr!) - 0.5
+        my! = ACP_STATE.cy! + rmid! * SIN(hr!) - 0.5
+        ACP_aa_band mx!, my!, 2.5, 4.5, _RGB32(0, 0, 0)
+        ACP_aa_band mx!, my!, 2.5, 3.5, _RGB32(255, 255, 255)
+    NEXT side%
 
     ' Triangle SV marker: weights (S*V, V*(1-S), 1-V) -> point
     DIM wa  AS SINGLE, wb AS SINGLE, wc AS SINGLE
     wa! = ACP_STATE.sat! * ACP_STATE.val!
     wb! = ACP_STATE.val! * (1.0 - ACP_STATE.sat!)
     wc! = 1.0 - ACP_STATE.val!
-    DIM mtx AS INTEGER, mty AS INTEGER
-    mtx% = INT(wa! * ACP_STATE.triAx! + wb! * ACP_STATE.triBx! + wc! * ACP_STATE.triCx!)
-    mty% = INT(wa! * ACP_STATE.triAy! + wb! * ACP_STATE.triBy! + wc! * ACP_STATE.triCy!)
-    CIRCLE (mtx%, mty%), 5, _RGB32(0, 0, 0)
-    CIRCLE (mtx%, mty%), 4, _RGB32(255, 255, 255)
+    mx! = wa! * ACP_STATE.triAx! + wb! * ACP_STATE.triBx! + wc! * ACP_STATE.triCx!
+    my! = wa! * ACP_STATE.triAy! + wb! * ACP_STATE.triBy! + wc! * ACP_STATE.triCy!
+    ACP_aa_band mx!, my!, 3.5, 5.5, _RGB32(0, 0, 0)
+    ACP_aa_band mx!, my!, 3.5, 4.5, _RGB32(255, 255, 255)
 
     ACP_render_quant   ' quantize slider under the wheel (when shown)
     ACP_render_shades  ' shade rows below it (into imgHandle)
