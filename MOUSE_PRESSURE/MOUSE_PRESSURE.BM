@@ -1,0 +1,158 @@
+$INCLUDEONCE
+
+' ============================================================================
+' MOUSE_PRESSURE.BM — "mouse expression". See MOUSE_PRESSURE.BI.
+' (c) 2026 grymmjack — MIT License
+' ============================================================================
+
+''
+' Factory settings: off, half pressure, SPEED light 15% from 1200 units/s,
+' no tapers.
+'
+SUB MEXP_defaults
+    MEXP.mode = MEXP_OFF
+    MEXP.level = 0.5
+    MEXP.light = 0.15
+    MEXP.fastAt = 1200
+    MEXP.smooth = 0.3
+    MEXP.invert = 0
+    MEXP.taperIn = 0
+    MEXP.taperOut = 0
+    MEXP.wheelP = -1
+    MEXP.p = 1
+END SUB
+
+''
+' Button down at (x, y), clock t (s).
+'
+SUB MEXP_begin (mxX AS DOUBLE, mxY AS DOUBLE, mxT AS DOUBLE)
+    MEXP.active = -1
+    MEXP.x = mxX: MEXP.y = mxY: MEXP.t = mxT
+    MEXP.speed = 0
+    MEXP.dist = 0
+    MEXP.p = MEXP_level_now!
+END SUB
+
+''
+' The pointer is at (x, y) at clock t (s): the pressure now, 0..1 (at least
+' MEXP_MIN). Steps with no time passed only add to the path length.
+'
+FUNCTION MEXP_step! (mxX AS DOUBLE, mxY AS DOUBLE, mxT AS DOUBLE)
+    DIM mxDt AS DOUBLE, mxD AS DOUBLE, mxTau AS DOUBLE, mxK AS DOUBLE
+    IF MEXP.active = 0 THEN MEXP_begin mxX, mxY, mxT
+    mxD = SQR((mxX - MEXP.x) * (mxX - MEXP.x) + (mxY - MEXP.y) * (mxY - MEXP.y))
+    MEXP.dist = MEXP.dist + mxD
+    mxDt = mxT - MEXP.t
+    IF mxDt < 0 THEN mxDt = mxDt + 86400 ' TIMER wraps at midnight
+    IF mxDt > 0.0005# THEN
+        mxTau = 0.5# * MEXP_clamp!(MEXP.smooth, 0, 1)
+        IF mxTau <= 0 THEN mxK = 1 ELSE mxK = 1# - EXP(-mxDt / mxTau)
+        MEXP.speed = MEXP.speed + (mxD / mxDt - MEXP.speed) * mxK
+        MEXP.t = mxT
+    END IF
+    MEXP.x = mxX: MEXP.y = mxY
+    MEXP.p = MEXP_level_now!
+    MEXP_step! = MEXP.p
+END FUNCTION
+
+''
+' The pressure for the current mode and state (no step).
+'
+FUNCTION MEXP_level_now! ()
+    DIM mxP AS SINGLE
+    SELECT CASE MEXP.mode
+        CASE MEXP_FIXED
+            mxP = MEXP.level
+        CASE MEXP_SPEED
+            mxP = MEXP_speed_pressure!(MEXP.speed)
+        CASE MEXP_WHEEL
+            IF MEXP.wheelP < 0 THEN MEXP.wheelP = MEXP_clamp!(MEXP.level, MEXP_MIN, 1)
+            mxP = MEXP.wheelP
+        CASE ELSE
+            mxP = 1
+    END SELECT
+    MEXP_level_now! = MEXP_clamp!(mxP, MEXP_MIN, 1)
+END FUNCTION
+
+''
+' SPEED: the pressure at a speed - 1 at rest down to MEXP.light at fastAt and
+' faster, along an S-curve (the reverse with MEXP.invert).
+'
+FUNCTION MEXP_speed_pressure! (mxSpd AS DOUBLE)
+    DIM mxU AS SINGLE, mxS AS SINGLE, mxLo AS SINGLE
+    IF MEXP.fastAt <= 0 THEN mxU = 1 ELSE mxU = MEXP_clamp!(mxSpd / MEXP.fastAt, 0, 1)
+    mxS = mxU * mxU * (3 - 2 * mxU) ' smoothstep
+    mxLo = MEXP_clamp!(MEXP.light, 0, 1)
+    IF MEXP.invert THEN
+        MEXP_speed_pressure! = mxLo + (1 - mxLo) * mxS
+    ELSE
+        MEXP_speed_pressure! = 1 - (1 - mxLo) * mxS
+    END IF
+END FUNCTION
+
+''
+' WHEEL: turn the pressure by notches x stepSize (e.g. -wheel, 0.05 for 5% a
+' notch, wheel up = heavier). Kept between strokes.
+'
+SUB MEXP_scroll (mxN AS INTEGER, mxStep AS SINGLE)
+    IF MEXP.wheelP < 0 THEN MEXP.wheelP = MEXP_clamp!(MEXP.level, MEXP_MIN, 1)
+    MEXP.wheelP = MEXP_clamp!(MEXP.wheelP + mxN * mxStep, MEXP_MIN, 1)
+    MEXP.p = MEXP_level_now!
+END SUB
+
+''
+' WHEEL: forget the wheel's pressure (the next stroke starts at MEXP.level).
+'
+SUB MEXP_scroll_reset
+    MEXP.wheelP = -1
+END SUB
+
+''
+' Button up.
+'
+SUB MEXP_end
+    MEXP.active = 0
+END SUB
+
+''
+' Path length of the stroke so far (the units of the positions handed in).
+'
+FUNCTION MEXP_dist! ()
+    MEXP_dist! = MEXP.dist
+END FUNCTION
+
+''
+' A taper's size factor at distance d (0..) into a taper of length ln: 0 at
+' the tip, 1 from ln on - eased (fast at the tip, gentle into the full width),
+' so the tip is a point, not a long needle. ln <= 0: no taper (1).
+'
+FUNCTION MEXP_taper! (mxD AS SINGLE, mxLn AS SINGLE)
+    DIM mxU AS SINGLE
+    IF mxLn <= 0 THEN MEXP_taper! = 1: EXIT FUNCTION
+    mxU = MEXP_clamp!(mxD / mxLn, 0, 1)
+    MEXP_taper! = mxU * (2 - mxU)
+END FUNCTION
+
+''
+' The start taper's factor at path length d from the stroke's start.
+'
+FUNCTION MEXP_taper_in! (mxD AS SINGLE)
+    MEXP_taper_in! = MEXP_taper!(mxD, MEXP.taperIn)
+END FUNCTION
+
+''
+' The end taper's factor at path length d before the stroke's end.
+'
+FUNCTION MEXP_taper_out! (mxD AS SINGLE)
+    MEXP_taper_out! = MEXP_taper!(mxD, MEXP.taperOut)
+END FUNCTION
+
+FUNCTION MEXP_clamp! (mxV AS SINGLE, mxLo AS SINGLE, mxHi AS SINGLE)
+    IF mxV < mxLo THEN
+        MEXP_clamp! = mxLo
+    ELSEIF mxV > mxHi THEN
+        MEXP_clamp! = mxHi
+    ELSE
+        MEXP_clamp! = mxV
+    END IF
+END FUNCTION

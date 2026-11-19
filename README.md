@@ -29,6 +29,7 @@ in it's current state.
 | [IMGADJ](IMGADJ/README.md) | Image Adjustment library | Image operations and stuff found in GIMP, Photoshop, etc. |
 | [LAYOUT](LAYOUT/README.md) | Layout solver | **Flexbox-style** rows / columns: min / preferred / max sizes, grow / shrink with min-max freezing, overflow drop order, shared frame rows; plus `LAY_place` for floating windows among obstacles. Pure integer math, headless unit test |
 | [MISC](MISC/README.md) | Miscellaneous helpful functions and subs that don't fit anywhere else :) |
+| [MOUSE_PRESSURE](MOUSE_PRESSURE/README.md) | Mouse expression | **A made-up pen pressure for a mouse**: FIXED, SPEED (slow = heavy, fast = light) or WHEEL (scroll while drawing), plus taper in / out, so drawing programs give mouse users thick-and-thin and tapered strokes. Pure math, example, headless unit test |
 | [MSG_BOX](MSG_BOX/README.md) | Message Box Dialog | Modal message boxes with OK/Cancel/Yes/No buttons, icons, and input mode |
 | [PIPEPRINT](PIPEPRINT/README.md) | ANSI string DSL| Pipe (\|) Print emulates Mystic BBS pipe parsing |
 | [PRESSURE_DEVICE](PRESSURE_DEVICE/README.md) | Pen pressure | **Pen / tablet pressure**, tilt and eraser for QB64-PE on Windows (Windows Ink), macOS (tablet events + Force Touch trackpad) and Linux (XInput2, X11 and Wayland) by hooking the native window; a mouse reads as full pressure. Test program, example, unit test; confirmed on all three OSes with a HUION Inspiroy 2 M |
